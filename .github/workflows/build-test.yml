@@ -1,0 +1,46 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: |
+          dotnet restore ElectroObraApp.Desktop/ElectroObraApp.Desktop.csproj
+          dotnet restore ElectroObraApp.Tests/ElectroObraApp.Tests.csproj
+
+      - name: Build Desktop
+        run: dotnet build ElectroObraApp.Desktop/ElectroObraApp.Desktop.csproj --no-restore -c Release
+
+      - name: Build Tests
+        run: dotnet build ElectroObraApp.Tests/ElectroObraApp.Tests.csproj --no-restore -c Release
+
+      - name: Test with coverage
+        run: >
+          dotnet test ElectroObraApp.Tests/ElectroObraApp.Tests.csproj
+          --no-build -c Release
+          --collect:"XPlat Code Coverage"
+          --results-directory ./TestResults
+          --logger "trx;LogFileName=test-results.trx"
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: TestResults/
+          if-no-files-found: warn
