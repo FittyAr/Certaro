@@ -30,6 +30,6 @@ public class Movimiento : BaseEntity
     public Empleado? Empleado { get; set; }
     
     public Guid? FacturaId { get; set; }
-    // public virtual Factura? Factura { get; set; } // Se agregará después
+    public virtual Factura? Factura { get; set; }
 }
 

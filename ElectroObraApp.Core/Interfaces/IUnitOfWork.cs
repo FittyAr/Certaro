@@ -10,6 +10,9 @@ public interface IUnitOfWork : IDisposable
     IClienteRepository Clientes { get; }
     ILiquidacionRepository Liquidaciones { get; }
     ITrabajoRepository Trabajos { get; }
+    IFacturaRepository Facturas { get; }
     Task<int> SaveChangesAsync();
+    Task BeginTransactionAsync();
+    Task CommitTransactionAsync();
+    Task RollbackTransactionAsync();
 }
-

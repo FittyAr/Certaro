@@ -9,17 +9,14 @@ public class OrdenTrabajoItemTests
     [Fact]
     public void PorcentajeAcumulado_ShouldBeSumOfAnteriorAndActual()
     {
-        // Arrange
         var item = new OrdenTrabajoItem { PorcentajeAnterior = 20, PorcentajeActual = 10 };
 
-        // Assert
         item.PorcentajeAcumulado.Should().Be(30);
     }
 
     [Fact]
-    public void SubtotalActual_ShouldCalculateBasedOnPercentage()
+    public void CalculateSubtotals_ShouldCalculateBasedOnPercentage()
     {
-        // Arrange
         var item = new OrdenTrabajoItem 
         { 
             Cantidad = 100, 
@@ -27,18 +24,15 @@ public class OrdenTrabajoItemTests
             PorcentajeActual = 50 
         };
 
-        // Act
-        var result = item.SubtotalActual;
+        var (subtotalActual, subtotalAcumulado) = item.CalculateSubtotals();
 
-        // Assert
-        // 100 * 10 * 0.5 = 500
-        result.Should().Be(500);
+        subtotalActual.Should().Be(500);
+        subtotalAcumulado.Should().Be(500);
     }
 
     [Fact]
-    public void SubtotalAcumulado_ShouldCalculateBasedOnAccumulatedPercentage()
+    public void CalculateSubtotals_ShouldCalculateBasedOnAccumulatedPercentage()
     {
-        // Arrange
         var item = new OrdenTrabajoItem 
         { 
             Cantidad = 100, 
@@ -47,12 +41,9 @@ public class OrdenTrabajoItemTests
             PorcentajeActual = 30 
         };
 
-        // Act
-        var result = item.SubtotalAcumulado;
+        var (subtotalActual, subtotalAcumulado) = item.CalculateSubtotals();
 
-        // Assert
-        // 100 * 10 * (20+30)/100 = 500
-        result.Should().Be(500);
+        subtotalActual.Should().Be(300);
+        subtotalAcumulado.Should().Be(500);
     }
 }
-

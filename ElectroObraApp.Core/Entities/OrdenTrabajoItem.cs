@@ -9,14 +9,19 @@ public class OrdenTrabajoItem : BaseEntity
 
     public string Descripcion { get; set; } = string.Empty;
     public decimal Cantidad { get; set; }
-    public string Unidad { get; set; } = "u"; // m, u, kg, etc.
+    public string Unidad { get; set; } = "u";
     public decimal PrecioUnitario { get; set; }
     
-    public decimal PorcentajeAnterior { get; set; } // Avance acumulado anterior
-    public decimal PorcentajeActual { get; set; }   // Avance de este certificado
+    public decimal PorcentajeAnterior { get; set; }
+    public decimal PorcentajeActual { get; set; }
     public decimal PorcentajeAcumulado => PorcentajeAnterior + PorcentajeActual;
 
-    public decimal SubtotalActual => Cantidad * PrecioUnitario * (PorcentajeActual / 100);
-    public decimal SubtotalAcumulado => Cantidad * PrecioUnitario * (PorcentajeAcumulado / 100);
+    public (decimal SubtotalActual, decimal SubtotalAcumulado) CalculateSubtotals()
+    {
+        var baseAmount = Cantidad * PrecioUnitario;
+        return (
+            baseAmount * (PorcentajeActual / 100m),
+            baseAmount * (PorcentajeAcumulado / 100m)
+        );
+    }
 }
-
