@@ -1,6 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:ElectroObraApp"
+             xmlns:loc="using:ElectroObraApp.Markup"
              xmlns:conv="using:ElectroObraApp.Views.Converters"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="ElectroObraApp.App"
@@ -12,21 +13,20 @@
     </Application.DataTemplates>
 
     <Application.Resources>
-        <conv:PageSizeConverter x:Key="PageSizeConverter" />
-        <conv:StringEqualsConverter x:Key="StringEqualsConverter" />
-        
-        <!-- Theme Colors (Defaults to Oscuro) -->
-        <SolidColorBrush x:Key="MainBackgroundBrush" Color="#1e1e1e" />
-        <SolidColorBrush x:Key="PaneBackgroundBrush" Color="#252526" />
-        <SolidColorBrush x:Key="AccentBrush" Color="#094771" />
-        <SolidColorBrush x:Key="SidebarSeparatorBrush" Color="#3e3e42" />
-        <SolidColorBrush x:Key="MainForegroundBrush" Color="#ffffff" />
-        <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#aaaaaa" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://ElectroObraApp/Styles/Colors.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <conv:PageSizeConverter x:Key="PageSizeConverter" />
+            <conv:StringEqualsConverter x:Key="StringEqualsConverter" />
+        </ResourceDictionary>
     </Application.Resources>
 
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+        <StyleInclude Source="avares://ElectroObraApp/Styles/Controls.axaml"/>
         <materialIcons:MaterialIconStyles />
     </Application.Styles>
 </Application>

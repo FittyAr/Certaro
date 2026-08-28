@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:ElectroObraApp.Markup"
+             xmlns:controls="using:ElectroObraApp.Controls"
+             x:Class="ElectroObraApp.Controls.PaginationControl"
+             x:DataType="controls:PaginationControl">
+    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+        <Button Content="{loc:Translate Key=General.Previous}"
+                Command="{Binding PreviousCommand}" />
+        <TextBlock VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource MutedForegroundBrush}">
+            <Run Text="{Binding CurrentPage}" />
+            <Run Text="/" />
+            <Run Text="{Binding TotalPages}" />
+        </TextBlock>
+        <Button Content="{loc:Translate Key=General.Next}"
+                Command="{Binding NextCommand}" />
+    </StackPanel>
+</UserControl>
