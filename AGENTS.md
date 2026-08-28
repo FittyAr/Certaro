@@ -8,7 +8,7 @@ Construir un sistema robusto, escalable y mantenible para el control operativo y
 ## 🏗️ Arquitectura y Patrones de Diseño
 
 ### Arquitectura Limpia (Clean Architecture)
-El proyecto se dividirá en las siguientes capas para asegurar el desacoplamiento:
+El proyecto se divide en las siguientes capas para asegurar el desacoplamiento:
 
 1.  **Core (Dominio)**:
     *   **Entidades**: Modelos puros del negocio (Movimiento, Cliente, Trabajo, etc.).
@@ -51,19 +51,19 @@ El proyecto se dividirá en las siguientes capas para asegurar el desacoplamient
 *   **Unit Testing**: Cada objeto (Servicio, ViewModel, Helper) DEBE tener su correspondiente proyecto de test unitario usando `xUnit.v3`.
 *   **Logging (Auditoría)**: Todo proceso de negocio, error o cambio de estado DEBE ser registrado usando `Serilog`.
     *   **Fase 1**: Logs en archivos `.log` locales (rotativos).
-    *   **Fase Final**: Migración a base de datos para auditoría centralizada.
+    *   **Fase Final**: Migración a base de datos para auditoría centralizada (`SerilogDbSink` preparado).
     *   **Entornos**: Diferenciación de logs para Desarrollo y Producción.
 *   **Mocking**: Uso de `NSubstitute` para aislar dependencias en tests.
 
 ### 3. Librerías a Utilizar
 *   **UI**: Avalonia 12.0+
-*   **ORM**: EF Core 9+ (SQLite)
+*   **ORM**: EF Core 10+ (SQLite)
 *   **Validación**: FluentValidation
 *   **Mapping**: Mapster
-*   **Logging**: Serilog
+*   **Logging**: Serilog (con enrichers MachineName/ThreadId)
 *   **Reportes**: QuestPDF & ClosedXML
 *   **Iconos**: Material.Icons.Avalonia (Sustituto compatible para Avalonia 12)
-*   **Gráficos**: LiveChartsCore.SkiaSharpView.Avalonia (Para Dashboard Fase 6)
+*   **Gráficos**: LiveChartsCore.SkiaSharpView.Avalonia (Dashboard)
 *   **Notificaciones**: Avalonia.Labs.Notifications
 *   **Testing**: xUnit.v3 & FluentAssertions
 
@@ -91,14 +91,21 @@ El proyecto se dividirá en las siguientes capas para asegurar el desacoplamient
 - [x] Formulario de Alta/Edición de Movimientos con soporte para `DateTimeOffset`.
 
 ### Fase 5: Módulos Avanzados
-- [/] Clientes y Facturación (Alta/Edición de Clientes completada).
-- [/] Empleados y Liquidaciones (Alta/Edición de Empleados completada).
-- [/] Gestión de Trabajos y Rentabilidad (Alta/Edición de Trabajos completada).
+- [x] Clientes y Facturación (CRUD completo).
+- [x] Empleados y Liquidaciones (CRUD completo).
+- [x] Gestión de Trabajos y Rentabilidad (CRUD completo).
 
-### Fase 6: Reportes y Pulido
+### Fase 6: Reportes, DevOps y Pulido
 - [x] Exportación básica a PDF y Excel (Movimientos).
-- [ ] Dashboard de estadísticas.
-- [/] Optimización de UI y UX (Estabilización Avalonia 12).
+- [x] Dashboard de estadísticas.
+- [x] Optimización de UI y UX (Estabilización Avalonia 12).
+- [x] DevOps: `.editorconfig`, `Directory.Build.props`, CI/CD (build-test + release), Dependabot.
+- [x] Serilog centralizado con enrichers y stub de sink DB.
+- [x] Configuración por entorno (`appsettings.Development.json` / `appsettings.Production.json`).
+
+### Fase 7: Documentación
+- [x] Licencia BSL corregida (`LICENSE`).
+- [x] README (EN/ES), AGENTS.md y especificaciones técnicas actualizadas.
 
 ---
 
@@ -113,10 +120,18 @@ El proyecto se dividirá en las siguientes capas para asegurar el desacoplamient
 *   **Problema**: Error de casting entre `System.DateTime` y `System.DateTimeOffset?` en los controles `DatePicker` de Avalonia.
 *   **Solución**: Implementación de propiedades proxy (`FechaOffset`) en los ViewModels para manejar la conversión sin ensuciar las entidades de dominio que prefieren `DateTime`.
 
+### Migración decimal en SQLite
+*   **Problema**: SQLite no soporta `decimal` nativamente.
+*   **Solución**: Conversión EF Core a `long` mediante `DecimalToLongConverter` / `NullableDecimalToLongConverter` en `ApplicationDbContext`, preservando precisión en el dominio.
+
 ### Migración a xUnit.v3
 *   **Cambio**: Actualización de la suite de pruebas a la versión 3 para aprovechar las mejoras en el runner y soporte moderno de .NET.
-*   **Estado**: Todos los tests unitarios (12 actuales) pasan correctamente con la nueva versión.
+*   **Estado**: **174 tests unitarios** pasan correctamente con xUnit.v3, incluyendo servicios HTTP mock (`DollarService`, `HolidayService`) y ViewModels de configuración.
+
+### DevOps (Agosto 2026)
+*   **CI**: GitHub Actions (`build-test.yml`) compila Desktop, ejecuta tests y recolecta cobertura.
+*   **Release**: Workflow manual (`release.yml`) ejecuta `build_installer.ps1`.
+*   **Versionado**: `Directory.Build.props` lee la versión desde el archivo `VERSION`.
 
 ---
 **Nota**: Cada paso de la implementación será validado con sus respectivos tests antes de pasar al siguiente.
-

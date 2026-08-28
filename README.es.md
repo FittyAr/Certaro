@@ -4,7 +4,7 @@
 [![Versión .NET](https://img.shields.io/badge/.NET-10.0-blueviolet.svg)](https://dotnet.microsoft.com/es-es/)
 [![Avalonia UI](https://img.shields.io/badge/Avalonia-12.0%2B-crimson.svg)](https://avaloniaui.net/)
 [![Base de Datos](https://img.shields.io/badge/SQLite-3.x-green.svg)](https://www.sqlite.org/)
-[![Licencia](https://img.shields.io/badge/licencia-BSL--1.1-orange.svg)](LISENSE)
+[![Licencia](https://img.shields.io/badge/licencia-BSL--1.1-orange.svg)](LICENSE)
 
 > **Leer en otros idiomas:**
 > [Read in English :uk:](README.md)
@@ -42,9 +42,9 @@ graph TD
 ```
 
 ### 1. Descripción de Capas
-*   **Core (Dominio):** Lógica pura del negocio, incluyendo Entidades de Dominio ([Movement](file:///d:/GitHub/ElectroObra/ElectroObraApp.Core), [Client](file:///d:/GitHub/ElectroObra/ElectroObraApp.Core), [Job](file:///d:/GitHub/ElectroObra/ElectroObraApp.Core), [Employee](file:///d:/GitHub/ElectroObra/ElectroObraApp.Core)), Enums, Especificaciones e Interfaces de Repositorio.
-*   **Application (Aplicación):** Implementación de casos de uso, DTOs (Objetos de Transferencia de Datos), Interfaces de Servicio, configuraciones de mapeo (con Mapster) y reglas de validación (con FluentValidation).
-*   **Infrastructure (Infraestructura):** Persistencia en base de datos (EF Core con SQLite), gestión de archivos locales, exportaciones externas (PDF/Excel) e implementación de Logging.
+*   **Core (Dominio):** Lógica pura del negocio, incluyendo Entidades de Dominio, Enums, Especificaciones e Interfaces de Repositorio.
+*   **Application (Aplicación):** Implementación de casos de uso, DTOs, Interfaces de Servicio, configuraciones de mapeo (con Mapster) y reglas de validación (con FluentValidation).
+*   **Infrastructure (Infraestructura):** Persistencia en base de datos (EF Core 10 con SQLite), gestión de archivos locales, exportaciones externas (PDF/Excel) e implementación de Logging (Serilog).
 *   **UI (Avalonia):** Interfaz de usuario multiplataforma siguiendo el patrón estricto Model-View-ViewModel (MVVM) con `CommunityToolkit.Mvvm` y soporte de localización (i18n).
 
 ### 2. Patrones de Diseño Aplicados
@@ -57,14 +57,14 @@ graph TD
 
 ## 🛠️ Stack Tecnológico y Librerías Clave
 
-*   **Lenguaje y Runtime:** C# 10 / .NET 10.0
+*   **Lenguaje y Runtime:** C# (latest) / .NET 10.0 (fijado vía `global.json`)
 *   **Framework de UI:** Avalonia UI 12.0+ (utilizando `Material.Icons.Avalonia` y `LiveChartsCore`)
 *   **ORM:** Entity Framework Core 10.0+ (Proveedor SQLite)
 *   **Validación:** FluentValidation
 *   **Mapeo de Objetos:** Mapster
-*   **Logging:** Serilog (configurado con archivos locales rotativos y salida en consola)
+*   **Logging:** Serilog (archivos rotativos, consola, enrichers MachineName/ThreadId)
 *   **Reportes:** QuestPDF (generación de PDF) y ClosedXML (planillas de Excel)
-*   **Testing:** xUnit.v3, FluentAssertions y NSubstitute (para mocks en tests unitarios)
+*   **Testing:** xUnit.v3 (174 tests), FluentAssertions y NSubstitute
 
 ---
 
@@ -72,6 +72,7 @@ graph TD
 
 ```
 ElectroObra/
+├── .github/workflows/                 # CI/CD (build-test, release)
 ├── Docs/                              # Documentación técnica y funcional
 ├── ElectroObraApp/                    # Vistas y recursos compartidos de UI (Avalonia)
 ├── ElectroObraApp.Android/            # Proyecto específico para Android
@@ -81,9 +82,11 @@ ElectroObra/
 ├── ElectroObraApp.Desktop/            # Lanzador para Escritorio (Windows, macOS, Linux)
 ├── ElectroObraApp.Infrastructure/     # DbContext de EF Core, Repositorios y Exportación
 ├── ElectroObraApp.iOS/                # Proyecto específico para iOS
-├── ElectroObraApp.Tests/              # Suite de pruebas unitarias (xUnit.v3)
+├── ElectroObraApp.Tests/              # Suite de pruebas unitarias (xUnit.v3, 174 tests)
+├── Directory.Build.props              # Propiedades MSBuild compartidas (versión desde VERSION)
 ├── Directory.Packages.props           # Configuración centralizada de paquetes NuGet
-├── LISENSE                            # Información de licencia (BSL 1.1)
+├── global.json                        # Pin del SDK .NET (10.0.400+)
+├── LICENSE                            # Información de licencia (BSL 1.1)
 └── VERSION                            # Versión actual de la aplicación
 ```
 
@@ -95,22 +98,37 @@ ElectroObra/
 *   **[x] Fase 2: Dominio y Persistencia** — Entidades de flujo de caja, DbContext SQLite, repositorios base y migraciones iniciales.
 *   **[x] Fase 3: Lógica de Aplicación** — DTOs, mapeos de Mapster y reglas de validación de negocio con cobertura de tests unitarios.
 *   **[x] Fase 4: UI Base** — Maquetación de navegación principal, DataGrid de movimientos y formularios con fecha proxy estabilizada.
-*   **[/] Fase 5: Módulos Avanzados** — Clientes y Facturación (CRUD completado), Empleados y Liquidación (CRUD completado), Trabajos y Rentabilidad de Obras (CRUD completado).
-*   **[/] Fase 6: Reportes y Pulido** — Exportaciones básicas a PDF y Excel (Completadas), gráficos de Dashboard y optimización fina de UI en Avalonia 12.
+*   **[x] Fase 5: Módulos Avanzados** — Clientes y Facturación, Empleados y Liquidación, Trabajos y Rentabilidad (CRUD completado).
+*   **[x] Fase 6: Reportes, DevOps y Pulido** — Dashboard, exportaciones PDF/Excel, CI/CD, configuración por entorno y enrichers Serilog.
+*   **[x] Fase 7: Documentación** — README, AGENTS.md, especificaciones técnicas y licencia BSL.
 
 ---
 
 ## ⚙️ Primeros Pasos
 
 ### Requisitos Previos
-*   [.NET 10 SDK](https://dotnet.microsoft.com/download)
+*   [.NET 10 SDK](https://dotnet.microsoft.com/download) — versión fijada en [`global.json`](global.json) (`10.0.400`, rollForward `latestFeature`)
 *   Un IDE de desarrollo: [JetBrains Rider](https://www.jetbrains.com/rider/), [Visual Studio 2022](https://visualstudio.microsoft.com/) o [VS Code](https://code.visualstudio.com/) (con C# Dev Kit).
 
+### Workloads opcionales (targets móvil / navegador)
+Instalar solo si vas a compilar targets distintos al escritorio:
+
+```bash
+# Android
+dotnet workload install android
+
+# iOS (solo macOS)
+dotnet workload install ios
+
+# Navegador (WebAssembly)
+dotnet workload install wasm-tools
+```
+
 ### Restaurar y Compilar
-Restaura los paquetes NuGet y compila la solución completa:
+Restaura los paquetes NuGet y compila la solución:
 ```bash
 dotnet restore
-dotnet build
+dotnet build ElectroObraApp.Desktop/ElectroObraApp.Desktop.csproj
 ```
 
 ### Ejecutar la Aplicación (Escritorio)
@@ -119,11 +137,31 @@ Para iniciar la aplicación de escritorio:
 dotnet run --project ElectroObraApp.Desktop
 ```
 
-### Ejecutar Pruebas Unitarias
-Para correr la suite de pruebas automatizadas con xUnit.v3:
+Para datos de seed en desarrollo, define el entorno antes de ejecutar:
 ```bash
-dotnet test
+# Windows PowerShell
+$env:DOTNET_ENVIRONMENT = "Development"
+dotnet run --project ElectroObraApp.Desktop
+
+# Linux/macOS
+DOTNET_ENVIRONMENT=Development dotnet run --project ElectroObraApp.Desktop
 ```
+
+`appsettings.Development.json` habilita `SeedEnabled=true`; producción usa `SeedEnabled=false`.
+
+### Ejecutar Pruebas Unitarias
+Para correr la suite de pruebas automatizadas con xUnit.v3 (174 tests):
+```bash
+dotnet test ElectroObraApp.Tests/ElectroObraApp.Tests.csproj
+```
+
+Con cobertura de código:
+```bash
+dotnet test ElectroObraApp.Tests/ElectroObraApp.Tests.csproj --collect:"XPlat Code Coverage"
+```
+
+### Almacenamiento decimal en SQLite
+Los campos monetarios usan `decimal` en el dominio. EF Core los persiste como `long` mediante conversores personalizados (`DecimalToLongConverter`), reemplazando el antiguo mapeo a `double` y evitando errores de redondeo.
 
 ---
 
@@ -131,8 +169,8 @@ dotnet test
 
 Este proyecto está bajo la licencia **Business Source License 1.1 (BSL 1.1)**.
 
-*   **Licenciante:** Flota-HAS Project Owners (FittyAr)
+*   **Licenciante:** ElectroObraApp Project Owners (FittyAr)
 *   **Fecha de Cambio:** 6 de Julio de 2030
 *   **Licencia de Cambio:** GNU General Public License v2.0 or later (GPL-2.0-or-later)
 
-Para más detalles, consulta el archivo [LISENSE](file:///d:/GitHub/ElectroObra/LISENSE).
+Para más detalles, consulta el archivo [LICENSE](LICENSE).

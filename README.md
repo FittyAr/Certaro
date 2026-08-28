@@ -4,7 +4,7 @@
 [![.NET Version](https://img.shields.io/badge/.NET-10.0-blueviolet.svg)](https://dotnet.microsoft.com/en-us/)
 [![Avalonia UI](https://img.shields.io/badge/Avalonia-12.0%2B-crimson.svg)](https://avaloniaui.net/)
 [![Database](https://img.shields.io/badge/SQLite-3.x-green.svg)](https://www.sqlite.org/)
-[![License](https://img.shields.io/badge/license-BSL--1.1-orange.svg)](LISENSE)
+[![License](https://img.shields.io/badge/license-BSL--1.1-orange.svg)](LICENSE)
 
 > **Read in other languages:**
 > [Leer en Español :spain:](README.es.md)
@@ -42,9 +42,9 @@ graph TD
 ```
 
 ### 1. Layers Description
-*   **Core (Domain):** Pure business logic, including Domain Entities ([Movement](file:///d:/GitHub/ElectroObra/ElectroObraApp.Core), [Client](file:///d:/GitHub/ElectroObra/ElectroObraApp.Core), [Job](file:///d:/GitHub/ElectroObra/ElectroObraApp.Core), [Employee](file:///d:/GitHub/ElectroObra/ElectroObraApp.Core)), Enums, Specifications, and Repository Interfaces.
-*   **Application:** Use cases implementation, DTOs (Data Transfer Objects), Service Interfaces, Mapping configurations (via Mapster), and validation rules (via FluentValidation).
-*   **Infrastructure:** Database persistence (EF Core with SQLite), file system management, external exports (PDF/Excel), and Logging implementation.
+*   **Core (Domain):** Pure business logic, including Domain Entities, Enums, Specifications, and Repository Interfaces.
+*   **Application:** Use cases implementation, DTOs, Service Interfaces, Mapping configurations (via Mapster), and validation rules (via FluentValidation).
+*   **Infrastructure:** Database persistence (EF Core 10 with SQLite), file system management, external exports (PDF/Excel), and Logging (Serilog).
 *   **UI (Avalonia):** Cross-platform user interface using the strict Model-View-ViewModel (MVVM) pattern with `CommunityToolkit.Mvvm` and localization support.
 
 ### 2. Applied Design Patterns
@@ -57,14 +57,14 @@ graph TD
 
 ## 🛠️ Tech Stack & Key Libraries
 
-*   **Language & Runtime:** C# 10 / .NET 10.0
+*   **Language & Runtime:** C# (latest) / .NET 10.0 (pinned via `global.json`)
 *   **UI Framework:** Avalonia UI 12.0+ (using `Material.Icons.Avalonia` and `LiveChartsCore`)
 *   **ORM:** Entity Framework Core 10.0+ (SQLite provider)
 *   **Validation:** FluentValidation
 *   **Object Mapping:** Mapster
-*   **Logging:** Serilog (configured for rotative local files and console output)
+*   **Logging:** Serilog (rotating local files, console, MachineName/ThreadId enrichers)
 *   **Reporting:** QuestPDF (PDF generation) and ClosedXML (Excel spreadsheets)
-*   **Testing:** xUnit.v3, FluentAssertions, and NSubstitute (for mocking)
+*   **Testing:** xUnit.v3 (174 tests), FluentAssertions, and NSubstitute
 
 ---
 
@@ -72,6 +72,7 @@ graph TD
 
 ```
 ElectroObra/
+├── .github/workflows/                 # CI/CD (build-test, release)
 ├── Docs/                              # Non-technical and technical documentation
 ├── ElectroObraApp/                    # Shared UI views and resources (Avalonia)
 ├── ElectroObraApp.Android/            # Android target project
@@ -81,9 +82,12 @@ ElectroObra/
 ├── ElectroObraApp.Desktop/            # Desktop target launcher (Windows, macOS, Linux)
 ├── ElectroObraApp.Infrastructure/     # EF Core DbContext, Repositories, and Exports
 ├── ElectroObraApp.iOS/                # iOS target project
-├── ElectroObraApp.Tests/              # Unit testing suite (xUnit.v3)
+├── ElectroObraApp.Tests/              # Unit testing suite (xUnit.v3, 174 tests)
+├── Directory.Build.props              # Shared MSBuild properties (version from VERSION)
 ├── Directory.Packages.props           # Central Package Management configuration
-├── LISENSE                            # License information (BSL 1.1)
+├── Directory.Build.props              # Version sync from VERSION file
+├── global.json                        # .NET SDK pin (10.0.400+)
+├── LICENSE                            # License information (BSL 1.1)
 └── VERSION                            # Current application version
 ```
 
@@ -95,22 +99,37 @@ ElectroObra/
 *   **[x] Phase 2: Domain & Persistence** — Cash flow entities, SQLite DbContext, Repository Base, and migrations.
 *   **[x] Phase 3: Application Logic** — DTOs, Mapster mappings, and business validation rules with extensive unit testing.
 *   **[x] Phase 4: Base UI** — Main navigation layout, transactions DataGrid view, and forms with date proxy stabilization.
-*   **[/] Phase 5: Advanced Modules** — Clients/Invoicing (CRUD done), Employees/Payroll (CRUD done), Jobs & Project Profitability (CRUD done).
-*   **[/] Phase 6: Reports & Polish** — Basic PDF and Excel exports (Done), Dashboard statistics, and Avalonia 12 UI optimization.
+*   **[x] Phase 5: Advanced Modules** — Clients/Invoicing, Employees/Payroll, Jobs & Project Profitability (CRUD complete).
+*   **[x] Phase 6: Reports, DevOps & Polish** — Dashboard, PDF/Excel exports, CI/CD, environment config, Serilog enrichers.
+*   **[x] Phase 7: Documentation** — README, AGENTS.md, technical specs, and BSL license.
 
 ---
 
 ## ⚙️ Getting Started
 
 ### Prerequisites
-*   [.NET 10 SDK](https://dotnet.microsoft.com/download)
+*   [.NET 10 SDK](https://dotnet.microsoft.com/download) — version pinned in [`global.json`](global.json) (`10.0.400`, rollForward `latestFeature`)
 *   An IDE of your choice: [JetBrains Rider](https://www.jetbrains.com/rider/), [Visual Studio 2022](https://visualstudio.microsoft.com/), or [VS Code](https://code.visualstudio.com/) (with C# Dev Kit).
+
+### Optional workloads (mobile / browser targets)
+Install only if you plan to build non-desktop targets:
+
+```bash
+# Android
+dotnet workload install android
+
+# iOS (macOS only)
+dotnet workload install ios
+
+# Browser (WebAssembly)
+dotnet workload install wasm-tools
+```
 
 ### Restore & Build
 Restore NuGet packages and compile the solution:
 ```bash
 dotnet restore
-dotnet build
+dotnet build ElectroObraApp.Desktop/ElectroObraApp.Desktop.csproj
 ```
 
 ### Run the Application (Desktop)
@@ -119,11 +138,31 @@ To launch the desktop application, run:
 dotnet run --project ElectroObraApp.Desktop
 ```
 
-### Run Unit Tests
-To run the automated xUnit.v3 test suite, execute:
+For development seed data, set the environment before running:
 ```bash
-dotnet test
+# Windows PowerShell
+$env:DOTNET_ENVIRONMENT = "Development"
+dotnet run --project ElectroObraApp.Desktop
+
+# Linux/macOS
+DOTNET_ENVIRONMENT=Development dotnet run --project ElectroObraApp.Desktop
 ```
+
+`appsettings.Development.json` enables `SeedEnabled=true`; production uses `SeedEnabled=false`.
+
+### Run Unit Tests
+To run the automated xUnit.v3 test suite (174 tests), execute:
+```bash
+dotnet test ElectroObraApp.Tests/ElectroObraApp.Tests.csproj
+```
+
+With code coverage:
+```bash
+dotnet test ElectroObraApp.Tests/ElectroObraApp.Tests.csproj --collect:"XPlat Code Coverage"
+```
+
+### Decimal storage in SQLite
+Monetary fields use `decimal` in the domain. EF Core persists them as `long` via custom value converters (`DecimalToLongConverter`), replacing the legacy `double` mapping and avoiding floating-point rounding errors.
 
 ---
 
@@ -131,8 +170,8 @@ dotnet test
 
 This project is licensed under the **Business Source License 1.1 (BSL 1.1)**. 
 
-*   **Licensor:** Flota-HAS Project Owners (FittyAr)
+*   **Licensor:** ElectroObraApp Project Owners (FittyAr)
 *   **Change Date:** July 6, 2030
 *   **Change License:** GNU General Public License v2.0 or later (GPL-2.0-or-later)
 
-For details, please refer to the [LISENSE](file:///d:/GitHub/ElectroObra/LISENSE) file.
+For details, please refer to the [LICENSE](LICENSE) file.

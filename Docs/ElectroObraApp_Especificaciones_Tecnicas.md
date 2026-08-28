@@ -1,8 +1,8 @@
-# Proyecto Pablito: Especificaciones Técnicas
+# ElectroObraApp: Especificaciones Técnicas
 ## Documentación de Arquitectura e Implementación
 
 ### 1. Arquitectura del Sistema
-Se implementará una **Clean Architecture (Arquitectura Limpia)** simplificada para garantizar el desacoplamiento y la facilidad de prueba.
+Se implementa una **Clean Architecture (Arquitectura Limpia)** simplificada para garantizar el desacoplamiento y la facilidad de prueba.
 
 *   **Core**: Entidades de dominio y reglas de negocio puras.
 *   **Application**: Casos de uso, DTOs y lógica de orquestación.
@@ -10,14 +10,15 @@ Se implementará una **Clean Architecture (Arquitectura Limpia)** simplificada p
 *   **UI (Avalonia)**: Interfaz de usuario multiplataforma siguiendo el patrón **MVVM**.
 
 ### 2. Stack Tecnológico
-*   **Framework**: .NET 10 (C#)
-*   **UI**: Avalonia UI 11+ (con CommunityToolkit.Mvvm)
+*   **Framework**: .NET 10 (C#), versionado vía `global.json` (SDK 10.0.400+)
+*   **UI**: Avalonia UI 12.0+ (con CommunityToolkit.Mvvm)
 *   **Base de Datos**: SQLite (Local)
-*   **ORM**: Entity Framework Core 9+
+*   **ORM**: Entity Framework Core 10+
 *   **Validaciones**: FluentValidation
-*   **Logging**: Serilog (Sinks: Console, File)
+*   **Logging**: Serilog (Sinks: Console, File; enrichers: MachineName, ThreadId; stub DB sink preparado)
 *   **Mapeo**: Mapster (para conversión entre Entidades y DTOs)
 *   **Reportes**: QuestPDF (PDF), ClosedXML (Excel)
+*   **Testing**: xUnit.v3, FluentAssertions, NSubstitute (174 tests)
 
 ### 3. Modelo de Datos (Entidades)
 El núcleo del sistema se basa en las siguientes entidades:
@@ -47,16 +48,17 @@ erDiagram
 ```
 
 ### 5. Plan de Implementación (Fases)
-1.  **Fase 0 - Setup**: Estructura de solución y proyectos .NET.
-2.  **Fase 1 - Núcleo**: Movimientos y categorías.
-3.  **Fase 2 - Clientes/Facturación**: CRUD de clientes y control de deudas.
-4.  **Fase 3 - Empleados**: Liquidación y gestión de faltas.
-5.  **Fase 4 - Trabajos**: Rentabilidad por proyecto.
-6.  **Fase 5 - Dashboard**: Vista general y alertas.
-7.  **Fase 6 - Extras**: Adjuntos y multi-moneda.
-8.  **Fase 7 - Exportaciones**: PDF, Excel y CSV.
+1.  **Fase 1 - Cimientos**: Estructura de solución, DI, localización y Serilog.
+2.  **Fase 2 - Dominio/Persistencia**: Movimientos, categorías, SQLite y migraciones.
+3.  **Fase 3 - Aplicación**: DTOs, servicios, validaciones y tests.
+4.  **Fase 4 - UI Base**: Navegación, DataGrid de movimientos y formularios.
+5.  **Fase 5 - Módulos Avanzados**: Clientes, facturación, empleados, liquidaciones y trabajos.
+6.  **Fase 6 - Reportes y DevOps**: Dashboard, exportaciones, CI/CD y configuración por entorno.
+7.  **Fase 7 - Documentación**: README, licencia BSL y especificaciones técnicas.
 
 ### 6. Consideraciones de Infraestructura
-*   **SQLite**: Se utilizarán conversiones de tipo para manejar `decimal` como `double` debido a limitaciones nativas de SQLite.
+*   **SQLite / decimal**: Los campos `decimal` se persisten como `long` mediante conversores EF Core (`DecimalToLongConverter`), evitando pérdida de precisión frente al antiguo mapeo a `double`.
 *   **Migrations**: Uso de EF Core Migrations desde el inicio para evolución del esquema.
 *   **Dependency Injection**: Uso extensivo del contenedor de .NET para servicios y repositorios.
+*   **Configuración por entorno**: `appsettings.Development.json` (`SeedEnabled=true`) y `appsettings.Production.json` (`SeedEnabled=false`), seleccionados vía `DOTNET_ENVIRONMENT`.
+*   **DevOps**: `.editorconfig`, `Directory.Build.props` (versión desde `VERSION`), GitHub Actions y Dependabot para NuGet.
