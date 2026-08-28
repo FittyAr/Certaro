@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="Exists('$(MSBuildThisFileDirectory)VERSION')">
+    <VersionFileContent>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)VERSION').Trim())</VersionFileContent>
+    <Version>$(VersionFileContent)</Version>
+    <AssemblyVersion>$(VersionFileContent)</AssemblyVersion>
+    <FileVersion>$(VersionFileContent)</FileVersion>
+    <InformationalVersion>$(VersionFileContent)</InformationalVersion>
+  </PropertyGroup>
+</Project>

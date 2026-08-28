@@ -6,16 +6,15 @@
   <ItemGroup>
     <!-- Avalonia packages -->
     <!-- Important: keep version in sync! -->
-    <PackageVersion Include="Avalonia" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.0.2" />
+    <PackageVersion Include="Avalonia" Version="12.1.0" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.0" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.1.0" />
     <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1" />
-    <PackageVersion Include="Avalonia.Desktop" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.iOS" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.Browser" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.Android" Version="12.0.2" />
-    <PackageVersion Include="Avalonia.Controls.DataGrid" Version="12.0.0" />
-    <PackageVersion Include="Avalonia.Svg.Skia" Version="11.3.0" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.1.0" />
+    <PackageVersion Include="Avalonia.iOS" Version="12.1.0" />
+    <PackageVersion Include="Avalonia.Browser" Version="12.1.0" />
+    <PackageVersion Include="Avalonia.Android" Version="12.1.0" />
+    <PackageVersion Include="Avalonia.Controls.DataGrid" Version="12.1.0" />
     <PackageVersion Include="Material.Icons.Avalonia" Version="3.0.2" />
     <PackageVersion Include="LiveChartsCore" Version="2.1.0-dev-365" />
     <PackageVersion Include="LiveChartsCore.SkiaSharpView" Version="2.1.0-dev-365" />
@@ -23,7 +22,7 @@
     <PackageVersion Include="Avalonia.Labs.Notifications" Version="12.0.2" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.2" />
-    <PackageVersion Include="SkiaSharp" Version="3.119.4-preview.1.1" />
+    <PackageVersion Include="SkiaSharp" Version="3.119.4" />
     <PackageVersion Include="Tmds.DBus.Protocol" Version="0.92.0" />
     <!-- EF Core -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.7" />
@@ -40,11 +39,13 @@
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="Serilog.Settings.Configuration" Version="10.0.0" />
     <PackageVersion Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <!-- Reports -->
     <PackageVersion Include="QuestPDF" Version="2026.2.4" />
     <PackageVersion Include="ClosedXML" Version="0.105.0" />
     <PackageVersion Include="NPOI" Version="2.8.0" />
-    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.7" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.11" />
     <!-- Configuration -->
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.7" />
@@ -53,7 +54,6 @@
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.7" />
     <!-- Testing -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
-    <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="FluentAssertions" Version="8.9.0" />
