@@ -26,9 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Assets\**">
+    <None Include="..\ElectroObraApp\Assets\i18n\*.json" Link="Assets\i18n\%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 </Project>
-

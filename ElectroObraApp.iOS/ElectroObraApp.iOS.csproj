@@ -13,5 +13,12 @@
   <ItemGroup>
     <ProjectReference Include="..\ElectroObraApp\ElectroObraApp.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ElectroObraApp.Desktop\ServiceConfiguration.cs" Link="ServiceConfiguration.cs" />
+    <None Include="..\ElectroObraApp\Assets\i18n\*.json" Link="Assets\i18n\%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
 

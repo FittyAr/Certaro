@@ -4,6 +4,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.iOS;
 using Avalonia.Media;
+using ElectroObraApp.Composition;
+using ElectroObraApp.Desktop;
 
 namespace ElectroObraApp.iOS;
 
@@ -15,6 +17,11 @@ namespace ElectroObraApp.iOS;
 public partial class AppDelegate : AvaloniaAppDelegate<App>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
+    static AppDelegate()
+    {
+        ServiceConfigurationHost.ConfigureServices = ServiceConfiguration.ConfigureServices;
+    }
+
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
         return base.CustomizeAppBuilder(builder)
