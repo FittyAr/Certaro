@@ -5,6 +5,8 @@ using FluentAssertions;
 using NSubstitute;
 using ElectroObraApp.Application.DTOs;
 using ElectroObraApp.Application.Services;
+using ElectroObraApp.Application.Validators;
+using ElectroObraApp.Core.Common;
 using ElectroObraApp.Core.Entities;
 using ElectroObraApp.Core.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -28,53 +30,79 @@ public class MovimientoServiceTests
         _uow.Repository<Movimiento>().Returns(_repo);
         _uow.Movimientos.Returns(_movimientoRepo);
         _logger = Substitute.For<ILogger<MovimientoService>>();
-        _service = new MovimientoService(_uow, _logger);
+        _service = new MovimientoService(_uow, _logger, new MovimientoValidator());
     }
+
+    private static MovimientoDto ValidDto() => new()
+    {
+        Concepto = "Test",
+        Monto = 100,
+        Cantidad = 1,
+        TipoMovimientoId = Guid.NewGuid()
+    };
 
     [Fact]
     public async Task GetAllAsync_ShouldReturnList()
     {
-        // Arrange
         var list = new List<Movimiento> { new() { Concepto = "Sueldo" } };
         _movimientoRepo.GetAllWithIncludesAsync().Returns(list);
 
-        // Act
         var result = await _service.GetAllAsync();
 
-        // Assert
         result.Should().HaveCount(1);
         result.First().Concepto.Should().Be("Sueldo");
     }
 
     [Fact]
-    public async Task CreateAsync_ShouldReturnTrue_WhenSaveIsSuccessful()
+    public async Task GetPagedAsync_ShouldReturnPagedResult()
     {
-        // Arrange
-        var dto = new MovimientoDto { Concepto = "Test", Monto = 100, CategoriaId = Guid.NewGuid() };
+        var paged = new PagedResult<Movimiento>
+        {
+            Items = new List<Movimiento> { new() { Concepto = "Filtrado" } },
+            TotalCount = 1,
+            PageNumber = 1,
+            PageSize = 10
+        };
+        _movimientoRepo.GetPagedAsync(Arg.Any<ElectroObraApp.Core.Specifications.ISpecification<Movimiento>>()).Returns(paged);
+
+        var result = await _service.GetPagedAsync(new MovimientoFilterDto { PageNumber = 1, PageSize = 10 });
+
+        result.Items.Should().HaveCount(1);
+        result.Items.First().Concepto.Should().Be("Filtrado");
+        result.TotalCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task CreateAsync_ShouldReturnSuccess_WhenSaveIsSuccessful()
+    {
         _uow.SaveChangesAsync().Returns(1);
 
-        // Act
-        var result = await _service.CreateAsync(dto);
+        var result = await _service.CreateAsync(ValidDto());
 
-        // Assert
-        result.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
         await _repo.Received(1).AddAsync(Arg.Any<Movimiento>());
         await _uow.Received(1).SaveChangesAsync();
     }
 
     [Fact]
-    public async Task DeleteAsync_ShouldReturnFalse_WhenEntityDoesNotExist()
+    public async Task CreateAsync_ShouldReturnFailure_WhenValidationFails()
     {
-        // Arrange
+        var result = await _service.CreateAsync(new MovimientoDto());
+
+        result.IsSuccess.Should().BeFalse();
+        result.Errors.Should().NotBeEmpty();
+        await _repo.DidNotReceive().AddAsync(Arg.Any<Movimiento>());
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ShouldReturnFailure_WhenEntityDoesNotExist()
+    {
         var id = Guid.NewGuid();
         _repo.GetByIdAsync(id).Returns((Movimiento?)null);
 
-        // Act
         var result = await _service.DeleteAsync(id);
 
-        // Assert
-        result.Should().BeFalse();
+        result.IsSuccess.Should().BeFalse();
         _repo.DidNotReceive().Remove(Arg.Any<Movimiento>());
     }
 }
-

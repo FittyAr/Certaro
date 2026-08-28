@@ -1,10 +1,6 @@
-using System;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using ElectroObraApp.Core.Entities;
-using ElectroObraApp.Infrastructure.Data;
 using ElectroObraApp.Infrastructure.Repositories;
 using Xunit;
 
@@ -12,34 +8,16 @@ namespace ElectroObraApp.Tests.Infrastructure.Repositories;
 
 public class RepositoryTests
 {
-    private async Task<ApplicationDbContext> GetDbContextAsync()
-    {
-        var connection = new SqliteConnection("DataSource=:memory:");
-        await connection.OpenAsync();
-
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlite(connection)
-            .Options;
-
-        var context = new ApplicationDbContext(options);
-        await context.Database.EnsureCreatedAsync();
-        
-        return context;
-    }
-
     [Fact]
     public async Task AddAsync_ShouldAddEntityToDatabase()
     {
-        // Arrange
-        using var context = await GetDbContextAsync();
+        using var context = await RepositoryTestHelper.CreateInMemoryContextAsync();
         var repository = new Repository<Categoria>(context);
         var categoria = new Categoria { Nombre = "Nueva" };
 
-        // Act
         await repository.AddAsync(categoria);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(RepositoryTestHelper.CancellationToken);
 
-        // Assert
         var result = await repository.GetByIdAsync(categoria.Id);
         result.Should().NotBeNull();
         result!.Nombre.Should().Be("Nueva");
@@ -48,19 +26,16 @@ public class RepositoryTests
     [Fact]
     public async Task Update_ShouldModifyExistingEntity()
     {
-        // Arrange
-        using var context = await GetDbContextAsync();
+        using var context = await RepositoryTestHelper.CreateInMemoryContextAsync();
         var repository = new Repository<Categoria>(context);
         var categoria = new Categoria { Nombre = "Original" };
         await repository.AddAsync(categoria);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(RepositoryTestHelper.CancellationToken);
 
-        // Act
         categoria.Nombre = "Modificada";
         repository.Update(categoria);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(RepositoryTestHelper.CancellationToken);
 
-        // Assert
         var result = await repository.GetByIdAsync(categoria.Id);
         result!.Nombre.Should().Be("Modificada");
     }
@@ -68,20 +43,16 @@ public class RepositoryTests
     [Fact]
     public async Task Remove_ShouldRemoveEntity()
     {
-        // Arrange
-        using var context = await GetDbContextAsync();
+        using var context = await RepositoryTestHelper.CreateInMemoryContextAsync();
         var repository = new Repository<Categoria>(context);
         var categoria = new Categoria { Nombre = "ABorrar" };
         await repository.AddAsync(categoria);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(RepositoryTestHelper.CancellationToken);
 
-        // Act
         repository.Remove(categoria);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(RepositoryTestHelper.CancellationToken);
 
-        // Assert
         var result = await repository.GetByIdAsync(categoria.Id);
         result.Should().BeNull();
     }
 }
-

@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ElectroObraApp.Application.DTOs;
@@ -28,20 +31,20 @@ public class TrabajoServiceTests
         _uow.Repository<Trabajo>().Returns(_repo);
         _uow.Trabajos.Returns(_trabajoRepo);
         _logger = Substitute.For<ILogger<TrabajoService>>();
-        _service = new TrabajoService(_uow, _logger);
+        var validator = Substitute.For<IValidator<TrabajoDto>>();
+        validator.ValidateAsync(Arg.Any<TrabajoDto>(), Arg.Any<CancellationToken>())
+            .Returns(new FluentValidation.Results.ValidationResult());
+        _service = new TrabajoService(_uow, _logger, validator);
     }
 
     [Fact]
     public async Task GetAllAsync_ShouldReturnList()
     {
-        // Arrange
         var list = new List<Trabajo> { new() { Descripcion = "Trabajo 1" } };
         _trabajoRepo.GetAllWithDeepLoadAsync().Returns(list);
 
-        // Act
         var result = await _service.GetAllAsync();
 
-        // Assert
         result.Should().HaveCount(1);
         result.First().Descripcion.Should().Be("Trabajo 1");
     }
@@ -49,15 +52,12 @@ public class TrabajoServiceTests
     [Fact]
     public async Task GetByIdAsync_ShouldReturnDto_WhenFound()
     {
-        // Arrange
         var id = Guid.NewGuid();
         var entity = new Trabajo { Id = id, Descripcion = "Test" };
         _trabajoRepo.GetByIdWithDeepLoadAsync(id).Returns(entity);
 
-        // Act
         var result = await _service.GetByIdAsync(id);
 
-        // Assert
         result.Should().NotBeNull();
         result!.Descripcion.Should().Be("Test");
     }
@@ -65,16 +65,12 @@ public class TrabajoServiceTests
     [Fact]
     public async Task CreateAsync_ShouldReturnTrue_WhenSuccess()
     {
-        // Arrange
-        var dto = new TrabajoDto { Descripcion = "Nuevo" };
+        var dto = new TrabajoDto { Descripcion = "Nuevo", ClienteId = Guid.NewGuid() };
         _uow.SaveChangesAsync().Returns(1);
 
-        // Act
         var result = await _service.CreateAsync(dto);
 
-        // Assert
-        result.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
         await _repo.Received(1).AddAsync(Arg.Any<Trabajo>());
     }
 }
-

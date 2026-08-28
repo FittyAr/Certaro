@@ -4,8 +4,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using ElectroObraApp.Application.DTOs;
 using ElectroObraApp.Application.Interfaces;
 using ElectroObraApp.Application.Services;
 using ElectroObraApp.Core.Entities;
@@ -19,6 +21,7 @@ public class LiquidacionServiceTests
     private readonly IUnitOfWork _uow;
     private readonly ILogger<LiquidacionService> _logger;
     private readonly IUserSettingsService _settingsService;
+    private readonly IHolidayService _holidayService;
     private readonly LiquidacionService _service;
 
     public LiquidacionServiceTests()
@@ -26,17 +29,18 @@ public class LiquidacionServiceTests
         _uow = Substitute.For<IUnitOfWork>();
         _logger = Substitute.For<ILogger<LiquidacionService>>();
         _settingsService = Substitute.For<IUserSettingsService>();
-        _service = new LiquidacionService(_uow, _logger, _settingsService);
+        _holidayService = Substitute.For<IHolidayService>();
+        _holidayService.GetHolidaysAsync(Arg.Any<int>()).Returns(new List<HolidayModel>());
+        var validator = Substitute.For<IValidator<LiquidacionDto>>();
+        validator.ValidateAsync(Arg.Any<LiquidacionDto>(), Arg.Any<CancellationToken>())
+            .Returns(new FluentValidation.Results.ValidationResult());
+        _service = new LiquidacionService(_uow, _logger, validator, _settingsService, _holidayService);
     }
 
     [Fact]
     public async Task SugerirLiquidacionAsync_ShouldCalculateCorrectTotals_ExcludingWeekends()
     {
-        // Arrange
         var empleadoId = Guid.NewGuid();
-        // 2026-05-01 (Viernes) al 2026-05-15 (Viernes)
-        // Dias: 1(V), 2(S), 3(D), 4(L), 5(M), 6(M), 7(J), 8(V), 9(S), 10(D), 11(L), 12(M), 13(M), 14(J), 15(V)
-        // Habiles (L-V): 1, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15 => Total 11 días
         var inicio = new DateTime(2026, 5, 1);
         var fin = new DateTime(2026, 5, 15);
         var tarifaDiaria = 40000m;
@@ -54,60 +58,49 @@ public class LiquidacionServiceTests
         _uow.Movimientos.FindAsync(Arg.Any<Expression<Func<Movimiento, bool>>>())
             .Returns(adelantos);
 
-        // Act
         var result = await _service.SugerirLiquidacionAsync(empleadoId, inicio, fin, 0);
 
-        // Assert
         result.Should().NotBeNull();
         result.EmpleadoId.Should().Be(empleadoId);
         result.DiasTrabajados.Should().Be(11);
-        result.TotalBruto.Should().Be(11 * tarifaDiaria); // 11 * 40000 = 440000
-        result.TotalAdelantos.Should().Be(80000); // 50000 + 30000
-        result.TotalNeto.Should().Be(360000); // 440000 - 80000
+        result.TotalBruto.Should().Be(11 * tarifaDiaria);
+        result.TotalAdelantos.Should().Be(80000);
+        result.TotalNeto.Should().Be(360000);
     }
+
     [Fact]
     public async Task GetAllAsync_ShouldReturnList()
     {
-        // Arrange
         var list = new List<Liquidacion> { new() { Empleado = new Empleado { Nombre = "Juan" } } };
         _uow.Liquidaciones.GetAllWithEmpleadoAsync().Returns(list);
 
-        // Act
         var result = await _service.GetAllAsync();
 
-        // Assert
         result.Should().HaveCount(1);
     }
 
     [Fact]
     public async Task CreateAsync_ShouldReturnDto_WhenSuccess()
     {
-        // Arrange
-        var liquidacion = new Liquidacion { Id = Guid.NewGuid() };
         _uow.SaveChangesAsync().Returns(1);
 
-        // Act
-        var result = await _service.CreateAsync(new ElectroObraApp.Application.DTOs.LiquidacionDto());
+        var result = await _service.CreateAsync(new LiquidacionDto());
 
-        // Assert
-        result.Should().NotBeNull();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
     }
 
     [Fact]
     public async Task Sugerir_ShouldHandleNoAdelantos()
     {
-        // Arrange
         var empleadoId = Guid.NewGuid();
         var empleado = new Empleado { Id = empleadoId, TarifaDiaria = 1000 };
         _uow.Repository<Empleado>().GetByIdAsync(empleadoId).Returns(empleado);
         _uow.Movimientos.FindAsync(Arg.Any<Expression<Func<Movimiento, bool>>>()).Returns(new List<Movimiento>());
 
-        // Act
         var result = await _service.SugerirLiquidacionAsync(empleadoId, DateTime.Now, DateTime.Now, 1);
 
-        // Assert
         result.TotalAdelantos.Should().Be(0);
         result.TotalNeto.Should().Be(1000);
     }
 }
-

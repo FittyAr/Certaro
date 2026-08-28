@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ElectroObraApp.Application.DTOs;
@@ -25,20 +28,20 @@ public class EmpleadoServiceTests
         _repo = Substitute.For<IRepository<Empleado>>();
         _uow.Repository<Empleado>().Returns(_repo);
         _logger = Substitute.For<ILogger<EmpleadoService>>();
-        _service = new EmpleadoService(_uow, _logger);
+        var validator = Substitute.For<IValidator<EmpleadoDto>>();
+        validator.ValidateAsync(Arg.Any<EmpleadoDto>(), Arg.Any<CancellationToken>())
+            .Returns(new FluentValidation.Results.ValidationResult());
+        _service = new EmpleadoService(_uow, _logger, validator);
     }
 
     [Fact]
     public async Task GetAllAsync_ShouldReturnList()
     {
-        // Arrange
         var list = new List<Empleado> { new() { Nombre = "Pablo" } };
         _repo.GetAllAsync().Returns(list);
 
-        // Act
         var result = await _service.GetAllAsync();
 
-        // Assert
         result.Should().HaveCount(1);
         result.First().Nombre.Should().Be("Pablo");
     }
@@ -46,46 +49,37 @@ public class EmpleadoServiceTests
     [Fact]
     public async Task CreateAsync_ShouldReturnTrue_WhenSuccess()
     {
-        // Arrange
         var dto = new EmpleadoDto { Nombre = "Nuevo" };
         _uow.SaveChangesAsync().Returns(1);
 
-        // Act
         var result = await _service.CreateAsync(dto);
 
-        // Assert
-        result.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
         await _repo.Received(1).AddAsync(Arg.Any<Empleado>());
     }
 
     [Fact]
     public async Task UpdateAsync_ShouldReturnTrue_WhenSuccess()
     {
-        // Arrange
         var dto = new EmpleadoDto { Id = Guid.NewGuid(), Nombre = "Update" };
+        _repo.GetByIdAsync(dto.Id).Returns(new Empleado { Id = dto.Id, Nombre = "Original" });
         _uow.SaveChangesAsync().Returns(1);
 
-        // Act
         var result = await _service.UpdateAsync(dto);
 
-        // Assert
-        result.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
         _repo.Received(1).Update(Arg.Any<Empleado>());
     }
 
     [Fact]
     public async Task DeleteAsync_ShouldReturnFalse_WhenNotFound()
     {
-        // Arrange
         var id = Guid.NewGuid();
         _repo.GetByIdAsync(id).Returns((Empleado?)null);
 
-        // Act
         var result = await _service.DeleteAsync(id);
 
-        // Assert
-        result.Should().BeFalse();
-        _repo.DidNotReceive().Remove(Arg.Any<Empleado>());
+        result.IsSuccess.Should().BeFalse();
+        _repo.DidNotReceive().Update(Arg.Any<Empleado>());
     }
 }
-

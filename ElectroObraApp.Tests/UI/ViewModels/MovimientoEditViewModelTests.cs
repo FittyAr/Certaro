@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NSubstitute;
 using ElectroObraApp.Application.DTOs;
 using ElectroObraApp.Application.Interfaces;
+using ElectroObraApp.Core.Common;
 using ElectroObraApp.ViewModels;
 using Xunit;
 
@@ -16,6 +16,7 @@ public class MovimientoEditViewModelTests
     private readonly ICategoriaService _categoriaService;
     private readonly ITipoMovimientoService _tipoMovimientoService;
     private readonly IEmpleadoService _empleadoService;
+    private readonly ILocalizationService _localizationService;
     private readonly MovimientoEditViewModel _viewModel;
 
     public MovimientoEditViewModelTests()
@@ -24,22 +25,25 @@ public class MovimientoEditViewModelTests
         _categoriaService = Substitute.For<ICategoriaService>();
         _tipoMovimientoService = Substitute.For<ITipoMovimientoService>();
         _empleadoService = Substitute.For<IEmpleadoService>();
-        _viewModel = new MovimientoEditViewModel(_movimientoService, _categoriaService, _tipoMovimientoService, _empleadoService);
+        _localizationService = Substitute.For<ILocalizationService>();
+        _localizationService.GetString(Arg.Any<string>()).Returns(call => call.Arg<string>());
+        _viewModel = new MovimientoEditViewModel(
+            _movimientoService, _categoriaService, _tipoMovimientoService, _empleadoService, _localizationService);
     }
 
     [Fact]
     public async Task SaveCommand_ShouldCreate_WhenIdIsEmpty()
     {
-        // Arrange
         _viewModel.Movimiento.Monto = 100;
-        _movimientoService.CreateAsync(_viewModel.Movimiento).Returns(true);
+        _viewModel.Movimiento.Concepto = "Test";
+        _viewModel.Movimiento.Cantidad = 1;
+        _viewModel.Movimiento.TipoMovimientoId = Guid.NewGuid();
+        _movimientoService.CreateAsync(_viewModel.Movimiento).Returns(Result.Success());
         bool closed = false;
         _viewModel.CloseRequest += (s, success) => closed = success;
 
-        // Act
         await _viewModel.SaveCommand.ExecuteAsync(null);
 
-        // Assert
         await _movimientoService.Received(1).CreateAsync(Arg.Any<MovimientoDto>());
         closed.Should().BeTrue();
     }
@@ -47,34 +51,42 @@ public class MovimientoEditViewModelTests
     [Fact]
     public async Task SaveCommand_ShouldUpdate_WhenIdIsNotEmpty()
     {
-        // Arrange
-        _viewModel.Movimiento = new MovimientoDto { Id = Guid.NewGuid(), Monto = 200 };
-        _movimientoService.UpdateAsync(_viewModel.Movimiento).Returns(true);
+        _viewModel.Movimiento = new MovimientoDto { Id = Guid.NewGuid(), Monto = 200, Concepto = "Test", Cantidad = 1, TipoMovimientoId = Guid.NewGuid() };
+        _movimientoService.UpdateAsync(_viewModel.Movimiento).Returns(Result.Success());
         bool closed = false;
         _viewModel.CloseRequest += (s, success) => closed = success;
 
-        // Act
         await _viewModel.SaveCommand.ExecuteAsync(null);
 
-        // Assert
         await _movimientoService.Received(1).UpdateAsync(Arg.Any<MovimientoDto>());
         closed.Should().BeTrue();
     }
 
     [Fact]
+    public async Task SaveCommand_ShouldShowError_WhenServiceFails()
+    {
+        _viewModel.Movimiento.Monto = 100;
+        _movimientoService.CreateAsync(_viewModel.Movimiento).Returns(Result.Failure("Validation.Movimiento.ConceptoRequired"));
+        bool closed = false;
+        _viewModel.CloseRequest += (s, success) => closed = success;
+
+        await _viewModel.SaveCommand.ExecuteAsync(null);
+
+        closed.Should().BeFalse();
+        _viewModel.ErrorMessage.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
     public async Task LoadData_ShouldPopulateCollections()
     {
-        // Arrange
-        var cats = new List<CategoriaDto> { new() { Nombre = "Cat 1" } };
-        var tipos = new List<TipoMovimientoDto> { new() { Nombre = "Tipo 1" } };
+        var cats = new System.Collections.Generic.List<CategoriaDto> { new() { Nombre = "Cat 1" } };
+        var tipos = new System.Collections.Generic.List<TipoMovimientoDto> { new() { Nombre = "Tipo 1" } };
         _categoriaService.GetAllAsync().Returns(cats);
         _tipoMovimientoService.GetAllAsync().Returns(tipos);
-        _empleadoService.GetAllAsync().Returns(new List<EmpleadoDto>());
+        _empleadoService.GetAllAsync().Returns(new System.Collections.Generic.List<EmpleadoDto>());
 
-        // Act
         await _viewModel.LoadDataCommand.ExecuteAsync(null);
 
-        // Assert
         _viewModel.Categorias.Should().HaveCount(1);
         _viewModel.TiposMovimiento.Should().HaveCount(1);
     }
@@ -82,32 +94,25 @@ public class MovimientoEditViewModelTests
     [Fact]
     public async Task LoadData_ShouldSetDefaultTipo_WhenNew()
     {
-        // Arrange
         var tipoId = Guid.NewGuid();
-        var tipos = new List<TipoMovimientoDto> { new() { Id = tipoId, Nombre = "Tipo 1" } };
+        var tipos = new System.Collections.Generic.List<TipoMovimientoDto> { new() { Id = tipoId, Nombre = "Tipo 1" } };
         _tipoMovimientoService.GetAllAsync().Returns(tipos);
-        _categoriaService.GetAllAsync().Returns(new List<CategoriaDto>());
-        _empleadoService.GetAllAsync().Returns(new List<EmpleadoDto>());
+        _categoriaService.GetAllAsync().Returns(new System.Collections.Generic.List<CategoriaDto>());
+        _empleadoService.GetAllAsync().Returns(new System.Collections.Generic.List<EmpleadoDto>());
 
-        // Act
         await _viewModel.LoadDataCommand.ExecuteAsync(null);
 
-        // Assert
         _viewModel.Movimiento.TipoMovimientoId.Should().Be(tipoId);
     }
 
     [Fact]
     public void CancelCommand_ShouldInvokeCloseRequestWithFalse()
     {
-        // Arrange
         bool closedWithSuccess = true;
         _viewModel.CloseRequest += (s, success) => closedWithSuccess = success;
 
-        // Act
         _viewModel.CancelCommand.Execute(null);
 
-        // Assert
         closedWithSuccess.Should().BeFalse();
     }
 }
-

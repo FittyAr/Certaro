@@ -15,6 +15,7 @@ public class ClientesViewModelTests
 {
     private readonly IClienteService _clienteService;
     private readonly IUserSettingsService _settingsService;
+    private readonly ILocalizationService _localizationService;
     private readonly IServiceProvider _serviceProvider;
     private readonly ClientesViewModel _viewModel;
 
@@ -22,12 +23,18 @@ public class ClientesViewModelTests
     {
         _clienteService = Substitute.For<IClienteService>();
         _settingsService = Substitute.For<IUserSettingsService>();
+        _localizationService = Substitute.For<ILocalizationService>();
         _serviceProvider = Substitute.For<IServiceProvider>();
 
         _settingsService.GetPageSize().Returns(10);
         _clienteService.GetAllAsync().Returns(new List<ClienteDto>());
 
-        _viewModel = new ClientesViewModel(_clienteService, _settingsService, _serviceProvider);
+        _viewModel = new ClientesViewModel(
+            _clienteService,
+            _settingsService,
+            Substitute.For<IConfirmDialogService>(),
+            _localizationService,
+            _serviceProvider);
     }
 
     [Fact]
@@ -49,7 +56,7 @@ public class ClientesViewModelTests
     public void Add_ShouldSetIsEditingAndEditViewModel()
     {
         // Arrange
-        var editVm = new ClienteEditViewModel(_clienteService, _settingsService);
+        var editVm = new ClienteEditViewModel(_clienteService, _settingsService, Substitute.For<ILocalizationService>());
         _serviceProvider.GetService(typeof(ClienteEditViewModel)).Returns(editVm);
 
         // Act

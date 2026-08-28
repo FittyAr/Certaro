@@ -16,6 +16,7 @@ public class TrabajosViewModelTests
     private readonly ITrabajoService _trabajoService;
     private readonly IClienteService _clienteService;
     private readonly IUserSettingsService _settingsService;
+    private readonly ILocalizationService _localizationService;
     private readonly IServiceProvider _serviceProvider;
     private readonly TrabajosViewModel _viewModel;
 
@@ -24,13 +25,20 @@ public class TrabajosViewModelTests
         _trabajoService = Substitute.For<ITrabajoService>();
         _clienteService = Substitute.For<IClienteService>();
         _settingsService = Substitute.For<IUserSettingsService>();
+        _localizationService = Substitute.For<ILocalizationService>();
         _serviceProvider = Substitute.For<IServiceProvider>();
 
         _settingsService.GetPageSize().Returns(10);
         _clienteService.GetAllAsync().Returns(new List<ClienteDto>());
         _trabajoService.GetAllAsync().Returns(new List<TrabajoDto>());
 
-        _viewModel = new TrabajosViewModel(_trabajoService, _clienteService, _settingsService, _serviceProvider);
+        _viewModel = new TrabajosViewModel(
+            _trabajoService,
+            _clienteService,
+            _settingsService,
+            Substitute.For<IConfirmDialogService>(),
+            _localizationService,
+            _serviceProvider);
     }
 
     [Fact]
@@ -52,7 +60,7 @@ public class TrabajosViewModelTests
     public async Task AddAsync_ShouldSetIsEditingAndEditViewModel()
     {
         // Arrange
-        var editVm = new TrabajoEditViewModel(_trabajoService, _clienteService);
+        var editVm = new TrabajoEditViewModel(_trabajoService, _clienteService, Substitute.For<ILocalizationService>());
         _serviceProvider.GetService(typeof(TrabajoEditViewModel)).Returns(editVm);
 
         // Act

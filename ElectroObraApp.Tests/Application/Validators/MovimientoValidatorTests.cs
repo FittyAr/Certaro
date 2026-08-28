@@ -32,6 +32,21 @@ public class MovimientoValidatorTests
     }
 
     [Fact]
+    public void Should_NotHaveError_When_CategoriaIdIsNull()
+    {
+        var model = new MovimientoDto 
+        { 
+            Concepto = "Venta", 
+            Monto = 100, 
+            Cantidad = 1,
+            CategoriaId = null,
+            TipoMovimientoId = Guid.NewGuid()
+        };
+        var result = _validator.TestValidate(model);
+        result.ShouldNotHaveValidationErrorFor(x => x.CategoriaId);
+    }
+
+    [Fact]
     public void Should_NotHaveError_When_ModelIsValid()
     {
         var model = new MovimientoDto 

@@ -15,6 +15,7 @@ public class EmpleadosViewModelTests
 {
     private readonly IEmpleadoService _empleadoService;
     private readonly IUserSettingsService _settingsService;
+    private readonly ILocalizationService _localizationService;
     private readonly IServiceProvider _serviceProvider;
     private readonly EmpleadosViewModel _viewModel;
 
@@ -22,12 +23,18 @@ public class EmpleadosViewModelTests
     {
         _empleadoService = Substitute.For<IEmpleadoService>();
         _settingsService = Substitute.For<IUserSettingsService>();
+        _localizationService = Substitute.For<ILocalizationService>();
         _serviceProvider = Substitute.For<IServiceProvider>();
 
         _settingsService.GetPageSize().Returns(10);
         _empleadoService.GetAllAsync().Returns(new List<EmpleadoDto>());
 
-        _viewModel = new EmpleadosViewModel(_empleadoService, _settingsService, _serviceProvider);
+        _viewModel = new EmpleadosViewModel(
+            _empleadoService,
+            _settingsService,
+            Substitute.For<IConfirmDialogService>(),
+            _localizationService,
+            _serviceProvider);
     }
 
     [Fact]
@@ -49,7 +56,7 @@ public class EmpleadosViewModelTests
     public void Add_ShouldSetIsEditingAndEditViewModel()
     {
         // Arrange
-        var editVm = new EmpleadoEditViewModel(_empleadoService);
+        var editVm = new EmpleadoEditViewModel(_empleadoService, Substitute.For<ILocalizationService>());
         _serviceProvider.GetService(typeof(EmpleadoEditViewModel)).Returns(editVm);
 
         // Act

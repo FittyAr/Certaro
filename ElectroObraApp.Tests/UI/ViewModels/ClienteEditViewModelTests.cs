@@ -4,6 +4,7 @@ using FluentAssertions;
 using NSubstitute;
 using ElectroObraApp.Application.DTOs;
 using ElectroObraApp.Application.Interfaces;
+using ElectroObraApp.Core.Common;
 using ElectroObraApp.ViewModels;
 using Xunit;
 
@@ -13,28 +14,28 @@ public class ClienteEditViewModelTests
 {
     private readonly IClienteService _clienteService;
     private readonly IUserSettingsService _settingsService;
+    private readonly ILocalizationService _localizationService;
     private readonly ClienteEditViewModel _viewModel;
 
     public ClienteEditViewModelTests()
     {
         _clienteService = Substitute.For<IClienteService>();
         _settingsService = Substitute.For<IUserSettingsService>();
-        _viewModel = new ClienteEditViewModel(_clienteService, _settingsService);
+        _localizationService = Substitute.For<ILocalizationService>();
+        _localizationService.GetString(Arg.Any<string>()).Returns(call => call.Arg<string>());
+        _viewModel = new ClienteEditViewModel(_clienteService, _settingsService, _localizationService);
     }
 
     [Fact]
     public async Task SaveCommand_ShouldCreateClient_WhenIdIsEmpty()
     {
-        // Arrange
         _viewModel.Cliente.Nombre = "Nuevo";
-        _clienteService.CreateAsync(_viewModel.Cliente).Returns(true);
+        _clienteService.CreateAsync(_viewModel.Cliente).Returns(Result.Success());
         bool closed = false;
         _viewModel.CloseRequest += (s, success) => closed = success;
 
-        // Act
         await _viewModel.SaveCommand.ExecuteAsync(null);
 
-        // Assert
         await _clienteService.Received(1).CreateAsync(Arg.Any<ClienteDto>());
         closed.Should().BeTrue();
     }
@@ -42,10 +43,8 @@ public class ClienteEditViewModelTests
     [Fact]
     public void AddContact_ShouldAddToList()
     {
-        // Act
         _viewModel.AddContactCommand.Execute(null);
 
-        // Assert
         _viewModel.Cliente.Contactos.Should().HaveCount(1);
         _viewModel.Cliente.Contactos[0].Etiqueta.Should().Be("General");
     }
@@ -53,30 +52,24 @@ public class ClienteEditViewModelTests
     [Fact]
     public void RemoveContact_ShouldRemoveFromList()
     {
-        // Arrange
         var contacto = new ClienteContactoDto { Etiqueta = "Test" };
         _viewModel.Cliente.Contactos.Add(contacto);
 
-        // Act
         _viewModel.RemoveContactCommand.Execute(contacto);
 
-        // Assert
         _viewModel.Cliente.Contactos.Should().BeEmpty();
     }
 
     [Fact]
     public async Task SaveCommand_ShouldUpdateClient_WhenIdIsNotEmpty()
     {
-        // Arrange
         _viewModel.Cliente = new ClienteDto { Id = Guid.NewGuid(), Nombre = "Update" };
-        _clienteService.UpdateAsync(_viewModel.Cliente).Returns(true);
+        _clienteService.UpdateAsync(_viewModel.Cliente).Returns(Result.Success());
         bool closed = false;
         _viewModel.CloseRequest += (s, success) => closed = success;
 
-        // Act
         await _viewModel.SaveCommand.ExecuteAsync(null);
 
-        // Assert
         await _clienteService.Received(1).UpdateAsync(Arg.Any<ClienteDto>());
         closed.Should().BeTrue();
     }
@@ -84,15 +77,11 @@ public class ClienteEditViewModelTests
     [Fact]
     public void CancelCommand_ShouldInvokeCloseRequestWithFalse()
     {
-        // Arrange
         bool closedWithSuccess = true;
         _viewModel.CloseRequest += (s, success) => closedWithSuccess = success;
 
-        // Act
         _viewModel.CancelCommand.Execute(null);
 
-        // Assert
         closedWithSuccess.Should().BeFalse();
     }
 }
-

@@ -26,7 +26,14 @@ public class LiquidacionesViewModelTests
         _movimientoService = Substitute.For<IMovimientoService>();
         _empleadoService = Substitute.For<IEmpleadoService>();
         _settingsService = Substitute.For<IUserSettingsService>();
-        _viewModel = new LiquidacionesViewModel(_liquidacionService, _exportService, _movimientoService, _empleadoService, _settingsService);
+        _viewModel = new LiquidacionesViewModel(
+            _liquidacionService,
+            _exportService,
+            _movimientoService,
+            _empleadoService,
+            _settingsService,
+            Substitute.For<INotificationService>(),
+            Substitute.For<ILocalizationService>());
     }
 
     [Fact]

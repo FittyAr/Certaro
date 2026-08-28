@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NSubstitute;
 using ElectroObraApp.Application.DTOs;
+using ElectroObraApp.Application.Interfaces;
 using ElectroObraApp.Infrastructure.Services;
 using Xunit;
 
@@ -15,7 +17,7 @@ public class ExportServiceTests
 
     public ExportServiceTests()
     {
-        _service = new ExportService();
+        _service = new ExportService(Substitute.For<IUserSettingsService>());
     }
 
     [Fact]

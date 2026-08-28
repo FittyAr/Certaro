@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NSubstitute;
@@ -13,37 +10,36 @@ namespace ElectroObraApp.Tests.UI.ViewModels;
 
 public class DashboardViewModelTests
 {
-    private readonly IMovimientoService _movimientoService;
-    private readonly IClienteService _clienteService;
-    private readonly ITrabajoService _trabajoService;
+    private readonly IDashboardService _dashboardService;
     private readonly IUserSettingsService _settingsService;
     private readonly IDollarService _dollarService;
 
     public DashboardViewModelTests()
     {
-        _movimientoService = Substitute.For<IMovimientoService>();
-        _clienteService = Substitute.For<IClienteService>();
-        _trabajoService = Substitute.For<ITrabajoService>();
+        _dashboardService = Substitute.For<IDashboardService>();
         _settingsService = Substitute.For<IUserSettingsService>();
         _dollarService = Substitute.For<IDollarService>();
+
+        _settingsService.GetDashboardPeriod().Returns("Mes");
+        _settingsService.GetIsPrivacyMode().Returns(false);
+        _settingsService.GetAutoUpdateDollar().Returns(false);
     }
+
+    private DashboardViewModel CreateDashboardViewModel() =>
+        new(_dashboardService, _settingsService, _dollarService);
 
     [Fact]
     public async Task Constructor_ShouldCalculateTotals()
     {
-        // Arrange
-        var movimientos = new List<MovimientoDto>
+        _dashboardService.GetStatsAsync(Arg.Any<string>()).Returns(new DashboardStatsDto
         {
-            new() { Monto = 100, Cantidad = 1, Total = 100, TipoMovimientoSuma = true },
-            new() { Monto = 40, Cantidad = 1, Total = 40, TipoMovimientoSuma = false }
-        };
-        _movimientoService.GetAllAsync().Returns(movimientos);
+            TotalIngresos = 100,
+            TotalGastos = 40
+        });
 
-        // Act
-        var vm = new DashboardViewModel(_movimientoService, _clienteService, _trabajoService, _settingsService, _dollarService);
+        var vm = CreateDashboardViewModel();
         await vm.LoadStatsCommand.ExecuteAsync(null);
 
-        // Assert
         vm.TotalIngresos.Should().Be(100);
         vm.TotalGastos.Should().Be(40);
         vm.Balance.Should().Be(60);
@@ -52,14 +48,11 @@ public class DashboardViewModelTests
     [Fact]
     public async Task LoadStats_ShouldHandleZeroMovements()
     {
-        // Arrange
-        _movimientoService.GetAllAsync().Returns(new List<MovimientoDto>());
+        _dashboardService.GetStatsAsync(Arg.Any<string>()).Returns(new DashboardStatsDto());
 
-        // Act
-        var vm = new DashboardViewModel(_movimientoService, _clienteService, _trabajoService, _settingsService, _dollarService);
+        var vm = CreateDashboardViewModel();
         await vm.LoadStatsCommand.ExecuteAsync(null);
 
-        // Assert
         vm.TotalIngresos.Should().Be(0);
         vm.TotalGastos.Should().Be(0);
         vm.Balance.Should().Be(0);
@@ -68,21 +61,16 @@ public class DashboardViewModelTests
     [Fact]
     public async Task LoadStats_ShouldHandleOnlyIncome()
     {
-        // Arrange
-        var movimientos = new List<MovimientoDto>
+        _dashboardService.GetStatsAsync(Arg.Any<string>()).Returns(new DashboardStatsDto
         {
-            new() { Total = 200, TipoMovimientoSuma = true }
-        };
-        _movimientoService.GetAllAsync().Returns(movimientos);
+            TotalIngresos = 200
+        });
 
-        // Act
-        var vm = new DashboardViewModel(_movimientoService, _clienteService, _trabajoService, _settingsService, _dollarService);
+        var vm = CreateDashboardViewModel();
         await vm.LoadStatsCommand.ExecuteAsync(null);
 
-        // Assert
         vm.TotalIngresos.Should().Be(200);
         vm.TotalGastos.Should().Be(0);
         vm.Balance.Should().Be(200);
     }
 }
-

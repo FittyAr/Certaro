@@ -28,7 +28,7 @@ public class ClienteServiceTests
         _uow.Repository<Cliente>().Returns(_repo);
         _uow.Clientes.Returns(_clienteRepo);
         _logger = Substitute.For<ILogger<ClienteService>>();
-        _service = new ClienteService(_uow, _logger);
+        _service = new ClienteService(_uow, _logger, new ElectroObraApp.Application.Validators.ClienteValidator());
     }
 
     [Fact]
