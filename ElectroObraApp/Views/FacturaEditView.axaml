@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
+             xmlns:loc="using:ElectroObraApp.Markup"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="500"
+             x:Class="ElectroObraApp.Views.FacturaEditView"
+             x:DataType="vm:FacturaEditViewModel">
+    <UserControl.KeyBindings>
+        <KeyBinding Gesture="Escape" Command="{Binding CancelCommand}"/>
+    </UserControl.KeyBindings>
+    <Border Padding="25" Background="#2d2d2d" CornerRadius="12" BoxShadow="0 4 10 0 #40000000" Width="520">
+        <ScrollViewer MaxHeight="650">
+            <StackPanel Spacing="15">
+                <TextBlock Text="{Binding Title}" FontSize="22" FontWeight="Bold" Foreground="White"/>
+
+                <StackPanel Spacing="5">
+                    <TextBlock Text="{loc:Translate Key=Invoices.Number}" FontSize="11" Foreground="#888"/>
+                    <TextBox Text="{Binding Factura.Numero}"/>
+                </StackPanel>
+
+                <StackPanel Spacing="5">
+                    <TextBlock Text="{loc:Translate Key=Movements.Date}" FontSize="11" Foreground="#888"/>
+                    <CalendarDatePicker SelectedDate="{Binding FechaOffset}"/>
+                </StackPanel>
+
+                <StackPanel Spacing="5">
+                    <TextBlock Text="{loc:Translate Key=Jobs.Client}" FontSize="11" Foreground="#888"/>
+                    <ComboBox ItemsSource="{Binding Clientes}"
+                              SelectedValue="{Binding Factura.ClienteId}"
+                              SelectedValueBinding="{Binding Id}"
+                              DisplayMemberBinding="{Binding Nombre}"/>
+                </StackPanel>
+
+                <StackPanel Spacing="5">
+                    <TextBlock Text="{loc:Translate Key=Invoices.Status}" FontSize="11" Foreground="#888"/>
+                    <ComboBox ItemsSource="{Binding EstadosFactura}" SelectedItem="{Binding Factura.Estado}"/>
+                </StackPanel>
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
+                    <StackPanel Grid.Column="0" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Invoices.Subtotal}" FontSize="11" Foreground="#888"/>
+                        <NumericUpDown Value="{Binding Factura.Subtotal}" Minimum="0" FormatString="C"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Invoices.Iva}" FontSize="11" Foreground="#888"/>
+                        <NumericUpDown Value="{Binding Factura.Iva}" Minimum="0" FormatString="C"/>
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Spacing="5">
+                    <TextBlock Text="{loc:Translate Key=Movements.Total}" FontSize="11" Foreground="#888"/>
+                    <TextBlock Text="{Binding Factura.Total, StringFormat='C'}" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
+                </StackPanel>
+
+                <StackPanel Spacing="5">
+                    <TextBlock Text="{loc:Translate Key=Invoices.Observations}" FontSize="11" Foreground="#888"/>
+                    <TextBox Text="{Binding Factura.Observaciones}" AcceptsReturn="True" MinHeight="80"/>
+                </StackPanel>
+
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="#e74c3c" TextWrapping="Wrap"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
+                    <Button Content="{loc:Translate Key=General.Cancel}" Command="{Binding CancelCommand}"/>
+                    <Button Content="{loc:Translate Key=General.Save}" Classes="accent" Command="{Binding SaveCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

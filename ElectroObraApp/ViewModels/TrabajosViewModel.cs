@@ -17,6 +17,8 @@ public partial class TrabajosViewModel : ViewModelBase
     private readonly ITrabajoService _trabajoService;
     private readonly IClienteService _clienteService;
     private readonly IUserSettingsService _settingsService;
+    private readonly IConfirmDialogService _confirmDialogService;
+    private readonly ILocalizationService _localizationService;
     private readonly IServiceProvider _serviceProvider;
 
     [ObservableProperty]
@@ -61,17 +63,22 @@ public partial class TrabajosViewModel : ViewModelBase
         ITrabajoService trabajoService, 
         IClienteService clienteService, 
         IUserSettingsService settingsService,
+        IConfirmDialogService confirmDialogService,
+        ILocalizationService localizationService,
         IServiceProvider serviceProvider)
     {
         _trabajoService = trabajoService;
         _clienteService = clienteService;
         _settingsService = settingsService;
+        _confirmDialogService = confirmDialogService;
+        _localizationService = localizationService;
         _serviceProvider = serviceProvider;
         _pageSize = _settingsService.GetPageSize();
 
         LoadTrabajosCommand = new AsyncRelayCommand(LoadTrabajosAsync);
         AddCommand = new AsyncRelayCommand(AddAsync);
         EditCommand = new AsyncRelayCommand<TrabajoDto>(EditAsync);
+        DeleteCommand = new AsyncRelayCommand<TrabajoDto>(DeleteAsync);
         LimpiarFiltrosCommand = new RelayCommand(LimpiarFiltros);
 
         _ = LoadInitialDataAsync();
@@ -80,6 +87,7 @@ public partial class TrabajosViewModel : ViewModelBase
     public IAsyncRelayCommand LoadTrabajosCommand { get; }
     public IAsyncRelayCommand AddCommand { get; }
     public IAsyncRelayCommand<TrabajoDto> EditCommand { get; }
+    public IAsyncRelayCommand<TrabajoDto> DeleteCommand { get; }
     public IRelayCommand LimpiarFiltrosCommand { get; }
 
     private async Task LoadInitialDataAsync()
@@ -118,35 +126,47 @@ public partial class TrabajosViewModel : ViewModelBase
 
     public async Task LoadTrabajosAsync()
     {
-        var result = await _trabajoService.GetAllAsync();
-        var query = result.AsEnumerable();
+        IsLoading = true;
+        ErrorMessage = null;
 
-        if (!string.IsNullOrWhiteSpace(FiltroNombre))
-            query = query.Where(t => t.Descripcion.Contains(FiltroNombre, StringComparison.OrdinalIgnoreCase));
-
-        if (FiltroClienteId.HasValue)
-            query = query.Where(t => t.ClienteId == FiltroClienteId.Value);
-
-        if (FiltroFinalizado.HasValue)
-            query = query.Where(t => t.Finalizado == FiltroFinalizado.Value);
-
-        if (FiltroFechaDesde.HasValue)
-            query = query.Where(t => t.FechaInicio.Date >= FiltroFechaDesde.Value.Date);
-
-        if (FiltroFechaHasta.HasValue)
-            query = query.Where(t => t.FechaInicio.Date <= FiltroFechaHasta.Value.Date);
-
-        IEnumerable<TrabajoDto> paginated;
-        if (PageSize > 0)
+        try
         {
-            paginated = query.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
-        }
-        else
-        {
-            paginated = query;
-        }
+            var result = await _trabajoService.GetAllAsync();
+            var query = result.AsEnumerable();
 
-        Trabajos = new ObservableCollection<TrabajoDto>(paginated);
+            if (!string.IsNullOrWhiteSpace(FiltroNombre))
+                query = query.Where(t => t.Descripcion.Contains(FiltroNombre, StringComparison.OrdinalIgnoreCase));
+
+            if (FiltroClienteId.HasValue)
+                query = query.Where(t => t.ClienteId == FiltroClienteId.Value);
+
+            if (FiltroFinalizado.HasValue)
+                query = query.Where(t => t.Finalizado == FiltroFinalizado.Value);
+
+            if (FiltroFechaDesde.HasValue)
+                query = query.Where(t => t.FechaInicio.Date >= FiltroFechaDesde.Value.Date);
+
+            if (FiltroFechaHasta.HasValue)
+                query = query.Where(t => t.FechaInicio.Date <= FiltroFechaHasta.Value.Date);
+
+            IEnumerable<TrabajoDto> paginated;
+            if (PageSize > 0)
+                paginated = query.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+            else
+                paginated = query;
+
+            Trabajos = new ObservableCollection<TrabajoDto>(paginated);
+            IsEmpty = !Trabajos.Any();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+            IsEmpty = false;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private async Task AddAsync()
@@ -184,6 +204,21 @@ public partial class TrabajosViewModel : ViewModelBase
 
         EditViewModel = vm;
         IsEditing = true;
+    }
+
+    private async Task DeleteAsync(TrabajoDto? dto)
+    {
+        if (dto == null) return;
+
+        var confirmed = await _confirmDialogService.ConfirmAsync(
+            _localizationService.GetString("General.Delete"),
+            string.Format(_localizationService.GetString("Jobs.DeleteConfirm"), dto.Descripcion));
+
+        if (!confirmed) return;
+
+        var result = await _trabajoService.DeleteAsync(dto.Id);
+        if (HandleResult(result, _localizationService))
+            await LoadTrabajosAsync();
     }
 }
 

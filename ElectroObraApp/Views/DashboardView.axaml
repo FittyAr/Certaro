@@ -7,12 +7,13 @@
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Avalonia;assembly=LiveChartsCore.SkiaSharpView.Avalonia"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:conv="using:ElectroObraApp.Views.Converters"
+             xmlns:controls="clr-namespace:ElectroObraApp.Controls"
+             xmlns:loc="using:ElectroObraApp.Markup"
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="1200"
              x:Class="ElectroObraApp.Views.DashboardView"
              x:DataType="vm:DashboardViewModel">
     
     <UserControl.Resources>
-        <conv:BoolToObjectConverter x:Key="BoolToTextConverter" TrueValue="Modo Privado" FalseValue="Modo Público" />
         <conv:BoolToObjectConverter x:Key="BoolToIconConverter" TrueValue="EyeOff" FalseValue="Eye" />
         <conv:BoolToObjectConverter x:Key="BoolToColorConverter" TrueValue="#ff5252" FalseValue="#4caf50" />
         <conv:BoolToObjectConverter x:Key="AlertBackgroundConverter" TrueValue="#20ff9800" FalseValue="#204caf50" />
@@ -20,18 +21,19 @@
         <conv:BoolToObjectConverter x:Key="AlertIconConverter" TrueValue="⚠️" FalseValue="✅" />
     </UserControl.Resources>
 
-    <ScrollViewer>
+    <Grid>
+    <ScrollViewer IsVisible="{Binding !IsLoading}">
         <Grid RowDefinitions="Auto, Auto, Auto, *, *, *" Margin="25">
             <!-- Header & Controls -->
             <Grid Grid.Row="0" ColumnDefinitions="*, Auto, Auto" Margin="0,0,0,20">
                 <StackPanel Grid.Column="0" Spacing="5">
-                    <TextBlock Text="{Binding Title}" FontSize="36" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" />
-                    <TextBlock Text="Vista general del estado operativo" Foreground="{DynamicResource SecondaryForegroundBrush}" FontSize="14"/>
+                    <TextBlock Text="{loc:Translate Key=Dashboard.Title}" FontSize="36" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" />
+                    <TextBlock Text="{loc:Translate Key=Dashboard.Subtitle}" Foreground="{DynamicResource SecondaryForegroundBrush}" FontSize="14"/>
                 </StackPanel>
 
                 <!-- Period Selector -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="0,0,20,0">
-                    <TextBlock Text="Periodo:" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                    <TextBlock Text="{loc:Translate Key=Dashboard.Period}" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                     <ComboBox ItemsSource="{Binding TimeRanges}" 
                               SelectedItem="{Binding CurrentTimeRange}" 
                               Width="120" />
@@ -41,7 +43,7 @@
                 <ToggleButton Grid.Column="2" 
                               IsChecked="{Binding IsPrivacyModeActive}"
                               Classes="privacyButton"
-                              ToolTip.Tip="Alternar Modo Privado (Ocultar montos)">
+                              ToolTip.Tip="{loc:Translate Key=Dashboard.PrivacyModeTooltip}">
                     <materialIcons:MaterialIcon Kind="{Binding IsPrivacyModeActive, Converter={StaticResource BoolToIconConverter}}" 
                                                 Width="24" Height="24"
                                                 Foreground="{Binding IsPrivacyModeActive, Converter={StaticResource BoolToColorConverter}}" />
@@ -55,7 +57,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <materialIcons:MaterialIcon Kind="CurrencyUsd" Foreground="#ff9800" Width="20" Height="20"/>
-                        <TextBlock Text="Cotización Dólar" FontWeight="Bold" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
+                        <TextBlock Text="{loc:Translate Key=Dashboard.DollarRate}" FontWeight="Bold" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
                     </StackPanel>
                     
                     <ItemsControl ItemsSource="{Binding DollarRates}">
@@ -69,11 +71,11 @@
                                 <StackPanel Orientation="Horizontal" Spacing="10">
                                     <TextBlock Text="{Binding Nombre}" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                                     <StackPanel Orientation="Horizontal" Spacing="5">
-                                        <TextBlock Text="C:" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                        <TextBlock Text="{loc:Translate Key=Dashboard.Buy}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                                         <TextBlock Text="{Binding Compra, StringFormat=\{0:C\}}" FontWeight="Bold" VerticalAlignment="Center" Foreground="#4caf50"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="5">
-                                        <TextBlock Text="V:" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                        <TextBlock Text="{loc:Translate Key=Dashboard.Sell}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                                         <TextBlock Text="{Binding Venta, StringFormat=\{0:C\}}" FontWeight="Bold" VerticalAlignment="Center" Foreground="#ff5252"/>
                                     </StackPanel>
                                 </StackPanel>
@@ -87,28 +89,28 @@
             <UniformGrid Grid.Row="2" Columns="4" Margin="0,0,0,20">
                 <Border Classes="card metricCard" Background="#1b3a1b" BorderBrush="#4caf50">
                     <StackPanel>
-                        <TextBlock Text="Ingresos" Classes="cardLabel" Foreground="#aaa"/>
+                        <TextBlock Text="{loc:Translate Key=Dashboard.Income}" Classes="cardLabel" Foreground="#aaa"/>
                         <TextBlock Text="{Binding DisplayTotalIngresos}" Classes="cardValue" Foreground="#4caf50"/>
                     </StackPanel>
                 </Border>
 
                 <Border Classes="card metricCard" Background="#3a1b1b" BorderBrush="#f44336">
                     <StackPanel>
-                        <TextBlock Text="Gastos" Classes="cardLabel" Foreground="#aaa"/>
+                        <TextBlock Text="{loc:Translate Key=Dashboard.Expenses}" Classes="cardLabel" Foreground="#aaa"/>
                         <TextBlock Text="{Binding DisplayTotalGastos}" Classes="cardValue" Foreground="#f44336"/>
                     </StackPanel>
                 </Border>
 
                 <Border Classes="card metricCard" Background="#1b1b3a" BorderBrush="#2196f3">
                     <StackPanel>
-                        <TextBlock Text="Balance" Classes="cardLabel" Foreground="#aaa"/>
+                        <TextBlock Text="{loc:Translate Key=Dashboard.Balance}" Classes="cardLabel" Foreground="#aaa"/>
                         <TextBlock Text="{Binding DisplayBalance}" Classes="cardValue" Foreground="#2196f3"/>
                     </StackPanel>
                 </Border>
 
                 <Border Classes="card metricCard" Background="{DynamicResource PaneBackgroundBrush}" BorderBrush="#ff9800">
                     <StackPanel>
-                        <TextBlock Text="Pendientes" Classes="cardLabel" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                        <TextBlock Text="{loc:Translate Key=Dashboard.Pending}" Classes="cardLabel" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                         <TextBlock Text="{Binding TrabajosPendientes}" Classes="cardValue" Foreground="#ff9800"/>
                     </StackPanel>
                 </Border>
@@ -118,7 +120,7 @@
             <Grid Grid.Row="3" ColumnDefinitions="2*, *" Margin="0,0,0,20">
                 <Border Classes="chartCard" Grid.Column="0" Margin="0,0,10,0">
                     <StackPanel Spacing="10">
-                        <TextBlock Text="Evolución Financiera" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" Foreground="{DynamicResource MainForegroundBrush}"/>
+                        <TextBlock Text="{loc:Translate Key=Dashboard.FinancialEvolution}" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" Foreground="{DynamicResource MainForegroundBrush}"/>
                         <lvc:CartesianChart Series="{Binding Series}" 
                                             XAxes="{Binding XAxes}" 
                                             Height="350"
@@ -129,7 +131,7 @@
 
                 <Border Classes="chartCard" Grid.Column="1" Margin="10,0,0,0">
                     <StackPanel Spacing="10">
-                        <TextBlock Text="Distribución" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" Foreground="{DynamicResource MainForegroundBrush}"/>
+                        <TextBlock Text="{loc:Translate Key=Dashboard.Distribution}" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" Foreground="{DynamicResource MainForegroundBrush}"/>
                         <lvc:PieChart Series="{Binding CategorySeries}" 
                                       Height="350" 
                                       Background="Transparent"
@@ -144,7 +146,7 @@
                 <!-- Top Clientes -->
                 <Border Classes="chartCard" Grid.Column="0" Margin="0,0,10,0">
                     <StackPanel Spacing="15">
-                        <TextBlock Text="💎 Top Clientes" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                        <TextBlock Text="{loc:Translate Key=Dashboard.TopClients}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
                         <ItemsControl ItemsSource="{Binding TopClientes}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:TopClienteDto">
@@ -163,7 +165,7 @@
                 <!-- Recent Activity -->
                 <Border Classes="chartCard" Grid.Column="1" Margin="10,0,10,0">
                     <StackPanel Spacing="15">
-                        <TextBlock Text="🕒 Actividad Reciente" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                        <TextBlock Text="{loc:Translate Key=Dashboard.RecentActivity}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
                         <ItemsControl ItemsSource="{Binding RecentMovimientos}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="dto:MovimientoDto">
@@ -186,7 +188,7 @@
                 <!-- Notifications & Health -->
                 <Border Classes="chartCard" Grid.Column="2" Margin="10,0,0,0">
                     <StackPanel Spacing="15">
-                        <TextBlock Text="📢 Alertas" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                        <TextBlock Text="{loc:Translate Key=Dashboard.Alerts}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
                         <Button Classes="alertButton" Command="{Binding NavigateToAlertCommand}" CommandParameter="Liquidaciones">
                             <Border Background="{Binding ShowLiquidacionesAlert, Converter={StaticResource AlertBackgroundConverter}}" 
                                     Padding="12" CornerRadius="10" 
@@ -201,7 +203,7 @@
                         <Border Background="#202196f3" Padding="12" CornerRadius="10" BorderBrush="#2196f3" BorderThickness="1">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <TextBlock Text="ℹ️" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding DatabaseStatus, StringFormat='SQLite: \{0\}'}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                <TextBlock Text="{Binding DatabaseStatus}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -209,6 +211,13 @@
             </Grid>
         </Grid>
     </ScrollViewer>
+
+    <controls:ListStateOverlay IsLoading="{Binding IsLoading}"
+                               IsEmpty="{Binding IsEmpty}"
+                               HasError="{Binding HasError}"
+                               ErrorMessage="{Binding ErrorMessage}"
+                               RetryCommand="{Binding LoadStatsCommand}" />
+    </Grid>
 
     <UserControl.Styles>
         <Style Selector="Border.metricCard">

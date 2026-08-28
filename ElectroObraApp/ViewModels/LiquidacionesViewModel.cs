@@ -1,11 +1,11 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ElectroObraApp.Application.DTOs;
 using ElectroObraApp.Application.Interfaces;
-using System.Linq;
 
 namespace ElectroObraApp.ViewModels;
 
@@ -16,6 +16,8 @@ public partial class LiquidacionesViewModel : ViewModelBase
     private readonly IMovimientoService _movimientoService;
     private readonly IEmpleadoService _empleadoService;
     private readonly IUserSettingsService _settingsService;
+    private readonly INotificationService _notificationService;
+    private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
     private ObservableCollection<LiquidacionDto> _liquidaciones = new();
@@ -31,13 +33,17 @@ public partial class LiquidacionesViewModel : ViewModelBase
         IExportService exportService,
         IMovimientoService movimientoService,
         IEmpleadoService empleadoService,
-        IUserSettingsService settingsService)
+        IUserSettingsService settingsService,
+        INotificationService notificationService,
+        ILocalizationService localizationService)
     {
         _liquidacionService = liquidacionService;
         _exportService = exportService;
         _movimientoService = movimientoService;
         _empleadoService = empleadoService;
         _settingsService = settingsService;
+        _notificationService = notificationService;
+        _localizationService = localizationService;
 
         LoadCommand = new AsyncRelayCommand(LoadAsync);
         ExportPdfCommand = new AsyncRelayCommand<LiquidacionDto>(ExportPdfAsync);
@@ -46,7 +52,6 @@ public partial class LiquidacionesViewModel : ViewModelBase
         NuevaLiquidacionCommand = new RelayCommand(NuevaLiquidacion);
     }
 
-    // Acción de navegación inyectada desde MainViewModel
     public Action? OnNuevaLiquidacion { get; set; }
 
     public IAsyncRelayCommand LoadCommand { get; }
@@ -79,8 +84,9 @@ public partial class LiquidacionesViewModel : ViewModelBase
         var path = await GenerateAndSavePdfAsync(dto);
         if (path != null)
         {
-            // Podrías abrir el archivo automáticamente si quieres
-            // System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
+            await _notificationService.ShowInfoAsync(
+                _localizationService.GetString("General.Success"),
+                string.Format(_localizationService.GetString("Settlements.ExportSuccess"), path));
         }
     }
 
@@ -88,13 +94,12 @@ public partial class LiquidacionesViewModel : ViewModelBase
     {
         if (dto == null) return null;
 
-        // Buscar los adelantos que formaron parte de esta liquidación
         var todosMovimientos = await _movimientoService.GetAllAsync();
         var adelantos = todosMovimientos.Where(m => 
             m.EmpleadoId == dto.EmpleadoId && 
             m.Fecha >= dto.FechaInicio && 
             m.Fecha <= dto.FechaFin &&
-            m.TipoMovimientoId == Guid.Parse("00000000-0000-0000-0000-000000000003")); // Adelantos
+            m.TipoMovimientoId == Guid.Parse("00000000-0000-0000-0000-000000000003"));
 
         var pdf = await _exportService.ExportLiquidacionToPdfAsync(dto, adelantos);
         
@@ -111,19 +116,30 @@ public partial class LiquidacionesViewModel : ViewModelBase
         var empleado = await _empleadoService.GetByIdAsync(dto.EmpleadoId);
         if (empleado == null || string.IsNullOrWhiteSpace(empleado.Email))
         {
-            Serilog.Log.Warning("No se puede enviar email: El empleado {Nombre} no tiene un email configurado.", dto.EmpleadoNombre);
+            await _notificationService.ShowWarningAsync(
+                _localizationService.GetString("General.Error"),
+                string.Format(_localizationService.GetString("Settlements.NoEmail"), dto.EmpleadoNombre));
             return;
         }
 
         try 
         {
             var path = await GenerateAndSavePdfAsync(dto);
-            Application.Helpers.EmailHelper.OpenEmailClient(empleado.Email, _settingsService);
-            Serilog.Log.Information("Abriendo cliente de correo para {Email}. Archivo guardado en {Path}", empleado.Email, path);
+            var subject = string.Format(_localizationService.GetString("Settlements.EmailSubject"), dto.FechaInicio, dto.FechaFin);
+            Application.Helpers.EmailHelper.OpenEmailClient(empleado.Email, _settingsService, subject);
+            if (path != null)
+            {
+                await _notificationService.ShowInfoAsync(
+                    _localizationService.GetString("General.Success"),
+                    string.Format(_localizationService.GetString("Settlements.EmailOpened"), empleado.Email));
+            }
         }
         catch (Exception ex)
         {
             Serilog.Log.Error(ex, "Error al compartir liquidación por email");
+            await _notificationService.ShowErrorAsync(
+                _localizationService.GetString("General.Error"),
+                _localizationService.GetString("Settlements.EmailError"));
         }
     }
 
@@ -134,7 +150,9 @@ public partial class LiquidacionesViewModel : ViewModelBase
         var empleado = await _empleadoService.GetByIdAsync(dto.EmpleadoId);
         if (empleado == null || string.IsNullOrWhiteSpace(empleado.Telefono))
         {
-            Serilog.Log.Warning("No se puede enviar WhatsApp: El empleado {Nombre} no tiene un teléfono configurado.", dto.EmpleadoNombre);
+            await _notificationService.ShowWarningAsync(
+                _localizationService.GetString("General.Error"),
+                string.Format(_localizationService.GetString("Settlements.NoPhone"), dto.EmpleadoNombre));
             return;
         }
 
@@ -142,15 +160,25 @@ public partial class LiquidacionesViewModel : ViewModelBase
         {
             var path = await GenerateAndSavePdfAsync(dto);
             
-            var mensaje = $"Hola {empleado.Nombre}, te envío el reporte de tu liquidación del periodo {dto.FechaInicio:dd/MM/yyyy} al {dto.FechaFin:dd/MM/yyyy}.";
+            var mensaje = string.Format(
+                _localizationService.GetString("Settlements.WhatsAppMessage"),
+                empleado.Nombre, dto.FechaInicio, dto.FechaFin);
             var url = $"https://api.whatsapp.com/send?phone={empleado.Telefono}&text={Uri.EscapeDataString(mensaje)}";
             
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
-            Serilog.Log.Information("Abriendo WhatsApp para {Telefono}. Archivo guardado en {Path}", empleado.Telefono, path);
+            if (path != null)
+            {
+                await _notificationService.ShowInfoAsync(
+                    _localizationService.GetString("General.Success"),
+                    string.Format(_localizationService.GetString("Settlements.WhatsAppOpened"), empleado.Telefono));
+            }
         }
         catch (Exception ex)
         {
             Serilog.Log.Error(ex, "Error al compartir liquidación por WhatsApp");
+            await _notificationService.ShowErrorAsync(
+                _localizationService.GetString("General.Error"),
+                _localizationService.GetString("Settlements.WhatsAppError"));
         }
     }
 }

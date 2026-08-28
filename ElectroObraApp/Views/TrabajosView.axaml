@@ -3,6 +3,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
+             xmlns:controls="clr-namespace:ElectroObraApp.Controls"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:loc="using:ElectroObraApp.Markup"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ElectroObraApp.Views.TrabajosView"
              x:DataType="vm:TrabajosViewModel">
@@ -16,14 +19,14 @@
                 </StackPanel>
             </Grid>
 
-            <Border DockPanel.Dock="Top" Background="#252525" CornerRadius="8" Padding="15" Margin="0,0,0,20" BorderBrush="#3d3d3d" BorderThickness="1">
+            <Border DockPanel.Dock="Top" Classes="filterPanel" Margin="0,0,0,20">
                 <StackPanel Spacing="10">
                     <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,5">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <PathIcon Data="{StaticResource filter_regular}" Width="16" Height="16" Foreground="#aaa"/>
-                            <TextBlock Text="FILTROS DE BÚSQUEDA" FontSize="12" FontWeight="Bold" Foreground="#888" VerticalAlignment="Center"/>
+                            <materialIcons:MaterialIcon Kind="Filter" Width="16" Height="16" Foreground="{DynamicResource MutedForegroundBrush}"/>
+                            <TextBlock Text="{loc:Translate Key=Jobs.SearchFilters}" Classes="filterTitle"/>
                         </StackPanel>
-                        <Button Grid.Column="1" HorizontalAlignment="Right" Content="Limpiar Filtros" Classes="link" Command="{Binding LimpiarFiltrosCommand}" FontSize="11"/>
+                        <Button Grid.Column="1" HorizontalAlignment="Right" Content="{loc:Translate Key=General.ClearFilters}" Classes="link" Command="{Binding LimpiarFiltrosCommand}" FontSize="11"/>
                     </Grid>
 
                     <WrapPanel Orientation="Horizontal" Margin="-5">
@@ -74,20 +77,29 @@
                 </ComboBox>
             </StackPanel>
 
-            <DataGrid ItemsSource="{Binding Trabajos}" 
-                      AutoGenerateColumns="False" 
-                      IsReadOnly="True" 
-                      x:CompileBindings="False"
-                      GridLinesVisibility="All"
-                      DoubleTapped="OnDataGridDoubleTapped">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Descripción" Binding="{Binding Descripcion, Mode=OneWay}" Width="*" />
-                    <DataGridTextColumn Header="Cliente" Binding="{Binding ClienteNombre, Mode=OneWay}" />
-                    <DataGridTextColumn Header="Inicio" Binding="{Binding FechaInicio, StringFormat=\{0:dd/MM/yyyy\}, Mode=OneWay}" />
-                    <DataGridTextColumn Header="Presupuesto" Binding="{Binding Presupuesto, StringFormat=\{0:C\}, Mode=OneWay}" />
-                    <DataGridCheckBoxColumn Header="Finalizado" Binding="{Binding Finalizado, Mode=OneWay}" />
-                </DataGrid.Columns>
-            </DataGrid>
+            <Grid>
+                <DataGrid ItemsSource="{Binding Trabajos}" 
+                          AutoGenerateColumns="False" 
+                          IsReadOnly="True" 
+                          x:CompileBindings="False"
+                          GridLinesVisibility="All"
+                          DoubleTapped="OnDataGridDoubleTapped"
+                          IsVisible="{Binding !IsLoading}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Descripción" Binding="{Binding Descripcion, Mode=OneWay}" Width="*" />
+                        <DataGridTextColumn Header="Cliente" Binding="{Binding ClienteNombre, Mode=OneWay}" />
+                        <DataGridTextColumn Header="Inicio" Binding="{Binding FechaInicio, StringFormat=\{0:dd/MM/yyyy\}, Mode=OneWay}" />
+                        <DataGridTextColumn Header="Presupuesto" Binding="{Binding Presupuesto, StringFormat=\{0:C\}, Mode=OneWay}" />
+                        <DataGridCheckBoxColumn Header="Finalizado" Binding="{Binding Finalizado, Mode=OneWay}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <controls:ListStateOverlay IsLoading="{Binding IsLoading}"
+                                           IsEmpty="{Binding IsEmpty}"
+                                           HasError="{Binding HasError}"
+                                           ErrorMessage="{Binding ErrorMessage}"
+                                           RetryCommand="{Binding LoadTrabajosCommand}" />
+            </Grid>
         </DockPanel>
 
         <!-- Overlay de Edición — ocupa toda el área disponible -->

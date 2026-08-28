@@ -13,6 +13,7 @@ public partial class SettingsViewModel : ViewModelBase
 {
     private readonly IUserSettingsService _settingsService;
     private readonly IHolidayService _holidayService;
+    private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
     private int _selectedCategoryIndex = 0;
@@ -28,6 +29,35 @@ public partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _backgroundPath;
+
+    [ObservableProperty]
+    private string _selectedLanguage;
+
+    public int SelectedLanguageIndex
+    {
+        get => SelectedLanguage == "en" ? 1 : 0;
+        set
+        {
+            var code = value == 1 ? "en" : "es";
+            if (SelectedLanguage != code)
+            {
+                SelectedLanguage = code;
+            }
+        }
+    }
+
+    partial void OnSelectedLanguageChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        _localizationService.SetLanguage(value);
+        Markup.LocalizationBindingSource.Instance.Refresh();
+        OnPropertyChanged(nameof(SelectedLanguageIndex));
+        _ = _settingsService.SetLanguageAsync(value);
+    }
 
     [ObservableProperty]
     private string _selectedTheme;
@@ -78,15 +108,20 @@ public partial class SettingsViewModel : ViewModelBase
     public ObservableCollection<string> DashboardPeriods { get; } = new() { "Mensual", "Anual", "Total" };
     public ObservableCollection<string> EmailClients { get; } = new() { "SystemDefault", "Gmail", "Yahoo", "OutlookWeb" };
 
-    public SettingsViewModel(IUserSettingsService settingsService, IHolidayService holidayService)
+    public SettingsViewModel(
+        IUserSettingsService settingsService,
+        IHolidayService holidayService,
+        ILocalizationService localizationService)
     {
         _settingsService = settingsService;
         _holidayService = holidayService;
+        _localizationService = localizationService;
         
         _appName = _settingsService.GetAppName();
         _logoPath = _settingsService.GetLogoPath();
         _backgroundPath = _settingsService.GetBackgroundPath();
         _selectedTheme = _settingsService.GetTheme();
+        _selectedLanguage = _settingsService.GetLanguage();
         _selectedDashboardPeriod = _settingsService.GetDashboardPeriod();
         _selectedEmailClient = _settingsService.GetPreferredEmailClient();
         _autoUpdateDollar = _settingsService.GetAutoUpdateDollar();

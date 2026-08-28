@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:ElectroObraApp.ViewModels"
              xmlns:material="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:loc="using:ElectroObraApp.Markup"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
              x:Class="ElectroObraApp.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
@@ -94,11 +95,11 @@
                             <Separator Background="{DynamicResource SidebarSeparatorBrush}"/>
 
                             <StackPanel Spacing="5">
-                                <TextBlock Text="Idioma del Sistema" FontWeight="Medium"/>
-                                <TextBlock Text="Selecciona el idioma preferido para la interfaz de usuario." FontSize="12" Foreground="{DynamicResource SecondaryForegroundBrush}" Margin="0,0,0,5"/>
-                                <ComboBox SelectedIndex="0" HorizontalAlignment="Left" Width="200">
-                                    <ComboBoxItem Content="Español (es)"/>
-                                    <ComboBoxItem Content="English (en)"/>
+                                <TextBlock Text="{loc:Translate Key=Settings.Language}" FontWeight="Medium"/>
+                                <TextBlock Text="{loc:Translate Key=Settings.LanguageDescription}" FontSize="12" Foreground="{DynamicResource SecondaryForegroundBrush}" Margin="0,0,0,5"/>
+                                <ComboBox SelectedIndex="{Binding SelectedLanguageIndex}" HorizontalAlignment="Left" Width="200">
+                                    <ComboBoxItem Content="{loc:Translate Key=Settings.LanguageSpanish}"/>
+                                    <ComboBoxItem Content="{loc:Translate Key=Settings.LanguageEnglish}"/>
                                 </ComboBox>
                             </StackPanel>
 

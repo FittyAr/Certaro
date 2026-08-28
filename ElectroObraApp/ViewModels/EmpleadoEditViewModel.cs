@@ -10,6 +10,7 @@ namespace ElectroObraApp.ViewModels;
 public partial class EmpleadoEditViewModel : ViewModelBase
 {
     private readonly IEmpleadoService _empleadoService;
+    private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
     private EmpleadoDto _empleado = new() { FechaIngreso = DateTime.Now };
@@ -37,9 +38,10 @@ public partial class EmpleadoEditViewModel : ViewModelBase
         }
     }
 
-    public EmpleadoEditViewModel(IEmpleadoService empleadoService)
+    public EmpleadoEditViewModel(IEmpleadoService empleadoService, ILocalizationService localizationService)
     {
         _empleadoService = empleadoService;
+        _localizationService = localizationService;
         SaveCommand = new AsyncRelayCommand(SaveAsync);
         CancelCommand = new RelayCommand(Cancel);
     }
@@ -49,13 +51,11 @@ public partial class EmpleadoEditViewModel : ViewModelBase
 
     private async Task SaveAsync()
     {
-        bool success;
-        if (Empleado.Id == Guid.Empty)
-            success = await _empleadoService.CreateAsync(Empleado);
-        else
-            success = await _empleadoService.UpdateAsync(Empleado);
+        var result = Empleado.Id == Guid.Empty
+            ? await _empleadoService.CreateAsync(Empleado)
+            : await _empleadoService.UpdateAsync(Empleado);
 
-        if (success)
+        if (HandleResult(result, _localizationService))
         {
             CloseRequest?.Invoke(this, true);
         }
@@ -68,4 +68,3 @@ public partial class EmpleadoEditViewModel : ViewModelBase
 
     public event EventHandler<bool>? CloseRequest;
 }
-

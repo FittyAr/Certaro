@@ -15,6 +15,7 @@ public partial class MovimientoEditViewModel : ViewModelBase
     private readonly ICategoriaService _categoriaService;
     private readonly ITipoMovimientoService _tipoMovimientoService;
     private readonly IEmpleadoService _empleadoService;
+    private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
     private MovimientoDto _movimiento = new() { Fecha = DateTime.Now, Cantidad = 1 };
@@ -53,12 +54,14 @@ public partial class MovimientoEditViewModel : ViewModelBase
         IMovimientoService movimientoService,
         ICategoriaService categoriaService,
         ITipoMovimientoService tipoMovimientoService,
-        IEmpleadoService empleadoService)
+        IEmpleadoService empleadoService,
+        ILocalizationService localizationService)
     {
         _movimientoService = movimientoService;
         _categoriaService = categoriaService;
         _tipoMovimientoService = tipoMovimientoService;
         _empleadoService = empleadoService;
+        _localizationService = localizationService;
         
         SaveCommand = new AsyncRelayCommand(SaveAsync);
         CancelCommand = new RelayCommand(Cancel);
@@ -74,33 +77,28 @@ public partial class MovimientoEditViewModel : ViewModelBase
         var cats = await _categoriaService.GetAllAsync();
         var tipos = await _tipoMovimientoService.GetAllAsync();
 
-        // Asignamos las colecciones
         Categorias = new ObservableCollection<CategoriaDto>(cats);
         TiposMovimiento = new ObservableCollection<TipoMovimientoDto>(tipos);
         
         var emps = await _empleadoService.GetAllAsync();
         Empleados = new ObservableCollection<EmpleadoDto>(emps);
 
-        // Solo establecemos el tipo por defecto si es un movimiento nuevo
         if (Movimiento.Id == Guid.Empty && Movimiento.TipoMovimientoId == Guid.Empty && TiposMovimiento.Any())
         {
             Movimiento.TipoMovimientoId = TiposMovimiento.First().Id;
         }
         
-        // Disparamos notificaciones manuales para asegurar que los combos reflejen el valor correcto
         OnPropertyChanged(nameof(Movimiento));
         OnPropertyChanged(nameof(FechaOffset));
     }
 
     private async Task SaveAsync()
     {
-        bool success;
-        if (Movimiento.Id == Guid.Empty)
-            success = await _movimientoService.CreateAsync(Movimiento);
-        else
-            success = await _movimientoService.UpdateAsync(Movimiento);
+        var result = Movimiento.Id == Guid.Empty
+            ? await _movimientoService.CreateAsync(Movimiento)
+            : await _movimientoService.UpdateAsync(Movimiento);
 
-        if (success)
+        if (HandleResult(result, _localizationService))
         {
             CloseRequest?.Invoke(this, true);
         }
@@ -113,4 +111,3 @@ public partial class MovimientoEditViewModel : ViewModelBase
 
     public event EventHandler<bool>? CloseRequest;
 }
-

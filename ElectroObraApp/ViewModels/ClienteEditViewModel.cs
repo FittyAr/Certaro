@@ -11,6 +11,7 @@ public partial class ClienteEditViewModel : ViewModelBase
 {
     private readonly IClienteService _clienteService;
     private readonly IUserSettingsService _settingsService;
+    private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
     private ClienteDto _cliente = new();
@@ -18,10 +19,14 @@ public partial class ClienteEditViewModel : ViewModelBase
     [ObservableProperty]
     private string _title = "Nuevo Cliente";
 
-    public ClienteEditViewModel(IClienteService clienteService, IUserSettingsService settingsService)
+    public ClienteEditViewModel(
+        IClienteService clienteService,
+        IUserSettingsService settingsService,
+        ILocalizationService localizationService)
     {
         _clienteService = clienteService;
         _settingsService = settingsService;
+        _localizationService = localizationService;
         SaveCommand = new AsyncRelayCommand(SaveAsync);
         CancelCommand = new RelayCommand(Cancel);
         AddContactCommand = new RelayCommand(AddContact);
@@ -58,13 +63,11 @@ public partial class ClienteEditViewModel : ViewModelBase
 
     private async Task SaveAsync()
     {
-        bool success;
-        if (Cliente.Id == Guid.Empty)
-            success = await _clienteService.CreateAsync(Cliente);
-        else
-            success = await _clienteService.UpdateAsync(Cliente);
+        var result = Cliente.Id == Guid.Empty
+            ? await _clienteService.CreateAsync(Cliente)
+            : await _clienteService.UpdateAsync(Cliente);
 
-        if (success)
+        if (HandleResult(result, _localizationService))
         {
             CloseRequest?.Invoke(this, true);
         }
@@ -77,4 +80,3 @@ public partial class ClienteEditViewModel : ViewModelBase
 
     public event EventHandler<bool>? CloseRequest;
 }
-

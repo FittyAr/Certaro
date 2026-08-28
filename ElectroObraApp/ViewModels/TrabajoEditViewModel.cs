@@ -12,6 +12,7 @@ public partial class TrabajoEditViewModel : ViewModelBase
 {
     private readonly ITrabajoService _trabajoService;
     private readonly IClienteService _clienteService;
+    private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
     private TrabajoDto _trabajo = new() { FechaInicio = DateTime.Now };
@@ -40,10 +41,14 @@ public partial class TrabajoEditViewModel : ViewModelBase
         }
     }
 
-    public TrabajoEditViewModel(ITrabajoService trabajoService, IClienteService clienteService)
+    public TrabajoEditViewModel(
+        ITrabajoService trabajoService,
+        IClienteService clienteService,
+        ILocalizationService localizationService)
     {
         _trabajoService = trabajoService;
         _clienteService = clienteService;
+        _localizationService = localizationService;
         SaveCommand = new AsyncRelayCommand(SaveAsync);
         CancelCommand = new RelayCommand(Cancel);
         LoadDataCommand = new AsyncRelayCommand(LoadDataAsync);
@@ -89,7 +94,6 @@ public partial class TrabajoEditViewModel : ViewModelBase
     {
         if (item != null)
         {
-            // Buscar la orden que contiene el item
             foreach (var orden in Trabajo.OrdenesTrabajo)
             {
                 if (orden.Items.Remove(item)) break;
@@ -106,13 +110,11 @@ public partial class TrabajoEditViewModel : ViewModelBase
 
     private async Task SaveAsync()
     {
-        bool success;
-        if (Trabajo.Id == Guid.Empty)
-            success = await _trabajoService.CreateAsync(Trabajo);
-        else
-            success = await _trabajoService.UpdateAsync(Trabajo);
+        var result = Trabajo.Id == Guid.Empty
+            ? await _trabajoService.CreateAsync(Trabajo)
+            : await _trabajoService.UpdateAsync(Trabajo);
 
-        if (success)
+        if (HandleResult(result, _localizationService))
         {
             CloseRequest?.Invoke(this, true);
         }
@@ -125,4 +127,3 @@ public partial class TrabajoEditViewModel : ViewModelBase
 
     public event EventHandler<bool>? CloseRequest;
 }
-

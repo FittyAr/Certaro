@@ -53,6 +53,7 @@ public partial class MainViewModel : ViewModelBase
         NavigateToEmpleadosCommand = new RelayCommand(NavigateToEmpleados);
         NavigateToTrabajosCommand = new RelayCommand(NavigateToTrabajos);
         NavigateToLiquidacionesCommand = new RelayCommand(NavigateToLiquidaciones);
+        NavigateToFacturasCommand = new RelayCommand(NavigateToFacturas);
         NavigateToSeedCommand = new RelayCommand(NavigateToSeed);
         NavigateToSettingsCommand = new RelayCommand(NavigateToSettings);
         NavigateToCommand = new RelayCommand<string>(NavigateTo);
@@ -70,6 +71,7 @@ public partial class MainViewModel : ViewModelBase
                 case "Empleados": NavigateToEmpleados(); break;
                 case "Trabajos": NavigateToTrabajos(); break;
                 case "Liquidaciones": NavigateToLiquidaciones(); break;
+                case "Facturas": NavigateToFacturas(); break;
                 case "Configuración": NavigateToSettings(); break;
             }
         });
@@ -81,6 +83,7 @@ public partial class MainViewModel : ViewModelBase
     public IRelayCommand NavigateToEmpleadosCommand { get; }
     public IRelayCommand NavigateToTrabajosCommand { get; }
     public IRelayCommand NavigateToLiquidacionesCommand { get; }
+    public IRelayCommand NavigateToFacturasCommand { get; }
     public IRelayCommand NavigateToSeedCommand { get; }
     public IRelayCommand NavigateToSettingsCommand { get; }
     public IRelayCommand<string> NavigateToCommand { get; }
@@ -104,6 +107,7 @@ public partial class MainViewModel : ViewModelBase
         CurrentPage = vm;
         CurrentSection = "Liquidaciones";
     }
+    private void NavigateToFacturas() { CurrentPage = _serviceProvider.GetRequiredService<FacturasViewModel>(); CurrentSection = "Facturas"; }
     private void NavigateToSeed() { CurrentPage = _serviceProvider.GetRequiredService<SeedViewModel>(); CurrentSection = "Seed"; }
     private void NavigateToSettings() { CurrentPage = _serviceProvider.GetRequiredService<SettingsViewModel>(); CurrentSection = "Configuración"; }
 

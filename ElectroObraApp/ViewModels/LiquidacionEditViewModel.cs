@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ElectroObraApp.Application.DTOs;
 using ElectroObraApp.Application.Interfaces;
+using ElectroObraApp.Application.Validation;
 
 namespace ElectroObraApp.ViewModels;
 
@@ -13,6 +14,7 @@ public partial class LiquidacionEditViewModel : ViewModelBase
     private readonly ILiquidacionService _liquidacionService;
     private readonly IEmpleadoService _empleadoService;
     private readonly IUserSettingsService _settingsService;
+    private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
     private LiquidacionDto _liquidacion = new() 
@@ -62,13 +64,17 @@ public partial class LiquidacionEditViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableCollection<EmpleadoDto> _empleados = new();
 
-    public LiquidacionEditViewModel(ILiquidacionService liquidacionService, IEmpleadoService empleadoService, IUserSettingsService settingsService)
+    public LiquidacionEditViewModel(
+        ILiquidacionService liquidacionService,
+        IEmpleadoService empleadoService,
+        IUserSettingsService settingsService,
+        ILocalizationService localizationService)
     {
         _liquidacionService = liquidacionService;
         _empleadoService = empleadoService;
         _settingsService = settingsService;
+        _localizationService = localizationService;
 
-        // Cargar defaults del config solo si es nueva
         if (Liquidacion.Id == Guid.Empty)
         {
             Liquidacion.MultiplicadorSabado = _settingsService.GetDefaultMultiplierSaturday();
@@ -106,14 +112,12 @@ public partial class LiquidacionEditViewModel : ViewModelBase
     {
         if (Liquidacion.EmpleadoId == Guid.Empty) return;
 
-        // Llamamos al servicio para obtener adelantos y tarifa base
         var sugerencia = await _liquidacionService.SugerirLiquidacionAsync(
             Liquidacion.EmpleadoId, 
             Liquidacion.FechaInicio, 
             Liquidacion.FechaFin, 
             Liquidacion.DiasTrabajados);
 
-        // Mantenemos los valores que el usuario pudo haber editado en la UI antes de reasignar
         sugerencia.IncluirSabados = Liquidacion.IncluirSabados;
         sugerencia.IncluirDomingos = Liquidacion.IncluirDomingos;
         sugerencia.IncluirFeriados = Liquidacion.IncluirFeriados;
@@ -122,15 +126,13 @@ public partial class LiquidacionEditViewModel : ViewModelBase
         sugerencia.MultiplicadorFeriado = Liquidacion.MultiplicadorFeriado;
         sugerencia.Observaciones = Liquidacion.Observaciones;
 
-        // Obtener lista de feriados configurados
         var holidaysJson = _settingsService.GetHolidaysJson();
         var feriados = new System.Collections.Generic.HashSet<DateTime>();
         try {
             var dates = System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.List<DateTime>>(holidaysJson);
             if (dates != null) foreach(var d in dates) feriados.Add(d.Date);
-        } catch { /* Ignorar errores de parseo */ }
+        } catch { }
 
-        // Recalculamos totales con la tarifa sugerida y los multiplicadores actuales
         var totalDias = 0m;
         var totalBruto = 0m;
         
@@ -166,26 +168,31 @@ public partial class LiquidacionEditViewModel : ViewModelBase
         sugerencia.TotalBruto = totalBruto;
         sugerencia.TotalNeto = totalBruto - sugerencia.TotalAdelantos;
         
-        // REASIGNAMOS EL OBJETO para disparar la notificación de cambio a la UI
         Liquidacion = sugerencia;
     }
 
     private async Task SaveAsync()
     {
-        bool success;
         if (Liquidacion.Id == Guid.Empty)
         {
-            var result = await _liquidacionService.CreateAsync(Liquidacion);
-            success = result != null;
+            var createResult = await _liquidacionService.CreateAsync(Liquidacion);
+            if (createResult.IsSuccess)
+            {
+                ErrorMessage = null;
+                CloseRequest?.Invoke(this, true);
+            }
+            else
+            {
+                ErrorMessage = createResult.ToDisplayMessage(_localizationService);
+            }
         }
         else
         {
-            success = await _liquidacionService.UpdateAsync(Liquidacion);
-        }
-
-        if (success)
-        {
-            CloseRequest?.Invoke(this, true);
+            var result = await _liquidacionService.UpdateAsync(Liquidacion);
+            if (HandleResult(result, _localizationService))
+            {
+                CloseRequest?.Invoke(this, true);
+            }
         }
     }
 
@@ -196,7 +203,6 @@ public partial class LiquidacionEditViewModel : ViewModelBase
 
     public event EventHandler<bool>? CloseRequest;
 
-    // Propiedades para disparar el recalculo desde los checkboxes/updowns
     public bool IncluirSabados
     {
         get => Liquidacion.IncluirSabados;
@@ -213,4 +219,3 @@ public partial class LiquidacionEditViewModel : ViewModelBase
         set { Liquidacion.IncluirFeriados = value; OnPropertyChanged(); _ = SugerirAsync(); }
     }
 }
-

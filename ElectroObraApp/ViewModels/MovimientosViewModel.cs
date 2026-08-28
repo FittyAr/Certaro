@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Mapster;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -19,7 +17,11 @@ public partial class MovimientosViewModel : ViewModelBase
     private readonly ITipoMovimientoService _tipoMovimientoService;
     private readonly IExportService _exportService;
     private readonly IUserSettingsService _settingsService;
+    private readonly IConfirmDialogService _confirmDialogService;
+    private readonly ILocalizationService _localizationService;
+    private readonly IFileSaveDialogService _fileSaveDialogService;
     private readonly IServiceProvider _serviceProvider;
+    private CancellationTokenSource? _filterDebounceCts;
 
     [ObservableProperty]
     private ObservableCollection<MovimientoDto> _movimientos = new();
@@ -31,7 +33,10 @@ public partial class MovimientosViewModel : ViewModelBase
     private int _currentPage = 1;
 
     [ObservableProperty]
-    private ObservableCollection<int> _pageSizeOptions = new() { 10, 30, 50, 100, 0 }; // 0 = Todos
+    private int _totalPages = 1;
+
+    [ObservableProperty]
+    private ObservableCollection<int> _pageSizeOptions = new() { 10, 30, 50, 100, 0 };
 
     [ObservableProperty]
     private bool _isEditing;
@@ -42,7 +47,6 @@ public partial class MovimientosViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableCollection<TipoMovimientoDto> _tiposMovimiento = new();
 
-    // Filtros
     [ObservableProperty] private string _filtroConcepto = string.Empty;
     [ObservableProperty] private Guid? _filtroTipoId;
     [ObservableProperty] private DateTime? _filtroFechaDesde;
@@ -50,25 +54,36 @@ public partial class MovimientosViewModel : ViewModelBase
     [ObservableProperty] private decimal? _filtroMontoMin;
     [ObservableProperty] private decimal? _filtroMontoMax;
 
+    public bool ShowPagination => PageSize > 0;
+
     public MovimientosViewModel(
-        IMovimientoService movimientoService, 
+        IMovimientoService movimientoService,
         ITipoMovimientoService tipoMovimientoService,
-        IExportService exportService, 
+        IExportService exportService,
         IUserSettingsService settingsService,
+        IConfirmDialogService confirmDialogService,
+        ILocalizationService localizationService,
+        IFileSaveDialogService fileSaveDialogService,
         IServiceProvider serviceProvider)
     {
         _movimientoService = movimientoService;
         _tipoMovimientoService = tipoMovimientoService;
         _exportService = exportService;
         _settingsService = settingsService;
+        _confirmDialogService = confirmDialogService;
+        _localizationService = localizationService;
+        _fileSaveDialogService = fileSaveDialogService;
         _serviceProvider = serviceProvider;
         _pageSize = _settingsService.GetPageSize();
 
         LoadMovimientosCommand = new AsyncRelayCommand(LoadMovimientosAsync);
         AddCommand = new AsyncRelayCommand(OnAddAsync);
         EditCommand = new AsyncRelayCommand<MovimientoDto>(OnEditAsync);
+        DeleteCommand = new AsyncRelayCommand<MovimientoDto>(DeleteAsync);
         LimpiarFiltrosCommand = new RelayCommand(LimpiarFiltros);
-        
+        PreviousPageCommand = new RelayCommand(GoToPreviousPage, () => CurrentPage > 1);
+        NextPageCommand = new RelayCommand(GoToNextPage, () => CurrentPage < TotalPages);
+
         ExportPdfCommand = new AsyncRelayCommand(ExportPdfAsync);
         ExportExcelCommand = new AsyncRelayCommand(ExportExcelAsync);
         ExportCsvCommand = new AsyncRelayCommand(ExportCsvAsync);
@@ -81,12 +96,35 @@ public partial class MovimientosViewModel : ViewModelBase
     public IAsyncRelayCommand LoadMovimientosCommand { get; }
     public IAsyncRelayCommand AddCommand { get; }
     public IAsyncRelayCommand<MovimientoDto> EditCommand { get; }
+    public IAsyncRelayCommand<MovimientoDto> DeleteCommand { get; }
     public IRelayCommand LimpiarFiltrosCommand { get; }
+    public IRelayCommand PreviousPageCommand { get; }
+    public IRelayCommand NextPageCommand { get; }
     public IAsyncRelayCommand ExportPdfCommand { get; }
     public IAsyncRelayCommand ExportExcelCommand { get; }
     public IAsyncRelayCommand ExportCsvCommand { get; }
     public IAsyncRelayCommand ExportJsonCommand { get; }
     public IAsyncRelayCommand ExportWordCommand { get; }
+
+    partial void OnCurrentPageChanged(int value)
+    {
+        PreviousPageCommand.NotifyCanExecuteChanged();
+        NextPageCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnTotalPagesChanged(int value)
+    {
+        PreviousPageCommand.NotifyCanExecuteChanged();
+        NextPageCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnPageSizeChanged(int value)
+    {
+        OnPropertyChanged(nameof(ShowPagination));
+        _ = _settingsService.SetPageSizeAsync(value);
+        CurrentPage = 1;
+        _ = LoadMovimientosAsync();
+    }
 
     private async Task LoadInitialDataAsync()
     {
@@ -100,8 +138,8 @@ public partial class MovimientosViewModel : ViewModelBase
         var vm = _serviceProvider.GetRequiredService<MovimientoEditViewModel>();
         vm.Title = "Nuevo Movimiento";
         vm.CloseRequest += OnEditFinished;
-        await vm.LoadDataAsync(); 
-        vm.Movimiento = new MovimientoDto { Fecha = DateTime.Now }; // Initialize fresh
+        await vm.LoadDataAsync();
+        vm.Movimiento = new MovimientoDto { Fecha = DateTime.Now };
         EditViewModel = vm;
         IsEditing = true;
     }
@@ -112,8 +150,8 @@ public partial class MovimientosViewModel : ViewModelBase
         var vm = _serviceProvider.GetRequiredService<MovimientoEditViewModel>();
         vm.Title = "Editar Movimiento";
         vm.CloseRequest += OnEditFinished;
-        await vm.LoadDataAsync(); 
-        vm.Movimiento = dto.Adapt<MovimientoDto>(); // Set data AFTER lists are loaded
+        await vm.LoadDataAsync();
+        vm.Movimiento = dto.Adapt<MovimientoDto>();
         EditViewModel = vm;
         IsEditing = true;
     }
@@ -125,6 +163,21 @@ public partial class MovimientosViewModel : ViewModelBase
         if (saved) _ = LoadMovimientosAsync();
     }
 
+    private async Task DeleteAsync(MovimientoDto? dto)
+    {
+        if (dto == null) return;
+
+        var confirmed = await _confirmDialogService.ConfirmAsync(
+            _localizationService.GetString("General.Delete"),
+            string.Format(_localizationService.GetString("Movements.DeleteConfirm"), dto.Concepto));
+
+        if (!confirmed) return;
+
+        var result = await _movimientoService.DeleteAsync(dto.Id);
+        if (HandleResult(result, _localizationService))
+            await LoadMovimientosAsync();
+    }
+
     private void LimpiarFiltros()
     {
         FiltroConcepto = string.Empty;
@@ -133,16 +186,37 @@ public partial class MovimientosViewModel : ViewModelBase
         FiltroFechaHasta = null;
         FiltroMontoMin = null;
         FiltroMontoMax = null;
+        CurrentPage = 1;
         _ = LoadMovimientosAsync();
     }
 
-    // Filtros reactivos
-    partial void OnFiltroConceptoChanged(string value) => _ = LoadMovimientosAsync();
-    partial void OnFiltroTipoIdChanged(Guid? value) => _ = LoadMovimientosAsync();
-    partial void OnFiltroFechaDesdeChanged(DateTime? value) => _ = LoadMovimientosAsync();
-    partial void OnFiltroFechaHastaChanged(DateTime? value) => _ = LoadMovimientosAsync();
-    partial void OnFiltroMontoMinChanged(decimal? value) => _ = LoadMovimientosAsync();
-    partial void OnFiltroMontoMaxChanged(decimal? value) => _ = LoadMovimientosAsync();
+    private void ScheduleFilterReload()
+    {
+        _filterDebounceCts?.Cancel();
+        _filterDebounceCts = new CancellationTokenSource();
+        var token = _filterDebounceCts.Token;
+        _ = DebouncedLoadAsync(token);
+    }
+
+    private async Task DebouncedLoadAsync(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(300, token);
+            CurrentPage = 1;
+            await LoadMovimientosAsync();
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    partial void OnFiltroConceptoChanged(string value) => ScheduleFilterReload();
+    partial void OnFiltroTipoIdChanged(Guid? value) => ScheduleFilterReload();
+    partial void OnFiltroFechaDesdeChanged(DateTime? value) => ScheduleFilterReload();
+    partial void OnFiltroFechaHastaChanged(DateTime? value) => ScheduleFilterReload();
+    partial void OnFiltroMontoMinChanged(decimal? value) => ScheduleFilterReload();
+    partial void OnFiltroMontoMaxChanged(decimal? value) => ScheduleFilterReload();
 
     private async Task ExportPdfAsync()
     {
@@ -177,58 +251,68 @@ public partial class MovimientosViewModel : ViewModelBase
 
     private async Task SaveFileAsync(byte[] bytes, string ext)
     {
-        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"Movimientos_{DateTime.Now:yyyyMMddHHmmss}.{ext}");
-        await File.WriteAllBytesAsync(path, bytes);
+        await _fileSaveDialogService.SaveFileAsync(
+            bytes,
+            $"Movimientos_{DateTime.Now:yyyyMMddHHmmss}.{ext}",
+            ext);
     }
 
-    partial void OnPageSizeChanged(int value)
+    private void GoToPreviousPage()
     {
-        _ = _settingsService.SetPageSizeAsync(value);
-        _ = LoadMovimientosAsync();
+        if (CurrentPage > 1)
+        {
+            CurrentPage--;
+            _ = LoadMovimientosAsync();
+        }
     }
 
-    private async Task LoadMovimientosAsync()
+    private void GoToNextPage()
     {
-        var result = await _movimientoService.GetAllAsync();
-        
-        var query = result.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(FiltroConcepto))
-            query = query.Where(m => m.Concepto.Contains(FiltroConcepto, StringComparison.OrdinalIgnoreCase));
-
-        if (FiltroTipoId.HasValue)
-            query = query.Where(m => m.TipoMovimientoId == FiltroTipoId.Value);
-
-        if (FiltroFechaDesde.HasValue)
-            query = query.Where(m => m.Fecha.Date >= FiltroFechaDesde.Value.Date);
-
-        if (FiltroFechaHasta.HasValue)
-            query = query.Where(m => m.Fecha.Date <= FiltroFechaHasta.Value.Date);
-
-        if (FiltroMontoMin.HasValue)
-            query = query.Where(m => m.Monto >= FiltroMontoMin.Value);
-
-        if (FiltroMontoMax.HasValue)
-            query = query.Where(m => m.Monto <= FiltroMontoMax.Value);
-
-        // Ordenar y Paginar
-        IEnumerable<MovimientoDto> paginated;
-        if (PageSize > 0)
+        if (CurrentPage < TotalPages)
         {
-            paginated = query.OrderByDescending(m => m.Fecha)
-                             .Skip((CurrentPage - 1) * PageSize)
-                             .Take(PageSize);
+            CurrentPage++;
+            _ = LoadMovimientosAsync();
         }
-        else
-        {
-            paginated = query.OrderByDescending(m => m.Fecha);
-        }
+    }
 
-        Movimientos.Clear();
-        foreach (var item in paginated)
+    public async Task LoadMovimientosAsync()
+    {
+        IsLoading = true;
+        ErrorMessage = null;
+
+        try
         {
-            Movimientos.Add(item);
+            var filter = new MovimientoFilterDto
+            {
+                Concepto = string.IsNullOrWhiteSpace(FiltroConcepto) ? null : FiltroConcepto,
+                TipoId = FiltroTipoId,
+                FechaDesde = FiltroFechaDesde,
+                FechaHasta = FiltroFechaHasta,
+                MontoMin = FiltroMontoMin,
+                MontoMax = FiltroMontoMax,
+                PageNumber = CurrentPage,
+                PageSize = PageSize
+            };
+
+            var result = await _movimientoService.GetPagedAsync(filter);
+
+            Movimientos.Clear();
+            foreach (var item in result.Items)
+                Movimientos.Add(item);
+
+            TotalPages = Math.Max(1, result.TotalPages);
+            IsEmpty = result.TotalCount == 0;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+            IsEmpty = false;
+        }
+        finally
+        {
+            IsLoading = false;
+            PreviousPageCommand.NotifyCanExecuteChanged();
+            NextPageCommand.NotifyCanExecuteChanged();
         }
     }
 }
-

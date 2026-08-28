@@ -9,10 +9,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using ElectroObraApp.Application;
 using ElectroObraApp.Application.Interfaces;
-using ElectroObraApp.Infrastructure;
+using ElectroObraApp.Composition;
 using ElectroObraApp.Infrastructure.Data;
+using ElectroObraApp.Infrastructure.Services;
 using ElectroObraApp.ViewModels;
 using ElectroObraApp.Views;
 using ElectroObraApp.Core.Helpers;
@@ -31,13 +31,12 @@ public partial class App : Avalonia.Application
         AvaloniaXamlLoader.Load(this);
     }
 
-    public override void OnFrameworkInitializationCompleted()
+    public override async void OnFrameworkInitializationCompleted()
     {
         // 1. Configuración
         var appDataPath = PathHelper.GetAppDataPath();
         var settingsPath = PathHelper.GetSettingsPath();
 
-        // Asegurar que existe el archivo de configuración en AppData
         if (!File.Exists(settingsPath))
         {
             var baseSettings = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
@@ -47,15 +46,25 @@ public partial class App : Avalonia.Application
             }
         }
 
+        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+            ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+            ?? "Production";
+
         var builder = new ConfigurationBuilder()
             .SetBasePath(appDataPath)
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+        var environmentSettingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"appsettings.{environment}.json");
+        if (File.Exists(environmentSettingsPath))
+        {
+            builder.AddJsonFile(environmentSettingsPath, optional: true, reloadOnChange: true);
+        }
+
         Configuration = builder.Build();
 
         // 2. Logging
-        Log.Logger = new LoggerConfiguration()
-            .ReadFrom.Configuration(Configuration)
-            .CreateLogger();
+        var logDirectory = Path.Combine(appDataPath, "logs");
+        SerilogConfiguration.Configure(Configuration, logDirectory);
 
         // 3. DI Container
         var serviceCollection = new ServiceCollection();
@@ -63,7 +72,7 @@ public partial class App : Avalonia.Application
         Services = serviceCollection.BuildServiceProvider();
 
         // 4. Inicialización de Base de Datos
-        InitializeDatabase();
+        await InitializeDatabaseAsync();
 
         // Global Exception Handling
         AppDomain.CurrentDomain.UnhandledException += (sender, e) => 
@@ -80,9 +89,13 @@ public partial class App : Avalonia.Application
         // 5. Inicialización de UI
         var mainViewModel = Services.GetRequiredService<MainViewModel>();
         
-        // Cargar Tema
+        // Cargar Tema e idioma
         var settings = Services.GetRequiredService<IUserSettingsService>();
         SetTheme(settings.GetTheme());
+
+        var localization = Services.GetRequiredService<ILocalizationService>();
+        localization.SetLanguage(settings.GetLanguage());
+        localization.LanguageChanged += (_, _) => Markup.LocalizationBindingSource.Instance.Refresh();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -104,29 +117,17 @@ public partial class App : Avalonia.Application
 
     private void ConfigureServices(IServiceCollection services)
     {
-        services.AddSingleton(Configuration!);
-        services.AddLogging(builder => builder.AddSerilog());
-        services.AddApplication();
-        services.AddInfrastructure(Configuration!);
+        if (ServiceConfigurationHost.ConfigureServices is null)
+        {
+            throw new InvalidOperationException(
+                "ServiceConfigurationHost.ConfigureServices no está registrado. " +
+                "El head de la aplicación debe asignarlo antes de iniciar Avalonia.");
+        }
 
-        // ViewModels
-        services.AddTransient<MainViewModel>();
-        services.AddSingleton<DashboardViewModel>();
-        services.AddTransient<MovimientosViewModel>();
-        services.AddTransient<MovimientoEditViewModel>();
-        services.AddTransient<ClientesViewModel>();
-        services.AddTransient<ClienteEditViewModel>();
-        services.AddTransient<EmpleadosViewModel>();
-        services.AddTransient<EmpleadoEditViewModel>();
-        services.AddTransient<TrabajosViewModel>();
-        services.AddTransient<TrabajoEditViewModel>();
-        services.AddTransient<LiquidacionesViewModel>();
-        services.AddTransient<LiquidacionEditViewModel>();
-        services.AddTransient<SeedViewModel>();
-        services.AddTransient<SettingsViewModel>();
+        ServiceConfigurationHost.ConfigureServices(services, Configuration!);
     }
 
-    private void InitializeDatabase()
+    private async Task InitializeDatabaseAsync()
     {
         using var scope = Services!.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -135,16 +136,15 @@ public partial class App : Avalonia.Application
         try
         {
             logger.LogInformation("Verificando y aplicando migraciones de base de datos...");
-            context.Database.Migrate();
+            await context.Database.MigrateAsync();
 
             var seedService = scope.ServiceProvider.GetRequiredService<IDatabaseSeedService>();
             if (seedService.IsSeedEnabled())
             {
-                // Solo sembrar si la base de datos está vacía (ej: sin movimientos)
-                if (!context.Movimientos.Any())
+                if (!await context.Movimientos.AnyAsync())
                 {
                     logger.LogInformation("Base de datos vacía detectada. Sembrando datos iniciales...");
-                    Task.Run(async () => await seedService.SeedAsync()).GetAwaiter().GetResult();
+                    await seedService.SeedAsync();
                 }
             }
             logger.LogInformation("Base de datos inicializada correctamente.");

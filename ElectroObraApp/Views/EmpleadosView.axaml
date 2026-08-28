@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
+             xmlns:controls="clr-namespace:ElectroObraApp.Controls"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ElectroObraApp.Views.EmpleadosView"
@@ -56,41 +57,50 @@
                 </ComboBox>
             </StackPanel>
 
-            <DataGrid ItemsSource="{Binding Empleados}" 
-                      AutoGenerateColumns="False" 
-                      IsReadOnly="True" 
-                      x:CompileBindings="False"
-                      GridLinesVisibility="All"
-                      DoubleTapped="OnDataGridDoubleTapped">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Nombre" Binding="{Binding Nombre, Mode=OneWay}" Width="*" />
-                    <DataGridTextColumn Header="DNI" Binding="{Binding Dni, Mode=OneWay}" />
-                    <DataGridTextColumn Header="Cargo" Binding="{Binding Cargo, Mode=OneWay}" />
-                    <DataGridTextColumn Header="Sueldo Base" Binding="{Binding SueldoBase, StringFormat=\{0:C\}, Mode=OneWay}" />
-                    <DataGridTextColumn Header="Ingreso" Binding="{Binding FechaIngreso, StringFormat=\{0:dd/MM/yyyy\}, Mode=OneWay}" />
-                    <DataGridCheckBoxColumn Header="Activo" Binding="{Binding Activo, Mode=OneWay}" />
-                    <DataGridTemplateColumn Header="Comun." Width="Auto">
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="5">
-                                <Button Command="{Binding $parent[UserControl].((vm:EmpleadosViewModel)DataContext).SendEmailCommand}"
-                                        CommandParameter="{Binding}"
-                                        IsVisible="{Binding Email, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                                        ToolTip.Tip="Enviar Email"
-                                        Padding="5" Background="Transparent" BorderThickness="0">
-                                    <materialIcons:MaterialIcon Kind="Email" Width="18" Height="18" Foreground="#4CAF50"/>
-                                </Button>
-                                <Button Command="{Binding $parent[UserControl].((vm:EmpleadosViewModel)DataContext).SendWhatsAppCommand}"
-                                        CommandParameter="{Binding}"
-                                        IsVisible="{Binding Telefono, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                                        ToolTip.Tip="Enviar WhatsApp"
-                                        Padding="5" Background="Transparent" BorderThickness="0">
-                                    <materialIcons:MaterialIcon Kind="Whatsapp" Width="18" Height="18" Foreground="#25D366"/>
-                                </Button>
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+            <Grid>
+                <DataGrid ItemsSource="{Binding Empleados}" 
+                          AutoGenerateColumns="False" 
+                          IsReadOnly="True" 
+                          x:CompileBindings="False"
+                          GridLinesVisibility="All"
+                          DoubleTapped="OnDataGridDoubleTapped"
+                          IsVisible="{Binding !IsLoading}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Nombre" Binding="{Binding Nombre, Mode=OneWay}" Width="*" />
+                        <DataGridTextColumn Header="DNI" Binding="{Binding Dni, Mode=OneWay}" />
+                        <DataGridTextColumn Header="Cargo" Binding="{Binding Cargo, Mode=OneWay}" />
+                        <DataGridTextColumn Header="Sueldo Base" Binding="{Binding SueldoBase, StringFormat=\{0:C\}, Mode=OneWay}" />
+                        <DataGridTextColumn Header="Ingreso" Binding="{Binding FechaIngreso, StringFormat=\{0:dd/MM/yyyy\}, Mode=OneWay}" />
+                        <DataGridCheckBoxColumn Header="Activo" Binding="{Binding Activo, Mode=OneWay}" />
+                        <DataGridTemplateColumn Header="Comun." Width="Auto">
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <Button Command="{Binding $parent[UserControl].((vm:EmpleadosViewModel)DataContext).SendEmailCommand}"
+                                            CommandParameter="{Binding}"
+                                            IsVisible="{Binding Email, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                            ToolTip.Tip="Enviar Email"
+                                            Padding="5" Background="Transparent" BorderThickness="0">
+                                        <materialIcons:MaterialIcon Kind="Email" Width="18" Height="18" Foreground="#4CAF50"/>
+                                    </Button>
+                                    <Button Command="{Binding $parent[UserControl].((vm:EmpleadosViewModel)DataContext).SendWhatsAppCommand}"
+                                            CommandParameter="{Binding}"
+                                            IsVisible="{Binding Telefono, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                            ToolTip.Tip="Enviar WhatsApp"
+                                            Padding="5" Background="Transparent" BorderThickness="0">
+                                        <materialIcons:MaterialIcon Kind="Whatsapp" Width="18" Height="18" Foreground="#25D366"/>
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <controls:ListStateOverlay IsLoading="{Binding IsLoading}"
+                                           IsEmpty="{Binding IsEmpty}"
+                                           HasError="{Binding HasError}"
+                                           ErrorMessage="{Binding ErrorMessage}"
+                                           RetryCommand="{Binding LoadEmpleadosCommand}" />
+            </Grid>
         </DockPanel>
 
         <!-- Overlay de Edición -->

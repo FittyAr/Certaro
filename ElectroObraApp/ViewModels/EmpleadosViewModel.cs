@@ -16,6 +16,8 @@ public partial class EmpleadosViewModel : ViewModelBase
 {
     private readonly IEmpleadoService _empleadoService;
     private readonly IUserSettingsService _settingsService;
+    private readonly IConfirmDialogService _confirmDialogService;
+    private readonly ILocalizationService _localizationService;
     private readonly IServiceProvider _serviceProvider;
 
     [ObservableProperty]
@@ -42,16 +44,24 @@ public partial class EmpleadosViewModel : ViewModelBase
     [ObservableProperty]
     private int _filtroEstadoIndex = 0; // 0: Todos, 1: Activos, 2: Inactivos
 
-    public EmpleadosViewModel(IEmpleadoService empleadoService, IUserSettingsService settingsService, IServiceProvider serviceProvider)
+    public EmpleadosViewModel(
+        IEmpleadoService empleadoService,
+        IUserSettingsService settingsService,
+        IConfirmDialogService confirmDialogService,
+        ILocalizationService localizationService,
+        IServiceProvider serviceProvider)
     {
         _empleadoService = empleadoService;
         _settingsService = settingsService;
+        _confirmDialogService = confirmDialogService;
+        _localizationService = localizationService;
         _serviceProvider = serviceProvider;
         _pageSize = _settingsService.GetPageSize();
 
         LoadEmpleadosCommand = new AsyncRelayCommand(LoadEmpleadosAsync);
         AddCommand = new RelayCommand(Add);
         EditCommand = new RelayCommand<EmpleadoDto>(Edit);
+        DeleteCommand = new AsyncRelayCommand<EmpleadoDto>(DeleteAsync);
         LimpiarFiltrosCommand = new RelayCommand(LimpiarFiltros);
         SendEmailCommand = new RelayCommand<EmpleadoDto>(SendEmail);
         SendWhatsAppCommand = new RelayCommand<EmpleadoDto>(SendWhatsApp);
@@ -62,6 +72,7 @@ public partial class EmpleadosViewModel : ViewModelBase
     public IAsyncRelayCommand LoadEmpleadosCommand { get; }
     public IRelayCommand AddCommand { get; }
     public IRelayCommand<EmpleadoDto> EditCommand { get; }
+    public IAsyncRelayCommand<EmpleadoDto> DeleteCommand { get; }
     public IRelayCommand LimpiarFiltrosCommand { get; }
     public IRelayCommand<EmpleadoDto> SendEmailCommand { get; }
     public IRelayCommand<EmpleadoDto> SendWhatsAppCommand { get; }
@@ -84,35 +95,43 @@ public partial class EmpleadosViewModel : ViewModelBase
 
     public async Task LoadEmpleadosAsync()
     {
-        var result = await _empleadoService.GetAllAsync();
-        var query = result.AsEnumerable();
+        IsLoading = true;
+        ErrorMessage = null;
 
-        if (!string.IsNullOrWhiteSpace(FiltroNombre))
+        try
         {
-            query = query.Where(e => e.Nombre.Contains(FiltroNombre, StringComparison.OrdinalIgnoreCase) || 
-                                    (e.Cargo != null && e.Cargo.Contains(FiltroNombre, StringComparison.OrdinalIgnoreCase)));
-        }
+            var result = await _empleadoService.GetAllAsync();
+            var query = result.AsEnumerable();
 
-        if (FiltroEstadoIndex == 1) // Activos
-        {
-            query = query.Where(e => e.Activo);
-        }
-        else if (FiltroEstadoIndex == 2) // Inactivos
-        {
-            query = query.Where(e => !e.Activo);
-        }
+            if (!string.IsNullOrWhiteSpace(FiltroNombre))
+            {
+                query = query.Where(e => e.Nombre.Contains(FiltroNombre, StringComparison.OrdinalIgnoreCase) ||
+                                        (e.Cargo != null && e.Cargo.Contains(FiltroNombre, StringComparison.OrdinalIgnoreCase)));
+            }
 
-        IEnumerable<EmpleadoDto> paginated;
-        if (PageSize > 0)
-        {
-            paginated = query.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
-        }
-        else
-        {
-            paginated = query;
-        }
+            if (FiltroEstadoIndex == 1)
+                query = query.Where(e => e.Activo);
+            else if (FiltroEstadoIndex == 2)
+                query = query.Where(e => !e.Activo);
 
-        Empleados = new ObservableCollection<EmpleadoDto>(paginated);
+            IEnumerable<EmpleadoDto> paginated;
+            if (PageSize > 0)
+                paginated = query.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+            else
+                paginated = query;
+
+            Empleados = new ObservableCollection<EmpleadoDto>(paginated);
+            IsEmpty = !Empleados.Any();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+            IsEmpty = false;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private void Add()
@@ -142,6 +161,21 @@ public partial class EmpleadosViewModel : ViewModelBase
         };
         EditViewModel = vm;
         IsEditing = true;
+    }
+
+    private async Task DeleteAsync(EmpleadoDto? dto)
+    {
+        if (dto == null) return;
+
+        var confirmed = await _confirmDialogService.ConfirmAsync(
+            _localizationService.GetString("General.Delete"),
+            string.Format(_localizationService.GetString("Employees.DeleteConfirm"), dto.Nombre));
+
+        if (!confirmed) return;
+
+        var result = await _empleadoService.DeleteAsync(dto.Id);
+        if (HandleResult(result, _localizationService))
+            await LoadEmpleadosAsync();
     }
 
     private void SendEmail(EmpleadoDto? dto)
