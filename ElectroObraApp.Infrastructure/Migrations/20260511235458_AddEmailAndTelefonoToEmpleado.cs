@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace ElectroObraApp.Infrastructure.Data.Migrations
+namespace ElectroObraApp.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class AddEmailAndTelefonoToEmpleado : Migration

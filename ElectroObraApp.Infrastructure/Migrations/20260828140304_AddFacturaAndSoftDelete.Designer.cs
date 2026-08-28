@@ -3,6 +3,7 @@ using System;
 using ElectroObraApp.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ElectroObraApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260828140304_AddFacturaAndSoftDelete")]
+    partial class AddFacturaAndSoftDelete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
@@ -54,10 +57,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("BLOB");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
@@ -108,10 +109,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("BLOB");
 
                     b.Property<string>("Telefono")
                         .HasMaxLength(30)
@@ -160,10 +159,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("BLOB");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
@@ -221,10 +218,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("BLOB");
 
                     b.Property<long>("SueldoBase")
                         .HasColumnType("INTEGER");
@@ -287,10 +282,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("BLOB");
 
                     b.Property<long>("Subtotal")
                         .HasColumnType("INTEGER");
@@ -366,10 +359,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("BLOB");
 
                     b.Property<long>("TarifaAplicada")
                         .HasColumnType("INTEGER");
@@ -439,10 +430,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("BLOB");
 
                     b.Property<Guid>("TipoMovimientoId")
                         .HasColumnType("TEXT");
@@ -508,10 +497,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("BLOB");
 
                     b.Property<string>("Titulo")
                         .IsRequired()
@@ -571,10 +558,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("BLOB");
 
                     b.Property<string>("Unidad")
                         .IsRequired()
@@ -625,10 +610,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("BLOB");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
@@ -646,7 +629,7 @@ namespace ElectroObraApp.Infrastructure.Migrations
                             EsSistema = true,
                             IsDeleted = false,
                             Nombre = "Ingreso",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
+                            RowVersion = new byte[0]
                         },
                         new
                         {
@@ -656,7 +639,7 @@ namespace ElectroObraApp.Infrastructure.Migrations
                             EsSistema = true,
                             IsDeleted = false,
                             Nombre = "Gasto",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 2 }
+                            RowVersion = new byte[0]
                         },
                         new
                         {
@@ -666,7 +649,7 @@ namespace ElectroObraApp.Infrastructure.Migrations
                             EsSistema = true,
                             IsDeleted = false,
                             Nombre = "Adelanto",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 }
+                            RowVersion = new byte[0]
                         },
                         new
                         {
@@ -676,7 +659,7 @@ namespace ElectroObraApp.Infrastructure.Migrations
                             EsSistema = true,
                             IsDeleted = false,
                             Nombre = "Ajuste",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 4 }
+                            RowVersion = new byte[0]
                         });
                 });
 
@@ -720,10 +703,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("BLOB");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");

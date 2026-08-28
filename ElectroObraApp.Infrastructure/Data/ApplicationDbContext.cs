@@ -1,10 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using ElectroObraApp.Core.Entities;
+using ElectroObraApp.Core.Interfaces;
+using ElectroObraApp.Infrastructure.Data.Converters;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace ElectroObraApp.Infrastructure.Data;
 
 public class ApplicationDbContext : DbContext
 {
+    private static readonly byte[] DefaultRowVersion = { 0, 0, 0, 0, 0, 0, 0, 1 };
+
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
@@ -19,26 +25,94 @@ public class ApplicationDbContext : DbContext
     public DbSet<OrdenTrabajoItem> OrdenTrabajoItems { get; set; }
     public DbSet<Liquidacion> Liquidaciones { get; set; }
     public DbSet<ClienteContacto> ClienteContactos { get; set; }
+    public DbSet<Factura> Facturas { get; set; }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var utcNow = DateTime.UtcNow;
+        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                if (entry.Entity.RowVersion.Length == 0)
+                    entry.Entity.RowVersion = DefaultRowVersion;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.UpdatedAt = utcNow;
+            }
+        }
+
+        return base.SaveChangesAsync(cancellationToken);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // Conversión de Decimal a Double para SQLite
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
-            var properties = entityType.GetProperties()
-                .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?));
-
-            foreach (var property in properties)
+            foreach (var property in entityType.GetProperties())
             {
-                modelBuilder.Entity(entityType.ClrType).Property(property.Name).HasConversion<double>();
+                if (property.ClrType == typeof(decimal))
+                {
+                    modelBuilder.Entity(entityType.ClrType)
+                        .Property(property.Name)
+                        .HasConversion(new DecimalToLongConverter());
+                }
+                else if (property.ClrType == typeof(decimal?))
+                {
+                    modelBuilder.Entity(entityType.ClrType)
+                        .Property(property.Name)
+                        .HasConversion(new NullableDecimalToLongConverter());
+                }
+            }
+
+            if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
+            {
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property(nameof(BaseEntity.RowVersion))
+                    .HasMaxLength(8)
+                    .IsConcurrencyToken()
+                    .HasDefaultValue(DefaultRowVersion);
+
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property(nameof(BaseEntity.IsDeleted))
+                    .HasDefaultValue(false);
+
+                var method = typeof(ApplicationDbContext)
+                    .GetMethod(nameof(SetSoftDeleteFilter), BindingFlags.NonPublic | BindingFlags.Static)!
+                    .MakeGenericMethod(entityType.ClrType);
+                method.Invoke(null, [modelBuilder]);
             }
         }
 
-        // Configuraciones adicionales
+        modelBuilder.Entity<Cliente>(entity =>
+        {
+            entity.Property(x => x.Nombre).HasMaxLength(200);
+            entity.Property(x => x.Cuit).HasMaxLength(13);
+            entity.Property(x => x.Direccion).HasMaxLength(500);
+            entity.Property(x => x.Email).HasMaxLength(254);
+            entity.Property(x => x.Telefono).HasMaxLength(30);
+            entity.Property(x => x.CondicionIva).HasMaxLength(100);
+            entity.HasIndex(x => x.Cuit);
+        });
+
+        modelBuilder.Entity<Empleado>(entity =>
+        {
+            entity.Property(x => x.Nombre).HasMaxLength(200);
+            entity.Property(x => x.Dni).HasMaxLength(15);
+            entity.Property(x => x.Cargo).HasMaxLength(100);
+            entity.Property(x => x.Email).HasMaxLength(254);
+            entity.Property(x => x.Telefono).HasMaxLength(30);
+            entity.HasIndex(x => x.Dni);
+        });
+
         modelBuilder.Entity<Movimiento>(entity =>
         {
+            entity.Property(x => x.Concepto).HasMaxLength(500);
+            entity.HasIndex(x => x.Fecha);
+
             entity.HasOne(x => x.Categoria)
                 .WithMany(x => x.Movimientos)
                 .HasForeignKey(x => x.CategoriaId)
@@ -48,10 +122,41 @@ public class ApplicationDbContext : DbContext
                 .WithMany(x => x.Movimientos)
                 .HasForeignKey(x => x.TipoMovimientoId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Factura)
+                .WithMany(x => x.Movimientos)
+                .HasForeignKey(x => x.FacturaId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<Trabajo>(entity =>
+        {
+            entity.Property(x => x.Descripcion).HasMaxLength(500);
+
+            entity.HasOne(x => x.Cliente)
+                .WithMany()
+                .HasForeignKey(x => x.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Categoria>(entity =>
+        {
+            entity.Property(x => x.Nombre).HasMaxLength(100);
+            entity.Property(x => x.Descripcion).HasMaxLength(500);
+            entity.Property(x => x.Icono).HasMaxLength(50);
+            entity.Property(x => x.ColorHex).HasMaxLength(7);
+        });
+
+        modelBuilder.Entity<TipoMovimiento>(entity =>
+        {
+            entity.Property(x => x.Nombre).HasMaxLength(100);
         });
 
         modelBuilder.Entity<OrdenTrabajo>(entity =>
         {
+            entity.Property(x => x.Titulo).HasMaxLength(200);
+            entity.Property(x => x.NumeroCertificado).HasMaxLength(50);
+
             entity.HasOne(x => x.Trabajo)
                 .WithMany(x => x.OrdenesTrabajo)
                 .HasForeignKey(x => x.TrabajoId)
@@ -60,6 +165,9 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<OrdenTrabajoItem>(entity =>
         {
+            entity.Property(x => x.Descripcion).HasMaxLength(500);
+            entity.Property(x => x.Unidad).HasMaxLength(20);
+
             entity.HasOne(x => x.OrdenTrabajo)
                 .WithMany(x => x.Items)
                 .HasForeignKey(x => x.OrdenTrabajoId)
@@ -68,6 +176,8 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<Liquidacion>(entity =>
         {
+            entity.Property(x => x.Observaciones).HasMaxLength(1000);
+
             entity.HasOne(x => x.Empleado)
                 .WithMany(x => x.Liquidaciones)
                 .HasForeignKey(x => x.EmpleadoId)
@@ -76,20 +186,39 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<ClienteContacto>(entity =>
         {
+            entity.Property(x => x.Etiqueta).HasMaxLength(100);
+            entity.Property(x => x.Email).HasMaxLength(254);
+
             entity.HasOne(x => x.Cliente)
                 .WithMany(x => x.Contactos)
                 .HasForeignKey(x => x.ClienteId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Seed Data para Tipos de Movimiento
+        modelBuilder.Entity<Factura>(entity =>
+        {
+            entity.Property(x => x.Numero).HasMaxLength(50);
+            entity.Property(x => x.Observaciones).HasMaxLength(1000);
+            entity.HasIndex(x => x.Numero);
+            entity.HasIndex(x => x.Fecha);
+
+            entity.HasOne(x => x.Cliente)
+                .WithMany()
+                .HasForeignKey(x => x.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         var systemDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         modelBuilder.Entity<TipoMovimiento>().HasData(
-            new TipoMovimiento { Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), Nombre = "Ingreso", EsIngreso = true, EsSistema = true, CreatedAt = systemDate },
-            new TipoMovimiento { Id = Guid.Parse("00000000-0000-0000-0000-000000000002"), Nombre = "Gasto", EsIngreso = false, EsSistema = true, CreatedAt = systemDate },
-            new TipoMovimiento { Id = Guid.Parse("00000000-0000-0000-0000-000000000003"), Nombre = "Adelanto", EsIngreso = false, EsSistema = true, CreatedAt = systemDate },
-            new TipoMovimiento { Id = Guid.Parse("00000000-0000-0000-0000-000000000004"), Nombre = "Ajuste", EsIngreso = true, EsSistema = true, CreatedAt = systemDate }
+            new TipoMovimiento { Id = Guid.Parse("00000000-0000-0000-0000-000000000001"), Nombre = "Ingreso", EsIngreso = true, EsSistema = true, CreatedAt = systemDate, RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }, IsDeleted = false },
+            new TipoMovimiento { Id = Guid.Parse("00000000-0000-0000-0000-000000000002"), Nombre = "Gasto", EsIngreso = false, EsSistema = true, CreatedAt = systemDate, RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 2 }, IsDeleted = false },
+            new TipoMovimiento { Id = Guid.Parse("00000000-0000-0000-0000-000000000003"), Nombre = "Adelanto", EsIngreso = false, EsSistema = true, CreatedAt = systemDate, RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 }, IsDeleted = false },
+            new TipoMovimiento { Id = Guid.Parse("00000000-0000-0000-0000-000000000004"), Nombre = "Ajuste", EsIngreso = true, EsSistema = true, CreatedAt = systemDate, RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 4 }, IsDeleted = false }
         );
     }
-}
 
+    private static void SetSoftDeleteFilter<TEntity>(ModelBuilder modelBuilder) where TEntity : BaseEntity
+    {
+        modelBuilder.Entity<TEntity>().HasQueryFilter(e => !e.IsDeleted);
+    }
+}

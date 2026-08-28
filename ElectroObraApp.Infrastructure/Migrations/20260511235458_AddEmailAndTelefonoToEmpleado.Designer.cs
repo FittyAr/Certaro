@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ElectroObraApp.Infrastructure.Data.Migrations
+namespace ElectroObraApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20260511235458_AddEmailAndTelefonoToEmpleado")]

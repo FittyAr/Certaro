@@ -4,8 +4,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ElectroObraApp.Core.Common;
 using ElectroObraApp.Core.Interfaces;
+using ElectroObraApp.Core.Specifications;
 using ElectroObraApp.Infrastructure.Data;
+using ElectroObraApp.Infrastructure.Specifications;
 
 namespace ElectroObraApp.Infrastructure.Repositories;
 
@@ -22,7 +25,6 @@ public class Repository<T> : IRepository<T> where T : class
 
     public async Task<T?> GetByIdAsync(Guid id)
     {
-        // Usamos AsNoTracking por defecto para evitar conflictos en la UI
         return await _dbSet.AsNoTracking().FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);
     }
 
@@ -36,6 +38,29 @@ public class Repository<T> : IRepository<T> where T : class
         return await _dbSet.AsNoTracking().Where(predicate).ToListAsync();
     }
 
+    public async Task<PagedResult<T>> GetPagedAsync(ISpecification<T> spec)
+    {
+        var countQuery = SpecificationEvaluator.GetCountQuery(_dbSet.AsQueryable(), spec);
+        var totalCount = await countQuery.CountAsync();
+
+        var items = await SpecificationEvaluator
+            .GetQuery(_dbSet.AsQueryable(), spec)
+            .ToListAsync();
+
+        var pageSize = spec.Take ?? (totalCount == 0 ? 1 : totalCount);
+        var pageNumber = spec.Skip.HasValue && spec.Take is > 0
+            ? (spec.Skip.Value / spec.Take.Value) + 1
+            : 1;
+
+        return new PagedResult<T>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
+
     public async Task AddAsync(T entity)
     {
         await _dbSet.AddAsync(entity);
@@ -43,9 +68,19 @@ public class Repository<T> : IRepository<T> where T : class
 
     public void Update(T entity)
     {
-        // Limpiamos el tracker para evitar InvalidOperationException
-        // cuando la misma entidad fue cargada previamente (AsNoTracking no aplica a Update)
-        _context.ChangeTracker.Clear();
+        var idProperty = typeof(T).GetProperty("Id");
+        if (idProperty?.PropertyType == typeof(Guid))
+        {
+            var id = (Guid)idProperty.GetValue(entity)!;
+            var tracked = _dbSet.Local.FirstOrDefault(e => (Guid)idProperty.GetValue(e)! == id);
+
+            if (tracked != null)
+            {
+                _context.Entry(tracked).CurrentValues.SetValues(entity);
+                return;
+            }
+        }
+
         _dbSet.Update(entity);
     }
 
@@ -54,4 +89,3 @@ public class Repository<T> : IRepository<T> where T : class
         _dbSet.Remove(entity);
     }
 }
-

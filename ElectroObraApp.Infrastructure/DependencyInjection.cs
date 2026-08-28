@@ -13,9 +13,9 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Forzamos el uso de la ruta en AppData para la base de datos
         var connectionString = ElectroObraApp.Core.Helpers.PathHelper.GetSqliteConnectionString();
-        
+        var httpTimeoutSeconds = configuration.GetValue("Application:HttpTimeoutSeconds", 30);
+
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlite(connectionString));
 
@@ -24,12 +24,15 @@ public static class DependencyInjection
         services.AddScoped<IExportService, ExportService>();
         services.AddScoped<IDatabaseSeedService, DatabaseSeedService>();
         services.AddScoped<IUserSettingsService, UserSettingsService>();
-        
-        services.AddHttpClient();
-        services.AddScoped<IHolidayService, HolidayService>();
-        services.AddScoped<IDollarService, DollarService>();
-        
+        services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IEmailService, SmtpEmailService>();
+
+        services.AddHttpClient<IHolidayService, HolidayService>()
+            .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(httpTimeoutSeconds));
+
+        services.AddHttpClient<IDollarService, DollarService>()
+            .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(httpTimeoutSeconds));
+
         return services;
     }
 }
-

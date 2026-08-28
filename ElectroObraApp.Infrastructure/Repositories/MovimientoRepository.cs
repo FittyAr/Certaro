@@ -33,6 +33,7 @@ public class MovimientoRepository : Repository<Movimiento>, IMovimientoRepositor
         return await _dbSet
             .Include(m => m.TipoMovimiento)
             .Include(m => m.Categoria)
+            .AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == id);
     }
 }

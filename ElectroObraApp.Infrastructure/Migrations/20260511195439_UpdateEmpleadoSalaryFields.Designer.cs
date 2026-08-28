@@ -3,6 +3,7 @@ using System;
 using ElectroObraApp.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ElectroObraApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260511195439_UpdateEmpleadoSalaryFields")]
+    partial class UpdateEmpleadoSalaryFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
@@ -24,40 +27,20 @@ namespace ElectroObraApp.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ColorHex")
-                        .HasMaxLength(7)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Descripcion")
-                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Icono")
-                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
@@ -74,55 +57,31 @@ namespace ElectroObraApp.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CondicionIva")
-                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Cuit")
-                        .HasMaxLength(13)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Direccion")
-                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
-                        .HasMaxLength(254)
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
-
                     b.Property<string>("Telefono")
-                        .HasMaxLength(30)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Cuit");
 
                     b.ToTable("Clientes");
                 });
@@ -139,31 +98,13 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(254)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Etiqueta")
                         .IsRequired()
-                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
@@ -185,131 +126,36 @@ namespace ElectroObraApp.Infrastructure.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Cargo")
-                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Dni")
-                        .HasMaxLength(15)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(254)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("FechaIngreso")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("PagoFrecuencia")
                         .HasColumnType("INTEGER");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                    b.Property<double>("SueldoBase")
+                        .HasColumnType("REAL");
 
-                    b.Property<long>("SueldoBase")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("TarifaDiaria")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Telefono")
-                        .HasMaxLength(30)
-                        .HasColumnType("TEXT");
+                    b.Property<double>("TarifaDiaria")
+                        .HasColumnType("REAL");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Dni");
 
                     b.ToTable("Empleados");
-                });
-
-            modelBuilder.Entity("ElectroObraApp.Core.Entities.Factura", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ClienteId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Estado")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("Fecha")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
-                    b.Property<long>("Iva")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Numero")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Observaciones")
-                        .HasMaxLength(1000)
-                        .HasColumnType("TEXT");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
-
-                    b.Property<long>("Subtotal")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("Total")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClienteId");
-
-                    b.HasIndex("Fecha");
-
-                    b.HasIndex("Numero");
-
-                    b.ToTable("Facturas");
                 });
 
             modelBuilder.Entity("ElectroObraApp.Core.Entities.Liquidacion", b =>
@@ -321,11 +167,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("DiasTrabajados")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("DiasTrabajados")
+                        .HasColumnType("REAL");
 
                     b.Property<Guid>("EmpleadoId")
                         .HasColumnType("TEXT");
@@ -345,40 +188,26 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<bool>("IncluirSabados")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
+                    b.Property<double>("MultiplicadorDomingo")
+                        .HasColumnType("REAL");
 
-                    b.Property<long>("MultiplicadorDomingo")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("MultiplicadorFeriado")
+                        .HasColumnType("REAL");
 
-                    b.Property<long>("MultiplicadorFeriado")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("MultiplicadorSabado")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("MultiplicadorSabado")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("Observaciones")
-                        .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                    b.Property<double>("TarifaAplicada")
+                        .HasColumnType("REAL");
 
-                    b.Property<long>("TarifaAplicada")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("TotalAdelantos")
+                        .HasColumnType("REAL");
 
-                    b.Property<long>("TotalAdelantos")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("TotalBruto")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("TotalBruto")
+                        .HasColumnType("REAL");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
@@ -396,8 +225,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<long>("Cantidad")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("Cantidad")
+                        .HasColumnType("REAL");
 
                     b.Property<Guid?>("CategoriaId")
                         .HasColumnType("TEXT");
@@ -407,13 +236,9 @@ namespace ElectroObraApp.Infrastructure.Migrations
 
                     b.Property<string>("Concepto")
                         .IsRequired()
-                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("EmpleadoId")
@@ -425,24 +250,11 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
                     b.Property<int>("Moneda")
                         .HasColumnType("INTEGER");
 
-                    b.Property<long>("Monto")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                    b.Property<double>("Monto")
+                        .HasColumnType("REAL");
 
                     b.Property<Guid>("TipoMovimientoId")
                         .HasColumnType("TEXT");
@@ -461,10 +273,6 @@ namespace ElectroObraApp.Infrastructure.Migrations
 
                     b.HasIndex("EmpleadoId");
 
-                    b.HasIndex("FacturaId");
-
-                    b.HasIndex("Fecha");
-
                     b.HasIndex("TipoMovimientoId");
 
                     b.HasIndex("TrabajoId");
@@ -478,44 +286,26 @@ namespace ElectroObraApp.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<long>("AjusteUocraPorcentaje")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("AjusteUocraPorcentaje")
+                        .HasColumnType("REAL");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("NumeroCertificado")
-                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Observaciones")
                         .HasColumnType("TEXT");
 
-                    b.Property<long>("OtrosDescuentos")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                    b.Property<double>("OtrosDescuentos")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("Titulo")
                         .IsRequired()
-                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("TrabajoId")
@@ -537,48 +327,30 @@ namespace ElectroObraApp.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<long>("Cantidad")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("Cantidad")
+                        .HasColumnType("REAL");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Descripcion")
                         .IsRequired()
-                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
 
                     b.Property<Guid>("OrdenTrabajoId")
                         .HasColumnType("TEXT");
 
-                    b.Property<long>("PorcentajeActual")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("PorcentajeActual")
+                        .HasColumnType("REAL");
 
-                    b.Property<long>("PorcentajeAnterior")
-                        .HasColumnType("INTEGER");
+                    b.Property<double>("PorcentajeAnterior")
+                        .HasColumnType("REAL");
 
-                    b.Property<long>("PrecioUnitario")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                    b.Property<double>("PrecioUnitario")
+                        .HasColumnType("REAL");
 
                     b.Property<string>("Unidad")
                         .IsRequired()
-                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -600,9 +372,6 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Descripcion")
                         .HasColumnType("TEXT");
 
@@ -612,23 +381,9 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<bool>("EsSistema")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
@@ -644,9 +399,7 @@ namespace ElectroObraApp.Infrastructure.Migrations
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             EsIngreso = true,
                             EsSistema = true,
-                            IsDeleted = false,
-                            Nombre = "Ingreso",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 }
+                            Nombre = "Ingreso"
                         },
                         new
                         {
@@ -654,9 +407,7 @@ namespace ElectroObraApp.Infrastructure.Migrations
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             EsIngreso = false,
                             EsSistema = true,
-                            IsDeleted = false,
-                            Nombre = "Gasto",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 2 }
+                            Nombre = "Gasto"
                         },
                         new
                         {
@@ -664,9 +415,7 @@ namespace ElectroObraApp.Infrastructure.Migrations
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             EsIngreso = false,
                             EsSistema = true,
-                            IsDeleted = false,
-                            Nombre = "Adelanto",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 3 }
+                            Nombre = "Adelanto"
                         },
                         new
                         {
@@ -674,9 +423,7 @@ namespace ElectroObraApp.Infrastructure.Migrations
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             EsIngreso = true,
                             EsSistema = true,
-                            IsDeleted = false,
-                            Nombre = "Ajuste",
-                            RowVersion = new byte[] { 0, 0, 0, 0, 0, 0, 0, 4 }
+                            Nombre = "Ajuste"
                         });
                 });
 
@@ -692,12 +439,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Descripcion")
                         .IsRequired()
-                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("FechaFin")
@@ -709,21 +452,8 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Property<bool>("Finalizado")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
-                    b.Property<long>("Presupuesto")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(8)
-                        .HasColumnType("BLOB")
-                        .HasDefaultValue(new byte[] { 0, 0, 0, 0, 0, 0, 0, 1 });
+                    b.Property<double>("Presupuesto")
+                        .HasColumnType("REAL");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
@@ -741,17 +471,6 @@ namespace ElectroObraApp.Infrastructure.Migrations
                         .WithMany("Contactos")
                         .HasForeignKey("ClienteId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Cliente");
-                });
-
-            modelBuilder.Entity("ElectroObraApp.Core.Entities.Factura", b =>
-                {
-                    b.HasOne("ElectroObraApp.Core.Entities.Cliente", "Cliente")
-                        .WithMany()
-                        .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Cliente");
@@ -783,11 +502,6 @@ namespace ElectroObraApp.Infrastructure.Migrations
                         .WithMany("AdelantosYPagos")
                         .HasForeignKey("EmpleadoId");
 
-                    b.HasOne("ElectroObraApp.Core.Entities.Factura", "Factura")
-                        .WithMany("Movimientos")
-                        .HasForeignKey("FacturaId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("ElectroObraApp.Core.Entities.TipoMovimiento", "TipoMovimiento")
                         .WithMany("Movimientos")
                         .HasForeignKey("TipoMovimientoId")
@@ -803,8 +517,6 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Navigation("Cliente");
 
                     b.Navigation("Empleado");
-
-                    b.Navigation("Factura");
 
                     b.Navigation("TipoMovimiento");
 
@@ -838,7 +550,7 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.HasOne("ElectroObraApp.Core.Entities.Cliente", "Cliente")
                         .WithMany()
                         .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Cliente");
@@ -861,11 +573,6 @@ namespace ElectroObraApp.Infrastructure.Migrations
                     b.Navigation("AdelantosYPagos");
 
                     b.Navigation("Liquidaciones");
-                });
-
-            modelBuilder.Entity("ElectroObraApp.Core.Entities.Factura", b =>
-                {
-                    b.Navigation("Movimientos");
                 });
 
             modelBuilder.Entity("ElectroObraApp.Core.Entities.OrdenTrabajo", b =>
