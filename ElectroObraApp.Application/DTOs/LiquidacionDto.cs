@@ -1,8 +1,9 @@
 using System;
+using ElectroObraApp.Application.Common;
 
 namespace ElectroObraApp.Application.DTOs;
 
-public class LiquidacionDto
+public class LiquidacionDto : IHasGuidId
 {
     public Guid Id { get; set; }
     public Guid EmpleadoId { get; set; }

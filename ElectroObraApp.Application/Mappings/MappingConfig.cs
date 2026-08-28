@@ -23,6 +23,9 @@ public class MappingConfig
         TypeAdapterConfig<Liquidacion, LiquidacionDto>.NewConfig()
             .Map(dest => dest.EmpleadoNombre, src => src.Empleado!.Nombre);
 
+        TypeAdapterConfig<Factura, FacturaDto>.NewConfig()
+            .Map(dest => dest.ClienteNombre, src => src.Cliente != null ? src.Cliente.Nombre : null);
+
         TypeAdapterConfig<Cliente, ClienteDto>.NewConfig()
             .Map(dest => dest.Contactos, src => src.Contactos);
 
@@ -61,6 +64,10 @@ public class MappingConfig
 
         TypeAdapterConfig<LiquidacionDto, Liquidacion>.NewConfig()
             .Ignore(dest => dest.Empleado!);
+
+        TypeAdapterConfig<FacturaDto, Factura>.NewConfig()
+            .Ignore(dest => dest.Cliente!)
+            .Ignore(dest => dest.Movimientos);
     }
 }
 

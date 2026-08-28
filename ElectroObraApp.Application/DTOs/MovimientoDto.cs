@@ -1,9 +1,10 @@
 using System;
+using ElectroObraApp.Application.Common;
 using ElectroObraApp.Core.Enums;
 
 namespace ElectroObraApp.Application.DTOs;
 
-public class MovimientoDto
+public class MovimientoDto : IHasGuidId
 {
     public Guid Id { get; set; }
     public DateTime Fecha { get; set; }
@@ -19,7 +20,7 @@ public class MovimientoDto
 
     public Moneda Moneda { get; set; }
     
-    public Guid CategoriaId { get; set; }
+    public Guid? CategoriaId { get; set; }
     public string? CategoriaNombre { get; set; }
 
     public Guid? EmpleadoId { get; set; }

@@ -1,9 +1,10 @@
 using System;
+using ElectroObraApp.Application.Common;
 using ElectroObraApp.Core.Enums;
 
 namespace ElectroObraApp.Application.DTOs;
 
-public class EmpleadoDto
+public class EmpleadoDto : IHasGuidId
 {
     public Guid Id { get; set; }
     public string Nombre { get; set; } = string.Empty;

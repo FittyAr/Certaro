@@ -1,5 +1,6 @@
 using FluentValidation;
 using ElectroObraApp.Application.DTOs;
+using ElectroObraApp.Application.Validation;
 
 namespace ElectroObraApp.Application.Validators;
 
@@ -8,15 +9,14 @@ public class EmpleadoValidator : AbstractValidator<EmpleadoDto>
     public EmpleadoValidator()
     {
         RuleFor(x => x.Nombre)
-            .NotEmpty().WithMessage("El nombre es obligatorio.")
-            .MaximumLength(100).WithMessage("El nombre no puede exceder los 100 caracteres.");
+            .NotEmpty().WithMessage(ValidationMessages.EmpleadoNombreRequired)
+            .MaximumLength(100).WithMessage(ValidationMessages.EmpleadoNombreMaxLength);
 
         RuleFor(x => x.Dni)
-            .NotEmpty().WithMessage("El DNI es obligatorio.")
-            .Length(7, 9).WithMessage("El DNI debe tener entre 7 y 9 dígitos.");
+            .NotEmpty().WithMessage(ValidationMessages.EmpleadoDniRequired)
+            .Length(7, 9).WithMessage(ValidationMessages.EmpleadoDniLength);
 
         RuleFor(x => x.TarifaDiaria)
-            .GreaterThanOrEqualTo(0).WithMessage("La tarifa diaria no puede ser negativa.");
+            .GreaterThanOrEqualTo(0).WithMessage(ValidationMessages.EmpleadoTarifaNegative);
     }
 }
-

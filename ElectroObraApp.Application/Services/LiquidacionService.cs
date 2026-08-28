@@ -6,95 +6,122 @@ using Mapster;
 using Microsoft.Extensions.Logging;
 using ElectroObraApp.Application.DTOs;
 using ElectroObraApp.Application.Interfaces;
+using ElectroObraApp.Application.Validation;
+using ElectroObraApp.Core.Common;
 using ElectroObraApp.Core.Entities;
 using ElectroObraApp.Core.Interfaces;
+using FluentValidation;
 
 namespace ElectroObraApp.Application.Services;
 
-public class LiquidacionService : ILiquidacionService
+public class LiquidacionService : BaseCrudService<Liquidacion, LiquidacionDto>, ILiquidacionService
 {
-    private readonly IUnitOfWork _uow;
-    private readonly ILogger<LiquidacionService> _logger;
     private readonly IUserSettingsService _settingsService;
+    private readonly IHolidayService _holidayService;
 
-    public LiquidacionService(IUnitOfWork uow, ILogger<LiquidacionService> logger, IUserSettingsService settingsService)
+    public LiquidacionService(
+        IUnitOfWork uow,
+        ILogger<LiquidacionService> logger,
+        IValidator<LiquidacionDto> validator,
+        IUserSettingsService settingsService,
+        IHolidayService holidayService)
+        : base(uow, logger, validator)
     {
-        _uow = uow;
-        _logger = logger;
         _settingsService = settingsService;
+        _holidayService = holidayService;
     }
 
     public async Task<IEnumerable<LiquidacionDto>> GetAllAsync()
     {
-        // CRÍTICO: Usar repo especializado que hace Include(Empleado)
-        var entities = await _uow.Liquidaciones.GetAllWithEmpleadoAsync();
+        var entities = await Uow.Liquidaciones.GetAllWithEmpleadoAsync();
         return entities.Adapt<IEnumerable<LiquidacionDto>>();
     }
 
     public async Task<LiquidacionDto?> GetByIdAsync(Guid id)
     {
-        var entity = await _uow.Repository<Liquidacion>().GetByIdAsync(id);
+        var entity = await Repository.GetByIdAsync(id);
         return entity?.Adapt<LiquidacionDto>();
     }
 
-    public async Task<LiquidacionDto> CreateAsync(LiquidacionDto dto)
+    public new async Task<Result<LiquidacionDto>> CreateAsync(LiquidacionDto dto)
     {
+        var validation = await ValidateAsync(dto);
+        if (!validation.IsSuccess)
+            return Result<LiquidacionDto>.Failure(validation.Errors);
+
+        Logger.LogInformation("Creando liquidación para empleado: {EmpleadoId}", dto.EmpleadoId);
         var entity = dto.Adapt<Liquidacion>();
-        await _uow.Repository<Liquidacion>().AddAsync(entity);
-        await _uow.SaveChangesAsync();
-        return entity.Adapt<LiquidacionDto>();
-    }
+        await Repository.AddAsync(entity);
 
-    public async Task<bool> UpdateAsync(LiquidacionDto dto)
-    {
-        var entity = await _uow.Repository<Liquidacion>().GetByIdAsync(dto.Id);
-        if (entity == null) return false;
+        if (await Uow.SaveChangesAsync() <= 0)
+            return Result<LiquidacionDto>.Failure(ValidationMessages.SaveFailed);
 
-        dto.Adapt(entity);
-        entity.UpdatedAt = DateTime.UtcNow;
-        _uow.Repository<Liquidacion>().Update(entity);
-        return await _uow.SaveChangesAsync() > 0;
-    }
-
-    public async Task<bool> DeleteAsync(Guid id)
-    {
-        var entity = await _uow.Repository<Liquidacion>().GetByIdAsync(id);
-        if (entity == null) return false;
-
-        _uow.Repository<Liquidacion>().Remove(entity);
-        return await _uow.SaveChangesAsync() > 0;
+        return Result<LiquidacionDto>.Success(entity.Adapt<LiquidacionDto>());
     }
 
     public async Task<LiquidacionDto> SugerirLiquidacionAsync(Guid empleadoId, DateTime inicio, DateTime fin, decimal diasTrabajados)
     {
-        var empleado = await _uow.Repository<Empleado>().GetByIdAsync(empleadoId);
-        if (empleado == null) throw new Exception("Empleado no encontrado");
+        var empleado = await Uow.Repository<Empleado>().GetByIdAsync(empleadoId);
+        if (empleado is null)
+            throw new InvalidOperationException(ValidationMessages.EntityNotFound);
 
-        var totalDias = diasTrabajados;
-        
-        // Si no se especifican días, sugerimos los días hábiles (Lunes a Viernes)
-        if (totalDias == 0)
+        var incluirSabados = _settingsService.GetDefaultIncludeSaturday();
+        var incluirDomingos = _settingsService.GetDefaultIncludeSunday();
+        var incluirFeriados = _settingsService.GetDefaultIncludeHoliday();
+        var multiplicadorSabado = _settingsService.GetDefaultMultiplierSaturday();
+        var multiplicadorDomingo = _settingsService.GetDefaultMultiplierSunday();
+        var multiplicadorFeriado = _settingsService.GetDefaultMultiplierHoliday();
+
+        var feriados = await ObtenerFeriadosAsync(inicio, fin);
+
+        decimal totalDias;
+        decimal totalBruto;
+
+        if (diasTrabajados == 0)
         {
+            totalDias = 0;
+            totalBruto = 0;
+
             for (var date = inicio.Date; date <= fin.Date; date = date.AddDays(1))
             {
-                if (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
-                {
-                    totalDias += 1.0m;
-                }
+                var multiplicador = ObtenerMultiplicador(
+                    date,
+                    feriados,
+                    incluirSabados,
+                    incluirDomingos,
+                    incluirFeriados,
+                    multiplicadorSabado,
+                    multiplicadorDomingo,
+                    multiplicadorFeriado);
+
+                if (multiplicador <= 0) continue;
+
+                totalDias += 1.0m;
+                totalBruto += empleado.TarifaDiaria * multiplicador;
             }
         }
+        else
+        {
+            totalDias = diasTrabajados;
+            totalBruto = totalDias * empleado.TarifaDiaria;
+        }
 
-        var totalBruto = totalDias * empleado.TarifaDiaria;
-
-        // Buscar adelantos
-        var adelantoTypeId = ElectroObraApp.Core.Constants.TiposMovimiento.Adelanto;
-        var movimientos = await _uow.Movimientos.FindAsync(m => 
-            m.EmpleadoId == empleadoId && 
-            m.Fecha >= inicio && 
+        var adelantoTypeId = Core.Constants.TiposMovimiento.Adelanto;
+        var movimientos = await Uow.Movimientos.FindAsync(m =>
+            m.EmpleadoId == empleadoId &&
+            m.Fecha >= inicio &&
             m.Fecha <= fin &&
             m.TipoMovimientoId == adelantoTypeId);
-            
+
         var totalAdelantos = movimientos.Sum(m => m.Total);
+
+        Logger.LogInformation(
+            "Liquidación sugerida para empleado {EmpleadoId}: {Dias} días, bruto {Bruto}, adelantos {Adelantos}, feriados {Feriados}",
+            empleadoId,
+            totalDias,
+            totalBruto,
+            totalAdelantos,
+            feriados.Count);
 
         return new LiquidacionDto
         {
@@ -107,14 +134,54 @@ public class LiquidacionService : ILiquidacionService
             TotalAdelantos = totalAdelantos,
             TotalBruto = totalBruto,
             TotalNeto = totalBruto - totalAdelantos,
-            // Valores por defecto del sistema
-            IncluirSabados = _settingsService.GetDefaultIncludeSaturday(),
-            IncluirDomingos = _settingsService.GetDefaultIncludeSunday(),
-            IncluirFeriados = _settingsService.GetDefaultIncludeHoliday(),
-            MultiplicadorSabado = _settingsService.GetDefaultMultiplierSaturday(),
-            MultiplicadorDomingo = _settingsService.GetDefaultMultiplierSunday(),
-            MultiplicadorFeriado = _settingsService.GetDefaultMultiplierHoliday()
+            IncluirSabados = incluirSabados,
+            IncluirDomingos = incluirDomingos,
+            IncluirFeriados = incluirFeriados,
+            MultiplicadorSabado = multiplicadorSabado,
+            MultiplicadorDomingo = multiplicadorDomingo,
+            MultiplicadorFeriado = multiplicadorFeriado
         };
     }
-}
 
+    private async Task<HashSet<DateTime>> ObtenerFeriadosAsync(DateTime inicio, DateTime fin)
+    {
+        var feriados = new HashSet<DateTime>();
+
+        for (var year = inicio.Year; year <= fin.Year; year++)
+        {
+            var holidays = await _holidayService.GetHolidaysAsync(year);
+            foreach (var holiday in holidays)
+            {
+                feriados.Add(holiday.Date.Date);
+            }
+        }
+
+        return feriados;
+    }
+
+    private static decimal ObtenerMultiplicador(
+        DateTime date,
+        HashSet<DateTime> feriados,
+        bool incluirSabados,
+        bool incluirDomingos,
+        bool incluirFeriados,
+        decimal multiplicadorSabado,
+        decimal multiplicadorDomingo,
+        decimal multiplicadorFeriado)
+    {
+        var esSabado = date.DayOfWeek == DayOfWeek.Saturday;
+        var esDomingo = date.DayOfWeek == DayOfWeek.Sunday;
+        var esFeriado = feriados.Contains(date.Date);
+
+        if (esFeriado)
+            return incluirFeriados ? multiplicadorFeriado : 0.0m;
+
+        if (esDomingo)
+            return incluirDomingos ? multiplicadorDomingo : 0.0m;
+
+        if (esSabado)
+            return incluirSabados ? multiplicadorSabado : 0.0m;
+
+        return 1.0m;
+    }
+}

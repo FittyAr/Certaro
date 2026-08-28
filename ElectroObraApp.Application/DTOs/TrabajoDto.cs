@@ -1,8 +1,9 @@
 using System;
+using ElectroObraApp.Application.Common;
 
 namespace ElectroObraApp.Application.DTOs;
 
-public class TrabajoDto
+public class TrabajoDto : IHasGuidId
 {
     public Guid Id { get; set; }
     public string Descripcion { get; set; } = string.Empty;

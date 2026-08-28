@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddScoped<IEmpleadoService, EmpleadoService>();
         services.AddScoped<ITrabajoService, TrabajoService>();
         services.AddScoped<ILiquidacionService, LiquidacionService>();
+        services.AddScoped<IFacturaService, FacturaService>();
         
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         

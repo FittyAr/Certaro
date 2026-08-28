@@ -6,11 +6,11 @@ using ElectroObraApp.Core.Common;
 
 namespace ElectroObraApp.Application.Interfaces;
 
-public interface IEmpleadoService
+public interface IFacturaService
 {
-    Task<IEnumerable<EmpleadoDto>> GetAllAsync();
-    Task<Result> CreateAsync(EmpleadoDto dto);
-    Task<Result> UpdateAsync(EmpleadoDto dto);
+    Task<IEnumerable<FacturaDto>> GetAllAsync();
+    Task<FacturaDto?> GetByIdAsync(Guid id);
+    Task<Result> CreateAsync(FacturaDto dto);
+    Task<Result> UpdateAsync(FacturaDto dto);
     Task<Result> DeleteAsync(Guid id);
-    Task<EmpleadoDto?> GetByIdAsync(Guid id);
 }

@@ -60,5 +60,8 @@ public interface IUserSettingsService
 
     string GetDollarApiUrl();
     Task SetDollarApiUrlAsync(string url);
+
+    string GetLanguage();
+    Task SetLanguageAsync(string languageCode);
 }
 

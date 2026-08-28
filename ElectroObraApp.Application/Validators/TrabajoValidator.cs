@@ -1,5 +1,6 @@
 using FluentValidation;
 using ElectroObraApp.Application.DTOs;
+using ElectroObraApp.Application.Validation;
 
 namespace ElectroObraApp.Application.Validators;
 
@@ -8,11 +9,12 @@ public class TrabajoValidator : AbstractValidator<TrabajoDto>
     public TrabajoValidator()
     {
         RuleFor(x => x.Descripcion)
-            .NotEmpty().WithMessage("La descripción es obligatoria.")
-            .MaximumLength(200).WithMessage("La descripción no puede exceder los 200 caracteres.");
+            .NotEmpty().WithMessage(ValidationMessages.TrabajoDescripcionRequired)
+            .MaximumLength(200).WithMessage(ValidationMessages.TrabajoDescripcionMaxLength);
 
         RuleFor(x => x.ClienteId)
-            .NotEmpty().WithMessage("Debe seleccionar un cliente.");
+            .NotEmpty().WithMessage(ValidationMessages.TrabajoClienteRequired);
+
+        RuleForEach(x => x.OrdenesTrabajo).SetValidator(new OrdenTrabajoValidator());
     }
 }
-
