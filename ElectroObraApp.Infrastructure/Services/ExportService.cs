@@ -15,11 +15,15 @@ namespace ElectroObraApp.Infrastructure.Services;
 
 public class ExportService : IExportService
 {
-    public ExportService()
+    private readonly IUserSettingsService _settingsService;
+
+    public ExportService(IUserSettingsService settingsService)
     {
-        // QuestPDF License
+        _settingsService = settingsService;
         QuestPDF.Settings.License = LicenseType.Community;
     }
+
+    private string AppName => _settingsService.GetAppName();
 
     public async Task<byte[]> ExportMovimientosToPdfAsync(IEnumerable<object> movimientos)
     {
@@ -36,7 +40,7 @@ public class ExportService : IExportService
                     page.PageColor(Colors.White);
                     page.DefaultTextStyle(x => x.FontSize(10));
 
-                    page.Header().Text("Listado de Movimientos - Proyecto Pablito")
+                    page.Header().Text($"Listado de Movimientos - {AppName}")
                         .SemiBold().FontSize(20).FontColor(Colors.Blue.Medium);
 
                     page.Content().PaddingVertical(10).Table(table =>
@@ -140,7 +144,7 @@ public class ExportService : IExportService
             var title = doc.CreateParagraph();
             title.Alignment = ParagraphAlignment.CENTER;
             var titleRun = title.CreateRun();
-            titleRun.SetText("Listado de Movimientos - Proyecto Pablito");
+            titleRun.SetText($"Listado de Movimientos - {AppName}");
             titleRun.FontSize = 20;
             titleRun.IsBold = true;
 
@@ -181,7 +185,13 @@ public class ExportService : IExportService
             writer.WriteLine("Fecha,Concepto,Tipo,Monto,Cantidad,Total");
             foreach (var item in data)
             {
-                writer.WriteLine($"{item.Fecha:dd/MM/yyyy},\"{item.Concepto}\",{item.TipoMovimientoNombre},{item.Monto},{item.Cantidad},{item.Total}");
+                writer.WriteLine(string.Join(",",
+                    EscapeCsv(item.Fecha.ToString("dd/MM/yyyy")),
+                    EscapeCsv(item.Concepto),
+                    EscapeCsv(item.TipoMovimientoNombre),
+                    item.Monto.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    item.Cantidad.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    item.Total.ToString(System.Globalization.CultureInfo.InvariantCulture)));
             }
             writer.Flush();
             return stream.ToArray();
@@ -222,7 +232,7 @@ public class ExportService : IExportService
 
                         row.RelativeItem().AlignRight().Column(col =>
                         {
-                            col.Item().Text("PROYECTO PABLITO").SemiBold().FontSize(12);
+                            col.Item().Text(AppName.ToUpperInvariant()).SemiBold().FontSize(12);
                             col.Item().Text("Cuentas Claras").Italic().FontSize(10);
                             col.Item().Text(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8);
                         });
@@ -342,7 +352,7 @@ public class ExportService : IExportService
 
                     page.Footer().AlignCenter().Text(x =>
                     {
-                        x.Span("Proyecto Pablito - Software de Gestión Profesional - Página ");
+                        x.Span($"{AppName} - Software de Gestión Profesional - Página ");
                         x.CurrentPageNumber();
                     });
                 });
@@ -474,7 +484,7 @@ public class ExportService : IExportService
 
                     page.Footer().AlignCenter().Text(x =>
                     {
-                        x.Span("Certificado generado por Proyecto Pablito - ");
+                        x.Span($"Certificado generado por {AppName} - ");
                         x.CurrentPageNumber();
                     });
                 });
@@ -482,6 +492,16 @@ public class ExportService : IExportService
 
             return document.GeneratePdf();
         });
+    }
+
+    public static string EscapeCsv(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return string.Empty;
+
+        var needsQuotes = value.Contains(',') || value.Contains('"') || value.Contains('\n') || value.Contains('\r');
+        var escaped = value.Replace("\"", "\"\"");
+        return needsQuotes ? $"\"{escaped}\"" : escaped;
     }
 }
 

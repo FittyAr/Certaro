@@ -38,11 +38,9 @@ public class DatabaseSeedService : IDatabaseSeedService
     {
         if (!IsSeedEnabled()) return;
 
-        // Cargar Pool de datos
         var poolPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "SeedData", "SeedPool.json");
         if (!File.Exists(poolPath))
         {
-            // Fallback si no está en la carpeta de ejecución (desarrollo)
             poolPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "ElectroObraApp.Infrastructure", "Data", "SeedData", "SeedPool.json");
         }
 
@@ -51,7 +49,10 @@ public class DatabaseSeedService : IDatabaseSeedService
 
         if (pool == null) return;
 
-        _logger.LogInformation("Iniciando limpieza de tablas para sembrado...");
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            _logger.LogInformation("Iniciando limpieza de tablas para sembrado...");
         
         // Limpiar tablas
         _context.Movimientos.RemoveRange(_context.Movimientos);
@@ -204,7 +205,15 @@ public class DatabaseSeedService : IDatabaseSeedService
         _logger.LogInformation($"Insertando {allMovimientos.Count} movimientos...");
         _context.Movimientos.AddRange(allMovimientos);
         await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
         _logger.LogInformation("Sembrado de datos completado exitosamente.");
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            _logger.LogError(ex, "Error durante el sembrado de datos. Se revirtió la transacción.");
+            throw;
+        }
     }
 }
 

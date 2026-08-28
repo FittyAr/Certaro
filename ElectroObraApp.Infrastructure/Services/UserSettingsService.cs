@@ -95,6 +95,9 @@ public class UserSettingsService : IUserSettingsService
     public string GetDollarApiUrl() => GetValue("Application:Settlement:DollarApiUrl", "https://dolarapi.com/v1/dolares");
     public Task SetDollarApiUrlAsync(string url) => SetValueAsync("Application:Settlement:DollarApiUrl", url);
 
+    public string GetLanguage() => GetValue("Application:Language", "es");
+    public Task SetLanguageAsync(string languageCode) => SetValueAsync("Application:Language", languageCode);
+
     private string GetValue(string key, string defaultValue)
     {
         try
