@@ -10,6 +10,9 @@ export const useUiStore = defineStore('ui', () => {
   const theme = ref<ThemePreference>('system')
   const sidebarExpanded = ref(true)
   const commandPaletteOpen = ref(false)
+  const shortcutHelpOpen = ref(false)
+  /** Hides every amount on screen, for working with somebody looking over your shoulder. */
+  const privacyMode = ref(false)
   const bootstrapState = ref<'initializing' | 'ready' | 'failed'>('initializing')
   const bootstrapErrorKey = ref<string | null>(null)
 
@@ -48,6 +51,18 @@ export const useUiStore = defineStore('ui', () => {
     sidebarExpanded.value = !sidebarExpanded.value
   }
 
+  function openCommandPalette(): void {
+    commandPaletteOpen.value = true
+  }
+
+  function openShortcutHelp(): void {
+    shortcutHelpOpen.value = true
+  }
+
+  function togglePrivacy(): void {
+    privacyMode.value = !privacyMode.value
+  }
+
   function markReady(): void {
     bootstrapState.value = 'ready'
     bootstrapErrorKey.value = null
@@ -63,11 +78,16 @@ export const useUiStore = defineStore('ui', () => {
     isDark,
     sidebarExpanded,
     commandPaletteOpen,
+    shortcutHelpOpen,
+    privacyMode,
     bootstrapState,
     bootstrapErrorKey,
     setTheme,
     cycleTheme,
     toggleSidebar,
+    openCommandPalette,
+    openShortcutHelp,
+    togglePrivacy,
     markReady,
     markFailed,
   }

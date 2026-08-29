@@ -4,6 +4,22 @@
     "InitializingHint": "Preparando la base de datos",
     "Ready": "Listo"
   },
+  "Comercial": {
+    "CuentaCorriente": {
+      "Title": "Cuenta corriente"
+    }
+  },
+  "CommandPalette": {
+    "Group": {
+      "Actions": "Acciones",
+      "Navigation": "Navegación",
+      "Records": "Registros",
+      "Settings": "Configuración"
+    },
+    "Hint": "↑↓ para moverte · Enter para abrir · Esc para cerrar",
+    "NoResults": "Sin coincidencias",
+    "SearchPlaceholder": "Buscar o ir a…"
+  },
   "Error": {
     "BootstrapFailed": "No se pudo iniciar la aplicación",
     "Concurrency": "Alguien más modificó este registro. Recargá y volvé a intentar.",
@@ -12,35 +28,122 @@
     "Io": "No se pudo leer o escribir un archivo",
     "NotFound": "No se encontró el registro",
     "Persistence": "No se pudo acceder a los datos",
+    "Summary": {
+      "error": "Error",
+      "info": "Información",
+      "warn": "Atención"
+    },
     "Unexpected": "Ocurrió un error inesperado",
     "Validation": "Revisá los campos marcados"
   },
   "General": {
     "Actions": "Acciones",
     "Add": "Agregar",
+    "Back": "Volver",
     "Cancel": "Cancelar",
     "Clear": "Limpiar",
+    "ClearFilters": "Limpiar filtros",
     "Close": "Cerrar",
+    "Confirm": "Confirmar",
     "Delete": "Eliminar",
+    "DeleteConfirm": "¿Eliminar {entity} «{label}»?",
+    "DeleteConfirmTitle": "Confirmar eliminación",
+    "Deleted": "Registro eliminado",
+    "Discard": "Descartar",
+    "DiscardChangesConfirm": "Hay cambios sin guardar. ¿Querés descartarlos?",
     "Edit": "Editar",
+    "EditOf": "Editar {entity}",
     "Empty": "No hay datos para mostrar",
     "Error": "Error",
     "Filters": "Filtros",
+    "KeepEditing": "Seguir editando",
     "Loading": "Cargando…",
     "New": "Nuevo",
+    "NewOf": "Nuevo {entity}",
+    "NoResults": "Ningún registro coincide con los filtros",
+    "PageReport": "{first} a {last} de {totalRecords}",
     "PageSizeAll": "Todos",
+    "PrivacyMode": "Modo privacidad",
     "Refresh": "Actualizar",
+    "ReloadRecord": "Recargar el registro",
     "Retry": "Reintentar",
     "Save": "Guardar",
+    "Saved": "Registro guardado",
     "Search": "Buscar",
     "Success": "Listo",
-    "Theme": {
-      "Dark": "Oscuro",
-      "Light": "Claro",
-      "System": "Sistema",
-      "Toggle": "Cambiar tema"
+    "Theme": "Cambiar tema",
+    "Version": "Versión {version}",
+    "WorkInProgress": "Esta pantalla todavía no está implementada"
+  },
+  "Menu": {
+    "Aria": {
+      "Breadcrumb": "Ubicación",
+      "Main": "Navegación principal",
+      "Toggle": "Mostrar u ocultar el menú"
     },
-    "Version": "Versión {version}"
+    "Asistencia": "Asistencia",
+    "Categories": "Categorías",
+    "Certificados": "Certificados",
+    "Clientes": "Clientes",
+    "Dashboard": "Panel",
+    "Empleados": "Empleados",
+    "Facturas": "Facturas",
+    "Group": {
+      "Comercial": "Comercial",
+      "Operacion": "Operación",
+      "Personal": "Personal",
+      "Sistema": "Sistema"
+    },
+    "Liquidaciones": "Liquidaciones",
+    "MovementTypes": "Tipos de movimiento",
+    "Movimientos": "Movimientos",
+    "Obras": "Obras",
+    "Reports": "Reportes",
+    "Seed": "Datos de prueba",
+    "Settings": "Configuración",
+    "Synonym": {
+      "Caja": "caja flujo de fondos",
+      "Cobros": "cobros comprobantes",
+      "Gastos": "gastos ingresos",
+      "Sueldos": "sueldos jornales pagos"
+    },
+    "Trabajos": "Trabajos"
+  },
+  "Obras": {
+    "Caja": {
+      "Title": "Caja de la obra"
+    }
+  },
+  "Ordenes": {
+    "Title": "Órdenes de trabajo"
+  },
+  "State": {
+    "Factura": {
+      "Anulada": "Anulada",
+      "Borrador": "Borrador",
+      "Emitida": "Emitida",
+      "Pagada": "Pagada",
+      "PagadaParcial": "Pago parcial",
+      "Vencida": "Vencida"
+    },
+    "Obra": {
+      "Activa": "Activa",
+      "Cancelada": "Cancelada",
+      "Finalizada": "Finalizada",
+      "Pausada": "Pausada"
+    },
+    "Trabajo": {
+      "Cancelado": "Cancelado",
+      "EnProgreso": "En progreso",
+      "Finalizado": "Finalizado",
+      "Pausado": "Pausado",
+      "Pendiente": "Pendiente"
+    }
+  },
+  "Status": {
+    "failed": "Sin conexión con la base",
+    "initializing": "Iniciando…",
+    "ready": "Listo"
   },
   "Validation": {
     "Config": {

@@ -4,6 +4,22 @@
     "InitializingHint": "Preparing the database",
     "Ready": "Ready"
   },
+  "Comercial": {
+    "CuentaCorriente": {
+      "Title": "Account statement"
+    }
+  },
+  "CommandPalette": {
+    "Group": {
+      "Actions": "Actions",
+      "Navigation": "Navigation",
+      "Records": "Records",
+      "Settings": "Settings"
+    },
+    "Hint": "↑↓ to move · Enter to open · Esc to close",
+    "NoResults": "No matches",
+    "SearchPlaceholder": "Search or jump to…"
+  },
   "Error": {
     "BootstrapFailed": "The application could not start",
     "Concurrency": "Someone else changed this record. Reload and try again.",
@@ -12,35 +28,122 @@
     "Io": "A file could not be read or written",
     "NotFound": "Record not found",
     "Persistence": "The data could not be reached",
+    "Summary": {
+      "error": "Error",
+      "info": "Information",
+      "warn": "Warning"
+    },
     "Unexpected": "Something went wrong",
     "Validation": "Check the highlighted fields"
   },
   "General": {
     "Actions": "Actions",
     "Add": "Add",
+    "Back": "Back",
     "Cancel": "Cancel",
     "Clear": "Clear",
+    "ClearFilters": "Clear filters",
     "Close": "Close",
+    "Confirm": "Confirm",
     "Delete": "Delete",
+    "DeleteConfirm": "Delete {entity} “{label}”?",
+    "DeleteConfirmTitle": "Confirm deletion",
+    "Deleted": "Record deleted",
+    "Discard": "Discard",
+    "DiscardChangesConfirm": "There are unsaved changes. Discard them?",
     "Edit": "Edit",
+    "EditOf": "Edit {entity}",
     "Empty": "Nothing to show",
     "Error": "Error",
     "Filters": "Filters",
+    "KeepEditing": "Keep editing",
     "Loading": "Loading…",
     "New": "New",
+    "NewOf": "New {entity}",
+    "NoResults": "No record matches the filters",
+    "PageReport": "{first} to {last} of {totalRecords}",
     "PageSizeAll": "All",
+    "PrivacyMode": "Privacy mode",
     "Refresh": "Refresh",
+    "ReloadRecord": "Reload the record",
     "Retry": "Retry",
     "Save": "Save",
+    "Saved": "Record saved",
     "Search": "Search",
     "Success": "Done",
-    "Theme": {
-      "Dark": "Dark",
-      "Light": "Light",
-      "System": "System",
-      "Toggle": "Toggle theme"
+    "Theme": "Toggle theme",
+    "Version": "Version {version}",
+    "WorkInProgress": "This screen is not implemented yet"
+  },
+  "Menu": {
+    "Aria": {
+      "Breadcrumb": "Location",
+      "Main": "Main navigation",
+      "Toggle": "Show or hide the menu"
     },
-    "Version": "Version {version}"
+    "Asistencia": "Attendance",
+    "Categories": "Categories",
+    "Certificados": "Certificates",
+    "Clientes": "Clients",
+    "Dashboard": "Dashboard",
+    "Empleados": "Employees",
+    "Facturas": "Invoices",
+    "Group": {
+      "Comercial": "Commercial",
+      "Operacion": "Operations",
+      "Personal": "Staff",
+      "Sistema": "System"
+    },
+    "Liquidaciones": "Payroll",
+    "MovementTypes": "Movement types",
+    "Movimientos": "Movements",
+    "Obras": "Sites",
+    "Reports": "Reports",
+    "Seed": "Sample data",
+    "Settings": "Settings",
+    "Synonym": {
+      "Caja": "cash flow",
+      "Cobros": "billing invoices",
+      "Gastos": "expenses income",
+      "Sueldos": "payroll wages salaries"
+    },
+    "Trabajos": "Jobs"
+  },
+  "Obras": {
+    "Caja": {
+      "Title": "Site cash flow"
+    }
+  },
+  "Ordenes": {
+    "Title": "Work orders"
+  },
+  "State": {
+    "Factura": {
+      "Anulada": "Void",
+      "Borrador": "Draft",
+      "Emitida": "Issued",
+      "Pagada": "Paid",
+      "PagadaParcial": "Partially paid",
+      "Vencida": "Overdue"
+    },
+    "Obra": {
+      "Activa": "Active",
+      "Cancelada": "Cancelled",
+      "Finalizada": "Finished",
+      "Pausada": "Paused"
+    },
+    "Trabajo": {
+      "Cancelado": "Cancelled",
+      "EnProgreso": "In progress",
+      "Finalizado": "Finished",
+      "Pausado": "Paused",
+      "Pendiente": "Pending"
+    }
+  },
+  "Status": {
+    "failed": "No connection to the database",
+    "initializing": "Starting…",
+    "ready": "Ready"
   },
   "Validation": {
     "Config": {

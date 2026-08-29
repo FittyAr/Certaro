@@ -8,7 +8,7 @@ import { createApp } from 'vue'
 
 import App from './App.vue'
 import { i18n } from './i18n'
-import { router } from './router'
+import { createAppRouter } from './router'
 
 import './assets/main.css'
 
@@ -53,6 +53,16 @@ const preset = definePreset(Aura, {
 })
 
 const app = createApp(App)
+
+/**
+ * The seed screen is decided at build time rather than from configuration: the router is built
+ * before the backend has finished bootstrapping, and a route that must not exist in a release
+ * build is better left unregistered than registered and then hidden.
+ */
+const router = createAppRouter({
+  seedEnabled: import.meta.env.DEV,
+  appName: () => 'ElectroObra',
+})
 
 app.use(createPinia())
 app.use(router)
