@@ -49,6 +49,42 @@ impl Moneda {
     }
 }
 
+/// `docs/05-dominio-entidades.md` §3.8.
+///
+/// Only fills the dropdown: the column stays `TEXT`, and a historical value outside this list is
+/// shown as it was written rather than being normalised into one of these.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub enum MedioPago {
+    #[default]
+    Efectivo,
+    Transferencia,
+    Cheque,
+    Deposito,
+    Otro,
+}
+
+impl MedioPago {
+    pub const ALL: [Self; 5] = [
+        Self::Efectivo,
+        Self::Transferencia,
+        Self::Cheque,
+        Self::Deposito,
+        Self::Otro,
+    ];
+
+    /// What gets stored, accents included: it is the text the legacy rows already carry.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Efectivo => "Efectivo",
+            Self::Transferencia => "Transferencia",
+            Self::Cheque => "Cheque",
+            Self::Deposito => "Depósito",
+            Self::Otro => "Otro",
+        }
+    }
+}
+
 /// `docs/05-dominio-entidades.md` §3.2.
 ///
 /// `PagadaParcial` is new and takes the value 5 rather than slotting in next to `Pagada`: the

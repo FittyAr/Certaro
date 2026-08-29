@@ -25,7 +25,7 @@ pub use entities::{
     Audit, Categoria, Cliente, ClienteContacto, Factura, Movimiento, Obra, PagoFactura,
     TipoMovimiento, Trabajo,
 };
-pub use enums::{EstadoFactura, EstadoObra, EstadoTrabajo, Moneda};
+pub use enums::{EstadoFactura, EstadoObra, EstadoTrabajo, MedioPago, Moneda};
 pub use error::DomainError;
 pub use money::{Money, SCALE};
 pub use row_version::RowVersion;

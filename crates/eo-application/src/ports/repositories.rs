@@ -8,8 +8,11 @@
 
 use async_trait::async_trait;
 use chrono::{DateTime, NaiveDate, Utc};
-use eo_domain::entities::{Categoria, Movimiento, TipoMovimiento};
-use eo_domain::{Moneda, Money, RowVersion};
+use eo_domain::entities::{
+    Categoria, Cliente, ClienteContacto, Factura, Movimiento, Obra, PagoFactura, TipoMovimiento,
+    Trabajo,
+};
+use eo_domain::{EstadoFactura, EstadoObra, EstadoTrabajo, Moneda, Money, RowVersion};
 use uuid::Uuid;
 
 use crate::paging::{PageRequest, PagedResult};
@@ -246,6 +249,252 @@ impl ReferenciaTabla {
     }
 }
 
+/// Filter of `clientes`. See `docs/09-modulos-funcionales.md` §3.3.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ClienteFiltro {
+    /// Case-insensitive match against name, CUIT and email.
+    pub texto: Option<String>,
+    pub condicion_iva: Option<String>,
+    /// Only customers with a positive outstanding balance.
+    pub solo_con_deuda: bool,
+}
+
+/// A customer with the two figures the list shows and the delete case needs.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClienteConResumen {
+    pub cliente: Cliente,
+    pub obras_count: u64,
+    pub facturas_count: u64,
+    /// Sum of the outstanding balance of every invoice that counts as debt. Computed in SQL
+    /// because the column is sortable and paging on a value computed in Rust would be wrong.
+    pub deuda: Money,
+}
+
+#[async_trait]
+pub trait ClienteRepository: Send + Sync {
+    /// Without contacts: the list does not show them and loading them would be N+1.
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<Cliente>>;
+
+    /// With its live contacts, which is what the form edits as a single aggregate.
+    async fn find_con_contactos(&self, id: Uuid) -> AppResult<Option<Cliente>>;
+
+    async fn search(
+        &self,
+        filtro: &ClienteFiltro,
+        page: PageRequest,
+        sort_by: Option<&str>,
+        sort_dir: SortDir,
+    ) -> AppResult<PagedResult<ClienteConResumen>>;
+
+    async fn lookup(&self, texto: Option<&str>, limite: u64) -> AppResult<Vec<Cliente>>;
+
+    async fn insert(&self, entity: &Cliente) -> AppResult<()>;
+    async fn update(&self, entity: &Cliente, esperado: RowVersion) -> AppResult<()>;
+    async fn soft_delete(&self, id: Uuid, esperado: RowVersion, at: DateTime<Utc>)
+        -> AppResult<()>;
+
+    async fn insert_contacto(&self, entity: &ClienteContacto) -> AppResult<()>;
+    async fn update_contacto(&self, entity: &ClienteContacto) -> AppResult<()>;
+    /// Logical delete of the contacts of `cliente` that are not in `conservar`. Used both when the
+    /// form drops a row and, with an empty list, when the customer itself is deleted.
+    async fn soft_delete_contactos_excepto(
+        &self,
+        cliente_id: Uuid,
+        conservar: &[Uuid],
+        at: DateTime<Utc>,
+    ) -> AppResult<()>;
+
+    async fn count_obras(&self, id: Uuid) -> AppResult<u64>;
+    async fn count_facturas(&self, id: Uuid) -> AppResult<u64>;
+    async fn count_movimientos(&self, id: Uuid) -> AppResult<u64>;
+}
+
+/// Filter of `obras`. See `docs/09-modulos-funcionales.md` §3.4.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ObraFiltro {
+    /// Case-insensitive match against name, number, address and locality.
+    pub texto: Option<String>,
+    pub cliente_id: Option<Uuid>,
+    pub estado: Option<EstadoObra>,
+    /// Shorthand for `estado in (Activa, Pausada)`.
+    pub solo_activas: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ObraConResumen {
+    pub obra: Obra,
+    pub cliente_nombre: String,
+    pub trabajos_count: u64,
+    /// Income minus expenses of every movement imputed through one of the site's jobs.
+    pub rentabilidad: Money,
+}
+
+#[async_trait]
+pub trait ObraRepository: Send + Sync {
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<Obra>>;
+    async fn find_detalle(&self, id: Uuid) -> AppResult<Option<ObraConResumen>>;
+
+    async fn search(
+        &self,
+        filtro: &ObraFiltro,
+        page: PageRequest,
+        sort_by: Option<&str>,
+        sort_dir: SortDir,
+    ) -> AppResult<PagedResult<ObraConResumen>>;
+
+    async fn lookup(
+        &self,
+        cliente_id: Option<Uuid>,
+        texto: Option<&str>,
+        limite: u64,
+    ) -> AppResult<Vec<Obra>>;
+
+    /// Whether the number is taken. Deleted sites count: the number stays reserved (INV-06), and
+    /// the unique index is not filtered by `is_deleted`.
+    async fn numero_ocupado(&self, numero: i32, excluir: Option<Uuid>) -> AppResult<bool>;
+
+    /// `MAX(numero) + 1` over every row, deleted ones included.
+    async fn siguiente_numero(&self) -> AppResult<i32>;
+
+    async fn insert(&self, entity: &Obra) -> AppResult<()>;
+    async fn update(&self, entity: &Obra, esperado: RowVersion) -> AppResult<()>;
+    async fn soft_delete(&self, id: Uuid, esperado: RowVersion, at: DateTime<Utc>)
+        -> AppResult<()>;
+
+    async fn count_trabajos(&self, id: Uuid) -> AppResult<u64>;
+    /// The site's jobs that are still open, which block finalising it without cascade.
+    async fn trabajos_abiertos(&self, id: Uuid) -> AppResult<Vec<Trabajo>>;
+}
+
+/// Filter of `trabajos`. See `docs/09-modulos-funcionales.md` §3.5.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct TrabajoFiltro {
+    pub texto: Option<String>,
+    pub obra_id: Option<Uuid>,
+    /// Resolved through the site, because a job has no customer of its own.
+    pub cliente_id: Option<Uuid>,
+    pub estado: Option<EstadoTrabajo>,
+    pub fecha_desde: Option<NaiveDate>,
+    pub fecha_hasta: Option<NaiveDate>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TrabajoConRelaciones {
+    pub trabajo: Trabajo,
+    pub obra_numero: i32,
+    pub obra_nombre: String,
+    pub cliente_id: Uuid,
+    pub cliente_nombre: String,
+}
+
+#[async_trait]
+pub trait TrabajoRepository: Send + Sync {
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<Trabajo>>;
+    async fn find_detalle(&self, id: Uuid) -> AppResult<Option<TrabajoConRelaciones>>;
+
+    async fn search(
+        &self,
+        filtro: &TrabajoFiltro,
+        page: PageRequest,
+        sort_by: Option<&str>,
+        sort_dir: SortDir,
+    ) -> AppResult<PagedResult<TrabajoConRelaciones>>;
+
+    async fn lookup(
+        &self,
+        obra_id: Option<Uuid>,
+        texto: Option<&str>,
+        limite: u64,
+    ) -> AppResult<Vec<Trabajo>>;
+
+    async fn insert(&self, entity: &Trabajo) -> AppResult<()>;
+    async fn update(&self, entity: &Trabajo, esperado: RowVersion) -> AppResult<()>;
+    async fn soft_delete(&self, id: Uuid, esperado: RowVersion, at: DateTime<Utc>)
+        -> AppResult<()>;
+
+    async fn count_ordenes(&self, id: Uuid) -> AppResult<u64>;
+    async fn count_movimientos(&self, id: Uuid) -> AppResult<u64>;
+}
+
+/// Filter of `facturas`. See `docs/09-modulos-funcionales.md` §3.8.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct FacturaFiltro {
+    /// Case-insensitive match against the number and the customer name.
+    pub texto: Option<String>,
+    pub cliente_id: Option<Uuid>,
+    /// Empty means every state; the screen offers a multi-select.
+    pub estados: Vec<EstadoFactura>,
+    pub fecha_desde: Option<NaiveDate>,
+    pub fecha_hasta: Option<NaiveDate>,
+    pub solo_impagas: bool,
+    pub solo_vencidas: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FacturaConResumen {
+    pub factura: Factura,
+    pub cliente_nombre: String,
+    pub pagado: Money,
+    pub saldo: Money,
+}
+
+#[async_trait]
+pub trait FacturaRepository: Send + Sync {
+    /// Without payments.
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<Factura>>;
+    /// With its live payments, which is the aggregate every state recalculation needs.
+    async fn find_con_pagos(&self, id: Uuid) -> AppResult<Option<Factura>>;
+    async fn find_detalle(&self, id: Uuid) -> AppResult<Option<FacturaConResumen>>;
+
+    async fn search(
+        &self,
+        filtro: &FacturaFiltro,
+        page: PageRequest,
+        sort_by: Option<&str>,
+        sort_dir: SortDir,
+        hoy: NaiveDate,
+        dias_vencimiento_default: u32,
+    ) -> AppResult<PagedResult<FacturaConResumen>>;
+
+    async fn lookup(
+        &self,
+        cliente_id: Option<Uuid>,
+        solo_impagas: bool,
+        texto: Option<&str>,
+        limite: u64,
+    ) -> AppResult<Vec<Factura>>;
+
+    /// Every invoice of a customer that counts as debt, with its payments loaded. Feeds the
+    /// account statement and the ageing report.
+    async fn de_cliente_con_pagos(
+        &self,
+        cliente_id: Uuid,
+        incluir_pagadas: bool,
+    ) -> AppResult<Vec<Factura>>;
+
+    async fn insert(&self, entity: &Factura) -> AppResult<()>;
+    async fn update(&self, entity: &Factura, esperado: RowVersion) -> AppResult<()>;
+    /// Writes only the state, for the automatic recalculation that follows a payment. It carries
+    /// no row version: the caller already holds the row inside the same transaction, and bumping
+    /// the version would make the user's next save fail for no reason.
+    async fn update_estado(&self, id: Uuid, estado: EstadoFactura) -> AppResult<()>;
+    async fn soft_delete(&self, id: Uuid, esperado: RowVersion, at: DateTime<Utc>)
+        -> AppResult<()>;
+
+    async fn count_movimientos(&self, id: Uuid) -> AppResult<u64>;
+
+    async fn find_pago(&self, id: Uuid) -> AppResult<Option<PagoFactura>>;
+    async fn pagos_de(&self, factura_id: Uuid) -> AppResult<Vec<PagoFactura>>;
+    async fn insert_pago(&self, entity: &PagoFactura) -> AppResult<()>;
+    async fn update_pago(&self, entity: &PagoFactura, esperado: RowVersion) -> AppResult<()>;
+    async fn soft_delete_pago(
+        &self,
+        id: Uuid,
+        esperado: RowVersion,
+        at: DateTime<Utc>,
+    ) -> AppResult<()>;
+}
+
 /// Opens transactions. A use case that writes more than one table has to go through this.
 #[async_trait]
 pub trait UnitOfWork: Send + Sync {
@@ -261,6 +510,10 @@ pub trait Transaction: Send + Sync {
     fn tipos_movimiento(&self) -> &dyn TipoMovimientoRepository;
     fn categorias(&self) -> &dyn CategoriaRepository;
     fn movimientos(&self) -> &dyn MovimientoRepository;
+    fn clientes(&self) -> &dyn ClienteRepository;
+    fn obras(&self) -> &dyn ObraRepository;
+    fn trabajos(&self) -> &dyn TrabajoRepository;
+    fn facturas(&self) -> &dyn FacturaRepository;
 
     async fn commit(self: Box<Self>) -> AppResult<()>;
     async fn rollback(self: Box<Self>) -> AppResult<()>;

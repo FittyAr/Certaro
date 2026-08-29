@@ -10,7 +10,7 @@
 //! forbids the application layer from importing infrastructure. Loading, merging the three layers
 //! and persisting stay in `eo-infrastructure/src/config/`.
 
-use eo_domain::Decimal4;
+use eo_domain::{Decimal4, Money};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -186,6 +186,12 @@ pub struct BusinessConfig {
     /// Only a suggestion; VAT is typed by hand (doc 06 §4.1).
     pub iva_sugerido: Decimal4,
     pub factura_dias_vencimiento_default: u32,
+    /// Upper bound of each ageing bucket, in days, inclusive. Anything past the last one falls
+    /// into the open-ended bucket.
+    pub buckets_antiguedad: Vec<u32>,
+    /// How much a payment may exceed the outstanding balance before being refused (INV-09). Zero
+    /// by default; a small tolerance exists for the cent that rounding leaves behind.
+    pub tolerancia_sobrepago_factura: Money,
     pub categoria_profundidad_maxima: u8,
     pub dias_por_frecuencia: DiasPorFrecuencia,
 }
@@ -203,6 +209,8 @@ impl Default for BusinessConfig {
             logo_path: None,
             iva_sugerido: Decimal4::from_raw(210_000),
             factura_dias_vencimiento_default: 30,
+            buckets_antiguedad: vec![30, 60, 90],
+            tolerancia_sobrepago_factura: Money::ZERO,
             categoria_profundidad_maxima: 3,
             dias_por_frecuencia: DiasPorFrecuencia::default(),
         }
