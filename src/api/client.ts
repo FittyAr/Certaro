@@ -60,10 +60,7 @@ function normalise(error: unknown): ApiError {
   }
 }
 
-export async function callCommand<T>(
-  command: string,
-  args?: Record<string, unknown>,
-): Promise<T> {
+export async function callCommand<T>(command: string, args?: Record<string, unknown>): Promise<T> {
   try {
     return await invoke<T>(command, args)
   } catch (error) {

@@ -108,10 +108,12 @@ impl Money {
 
     /// Applies a percentage: `Money::parse("200")?.percent(Decimal4::parse("21")?)` is `42.0000`.
     ///
-    /// Equivalent to multiplying by the fraction, in one step so the caller cannot forget to
-    /// divide by a hundred.
+    /// Multiplies first and divides by a hundred last, per the order-of-operations rule of
+    /// doc 04 §1.5. Converting the percentage to a fraction up front would round it to four
+    /// decimals before the multiplication and lose two digits: `1000 x 33.3333%` would come out as
+    /// `333.3000` instead of `333.3330`.
     pub fn percent(self, percentage: Decimal4) -> Result<Money, DomainError> {
-        self.checked_mul(percentage.as_fraction())
+        self.checked_mul(percentage)?.checked_div(Decimal4::HUNDRED)
     }
 }
 

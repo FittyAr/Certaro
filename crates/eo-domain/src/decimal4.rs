@@ -95,12 +95,12 @@ impl Decimal4 {
 
     /// Reads `self` as a percentage and returns the fraction: `60` becomes `0.6`.
     ///
-    /// Exact for every percentage with at most two decimals, which is every percentage the system
-    /// accepts (`Locale.DecimalesPorcentaje` defaults to 2).
+    /// Exact only for percentages with at most two decimals, which is every percentage the system
+    /// accepts (`Locale.DecimalesPorcentaje` defaults to 2). To apply a percentage to an amount use
+    /// [`Money::percent`](crate::Money::percent), which multiplies before dividing and keeps the
+    /// digits this conversion would drop.
     #[must_use]
     pub fn as_fraction(self) -> Decimal4 {
-        // Dividing by a hundred can only lose the last two digits of a value that already has four
-        // decimals, and the rounding is the same half-away-from-zero used everywhere else.
         Decimal4(scaled::checked_div(self.0, Decimal4::HUNDRED.0).unwrap_or(0))
     }
 
