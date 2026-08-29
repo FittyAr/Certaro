@@ -153,9 +153,9 @@ onMounted(() => {
         </template>
       </Column>
       <Column field="hijasCount" :header="$t('Categorias.Hijas')" sortable>
-        <template #body="{ data }"
-          ><span class="tabular-nums">{{ data.hijasCount }}</span></template
-        >
+        <template #body="{ data }">
+          <span class="tabular-nums">{{ data.hijasCount }}</span>
+        </template>
       </Column>
       <Column field="movimientosCount" :header="$t('Categorias.EnUso')" sortable>
         <template #body="{ data }">

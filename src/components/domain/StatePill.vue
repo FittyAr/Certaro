@@ -4,34 +4,41 @@ import { computed } from 'vue'
 /**
  * The state of a record, as a label plus a colour token. See `docs/16-frontend.md` §4.4.
  *
- * The mapping lives here and nowhere else. The legacy system had the state labels written in
- * Spanish inside a converter; here the label comes from i18n and the colour from a token, and a
- * new state has to be added in three places that a test checks.
+ * The value is the variant name the backend serialises, not its position: the numeric order is a
+ * storage detail, and reading it here would break the day a state is appended out of order.
  */
 
-export type StateEntity = 'factura' | 'obra' | 'trabajo'
+export type StateEntity = 'Factura' | 'Obra' | 'Trabajo'
 
-const props = defineProps<{ entity: StateEntity; value: number }>()
-
-/** Variant name per numeric enum value, in the order the Rust enums declare them. */
-const VARIANTS: Record<StateEntity, string[]> = {
-  factura: ['Borrador', 'Emitida', 'PagadaParcial', 'Pagada', 'Vencida', 'Anulada'],
-  obra: ['Activa', 'Pausada', 'Finalizada', 'Cancelada'],
-  trabajo: ['Pendiente', 'EnProgreso', 'Pausado', 'Finalizado', 'Cancelado'],
-}
+const props = defineProps<{ entity: StateEntity; value: string }>()
 
 /** Colour token per state, from the `--state-*` set. */
-const TOKENS: Record<StateEntity, string[]> = {
-  factura: ['draft', 'issued', 'partial', 'paid', 'overdue', 'void'],
-  obra: ['active', 'paused', 'finished', 'cancelled'],
-  trabajo: ['draft', 'active', 'paused', 'finished', 'cancelled'],
+const TOKENS: Record<StateEntity, Record<string, string>> = {
+  Factura: {
+    Borrador: 'draft',
+    Emitida: 'issued',
+    PagadaParcial: 'partial',
+    Pagada: 'paid',
+    Vencida: 'overdue',
+    Anulada: 'void',
+  },
+  Obra: {
+    Activa: 'active',
+    Pausada: 'paused',
+    Finalizada: 'finished',
+    Cancelada: 'cancelled',
+  },
+  Trabajo: {
+    Presupuestado: 'draft',
+    EnProceso: 'active',
+    Pausado: 'paused',
+    Finalizado: 'finished',
+    Cancelado: 'cancelled',
+  },
 }
 
-const variant = computed(() => VARIANTS[props.entity][props.value] ?? 'Unknown')
 const token = computed(() => TOKENS[props.entity][props.value] ?? 'void')
-const labelKey = computed(
-  () => `State.${props.entity.charAt(0).toUpperCase()}${props.entity.slice(1)}.${variant.value}`,
-)
+const labelKey = computed(() => `State.${props.entity}.${props.value}`)
 </script>
 
 <template>

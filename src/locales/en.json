@@ -1,4 +1,27 @@
 {
+  "Actions": {
+    "Factura": {
+      "Anulada": "Void",
+      "Borrador": "Back to draft",
+      "Emitida": "Issue",
+      "Pagada": "Mark as paid",
+      "PagadaParcial": "Mark as partially paid",
+      "Vencida": "Mark as overdue"
+    },
+    "Obra": {
+      "Activa": "Reactivate",
+      "Cancelada": "Cancel site",
+      "Finalizada": "Finish",
+      "Pausada": "Pause"
+    },
+    "Trabajo": {
+      "Cancelado": "Cancel job",
+      "EnProceso": "Start",
+      "Finalizado": "Finish",
+      "Pausado": "Pause",
+      "Presupuestado": "Back to quote"
+    }
+  },
   "App": {
     "Initializing": "Starting…",
     "InitializingHint": "Preparing the database",
@@ -17,6 +40,26 @@
     "SinPadre": "No parent category",
     "SoloRaiz": "Root categories only",
     "Subtitle": "Classification of income and expenses"
+  },
+  "Clientes": {
+    "AgregarContacto": "Add contact",
+    "BuscarHint": "Name, tax id or email",
+    "CondicionIva": "VAT condition",
+    "Contactos": "Contacts",
+    "Cuit": "Tax id",
+    "Deuda": "Debt",
+    "Direccion": "Address",
+    "Email": "Email",
+    "Empty": "No customers yet",
+    "EsPrincipal": "Main contact",
+    "Etiqueta": "Label",
+    "NoBorrable": "The customer has sites or invoices",
+    "Nombre": "Name",
+    "Obras": "Sites",
+    "SinContactos": "No contacts yet",
+    "SoloConDeuda": "With debt only",
+    "Subtitle": "Customers, contacts and outstanding balance",
+    "Telefono": "Phone"
   },
   "Comercial": {
     "CuentaCorriente": {
@@ -49,8 +92,12 @@
   },
   "Entity": {
     "Categoria": "category",
+    "Cliente": "customer",
+    "Factura": "invoice",
     "Movimiento": "movement",
-    "TipoMovimiento": "movement type"
+    "Obra": "site",
+    "TipoMovimiento": "movement type",
+    "Trabajo": "job"
   },
   "Error": {
     "AppNotReady": "The application is still starting",
@@ -69,6 +116,34 @@
     "Unexpected": "Something went wrong",
     "Validation": "Check the highlighted fields"
   },
+  "Facturas": {
+    "BuscarHint": "Number or customer",
+    "Cliente": "Customer",
+    "Desde": "From",
+    "DiasMora": "{count} days",
+    "Empty": "No invoices yet",
+    "Estado": "State",
+    "Fecha": "Date",
+    "Hasta": "To",
+    "Iva": "VAT",
+    "MedioPago": "Payment method",
+    "Monto": "Amount",
+    "Mora": "Overdue",
+    "NoAdmitePagos": "The current state of the invoice takes no payments",
+    "Numero": "Number",
+    "Observaciones": "Notes",
+    "Pagado": "Paid",
+    "Pagos": "Payments",
+    "RegistrarPago": "Register payment",
+    "Saldo": "Balance",
+    "SinPagos": "No payments yet",
+    "SoloImpagas": "Unpaid only",
+    "SoloVencidas": "Overdue only",
+    "Subtitle": "Invoicing and collections",
+    "Subtotal": "Subtotal",
+    "Total": "Total",
+    "Vencimiento": "Due date"
+  },
   "General": {
     "Actions": "Actions",
     "Add": "Add",
@@ -79,6 +154,7 @@
     "ClearFilters": "Clear filters",
     "Close": "Close",
     "Confirm": "Confirm",
+    "Continue": "Continue",
     "Delete": "Delete",
     "DeleteConfirm": "Delete {entity} “{label}”?",
     "DeleteConfirmTitle": "Confirm deletion",
@@ -108,6 +184,15 @@
     "Theme": "Toggle theme",
     "Version": "Version {version}",
     "WorkInProgress": "This screen is not implemented yet"
+  },
+  "MedioPago": {
+    "Cheque": "Cheque",
+    "Efectivo": "Cash",
+    "MercadoPago": "Mercado Pago",
+    "Otro": "Other",
+    "TarjetaCredito": "Credit card",
+    "TarjetaDebito": "Debit card",
+    "Transferencia": "Bank transfer"
   },
   "Menu": {
     "Aria": {
@@ -168,9 +253,23 @@
     "Total": "Total"
   },
   "Obras": {
+    "BuscarHint": "Name, number, address or locality",
     "Caja": {
       "Title": "Site cash flow"
-    }
+    },
+    "Cliente": "Customer",
+    "ConfirmarCascada": "The site has {count} open jobs. They will be closed along with it. Continue?",
+    "Direccion": "Address",
+    "Empty": "No sites yet",
+    "Estado": "State",
+    "Localidad": "Locality",
+    "NoBorrable": "The site has jobs",
+    "Nombre": "Name",
+    "Numero": "Number",
+    "Rentabilidad": "Profit",
+    "SoloActivas": "Active only",
+    "Subtitle": "Sites, their state and their profit",
+    "Trabajos": "Jobs"
   },
   "Ordenes": {
     "Title": "Work orders"
@@ -192,10 +291,10 @@
     },
     "Trabajo": {
       "Cancelado": "Cancelled",
-      "EnProgreso": "In progress",
+      "EnProceso": "In progress",
       "Finalizado": "Finished",
       "Pausado": "Paused",
-      "Pendiente": "Pending"
+      "Presupuestado": "Quoted"
     }
   },
   "Status": {
@@ -216,6 +315,19 @@
       "Label": "Sign"
     },
     "Subtitle": "Primary classification of movements"
+  },
+  "Trabajos": {
+    "Cliente": "Customer",
+    "Descripcion": "Description",
+    "Desde": "From",
+    "Empty": "No jobs yet",
+    "Estado": "State",
+    "FechaFin": "End date",
+    "FechaInicio": "Start date",
+    "Hasta": "To",
+    "Obra": "Site",
+    "Presupuesto": "Budget",
+    "Subtitle": "Jobs contracted inside each site"
   },
   "Validation": {
     "Categoria": {

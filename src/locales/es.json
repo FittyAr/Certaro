@@ -1,4 +1,27 @@
 {
+  "Actions": {
+    "Factura": {
+      "Anulada": "Anular",
+      "Borrador": "Volver a borrador",
+      "Emitida": "Emitir",
+      "Pagada": "Marcar como pagada",
+      "PagadaParcial": "Marcar como pago parcial",
+      "Vencida": "Marcar como vencida"
+    },
+    "Obra": {
+      "Activa": "Reactivar",
+      "Cancelada": "Cancelar obra",
+      "Finalizada": "Finalizar",
+      "Pausada": "Pausar"
+    },
+    "Trabajo": {
+      "Cancelado": "Cancelar trabajo",
+      "EnProceso": "Iniciar",
+      "Finalizado": "Finalizar",
+      "Pausado": "Pausar",
+      "Presupuestado": "Volver a presupuesto"
+    }
+  },
   "App": {
     "Initializing": "Iniciando…",
     "InitializingHint": "Preparando la base de datos",
@@ -17,6 +40,26 @@
     "SinPadre": "Sin categoría padre",
     "SoloRaiz": "Sólo categorías raíz",
     "Subtitle": "Clasificación de ingresos y gastos"
+  },
+  "Clientes": {
+    "AgregarContacto": "Agregar contacto",
+    "BuscarHint": "Nombre, CUIT o correo",
+    "CondicionIva": "Condición de IVA",
+    "Contactos": "Contactos",
+    "Cuit": "CUIT",
+    "Deuda": "Deuda",
+    "Direccion": "Dirección",
+    "Email": "Correo",
+    "Empty": "Todavía no hay clientes",
+    "EsPrincipal": "Contacto principal",
+    "Etiqueta": "Etiqueta",
+    "NoBorrable": "El cliente tiene obras o facturas asociadas",
+    "Nombre": "Nombre",
+    "Obras": "Obras",
+    "SinContactos": "Sin contactos cargados",
+    "SoloConDeuda": "Solo con deuda",
+    "Subtitle": "Clientes, contactos y saldo pendiente",
+    "Telefono": "Teléfono"
   },
   "Comercial": {
     "CuentaCorriente": {
@@ -49,8 +92,12 @@
   },
   "Entity": {
     "Categoria": "categoría",
+    "Cliente": "cliente",
+    "Factura": "factura",
     "Movimiento": "movimiento",
-    "TipoMovimiento": "tipo de movimiento"
+    "Obra": "obra",
+    "TipoMovimiento": "tipo de movimiento",
+    "Trabajo": "trabajo"
   },
   "Error": {
     "AppNotReady": "La aplicación todavía se está iniciando",
@@ -69,6 +116,34 @@
     "Unexpected": "Ocurrió un error inesperado",
     "Validation": "Revisá los campos marcados"
   },
+  "Facturas": {
+    "BuscarHint": "Número o cliente",
+    "Cliente": "Cliente",
+    "Desde": "Desde",
+    "DiasMora": "{count} días",
+    "Empty": "Todavía no hay facturas",
+    "Estado": "Estado",
+    "Fecha": "Fecha",
+    "Hasta": "Hasta",
+    "Iva": "IVA",
+    "MedioPago": "Medio de pago",
+    "Monto": "Monto",
+    "Mora": "Mora",
+    "NoAdmitePagos": "El estado actual de la factura no admite pagos",
+    "Numero": "Número",
+    "Observaciones": "Observaciones",
+    "Pagado": "Pagado",
+    "Pagos": "Pagos",
+    "RegistrarPago": "Registrar pago",
+    "Saldo": "Saldo",
+    "SinPagos": "Sin pagos registrados",
+    "SoloImpagas": "Solo impagas",
+    "SoloVencidas": "Solo vencidas",
+    "Subtitle": "Facturación y cobranzas",
+    "Subtotal": "Subtotal",
+    "Total": "Total",
+    "Vencimiento": "Vencimiento"
+  },
   "General": {
     "Actions": "Acciones",
     "Add": "Agregar",
@@ -79,6 +154,7 @@
     "ClearFilters": "Limpiar filtros",
     "Close": "Cerrar",
     "Confirm": "Confirmar",
+    "Continue": "Continuar",
     "Delete": "Eliminar",
     "DeleteConfirm": "¿Eliminar {entity} «{label}»?",
     "DeleteConfirmTitle": "Confirmar eliminación",
@@ -108,6 +184,15 @@
     "Theme": "Cambiar tema",
     "Version": "Versión {version}",
     "WorkInProgress": "Esta pantalla todavía no está implementada"
+  },
+  "MedioPago": {
+    "Cheque": "Cheque",
+    "Efectivo": "Efectivo",
+    "MercadoPago": "Mercado Pago",
+    "Otro": "Otro",
+    "TarjetaCredito": "Tarjeta de crédito",
+    "TarjetaDebito": "Tarjeta de débito",
+    "Transferencia": "Transferencia"
   },
   "Menu": {
     "Aria": {
@@ -168,9 +253,23 @@
     "Total": "Total"
   },
   "Obras": {
+    "BuscarHint": "Nombre, número, dirección o localidad",
     "Caja": {
       "Title": "Caja de la obra"
-    }
+    },
+    "Cliente": "Cliente",
+    "ConfirmarCascada": "La obra tiene {count} trabajos abiertos. Se cerrarán junto con la obra. ¿Continuar?",
+    "Direccion": "Dirección",
+    "Empty": "Todavía no hay obras",
+    "Estado": "Estado",
+    "Localidad": "Localidad",
+    "NoBorrable": "La obra tiene trabajos asociados",
+    "Nombre": "Nombre",
+    "Numero": "Número",
+    "Rentabilidad": "Rentabilidad",
+    "SoloActivas": "Solo activas",
+    "Subtitle": "Obras, su estado y su rentabilidad",
+    "Trabajos": "Trabajos"
   },
   "Ordenes": {
     "Title": "Órdenes de trabajo"
@@ -192,10 +291,10 @@
     },
     "Trabajo": {
       "Cancelado": "Cancelado",
-      "EnProgreso": "En progreso",
+      "EnProceso": "En proceso",
       "Finalizado": "Finalizado",
       "Pausado": "Pausado",
-      "Pendiente": "Pendiente"
+      "Presupuestado": "Presupuestado"
     }
   },
   "Status": {
@@ -216,6 +315,19 @@
       "Label": "Signo"
     },
     "Subtitle": "Clasificación principal de los movimientos"
+  },
+  "Trabajos": {
+    "Cliente": "Cliente",
+    "Descripcion": "Descripción",
+    "Desde": "Desde",
+    "Empty": "Todavía no hay trabajos",
+    "Estado": "Estado",
+    "FechaFin": "Fecha de fin",
+    "FechaInicio": "Fecha de inicio",
+    "Hasta": "Hasta",
+    "Obra": "Obra",
+    "Presupuesto": "Presupuesto",
+    "Subtitle": "Trabajos contratados dentro de cada obra"
   },
   "Validation": {
     "Categoria": {

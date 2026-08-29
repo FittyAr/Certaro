@@ -62,6 +62,30 @@ export interface LookupItem {
   meta?: Record<string, string>
 }
 
+/**
+ * A state plus the moves the backend will accept from it.
+ *
+ * The interface renders the buttons from `transicionesPermitidas` instead of listing the enum:
+ * the rules live in one place and a screen cannot offer a transition that will be refused.
+ */
+export interface EstadoInfo {
+  /** Variant name, e.g. `Emitida`. */
+  actual: string
+  /** Full i18n key, e.g. `State.Factura.Emitida`. */
+  clave: string
+  transicionesPermitidas: TransicionPermitida[]
+  esTerminal: boolean
+}
+
+export interface TransicionPermitida {
+  destino: string
+  clave: string
+  /** i18n key of the button label. */
+  accion: string
+  /** The move loses information, so the interface asks first. */
+  requiereConfirmacion: boolean
+}
+
 export interface Audit {
   createdAt: Instant
   updatedAt: Instant | null

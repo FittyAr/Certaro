@@ -9,8 +9,12 @@ use eo_application::config::AppConfig;
 use eo_application::ports::repositories::UnitOfWork;
 use eo_application::ports::settings::SettingsStore;
 use eo_application::use_cases::categorias::CategoriasService;
+use eo_application::use_cases::clientes::ClientesService;
+use eo_application::use_cases::facturas::FacturasService;
 use eo_application::use_cases::movimientos::MovimientosService;
+use eo_application::use_cases::obras::ObrasService;
 use eo_application::use_cases::tipos_movimiento::TiposMovimientoService;
+use eo_application::use_cases::trabajos::TrabajosService;
 use eo_application::AppError;
 use eo_domain::clock::{Clock, SystemClock};
 use eo_domain::ids::{IdGenerator, UuidV7Generator};
@@ -21,6 +25,10 @@ pub struct Services {
     pub tipos_movimiento: TiposMovimientoService,
     pub categorias: CategoriasService,
     pub movimientos: MovimientosService,
+    pub clientes: ClientesService,
+    pub obras: ObrasService,
+    pub trabajos: TrabajosService,
+    pub facturas: FacturasService,
 }
 
 impl Services {
@@ -40,6 +48,19 @@ impl Services {
                 Arc::clone(&uow),
                 Arc::clone(&clock),
                 Arc::clone(&ids),
+            ),
+            clientes: ClientesService::new(
+                Arc::clone(&uow),
+                Arc::clone(&clock),
+                Arc::clone(&ids),
+            ),
+            obras: ObrasService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
+            trabajos: TrabajosService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
+            facturas: FacturasService::new(
+                Arc::clone(&uow),
+                Arc::clone(&clock),
+                Arc::clone(&ids),
+                Arc::clone(&settings),
             ),
             movimientos: MovimientosService::new(uow, clock, ids, settings),
         }
