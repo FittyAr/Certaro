@@ -384,7 +384,7 @@ formateo en el reporte.
 
 **Criterio de terminado**:
 
-1. Los 23 tests de doc 15 §8 pasan.
+1. Los 25 tests de doc 15 §8 pasan.
 2. `todas_las_columnas_escaladas_estan_mapeadas` y `todas_las_tablas_del_origen_estan_mapeadas` pasan.
 3. Un import sobre `legacy_dirty.db` produce un reporte con todas las advertencias esperadas y una
    base consistente.

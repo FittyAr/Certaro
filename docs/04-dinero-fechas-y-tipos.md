@@ -250,6 +250,16 @@ los enums, los booleanos, `orden_trabajo_items.orden`).
 Son **34 columnas escaladas**. La tabla de arriba es la fuente para el importador de datos legados
 (doc 15) y para el test que verifica que ninguna columna escalada quedó mapeada a `f64`.
 
+**[BUG-LEGADO]** El sistema anterior tenía una lista equivalente, `MonetaryColumnRegistry`, pero con
+**21** entradas contra **23** columnas `decimal` a las que el converter se aplicaba por reflexión.
+`pagos_factura.monto` y `movimientos.cotizacion_aplicada` quedaron fuera de la lista, y por eso la
+migración de reescalado no las tocó: en una base real esas dos columnas pueden tener las dos escalas
+mezcladas. El importador las resuelve una por una con las heurísticas de
+[`15-migracion-de-datos.md`](./15-migracion-de-datos.md) §3.3.
+
+La lección que justifica el test de completitud: una lista de columnas escaladas mantenida a mano se
+desincroniza del esquema. Acá la lista **es** la que consume el test, no una copia.
+
 ## 3. Fechas y horas: todo UTC
 
 ### 3.1 La regla

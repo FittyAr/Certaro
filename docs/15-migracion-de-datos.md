@@ -145,15 +145,27 @@ En el segundo caso el reporte incluye una advertencia explícita: **los centavos
 recuperables**, porque el sistema anterior los redondeó al escribir. El importador no inventa
 decimales.
 
-### 3.3 La excepción de `PagosFactura.Monto`
+### 3.3 Las dos columnas que la migración de reescalado se salteó
 
-**[BUG-LEGADO CRÍTICO]** La migración `RescaleMonetaryValues` del sistema anterior reescaló las
-columnas listadas en `MonetaryColumnRegistry`, y **`PagosFactura.Monto` no está en ese registro**.
-El converter de EF Core sí se le aplicaba por reflexión, así que la aplicación escribía valores
-escaladas ×10 000, pero la migración de reescalado no tocó las filas anteriores.
+**[BUG-LEGADO CRÍTICO]** La migración `RescaleMonetaryValues` del sistema anterior reescaló sólo las
+columnas listadas explícitamente en `MonetaryColumnRegistry`. Ese registro tiene **21** entradas, pero
+el converter de EF Core se aplicaba por reflexión a **23** columnas `decimal`. Las dos que quedaron
+afuera son:
 
-Consecuencia: en una base que pasó por la migración, `PagosFactura.Monto` puede contener **una mezcla
-de las dos escalas** según cuándo se creó cada fila.
+| Columna | Tipo | Por qué importa |
+| --- | --- | --- |
+| `PagosFactura.Monto` | `decimal` no nulo | alimenta `TotalPagado` y el saldo de cada factura |
+| `Movimientos.CotizacionAplicada` | `decimal?` nullable | cotización del dólar con la que se registró el movimiento |
+
+En ambos casos la aplicación **escribía** valores escalados ×10 000, pero la migración de reescalado
+**no tocó** las filas anteriores. Consecuencia: en una base que pasó por la migración, estas dos
+columnas pueden contener **una mezcla de las dos escalas** según cuándo se creó cada fila. Las otras 21
+columnas son homogéneas y se resuelven con el `scale_state` de §3.2.
+
+La ambigüedad existe **sólo** cuando `scale_state == AlreadyScaled`. Si la base nunca corrió la
+migración, todas las filas están sin escalar por igual y el factor uniforme ×10 000 de §3.2 alcanza.
+
+#### `PagosFactura.Monto`
 
 Tratamiento obligatorio:
 
@@ -178,6 +190,39 @@ real de un pago parcial.
 **Toda** fila cuya escala se decidió por heurística se lista en el reporte, con id, monto crudo,
 monto resultante y total de la factura. El usuario tiene que revisar esa lista. Si la lista tiene más
 de `0` filas, el código de salida es `1`, no `0`.
+
+#### `Movimientos.CotizacionAplicada`
+
+Acá no hay una columna hermana con la que comparar, así que la desambiguación es por rango. Una
+cotización del peso argentino frente al dólar no bajó de `100` desde 2013, y la aplicación no existía
+antes de eso; una cotización **escalada** de `100` vale `1_000_000` en crudo. Los dos rangos no se
+solapan para ningún valor que un usuario pudo haber ingresado.
+
+```
+Para cada fila de Movimientos con CotizacionAplicada IS NOT NULL:
+    crudo = valor crudo de la columna
+
+    si scale_state == UnscaledIntegers:
+        → factor 10.000, sin ambigüedad (§3.2)
+
+    si scale_state == AlreadyScaled:
+        si crudo >= UMBRAL_COTIZACION_ESCALADA:
+            → la fila ya está escalada, factor 1
+        sino:
+            → la fila está sin escalar, factor 10.000, y se lista en el reporte
+```
+
+`UMBRAL_COTIZACION_ESCALADA = 1_000_000` (equivale a una cotización de `100.0000`). Es una constante
+del importador, no configuración: cambiarla es cambiar la semántica de la corrección, y eso se hace
+editando el código y su test, no un archivo.
+
+Una fila con `crudo = 0` se trata como dato inválido, no como escala: se importa `NULL` y se anota en
+el reporte. Una cotización de cero no es un valor legítimo, y §7.2 del destino exige `> 0` cuando la
+moneda es `Usd` (doc 07 §5.1).
+
+Las filas corregidas por este camino van al reporte con id del movimiento, valor crudo, valor
+resultante y fecha del movimiento, y cuentan para el código de salida `1` igual que las de
+`PagosFactura`.
 
 ### 3.4 Porcentajes, cantidades y multiplicadores
 
@@ -581,7 +626,7 @@ La tabla con más volumen y más columnas nullable.
 | `Monto` | `monto` | `×S` | |
 | `Cantidad` | `cantidad` | `×S` | `0` → `10000`, §3.4 |
 | `Moneda` | `moneda` | `=` | valores sin cambios |
-| `CotizacionAplicada` | `cotizacion_aplicada` | `×S` | nullable |
+| `CotizacionAplicada` | `cotizacion_aplicada` | heurística | nullable; **no** usa `×S` uniforme, ver §3.3 |
 | `TipoMovimientoId` | `tipo_movimiento_id` | `=` | obligatorio |
 | `TipoConceptoPagoId` | `tipo_concepto_pago_id` | `=` | nullable |
 | `CategoriaId` | `categoria_id` | `=` | nullable |
@@ -1009,6 +1054,8 @@ Códigos de advertencia definidos:
 | Código | Significado |
 | --- | --- |
 | `PAGO_ESCALA_HEURISTICA` | la escala de un pago se decidió por §3.3 |
+| `COTIZACION_ESCALA_HEURISTICA` | la escala de una `cotizacion_aplicada` se decidió por §3.3 |
+| `COTIZACION_CERO_DESCARTADA` | `CotizacionAplicada` valía `0`; se importó `NULL` (§3.3) |
 | `ESCALA_SIN_DECIMALES` | la base venía sin escalar; los centavos originales se perdieron antes del import |
 | `ASISTENCIA_COLISION` | dos asistencias del mismo día se colapsaron (§4.13) |
 | `PORCENTAJE_EXCEDE_100` | un ítem tiene acumulado mayor a 100 (§4.9) |
@@ -1034,6 +1081,8 @@ El importador tiene su propia suite. No se considera terminado sin ella.
 | `import_base_escalada` | fixture con `RescaleMonetaryValues` aplicada: factor 1, sumas idénticas |
 | `import_base_sin_escalar` | fixture sin esa migración: factor 10 000, advertencia `ESCALA_SIN_DECIMALES` |
 | `pago_escala_mixta` | fixture con pagos en las dos escalas: cada uno se resuelve bien |
+| `cotizacion_escala_mixta` | fixture con `CotizacionAplicada` en las dos escalas: el umbral de §3.3 separa bien |
+| `cotizacion_cero_se_importa_null` | una cotización `0` no se confunde con un problema de escala |
 | `fecha_civil_no_cambia_de_dia` | una asistencia guardada a las 22:30 locales queda en el mismo día |
 | `fecha_negocio_con_hora_se_convierte` | un movimiento a las 22:00 locales queda en `01:00Z` del día siguiente |
 | `auditoria_no_se_desplaza` | un `CreatedAt` no cambia de valor |
@@ -1066,7 +1115,7 @@ Los fixtures son bases SQLite reales, versionadas en `crates/eo-import-legacy/te
 | `legacy_empty.db` | esquema completo, sin filas de negocio |
 | `legacy_scaled.db` | ~200 filas repartidas, con `RescaleMonetaryValues` aplicada |
 | `legacy_unscaled.db` | las mismas filas, sin esa migración |
-| `legacy_dirty.db` | contiene a propósito cada caso patológico: FK huérfanas, colisiones de asistencia, pagos de escala mixta, porcentajes acumulados sobre 100, colores inválidos, adjuntos sin archivo |
+| `legacy_dirty.db` | contiene a propósito cada caso patológico: FK huérfanas, colisiones de asistencia, pagos y cotizaciones de escala mixta, una cotización en `0`, porcentajes acumulados sobre 100, colores inválidos, adjuntos sin archivo |
 
 `legacy_dirty.db` es el fixture importante: es el que reproduce lo que aparece en una base real de
 producción con dos años de uso.
