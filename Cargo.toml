@@ -1,0 +1,102 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/eo-domain",
+    "crates/eo-application",
+    "crates/eo-infrastructure",
+    "crates/eo-migration",
+    "crates/eo-import-legacy",
+    "src-tauri",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+license-file = "LICENSE"
+authors = ["ElectroObraApp Project Owners (FittyAr)"]
+repository = "https://github.com/FittyAr/ElectroObra"
+
+[workspace.dependencies]
+# Internal crates
+eo-domain = { path = "crates/eo-domain" }
+eo-application = { path = "crates/eo-application" }
+eo-infrastructure = { path = "crates/eo-infrastructure" }
+eo-migration = { path = "crates/eo-migration" }
+
+# Async runtime
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs", "time", "sync"] }
+async-trait = "0.1"
+futures = "0.3"
+
+# Persistence
+sea-orm = { version = "1", features = [
+    "sqlx-sqlite",
+    "runtime-tokio-rustls",
+    "macros",
+    "with-uuid",
+    "with-chrono",
+] }
+sea-orm-migration = { version = "1", features = ["sqlx-sqlite", "runtime-tokio-rustls"] }
+sqlx = { version = "0.8", default-features = false, features = ["sqlite", "runtime-tokio-rustls"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Core types
+# Money and Decimal4 are hand-written i64 newtypes (docs/04); no decimal crate on purpose.
+uuid = { version = "1", features = ["v4", "v7", "serde"] }
+chrono = { version = "0.4", default-features = false, features = ["std", "clock", "serde"] }
+chrono-tz = "0.10"
+
+# Errors
+thiserror = "2"
+anyhow = "1"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"
+
+# Validation
+validator = { version = "0.18", features = ["derive"] }
+
+# HTTP
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
+# Reports
+printpdf = "0.7"
+rust_xlsxwriter = "0.79"
+docx-rs = "0.4"
+csv = "1"
+
+# Config
+figment = { version = "0.10", features = ["json", "env"] }
+
+# Tauri shell
+tauri = { version = "2", features = [] }
+tauri-build = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-opener = "2"
+
+# Testing
+tokio-test = "0.4"
+mockall = "0.13"
+rstest = "0.23"
+proptest = "1"
+wiremock = "0.6"
+insta = { version = "1", features = ["json"] }
+tempfile = "3"
+pretty_assertions = "1"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
+
+[profile.dev]
+incremental = true
