@@ -3,6 +3,9 @@ import { useI18n } from 'vue-i18n'
 
 import { isApiError, type ApiError } from '@/api/client'
 
+/** Re-exported so a view can hold an error without importing from `api/`. */
+export type { ApiError } from '@/api/client'
+
 /**
  * Turns an `ApiError` into something the user can read. See `docs/16-frontend.md` §6.2.
  *

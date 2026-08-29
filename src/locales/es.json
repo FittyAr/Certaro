@@ -41,6 +41,41 @@
     "SoloRaiz": "Sólo categorías raíz",
     "Subtitle": "Clasificación de ingresos y gastos"
   },
+  "Certificados": {
+    "Acumulado": "Acumulado",
+    "AcumuladoAnterior": "Acumulado anterior",
+    "AcumuladoExcedidoAviso": "Hay ítems cuyo acumulado supera el 100 %. Corregilos para emitir.",
+    "AjusteUocra": "Ajuste UOCRA",
+    "Anular": "Anular certificado",
+    "AvanceAhora": "Avance ahora",
+    "AvanceCertificado": "Avance certificado",
+    "Cantidad": "Cantidad",
+    "Cliente": "Cliente",
+    "Descripcion": "Descripción",
+    "Desde": "Desde",
+    "DetalleTitulo": "Certificado N.º {numero}",
+    "Emitir": "Emitir certificado",
+    "EmitirSubtitulo": "Certificado N.º {numero} de «{orden}»",
+    "Empty": "Todavía no se emitió ningún certificado",
+    "Fecha": "Fecha",
+    "Hasta": "Hasta",
+    "Numero": "N.º",
+    "Obra": "Obra",
+    "Observaciones": "Observaciones",
+    "Orden": "Orden",
+    "OtrosDescuentos": "Otros descuentos",
+    "PrecioUnitario": "Precio unitario",
+    "Subtitle": "Historial de certificaciones de avance",
+    "Subtotal": "Subtotal",
+    "SubtotalAcumulado": "Subtotal acumulado",
+    "TotalAEmitir": "Total a emitir",
+    "TotalCertificado": "Total certificado",
+    "TotalNeto": "Total neto",
+    "Trabajo": "Trabajo",
+    "Unidad": "Unidad",
+    "VerDetalle": "Ver detalle",
+    "VerOrden": "Ver orden de trabajo"
+  },
   "Clientes": {
     "AgregarContacto": "Agregar contacto",
     "BuscarHint": "Nombre, CUIT o correo",
@@ -83,6 +118,10 @@
       "EnUso": "La categoría se usa en {count} movimientos",
       "NombreDuplicado": "Ya existe una categoría «{nombre}» con la misma categoría padre"
     },
+    "OrdenTrabajo": {
+      "ConCertificados": "La orden tiene {count} certificado(s) emitido(s) y no se puede eliminar.",
+      "ItemCertificado": "No se puede quitar un ítem que ya fue certificado."
+    },
     "TipoMovimiento": {
       "EnUso": "El tipo se usa en {count} movimientos",
       "EsDeSistema": "Los tipos de sistema no se pueden eliminar",
@@ -92,10 +131,12 @@
   },
   "Entity": {
     "Categoria": "categoría",
+    "Certificado": "certificado",
     "Cliente": "cliente",
     "Factura": "factura",
     "Movimiento": "movimiento",
     "Obra": "obra",
+    "OrdenTrabajo": "orden de trabajo",
     "TipoMovimiento": "tipo de movimiento",
     "Trabajo": "trabajo"
   },
@@ -272,7 +313,34 @@
     "Trabajos": "Trabajos"
   },
   "Ordenes": {
-    "Title": "Órdenes de trabajo"
+    "AjusteUocra": "Ajuste UOCRA",
+    "Avance": "Avance",
+    "BajarLinea": "Bajar",
+    "Cantidad": "Cantidad",
+    "Certificado": "Certificado",
+    "Certificados": "Certificados",
+    "Cliente": "Cliente",
+    "Descripcion": "Descripción",
+    "Editar": "Editar orden de trabajo",
+    "Empty": "Este trabajo no tiene órdenes de trabajo",
+    "Fecha": "Fecha",
+    "Items": "Ítems",
+    "Nota": "Nota",
+    "Nueva": "Nueva orden de trabajo",
+    "Obra": "Obra",
+    "Observaciones": "Observaciones",
+    "OtrosDescuentos": "Otros descuentos",
+    "PrecioUnitario": "Precio unitario",
+    "SubirLinea": "Subir",
+    "Subtotal": "Subtotal",
+    "Title": "Órdenes de trabajo",
+    "Titulo": "Título",
+    "TotalCertificado": "Total certificado",
+    "TotalNeto": "Total neto",
+    "TotalPresupuestado": "Total presupuestado",
+    "UltimoCertificado": "Último certificado",
+    "Unidad": "Unidad",
+    "VerDetalle": "Ver detalle"
   },
   "State": {
     "Factura": {
@@ -338,6 +406,17 @@
       "NombreRequired": "El nombre es obligatorio",
       "PadreCiclico": "Una categoría no puede depender de sí misma"
     },
+    "Certificado": {
+      "AcumuladoExcedido": "El ítem «{item}» ya tiene {acumulado} % certificado y no puede superar el 100 %.",
+      "ItemsRequired": "El certificado necesita al menos un ítem.",
+      "NoEsUltimo": "Sólo se puede anular el último certificado (el N.º {ultimo}).",
+      "NumeroNoSecuencial": "El número de certificado debería ser {esperado}.",
+      "NumeroRequired": "El número de certificado es obligatorio.",
+      "ObservacionesMaxLength": "Las observaciones no pueden superar {max} caracteres.",
+      "OrdenTrabajoRequired": "La orden de trabajo es obligatoria.",
+      "PorcentajeInvalid": "El porcentaje debe estar entre 0 y 100.",
+      "SinAvance": "Ningún ítem tiene avance para certificar."
+    },
     "Common": {
       "FechaOutOfRange": "La fecha debe estar entre {min} y {max}",
       "ReferenciaInexistente": "No existe {entidad} con ese identificador",
@@ -357,6 +436,26 @@
       "EmpleadoRequeridoAdelanto": "Un adelanto necesita un empleado para poder liquidarse",
       "MontoRequired": "El monto debe ser mayor a cero",
       "TipoRequired": "El tipo de movimiento es obligatorio"
+    },
+    "OrdenTrabajo": {
+      "AjusteInvalid": "El ajuste UOCRA debe estar entre 0 y 100 %.",
+      "DescuentoNegative": "Los descuentos no pueden ser negativos.",
+      "ItemsRequired": "La orden de trabajo necesita al menos un ítem.",
+      "NumeroMaxLength": "El número no puede superar {max} caracteres.",
+      "ObservacionesMaxLength": "Las observaciones no pueden superar {max} caracteres.",
+      "TituloMaxLength": "El título no puede superar {max} caracteres.",
+      "TituloRequired": "El título es obligatorio.",
+      "TrabajoRequired": "El trabajo es obligatorio."
+    },
+    "OrdenTrabajoItem": {
+      "CantidadRequired": "La cantidad debe ser mayor que cero.",
+      "DescripcionMaxLength": "La descripción no puede superar {max} caracteres.",
+      "DescripcionRequired": "La descripción es obligatoria.",
+      "NotaMaxLength": "La nota no puede superar {max} caracteres.",
+      "PorcentajeAcumuladoInvalid": "El acumulado no puede superar el 100 %. Disponible: {disponible} %.",
+      "PorcentajeInvalid": "El porcentaje debe estar entre 0 y 100.",
+      "PrecioNegative": "El precio unitario no puede ser negativo.",
+      "UnidadMaxLength": "La unidad no puede superar {max} caracteres."
     },
     "Paging": {
       "PageOutOfRange": "La página no existe",

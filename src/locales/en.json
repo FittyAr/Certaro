@@ -41,6 +41,41 @@
     "SoloRaiz": "Root categories only",
     "Subtitle": "Classification of income and expenses"
   },
+  "Certificados": {
+    "Acumulado": "Accumulated",
+    "AcumuladoAnterior": "Previously accumulated",
+    "AcumuladoExcedidoAviso": "Some items exceed 100 % accumulated. Fix them before issuing.",
+    "AjusteUocra": "UOCRA adjustment",
+    "Anular": "Void certificate",
+    "AvanceAhora": "Progress now",
+    "AvanceCertificado": "Certified progress",
+    "Cantidad": "Quantity",
+    "Cliente": "Customer",
+    "Descripcion": "Description",
+    "Desde": "From",
+    "DetalleTitulo": "Certificate no. {numero}",
+    "Emitir": "Issue certificate",
+    "EmitirSubtitulo": "Certificate no. {numero} of “{orden}”",
+    "Empty": "No certificate has been issued yet",
+    "Fecha": "Date",
+    "Hasta": "To",
+    "Numero": "No.",
+    "Obra": "Site",
+    "Observaciones": "Notes",
+    "Orden": "Order",
+    "OtrosDescuentos": "Other discounts",
+    "PrecioUnitario": "Unit price",
+    "Subtitle": "History of progress certifications",
+    "Subtotal": "Subtotal",
+    "SubtotalAcumulado": "Accumulated subtotal",
+    "TotalAEmitir": "Total to issue",
+    "TotalCertificado": "Certified total",
+    "TotalNeto": "Net total",
+    "Trabajo": "Job",
+    "Unidad": "Unit",
+    "VerDetalle": "View detail",
+    "VerOrden": "View work order"
+  },
   "Clientes": {
     "AgregarContacto": "Add contact",
     "BuscarHint": "Name, tax id or email",
@@ -83,6 +118,10 @@
       "EnUso": "The category is used by {count} movements",
       "NombreDuplicado": "A category “{nombre}” already exists under the same parent"
     },
+    "OrdenTrabajo": {
+      "ConCertificados": "The order has {count} issued certificate(s) and cannot be deleted.",
+      "ItemCertificado": "An item that has already been certified cannot be removed."
+    },
     "TipoMovimiento": {
       "EnUso": "The type is used by {count} movements",
       "EsDeSistema": "System types cannot be deleted",
@@ -92,10 +131,12 @@
   },
   "Entity": {
     "Categoria": "category",
+    "Certificado": "certificate",
     "Cliente": "customer",
     "Factura": "invoice",
     "Movimiento": "movement",
     "Obra": "site",
+    "OrdenTrabajo": "work order",
     "TipoMovimiento": "movement type",
     "Trabajo": "job"
   },
@@ -272,7 +313,34 @@
     "Trabajos": "Jobs"
   },
   "Ordenes": {
-    "Title": "Work orders"
+    "AjusteUocra": "UOCRA adjustment",
+    "Avance": "Progress",
+    "BajarLinea": "Move down",
+    "Cantidad": "Quantity",
+    "Certificado": "Certified",
+    "Certificados": "Certificates",
+    "Cliente": "Customer",
+    "Descripcion": "Description",
+    "Editar": "Edit work order",
+    "Empty": "This job has no work orders",
+    "Fecha": "Date",
+    "Items": "Items",
+    "Nota": "Note",
+    "Nueva": "New work order",
+    "Obra": "Site",
+    "Observaciones": "Notes",
+    "OtrosDescuentos": "Other discounts",
+    "PrecioUnitario": "Unit price",
+    "SubirLinea": "Move up",
+    "Subtotal": "Subtotal",
+    "Title": "Work orders",
+    "Titulo": "Title",
+    "TotalCertificado": "Certified total",
+    "TotalNeto": "Net total",
+    "TotalPresupuestado": "Quoted total",
+    "UltimoCertificado": "Last certificate",
+    "Unidad": "Unit",
+    "VerDetalle": "View detail"
   },
   "State": {
     "Factura": {
@@ -338,6 +406,17 @@
       "NombreRequired": "The name is required",
       "PadreCiclico": "A category cannot depend on itself"
     },
+    "Certificado": {
+      "AcumuladoExcedido": "Item “{item}” already has {acumulado} % certified and cannot exceed 100 %.",
+      "ItemsRequired": "The certificate needs at least one item.",
+      "NoEsUltimo": "Only the last certificate (no. {ultimo}) can be voided.",
+      "NumeroNoSecuencial": "The certificate number should be {esperado}.",
+      "NumeroRequired": "The certificate number is required.",
+      "ObservacionesMaxLength": "Notes cannot exceed {max} characters.",
+      "OrdenTrabajoRequired": "The work order is required.",
+      "PorcentajeInvalid": "The percentage must be between 0 and 100.",
+      "SinAvance": "No item has progress to certify."
+    },
     "Common": {
       "FechaOutOfRange": "The date must be between {min} and {max}",
       "ReferenciaInexistente": "No {entidad} exists with that identifier",
@@ -357,6 +436,26 @@
       "EmpleadoRequeridoAdelanto": "An advance needs an employee so it can be settled",
       "MontoRequired": "The amount must be greater than zero",
       "TipoRequired": "The movement type is required"
+    },
+    "OrdenTrabajo": {
+      "AjusteInvalid": "The UOCRA adjustment must be between 0 and 100 %.",
+      "DescuentoNegative": "Discounts cannot be negative.",
+      "ItemsRequired": "The work order needs at least one item.",
+      "NumeroMaxLength": "The number cannot exceed {max} characters.",
+      "ObservacionesMaxLength": "Notes cannot exceed {max} characters.",
+      "TituloMaxLength": "The title cannot exceed {max} characters.",
+      "TituloRequired": "The title is required.",
+      "TrabajoRequired": "The job is required."
+    },
+    "OrdenTrabajoItem": {
+      "CantidadRequired": "The quantity must be greater than zero.",
+      "DescripcionMaxLength": "The description cannot exceed {max} characters.",
+      "DescripcionRequired": "The description is required.",
+      "NotaMaxLength": "The note cannot exceed {max} characters.",
+      "PorcentajeAcumuladoInvalid": "The accumulated percentage cannot exceed 100 %. Available: {disponible} %.",
+      "PorcentajeInvalid": "The percentage must be between 0 and 100.",
+      "PrecioNegative": "The unit price cannot be negative.",
+      "UnidadMaxLength": "The unit cannot exceed {max} characters."
     },
     "Paging": {
       "PageOutOfRange": "That page does not exist",

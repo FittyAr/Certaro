@@ -5,6 +5,7 @@ import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 import CrudDrawer from '@/components/domain/CrudDrawer.vue'
 import DataGrid from '@/components/domain/DataGrid.vue'
@@ -42,6 +43,7 @@ import {
  */
 
 const { t } = useI18n()
+const router = useRouter()
 const { confirmDelete } = useConfirmDelete()
 const { notify } = useApiError()
 const store = useTrabajosStore()
@@ -127,6 +129,11 @@ const filtrosActivos = computed(() =>
     table.filter.value.fechaHasta,
   ),
 )
+
+/** The work orders of a job live under it: there is no global list of sheets. */
+function verOrdenes(row: TrabajoListItem): void {
+  void router.push({ name: 'trabajo-ordenes', params: { trabajoId: row.id } })
+}
 
 function onDelete(row: TrabajoListItem): void {
   confirmDelete({
@@ -253,6 +260,9 @@ onMounted(async () => {
             @click="cambiarEstado(data, 'Finalizado')"
           >
             <AppIcon name="check" :size="14" />
+          </Button>
+          <Button variant="ghost" size="sm" :title="$t('Ordenes.Title')" @click="verOrdenes(data)">
+            <AppIcon name="file-text" :size="14" />
           </Button>
           <Button variant="ghost" size="sm" @click="drawer.openEdit(data.id)">
             <AppIcon name="pencil" :size="14" />
