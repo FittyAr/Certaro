@@ -22,8 +22,8 @@ pub mod time;
 
 pub use decimal4::Decimal4;
 pub use entities::{
-    Audit, Categoria, Cliente, ClienteContacto, Factura, Movimiento, Obra, PagoFactura,
-    TipoMovimiento, Trabajo,
+    Audit, Categoria, Certificado, CertificadoItem, Cliente, ClienteContacto, Factura, Movimiento,
+    Obra, OrdenTrabajo, OrdenTrabajoItem, PagoFactura, TipoMovimiento, Trabajo,
 };
 pub use enums::{EstadoFactura, EstadoObra, EstadoTrabajo, MedioPago, Moneda};
 pub use error::DomainError;

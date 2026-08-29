@@ -148,6 +148,18 @@ pub fn run() {
             commands::facturas::facturas_pago_create,
             commands::facturas::facturas_pago_update,
             commands::facturas::facturas_pago_delete,
+            commands::ordenes_trabajo::ordenes_trabajo_list,
+            commands::ordenes_trabajo::ordenes_trabajo_get,
+            commands::ordenes_trabajo::ordenes_trabajo_create,
+            commands::ordenes_trabajo::ordenes_trabajo_update,
+            commands::ordenes_trabajo::ordenes_trabajo_delete,
+            commands::ordenes_trabajo::ordenes_trabajo_lookup,
+            commands::certificados::certificados_list,
+            commands::certificados::certificados_get,
+            commands::certificados::certificados_preparar,
+            commands::certificados::certificados_create,
+            commands::certificados::certificados_update_observaciones,
+            commands::certificados::certificados_delete,
         ])
         .run(tauri::generate_context!())
         .unwrap_or_else(|e| {

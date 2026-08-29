@@ -10,11 +10,12 @@ pub mod settings;
 pub use clock::ClockPort;
 pub use id_generator::IdGeneratorPort;
 pub use repositories::{
-    CategoriaConUso, CategoriaFiltro, CategoriaRepository, ClienteConResumen, ClienteFiltro,
-    ClienteRepository, FacturaConResumen, FacturaFiltro, FacturaRepository,
-    MovimientoConRelaciones, MovimientoFiltro, MovimientoRepository, MovimientoResumen,
-    ObraConResumen, ObraFiltro, ObraRepository, ReferenciaTabla, SortDir, TipoMovimientoConUso,
-    TipoMovimientoFiltro, TipoMovimientoRepository, TrabajoConRelaciones, TrabajoFiltro,
-    TrabajoRepository, Transaction, UnitOfWork,
+    CategoriaConUso, CategoriaFiltro, CategoriaRepository, CertificadoConRelaciones,
+    CertificadoFiltro, CertificadoRepository, ClienteConResumen, ClienteFiltro, ClienteRepository,
+    FacturaConResumen, FacturaFiltro, FacturaRepository, MovimientoConRelaciones, MovimientoFiltro,
+    MovimientoRepository, MovimientoResumen, ObraConResumen, ObraFiltro, ObraRepository,
+    OrdenTrabajoConRelaciones, OrdenTrabajoRepository, ReferenciaTabla, SortDir,
+    TipoMovimientoConUso, TipoMovimientoFiltro, TipoMovimientoRepository, TrabajoConRelaciones,
+    TrabajoFiltro, TrabajoRepository, Transaction, UnitOfWork,
 };
 pub use settings::SettingsStore;

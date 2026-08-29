@@ -9,10 +9,12 @@ use eo_application::config::AppConfig;
 use eo_application::ports::repositories::UnitOfWork;
 use eo_application::ports::settings::SettingsStore;
 use eo_application::use_cases::categorias::CategoriasService;
+use eo_application::use_cases::certificados::CertificadosService;
 use eo_application::use_cases::clientes::ClientesService;
 use eo_application::use_cases::facturas::FacturasService;
 use eo_application::use_cases::movimientos::MovimientosService;
 use eo_application::use_cases::obras::ObrasService;
+use eo_application::use_cases::ordenes_trabajo::OrdenesTrabajoService;
 use eo_application::use_cases::tipos_movimiento::TiposMovimientoService;
 use eo_application::use_cases::trabajos::TrabajosService;
 use eo_application::AppError;
@@ -29,6 +31,8 @@ pub struct Services {
     pub obras: ObrasService,
     pub trabajos: TrabajosService,
     pub facturas: FacturasService,
+    pub ordenes_trabajo: OrdenesTrabajoService,
+    pub certificados: CertificadosService,
 }
 
 impl Services {
@@ -49,14 +53,21 @@ impl Services {
                 Arc::clone(&clock),
                 Arc::clone(&ids),
             ),
-            clientes: ClientesService::new(
+            clientes: ClientesService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
+            obras: ObrasService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
+            trabajos: TrabajosService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
+            facturas: FacturasService::new(
+                Arc::clone(&uow),
+                Arc::clone(&clock),
+                Arc::clone(&ids),
+                Arc::clone(&settings),
+            ),
+            ordenes_trabajo: OrdenesTrabajoService::new(
                 Arc::clone(&uow),
                 Arc::clone(&clock),
                 Arc::clone(&ids),
             ),
-            obras: ObrasService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
-            trabajos: TrabajosService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
-            facturas: FacturasService::new(
+            certificados: CertificadosService::new(
                 Arc::clone(&uow),
                 Arc::clone(&clock),
                 Arc::clone(&ids),

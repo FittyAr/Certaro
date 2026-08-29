@@ -123,10 +123,8 @@ fn filtro_condition(filtro: &ObraFiltro) -> Condition {
     if filtro.solo_activas {
         // "Active" here means "still going on", which includes a paused site: the shorthand
         // exists to hide what is finished or cancelled, not to hide what is on hold.
-        c = c.add(Column::Estado.is_in([
-            EstadoObra::Activa.as_i32(),
-            EstadoObra::Pausada.as_i32(),
-        ]));
+        c = c
+            .add(Column::Estado.is_in([EstadoObra::Activa.as_i32(), EstadoObra::Pausada.as_i32()]));
     }
     c
 }
@@ -138,10 +136,10 @@ fn trabajos_count_expr() -> SimpleExpr {
             Query::select()
                 .expr(Expr::col(trabajo::Column::Id).count())
                 .from(trabajo::Entity)
-                .and_where(Expr::col((trabajo::Entity, trabajo::Column::ObraId)).equals((
-                    Entity,
-                    Column::Id,
-                )))
+                .and_where(
+                    Expr::col((trabajo::Entity, trabajo::Column::ObraId))
+                        .equals((Entity, Column::Id)),
+                )
                 .and_where(Expr::col((trabajo::Entity, trabajo::Column::IsDeleted)).eq(false))
                 .take()
                 .into_sub_query_statement(),
@@ -157,8 +155,9 @@ fn suma_movimientos_expr(es_ingreso: bool) -> SimpleExpr {
             Box::new(
                 Query::select()
                     .expr(Func::sum(
-                        Expr::col((movimiento::Entity, movimiento::Column::Monto))
-                            .mul(Expr::col((movimiento::Entity, movimiento::Column::Cantidad))),
+                        Expr::col((movimiento::Entity, movimiento::Column::Monto)).mul(Expr::col(
+                            (movimiento::Entity, movimiento::Column::Cantidad),
+                        )),
                     ))
                     .from(movimiento::Entity)
                     .inner_join(
@@ -168,15 +167,13 @@ fn suma_movimientos_expr(es_ingreso: bool) -> SimpleExpr {
                     )
                     .inner_join(
                         tipo_movimiento::Entity,
-                        Expr::col((tipo_movimiento::Entity, tipo_movimiento::Column::Id)).equals((
-                            movimiento::Entity,
-                            movimiento::Column::TipoMovimientoId,
-                        )),
+                        Expr::col((tipo_movimiento::Entity, tipo_movimiento::Column::Id))
+                            .equals((movimiento::Entity, movimiento::Column::TipoMovimientoId)),
                     )
-                    .and_where(Expr::col((trabajo::Entity, trabajo::Column::ObraId)).equals((
-                        Entity,
-                        Column::Id,
-                    )))
+                    .and_where(
+                        Expr::col((trabajo::Entity, trabajo::Column::ObraId))
+                            .equals((Entity, Column::Id)),
+                    )
                     .and_where(
                         Expr::col((tipo_movimiento::Entity, tipo_movimiento::Column::EsIngreso))
                             .eq(es_ingreso),

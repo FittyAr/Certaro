@@ -1,11 +1,13 @@
 //! Data transfer objects: the shape of the Tauri contract. See `docs/11-contratos-tauri.md`.
 
 pub mod categorias;
+pub mod certificados;
 pub mod clientes;
 pub mod common;
 pub mod facturas;
 pub mod movimientos;
 pub mod obras;
+pub mod ordenes_trabajo;
 pub mod tipos_movimiento;
 pub mod trabajos;
 

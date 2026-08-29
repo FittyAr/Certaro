@@ -63,6 +63,7 @@ pub mod limites {
     pub const UNIDAD: usize = 20;
     pub const NUMERO_COMPROBANTE: usize = 50;
     pub const NUMERO_FACTURA: usize = 50;
+    pub const NUMERO_CERTIFICADO: usize = 50;
     pub const DIRECCION: usize = 500;
     pub const MEDIO_PAGO: usize = 100;
     pub const NOMBRE_ARCHIVO: usize = 255;

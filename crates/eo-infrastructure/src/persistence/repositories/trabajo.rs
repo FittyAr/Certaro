@@ -136,8 +136,14 @@ fn base_query() -> sea_orm::Select<Entity> {
     Entity::find()
         .join(JoinType::InnerJoin, obra_join())
         .join(JoinType::InnerJoin, cliente_join())
-        .column_as(Expr::col((obra::Entity, obra::Column::Numero)), "obra_numero")
-        .column_as(Expr::col((obra::Entity, obra::Column::Nombre)), "obra_nombre")
+        .column_as(
+            Expr::col((obra::Entity, obra::Column::Numero)),
+            "obra_numero",
+        )
+        .column_as(
+            Expr::col((obra::Entity, obra::Column::Nombre)),
+            "obra_nombre",
+        )
         .column_as(
             Expr::col((cliente::Entity, cliente::Column::Id)),
             "cliente_id",

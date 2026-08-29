@@ -9,10 +9,10 @@
 use async_trait::async_trait;
 use chrono::{DateTime, NaiveDate, Utc};
 use eo_domain::entities::{
-    Categoria, Cliente, ClienteContacto, Factura, Movimiento, Obra, PagoFactura, TipoMovimiento,
-    Trabajo,
+    Categoria, Certificado, CertificadoItem, Cliente, ClienteContacto, Factura, Movimiento, Obra,
+    OrdenTrabajo, OrdenTrabajoItem, PagoFactura, TipoMovimiento, Trabajo,
 };
-use eo_domain::{EstadoFactura, EstadoObra, EstadoTrabajo, Moneda, Money, RowVersion};
+use eo_domain::{Decimal4, EstadoFactura, EstadoObra, EstadoTrabajo, Moneda, Money, RowVersion};
 use uuid::Uuid;
 
 use crate::paging::{PageRequest, PagedResult};
@@ -495,6 +495,139 @@ pub trait FacturaRepository: Send + Sync {
     ) -> AppResult<()>;
 }
 
+/// A work order with the names its screen shows and the figures its list needs.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OrdenTrabajoConRelaciones {
+    /// With its live items: an order has tens of them, not thousands, and every screen that shows
+    /// an order shows its sheet.
+    pub orden: OrdenTrabajo,
+    pub trabajo_descripcion: String,
+    pub obra_id: Uuid,
+    pub obra_numero: i32,
+    pub obra_nombre: String,
+    pub cliente_id: Uuid,
+    pub cliente_nombre: String,
+    pub certificados_count: u64,
+}
+
+#[async_trait]
+pub trait OrdenTrabajoRepository: Send + Sync {
+    /// Without items.
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<OrdenTrabajo>>;
+    /// With its live items, ordered by `orden`. This is the aggregate the form edits.
+    async fn find_con_items(&self, id: Uuid) -> AppResult<Option<OrdenTrabajo>>;
+    async fn find_detalle(&self, id: Uuid) -> AppResult<Option<OrdenTrabajoConRelaciones>>;
+
+    /// Every order of a job, with items. Not paged: the doc is explicit that this list is short.
+    async fn de_trabajo(&self, trabajo_id: Uuid) -> AppResult<Vec<OrdenTrabajoConRelaciones>>;
+
+    async fn lookup(
+        &self,
+        trabajo_id: Option<Uuid>,
+        texto: Option<&str>,
+        limite: u64,
+    ) -> AppResult<Vec<OrdenTrabajo>>;
+
+    async fn insert(&self, entity: &OrdenTrabajo) -> AppResult<()>;
+    async fn update(&self, entity: &OrdenTrabajo, esperado: RowVersion) -> AppResult<()>;
+    /// Bumps only the version and the timestamp of the aggregate root, for the issuing use case:
+    /// the order's own fields do not change but the aggregate did (doc 06 §5.5).
+    async fn touch(&self, id: Uuid, at: DateTime<Utc>) -> AppResult<()>;
+    async fn soft_delete(&self, id: Uuid, esperado: RowVersion, at: DateTime<Utc>)
+        -> AppResult<()>;
+
+    async fn insert_item(&self, entity: &OrdenTrabajoItem) -> AppResult<()>;
+    /// No row version: an item belongs to the order, whose version the caller already checked.
+    async fn update_item(&self, entity: &OrdenTrabajoItem) -> AppResult<()>;
+    /// Writes just the progress columns, for issuing and voiding a certificate.
+    async fn update_avance_item(
+        &self,
+        id: Uuid,
+        porcentaje_anterior: Decimal4,
+        porcentaje_actual: Decimal4,
+        ejecutado: bool,
+        at: DateTime<Utc>,
+    ) -> AppResult<()>;
+    async fn soft_delete_items_excepto(
+        &self,
+        orden_trabajo_id: Uuid,
+        conservar: &[Uuid],
+        at: DateTime<Utc>,
+    ) -> AppResult<()>;
+
+    /// The items of the order that already appear in some certificate. They cannot be dropped by
+    /// the form: doing so would leave a certified line with nothing to point at.
+    async fn items_certificados(&self, orden_trabajo_id: Uuid) -> AppResult<Vec<Uuid>>;
+    async fn count_certificados(&self, orden_trabajo_id: Uuid) -> AppResult<u64>;
+}
+
+/// Filter of `certificados`. See `docs/09-modulos-funcionales.md` §3.7.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct CertificadoFiltro {
+    pub obra_id: Option<Uuid>,
+    pub trabajo_id: Option<Uuid>,
+    pub cliente_id: Option<Uuid>,
+    pub fecha_desde: Option<NaiveDate>,
+    pub fecha_hasta: Option<NaiveDate>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CertificadoConRelaciones {
+    pub certificado: Certificado,
+    pub orden_trabajo_id: Uuid,
+    pub orden_titulo: String,
+    pub trabajo_id: Uuid,
+    pub trabajo_descripcion: String,
+    pub obra_id: Uuid,
+    pub obra_numero: i32,
+    pub obra_nombre: String,
+    pub cliente_id: Uuid,
+    pub cliente_nombre: String,
+    /// Whether this is the highest-numbered certificate of its order, which is the only one that
+    /// can be voided (doc 06 §5.6).
+    pub es_ultimo: bool,
+}
+
+#[async_trait]
+pub trait CertificadoRepository: Send + Sync {
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<Certificado>>;
+    async fn find_con_items(&self, id: Uuid) -> AppResult<Option<Certificado>>;
+    async fn find_detalle(&self, id: Uuid) -> AppResult<Option<CertificadoConRelaciones>>;
+
+    async fn search(
+        &self,
+        filtro: &CertificadoFiltro,
+        page: PageRequest,
+        sort_by: Option<&str>,
+        sort_dir: SortDir,
+    ) -> AppResult<PagedResult<CertificadoConRelaciones>>;
+
+    /// The certificates of one order, newest number first.
+    async fn de_orden(&self, orden_trabajo_id: Uuid) -> AppResult<Vec<Certificado>>;
+
+    /// `MAX(numero)` of the order, deleted rows included: a number is never reused (INV-15).
+    async fn ultimo_numero(&self, orden_trabajo_id: Uuid) -> AppResult<i32>;
+
+    /// What each item of the order has certified so far, as `(orden_trabajo_item_id, porcentaje)`.
+    /// Read from the certificates rather than from the item so the check does not depend on the
+    /// column the use case is about to write.
+    async fn acumulado_por_item(&self, orden_trabajo_id: Uuid) -> AppResult<Vec<(Uuid, Decimal4)>>;
+
+    async fn insert(&self, entity: &Certificado) -> AppResult<()>;
+    async fn insert_item(&self, entity: &CertificadoItem) -> AppResult<()>;
+    /// Writes only the notes: everything else in an issued certificate is immutable.
+    async fn update_observaciones(
+        &self,
+        id: Uuid,
+        observaciones: Option<&str>,
+        esperado: RowVersion,
+        at: DateTime<Utc>,
+    ) -> AppResult<()>;
+    /// Deletes the certificate and its lines. The number stays spent.
+    async fn soft_delete(&self, id: Uuid, esperado: RowVersion, at: DateTime<Utc>)
+        -> AppResult<()>;
+}
+
 /// Opens transactions. A use case that writes more than one table has to go through this.
 #[async_trait]
 pub trait UnitOfWork: Send + Sync {
@@ -514,6 +647,8 @@ pub trait Transaction: Send + Sync {
     fn obras(&self) -> &dyn ObraRepository;
     fn trabajos(&self) -> &dyn TrabajoRepository;
     fn facturas(&self) -> &dyn FacturaRepository;
+    fn ordenes_trabajo(&self) -> &dyn OrdenTrabajoRepository;
+    fn certificados(&self) -> &dyn CertificadoRepository;
 
     async fn commit(self: Box<Self>) -> AppResult<()>;
     async fn rollback(self: Box<Self>) -> AppResult<()>;

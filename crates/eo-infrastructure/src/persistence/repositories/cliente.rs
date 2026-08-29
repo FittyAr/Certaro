@@ -133,10 +133,9 @@ fn obras_count_expr() -> SimpleExpr {
             Query::select()
                 .expr(Expr::col(obra::Column::Id).count())
                 .from(obra::Entity)
-                .and_where(Expr::col((obra::Entity, obra::Column::ClienteId)).equals((
-                    Entity,
-                    Column::Id,
-                )))
+                .and_where(
+                    Expr::col((obra::Entity, obra::Column::ClienteId)).equals((Entity, Column::Id)),
+                )
                 .and_where(Expr::col((obra::Entity, obra::Column::IsDeleted)).eq(false))
                 .take()
                 .into_sub_query_statement(),
@@ -151,10 +150,10 @@ fn facturas_count_expr() -> SimpleExpr {
             Query::select()
                 .expr(Expr::col(factura::Column::Id).count())
                 .from(factura::Entity)
-                .and_where(Expr::col((factura::Entity, factura::Column::ClienteId)).equals((
-                    Entity,
-                    Column::Id,
-                )))
+                .and_where(
+                    Expr::col((factura::Entity, factura::Column::ClienteId))
+                        .equals((Entity, Column::Id)),
+                )
                 .and_where(Expr::col((factura::Entity, factura::Column::IsDeleted)).eq(false))
                 .take()
                 .into_sub_query_statement(),
@@ -197,10 +196,10 @@ pub(super) fn deuda_expr() -> SimpleExpr {
                         Expr::col((factura::Entity, factura::Column::Total)).sub(pagado),
                     ))
                     .from(factura::Entity)
-                    .and_where(Expr::col((factura::Entity, factura::Column::ClienteId)).equals((
-                        Entity,
-                        Column::Id,
-                    )))
+                    .and_where(
+                        Expr::col((factura::Entity, factura::Column::ClienteId))
+                            .equals((Entity, Column::Id)),
+                    )
                     .and_where(Expr::col((factura::Entity, factura::Column::IsDeleted)).eq(false))
                     .and_where(
                         Expr::col((factura::Entity, factura::Column::Estado))

@@ -71,7 +71,12 @@ pub async fn facturas_transition(
     row_version: String,
 ) -> ApiResult<FacturaDetalle> {
     let outcome = match state.services() {
-        Ok(services) => services.facturas.transition(id, destino, &row_version).await,
+        Ok(services) => {
+            services
+                .facturas
+                .transition(id, destino, &row_version)
+                .await
+        }
         Err(e) => Err(e),
     };
     handle("facturas_transition", outcome)

@@ -325,8 +325,8 @@ impl FacturaRepository for SeaOrmFacturaRepository {
     ) -> AppResult<Vec<Factura>> {
         let mut condition = alive();
         if let Some(texto) = texto {
-            condition =
-                condition.add(lower(Column::Numero).like(format!("%{}%", texto.trim().to_lowercase())));
+            condition = condition
+                .add(lower(Column::Numero).like(format!("%{}%", texto.trim().to_lowercase())));
         }
         if let Some(id) = cliente_id {
             condition = condition.add(Column::ClienteId.eq(id.to_string()));
