@@ -15,7 +15,9 @@ use crate::paging::PagedResult;
 use crate::ports::repositories::{CategoriaRepository, UnitOfWork};
 use crate::ports::{ClockPort, IdGeneratorPort};
 use crate::result::AppResult;
-use crate::use_cases::shared::{checked_sort, finish_read, finish_write, normalise, parse_row_version};
+use crate::use_cases::shared::{
+    checked_sort, finish_read, finish_write, normalise, parse_row_version,
+};
 use crate::validation;
 
 const ENTITY: &str = "Categoria";

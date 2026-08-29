@@ -104,7 +104,9 @@ fn filtro_condition(filtro: &CategoriaFiltro) -> Condition {
     match filtro.categoria_padre_id {
         None => {}
         Some(None) => condition = condition.add(Column::CategoriaPadreId.is_null()),
-        Some(Some(padre)) => condition = condition.add(Column::CategoriaPadreId.eq(padre.to_string())),
+        Some(Some(padre)) => {
+            condition = condition.add(Column::CategoriaPadreId.eq(padre.to_string()))
+        }
     }
     condition
 }
@@ -137,7 +139,8 @@ fn hijas_count_expr() -> SimpleExpr {
                 .expr(Expr::col((hijas.clone(), Column::Id)).count())
                 .from_as(Entity, hijas.clone())
                 .and_where(
-                    Expr::col((hijas.clone(), Column::CategoriaPadreId)).equals((Entity, Column::Id)),
+                    Expr::col((hijas.clone(), Column::CategoriaPadreId))
+                        .equals((Entity, Column::Id)),
                 )
                 .and_where(Expr::col((hijas, Column::IsDeleted)).eq(false))
                 .take()
@@ -155,7 +158,9 @@ fn padre_nombre_expr() -> SimpleExpr {
             Query::select()
                 .expr(Expr::col((padre.clone(), Column::Nombre)))
                 .from_as(Entity, padre.clone())
-                .and_where(Expr::col((padre, Column::Id)).equals((Entity, Column::CategoriaPadreId)))
+                .and_where(
+                    Expr::col((padre, Column::Id)).equals((Entity, Column::CategoriaPadreId)),
+                )
                 .take()
                 .into_sub_query_statement(),
         ),

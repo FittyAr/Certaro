@@ -11,9 +11,8 @@ use eo_domain::entities::Movimiento;
 use eo_domain::{time, Money, RowVersion};
 use sea_orm::sea_query::{Alias, Expr, Func, Query, SimpleExpr};
 use sea_orm::{
-    ColumnTrait, Condition, DatabaseTransaction, DbBackend, EntityTrait,
-    FromQueryResult, JoinType, Order, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect,
-    RelationTrait, Statement,
+    ColumnTrait, Condition, DatabaseTransaction, DbBackend, EntityTrait, FromQueryResult, JoinType,
+    Order, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, RelationTrait, Statement,
 };
 use uuid::Uuid;
 
@@ -443,41 +442,55 @@ impl MovimientoRepository for SeaOrmMovimientoRepository {
         // Each arm names its table through the typed entity, so no table name is ever built from
         // a string.
         let count = match tabla {
-            ReferenciaTabla::TipoMovimiento => tipo_movimiento::Entity::find()
-                .filter(tipo_movimiento::Column::Id.eq(id))
-                .filter(tipo_movimiento::Column::IsDeleted.eq(false))
-                .count(self.conn())
-                .await,
-            ReferenciaTabla::TipoConceptoPago => tipo_concepto_pago::Entity::find()
-                .filter(tipo_concepto_pago::Column::Id.eq(id))
-                .filter(tipo_concepto_pago::Column::IsDeleted.eq(false))
-                .count(self.conn())
-                .await,
-            ReferenciaTabla::Categoria => categoria::Entity::find()
-                .filter(categoria::Column::Id.eq(id))
-                .filter(categoria::Column::IsDeleted.eq(false))
-                .count(self.conn())
-                .await,
-            ReferenciaTabla::Cliente => cliente::Entity::find()
-                .filter(cliente::Column::Id.eq(id))
-                .filter(cliente::Column::IsDeleted.eq(false))
-                .count(self.conn())
-                .await,
-            ReferenciaTabla::Trabajo => trabajo::Entity::find()
-                .filter(trabajo::Column::Id.eq(id))
-                .filter(trabajo::Column::IsDeleted.eq(false))
-                .count(self.conn())
-                .await,
-            ReferenciaTabla::Empleado => empleado::Entity::find()
-                .filter(empleado::Column::Id.eq(id))
-                .filter(empleado::Column::IsDeleted.eq(false))
-                .count(self.conn())
-                .await,
-            ReferenciaTabla::Factura => factura::Entity::find()
-                .filter(factura::Column::Id.eq(id))
-                .filter(factura::Column::IsDeleted.eq(false))
-                .count(self.conn())
-                .await,
+            ReferenciaTabla::TipoMovimiento => {
+                tipo_movimiento::Entity::find()
+                    .filter(tipo_movimiento::Column::Id.eq(id))
+                    .filter(tipo_movimiento::Column::IsDeleted.eq(false))
+                    .count(self.conn())
+                    .await
+            }
+            ReferenciaTabla::TipoConceptoPago => {
+                tipo_concepto_pago::Entity::find()
+                    .filter(tipo_concepto_pago::Column::Id.eq(id))
+                    .filter(tipo_concepto_pago::Column::IsDeleted.eq(false))
+                    .count(self.conn())
+                    .await
+            }
+            ReferenciaTabla::Categoria => {
+                categoria::Entity::find()
+                    .filter(categoria::Column::Id.eq(id))
+                    .filter(categoria::Column::IsDeleted.eq(false))
+                    .count(self.conn())
+                    .await
+            }
+            ReferenciaTabla::Cliente => {
+                cliente::Entity::find()
+                    .filter(cliente::Column::Id.eq(id))
+                    .filter(cliente::Column::IsDeleted.eq(false))
+                    .count(self.conn())
+                    .await
+            }
+            ReferenciaTabla::Trabajo => {
+                trabajo::Entity::find()
+                    .filter(trabajo::Column::Id.eq(id))
+                    .filter(trabajo::Column::IsDeleted.eq(false))
+                    .count(self.conn())
+                    .await
+            }
+            ReferenciaTabla::Empleado => {
+                empleado::Entity::find()
+                    .filter(empleado::Column::Id.eq(id))
+                    .filter(empleado::Column::IsDeleted.eq(false))
+                    .count(self.conn())
+                    .await
+            }
+            ReferenciaTabla::Factura => {
+                factura::Entity::find()
+                    .filter(factura::Column::Id.eq(id))
+                    .filter(factura::Column::IsDeleted.eq(false))
+                    .count(self.conn())
+                    .await
+            }
         };
         Ok(count.map_err(AppError::persistence)? > 0)
     }

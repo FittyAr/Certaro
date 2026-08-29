@@ -117,9 +117,8 @@ async fn el_total_se_deriva_y_nunca_se_guarda() {
     assert_eq!(creado.item.total.to_decimal_string(), "3001.0000");
 
     // The column does not exist; anything that claims a total computed it.
-    let columnas = f
-        .db
-        .query_all(sea_orm::Statement::from_string(
+    let columnas =
+        f.db.query_all(sea_orm::Statement::from_string(
             sea_orm::DbBackend::Sqlite,
             "PRAGMA table_info(movimientos)".to_owned(),
         ))
@@ -180,7 +179,10 @@ async fn el_resumen_cubre_todo_el_filtro_y_no_la_pagina() {
 
     // Six rows on one page of ten, but the point is the totals come from the filter, not the page.
     assert_eq!(result.resumen.cantidad, 6);
-    assert_eq!(result.resumen.total_ingresos.to_decimal_string(), "20000.0000");
+    assert_eq!(
+        result.resumen.total_ingresos.to_decimal_string(),
+        "20000.0000"
+    );
     assert_eq!(result.resumen.total_gastos.to_decimal_string(), "5000.0000");
     assert_eq!(result.resumen.balance.to_decimal_string(), "15000.0000");
 }
@@ -305,7 +307,12 @@ async fn el_orden_por_defecto_es_la_fecha_descendente() {
         .list(query(MovimientoFiltroDto::default()))
         .await
         .unwrap();
-    let conceptos: Vec<&str> = result.page.items.iter().map(|i| i.concepto.as_str()).collect();
+    let conceptos: Vec<&str> = result
+        .page
+        .items
+        .iter()
+        .map(|i| i.concepto.as_str())
+        .collect();
 
     assert_eq!(conceptos, ["Dia 20", "Dia 15", "Dia 10"]);
 }
@@ -517,7 +524,12 @@ async fn la_paginacion_no_repite_ni_saltea_filas_del_mismo_instante() {
     // the second page can repeat what the first already showed.
     for i in 0..20 {
         f.movimientos
-            .create(input(&format!("Fila {i:02}"), "1000.0000", "1.0000", categoria))
+            .create(input(
+                &format!("Fila {i:02}"),
+                "1000.0000",
+                "1.0000",
+                categoria,
+            ))
             .await
             .unwrap();
     }

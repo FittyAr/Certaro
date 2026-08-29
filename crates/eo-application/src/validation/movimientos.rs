@@ -89,7 +89,10 @@ pub fn validate(input: &MovimientoInput, fechas: &ContextoFecha) -> AppResult<()
     if input.tipo_movimiento_id == tipos_movimiento::ADELANTO {
         v.require(
             input.empleado_id.is_some(),
-            FieldError::new("empleadoId", "Validation.Movimiento.EmpleadoRequeridoAdelanto"),
+            FieldError::new(
+                "empleadoId",
+                "Validation.Movimiento.EmpleadoRequeridoAdelanto",
+            ),
         );
     }
 
@@ -99,9 +102,7 @@ pub fn validate(input: &MovimientoInput, fechas: &ContextoFecha) -> AppResult<()
 fn validar_cotizacion(v: &mut Validator, input: &MovimientoInput) {
     if input.moneda.requiere_cotizacion() {
         v.require(
-            input
-                .cotizacion_aplicada
-                .is_some_and(|c| c.is_positive()),
+            input.cotizacion_aplicada.is_some_and(|c| c.is_positive()),
             FieldError::new(
                 "cotizacionAplicada",
                 "Validation.Movimiento.CotizacionRequired",
@@ -110,9 +111,7 @@ fn validar_cotizacion(v: &mut Validator, input: &MovimientoInput) {
     } else {
         // A rate on a peso movement is meaningless and would be applied by any later conversion.
         v.require(
-            input
-                .cotizacion_aplicada
-                .map_or(true, |c| c == Money::ZERO),
+            input.cotizacion_aplicada.map_or(true, |c| c == Money::ZERO),
             FieldError::new(
                 "cotizacionAplicada",
                 "Validation.Movimiento.CotizacionNotApplicable",
@@ -172,7 +171,11 @@ mod tests {
     }
 
     fn keys(error: AppError) -> Vec<String> {
-        error.fields().iter().map(|f| f.message_key.clone()).collect()
+        error
+            .fields()
+            .iter()
+            .map(|f| f.message_key.clone())
+            .collect()
     }
 
     #[test]
@@ -184,10 +187,16 @@ mod tests {
     fn el_concepto_admite_quinientos_caracteres_y_no_quinientos_uno() {
         // The legacy validator said 200 while the column said 500, so a valid concept was
         // rejected by the form and accepted by an import.
-        let dto = MovimientoInput { concepto: "a".repeat(500), ..input() };
+        let dto = MovimientoInput {
+            concepto: "a".repeat(500),
+            ..input()
+        };
         assert!(validate(&dto, &contexto()).is_ok());
 
-        let dto = MovimientoInput { concepto: "a".repeat(501), ..input() };
+        let dto = MovimientoInput {
+            concepto: "a".repeat(501),
+            ..input()
+        };
         assert_eq!(
             keys(validate(&dto, &contexto()).unwrap_err()),
             ["Validation.Movimiento.ConceptoMaxLength"]
@@ -196,13 +205,19 @@ mod tests {
 
     #[test]
     fn el_monto_y_la_cantidad_tienen_que_ser_positivos() {
-        let dto = MovimientoInput { monto: Money::ZERO, ..input() };
+        let dto = MovimientoInput {
+            monto: Money::ZERO,
+            ..input()
+        };
         assert_eq!(
             keys(validate(&dto, &contexto()).unwrap_err()),
             ["Validation.Movimiento.MontoRequired"]
         );
 
-        let dto = MovimientoInput { cantidad: Decimal4::ZERO, ..input() };
+        let dto = MovimientoInput {
+            cantidad: Decimal4::ZERO,
+            ..input()
+        };
         assert_eq!(
             keys(validate(&dto, &contexto()).unwrap_err()),
             ["Validation.Movimiento.CantidadRequired"]
@@ -211,7 +226,10 @@ mod tests {
 
     #[test]
     fn la_categoria_es_obligatoria_aunque_la_columna_admita_nulo() {
-        let dto = MovimientoInput { categoria_id: None, ..input() };
+        let dto = MovimientoInput {
+            categoria_id: None,
+            ..input()
+        };
         assert_eq!(
             keys(validate(&dto, &contexto()).unwrap_err()),
             ["Validation.Movimiento.CategoriaRequired"]
@@ -220,7 +238,10 @@ mod tests {
 
     #[test]
     fn en_dolares_la_cotizacion_es_obligatoria() {
-        let dto = MovimientoInput { moneda: Moneda::Usd, ..input() };
+        let dto = MovimientoInput {
+            moneda: Moneda::Usd,
+            ..input()
+        };
         assert_eq!(
             keys(validate(&dto, &contexto()).unwrap_err()),
             ["Validation.Movimiento.CotizacionRequired"]
@@ -248,7 +269,10 @@ mod tests {
 
     #[test]
     fn una_fecha_del_ano_uno_se_rechaza() {
-        let dto = MovimientoInput { fecha: instante(1, 1, 1), ..input() };
+        let dto = MovimientoInput {
+            fecha: instante(1, 1, 1),
+            ..input()
+        };
         assert_eq!(
             keys(validate(&dto, &contexto()).unwrap_err()),
             ["Validation.Common.FechaOutOfRange"]
@@ -257,10 +281,16 @@ mod tests {
 
     #[test]
     fn el_limite_futuro_es_un_ano_por_defecto() {
-        let dto = MovimientoInput { fecha: instante(2027, 8, 29), ..input() };
+        let dto = MovimientoInput {
+            fecha: instante(2027, 8, 29),
+            ..input()
+        };
         assert!(validate(&dto, &contexto()).is_ok());
 
-        let dto = MovimientoInput { fecha: instante(2027, 8, 31), ..input() };
+        let dto = MovimientoInput {
+            fecha: instante(2027, 8, 31),
+            ..input()
+        };
         assert_eq!(
             keys(validate(&dto, &contexto()).unwrap_err()),
             ["Validation.Common.FechaOutOfRange"]

@@ -86,7 +86,10 @@ mod tests {
         ];
         for (monto, cantidad, esperado) in casos {
             assert_eq!(
-                movimiento(monto, cantidad).total().unwrap().to_decimal_string(),
+                movimiento(monto, cantidad)
+                    .total()
+                    .unwrap()
+                    .to_decimal_string(),
                 esperado,
                 "{monto} x {cantidad}"
             );
@@ -97,7 +100,10 @@ mod tests {
     fn el_ultimo_decimal_redondea_alejandose_del_cero() {
         // 0.0001 x 0.5 is 0.00005 exactly, which rounds up rather than to even.
         assert_eq!(
-            movimiento("0.0001", "0.5000").total().unwrap().to_decimal_string(),
+            movimiento("0.0001", "0.5000")
+                .total()
+                .unwrap()
+                .to_decimal_string(),
             "0.0001"
         );
     }

@@ -19,8 +19,12 @@ pub enum DomainError {
     #[error("division by zero")]
     DivisionByZero,
 
-    #[error("invalid state transition from {from} to {to}")]
-    InvalidStateTransition { from: String, to: String },
+    #[error("invalid state transition on {entity}: {from} -> {to}")]
+    InvalidStateTransition {
+        entity: &'static str,
+        from: &'static str,
+        to: &'static str,
+    },
 
     #[error("unknown enum value {value} for {enum_name}")]
     UnknownEnumValue { enum_name: &'static str, value: i32 },

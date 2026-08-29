@@ -17,11 +17,16 @@ pub mod ids;
 pub mod money;
 pub mod row_version;
 mod scaled;
+pub mod state;
 pub mod time;
 
 pub use decimal4::Decimal4;
-pub use entities::{Audit, Categoria, Movimiento, TipoMovimiento};
-pub use enums::Moneda;
+pub use entities::{
+    Audit, Categoria, Cliente, ClienteContacto, Factura, Movimiento, Obra, PagoFactura,
+    TipoMovimiento, Trabajo,
+};
+pub use enums::{EstadoFactura, EstadoObra, EstadoTrabajo, Moneda};
 pub use error::DomainError;
 pub use money::{Money, SCALE};
 pub use row_version::RowVersion;
+pub use state::{recalcular_estado_factura, StateMachine};

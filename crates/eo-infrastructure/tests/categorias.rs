@@ -100,25 +100,40 @@ async fn el_nombre_es_unico_entre_hermanas_pero_no_entre_padres_distintos() {
     let a = service.create(input("Obra A", None)).await.unwrap();
     let b = service.create(input("Obra B", None)).await.unwrap();
 
-    service.create(input("Materiales", Some(a.id))).await.unwrap();
+    service
+        .create(input("Materiales", Some(a.id)))
+        .await
+        .unwrap();
     // Same name under a different parent is a different thing and is allowed.
-    service.create(input("Materiales", Some(b.id))).await.unwrap();
+    service
+        .create(input("Materiales", Some(b.id)))
+        .await
+        .unwrap();
 
     let error = service
         .create(input("Materiales", Some(a.id)))
         .await
         .unwrap_err();
-    assert!(matches!(error, AppError::Conflict { code, .. } if code == "CATEGORIA_NOMBRE_DUPLICADO"));
+    assert!(
+        matches!(error, AppError::Conflict { code, .. } if code == "CATEGORIA_NOMBRE_DUPLICADO")
+    );
 }
 
 #[tokio::test]
 async fn el_listado_resuelve_el_nombre_del_padre() {
     let (service, _db) = service().await;
     let padre = service.create(input("Obra", None)).await.unwrap();
-    service.create(input("Materiales", Some(padre.id))).await.unwrap();
+    service
+        .create(input("Materiales", Some(padre.id)))
+        .await
+        .unwrap();
 
     let page = service.list(query()).await.unwrap();
-    let hija = page.items.iter().find(|i| i.nombre == "Materiales").unwrap();
+    let hija = page
+        .items
+        .iter()
+        .find(|i| i.nombre == "Materiales")
+        .unwrap();
 
     assert_eq!(hija.categoria_padre_nombre.as_deref(), Some("Obra"));
     assert_eq!(hija.hijas_count, 0);
@@ -128,7 +143,10 @@ async fn el_listado_resuelve_el_nombre_del_padre() {
 async fn solo_raiz_deja_fuera_a_las_hijas() {
     let (service, _db) = service().await;
     let padre = service.create(input("Obra", None)).await.unwrap();
-    service.create(input("Materiales", Some(padre.id))).await.unwrap();
+    service
+        .create(input("Materiales", Some(padre.id)))
+        .await
+        .unwrap();
 
     let page = service
         .list(ListQuery {
@@ -154,7 +172,11 @@ async fn una_categoria_no_puede_convertirse_en_su_propia_nieta() {
 
     // A → B → A. The field validator cannot see this one; it needs the ancestor chain.
     let error = service
-        .update(abuela.id, input("A", Some(madre.id)), &abuela.audit.row_version)
+        .update(
+            abuela.id,
+            input("A", Some(madre.id)),
+            &abuela.audit.row_version,
+        )
         .await
         .unwrap_err();
 
@@ -168,14 +190,19 @@ async fn una_categoria_no_puede_convertirse_en_su_propia_nieta() {
 async fn una_categoria_con_hijas_no_se_borra() {
     let (service, _db) = service().await;
     let padre = service.create(input("Obra", None)).await.unwrap();
-    service.create(input("Materiales", Some(padre.id))).await.unwrap();
+    service
+        .create(input("Materiales", Some(padre.id)))
+        .await
+        .unwrap();
 
     let error = service
         .delete(padre.id, &padre.audit.row_version)
         .await
         .unwrap_err();
 
-    assert!(matches!(error, AppError::DependencyInUse { code, .. } if code == "CATEGORIA_CON_HIJAS"));
+    assert!(
+        matches!(error, AppError::DependencyInUse { code, .. } if code == "CATEGORIA_CON_HIJAS")
+    );
 }
 
 #[tokio::test]

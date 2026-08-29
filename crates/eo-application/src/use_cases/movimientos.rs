@@ -187,7 +187,8 @@ impl MovimientosService {
 
     fn validar(&self, input: &MovimientoInput) -> AppResult<()> {
         let config = self.settings.snapshot();
-        let contexto = ContextoFecha::from_config(&config.validation, self.clock.now_utc().date_naive());
+        let contexto =
+            ContextoFecha::from_config(&config.validation, self.clock.now_utc().date_naive());
         validation::movimientos::validate(input, &contexto)
     }
 
@@ -235,10 +236,16 @@ async fn ensure_referencias(
     repo: &dyn MovimientoRepository,
     input: &MovimientoInput,
 ) -> AppResult<()> {
-    let obligatorias = [(ReferenciaTabla::TipoMovimiento, Some(input.tipo_movimiento_id))];
+    let obligatorias = [(
+        ReferenciaTabla::TipoMovimiento,
+        Some(input.tipo_movimiento_id),
+    )];
     let opcionales = [
         (ReferenciaTabla::Categoria, input.categoria_id),
-        (ReferenciaTabla::TipoConceptoPago, input.tipo_concepto_pago_id),
+        (
+            ReferenciaTabla::TipoConceptoPago,
+            input.tipo_concepto_pago_id,
+        ),
         (ReferenciaTabla::Cliente, input.cliente_id),
         (ReferenciaTabla::Trabajo, input.trabajo_id),
         (ReferenciaTabla::Empleado, input.empleado_id),
