@@ -8,7 +8,9 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 pub mod clock;
+pub mod constants;
 pub mod decimal4;
+pub mod entities;
 pub mod error;
 pub mod ids;
 pub mod money;
@@ -17,6 +19,7 @@ mod scaled;
 pub mod time;
 
 pub use decimal4::Decimal4;
+pub use entities::{Audit, TipoMovimiento};
 pub use error::DomainError;
 pub use money::{Money, SCALE};
 pub use row_version::RowVersion;

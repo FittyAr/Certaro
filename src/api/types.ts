@@ -41,6 +41,35 @@ export interface PageRequest {
 export const PAGE_SIZES = [10, 30, 50, 100, 0] as const
 export const DEFAULT_PAGE_SIZE = 30
 
+export type SortDir = 'Asc' | 'Desc'
+
+/** A list request: a module-specific filter plus the paging every list shares. */
+export interface ListQuery<F> {
+  filtro: F
+  /** 1-based; there is no page zero. */
+  page: number
+  /** `0` means no paging. */
+  pageSize: number
+  sortBy?: string
+  sortDir?: SortDir
+}
+
+/** One option of a selector, returned by the `*_lookup` commands. */
+export interface LookupItem {
+  id: Uuid
+  label: string
+  /** Extra data the selector needs to render the option: a colour, a rate, a state. */
+  meta?: Record<string, string>
+}
+
+export interface Audit {
+  createdAt: Instant
+  updatedAt: Instant | null
+  rowVersion: RowVersion
+  isDeleted: boolean
+  deletedAt: Instant | null
+}
+
 // ------------------------------------------------------------------ config
 
 export type Environment = 'development' | 'production'

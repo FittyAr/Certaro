@@ -8,10 +8,12 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 pub mod config;
+pub mod dtos;
 pub mod error;
 pub mod paging;
 pub mod ports;
 pub mod result;
+pub mod use_cases;
 pub mod validation;
 
 pub use error::{AppError, FieldError};

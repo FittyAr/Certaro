@@ -1,0 +1,25 @@
+use sea_orm::entity::prelude::*;
+
+#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
+#[sea_orm(table_name = "obras")]
+pub struct Model {
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub id: String,
+    pub numero: i32,
+    pub nombre: String,
+    pub direccion: Option<String>,
+    pub localidad: Option<String>,
+    pub cliente_id: String,
+    /// `EstadoObra` as its numeric value.
+    pub estado: i32,
+    pub created_at: String,
+    pub updated_at: Option<String>,
+    pub row_version: Vec<u8>,
+    pub is_deleted: bool,
+    pub deleted_at: Option<String>,
+}
+
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {}
+
+impl ActiveModelBehavior for ActiveModel {}

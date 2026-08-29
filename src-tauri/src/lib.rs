@@ -81,7 +81,7 @@ pub fn run() {
             // not hold the window closed. The legacy application already did this and the pattern
             // is worth keeping.
             tauri::async_runtime::spawn(async move {
-                match bootstrap().await {
+                match bootstrap(&handle).await {
                     Ok(()) => {
                         tracing::info!("bootstrap complete");
                         let _ = handle.emit(EVENT_READY, ());
@@ -98,6 +98,12 @@ pub fn run() {
             commands::app::ping,
             commands::app::app_info,
             commands::app::app_config,
+            commands::tipos_movimiento::tipos_movimiento_list,
+            commands::tipos_movimiento::tipos_movimiento_get,
+            commands::tipos_movimiento::tipos_movimiento_create,
+            commands::tipos_movimiento::tipos_movimiento_update,
+            commands::tipos_movimiento::tipos_movimiento_delete,
+            commands::tipos_movimiento::tipos_movimiento_lookup,
         ])
         .run(tauri::generate_context!())
         .unwrap_or_else(|e| {
@@ -105,9 +111,14 @@ pub fn run() {
         });
 }
 
-/// Connects the database, applies migrations and seeds the system rows.
-/// Phase 2 fills this in; phase 0 only needs the event to fire.
-async fn bootstrap() -> anyhow::Result<()> {
+/// Connects the database, applies migrations and seeds the system rows, then publishes the use
+/// cases so the commands can serve requests.
+async fn bootstrap(handle: &tauri::AppHandle) -> anyhow::Result<()> {
+    let state = handle.state::<AppState>();
+    let db = eo_infrastructure::persistence::open(&state.paths.database()).await?;
+    state.install_services(Arc::new(
+        eo_infrastructure::persistence::SeaOrmUnitOfWork::new(db),
+    ));
     Ok(())
 }
 

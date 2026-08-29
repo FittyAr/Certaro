@@ -2,6 +2,8 @@
 //!
 //! Every rule produces a `FieldError` with an i18n key; no rule produces a sentence.
 
+pub mod tipos_movimiento;
+
 use crate::error::{AppError, FieldError};
 
 /// Accumulates field errors so one submit reports every problem at once instead of making the

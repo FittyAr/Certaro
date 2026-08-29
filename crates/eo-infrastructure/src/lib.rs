@@ -9,4 +9,5 @@
 
 pub mod config;
 pub mod paths;
+pub mod persistence;
 pub mod telemetry;
