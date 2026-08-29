@@ -4,10 +4,14 @@
 //! nowhere else. A model never leaves this layer.
 
 pub mod categoria;
+pub mod cliente;
+pub mod factura;
 pub mod movimiento;
+pub mod obra;
 pub mod tipo_movimiento;
+pub mod trabajo;
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use eo_application::AppError;
 use eo_domain::entities::Audit;
 use eo_domain::{time, RowVersion};
@@ -22,6 +26,23 @@ pub fn instant(raw: &str) -> Result<DateTime<Utc>, AppError> {
 
 pub fn instant_opt(raw: Option<&str>) -> Result<Option<DateTime<Utc>>, AppError> {
     raw.map(instant).transpose()
+}
+
+/// A civil date, stored as the bare `YYYY-MM-DD` the domain and the frontend both use.
+pub fn civil(raw: &str) -> Result<NaiveDate, AppError> {
+    time::parse_civil(raw)
+        .map_err(|e| AppError::persistence(anyhow::anyhow!("invalid date {raw:?}: {e}")))
+}
+
+pub fn civil_opt(raw: Option<&str>) -> Result<Option<NaiveDate>, AppError> {
+    raw.map(civil).transpose()
+}
+
+/// Renders a civil date for storage. Lexicographic order matches chronological order, so a plain
+/// `ORDER BY` on the column is correct.
+#[must_use]
+pub fn civil_to_storage(d: NaiveDate) -> String {
+    d.format("%Y-%m-%d").to_string()
 }
 
 pub fn uuid(raw: &str) -> Result<Uuid, AppError> {
