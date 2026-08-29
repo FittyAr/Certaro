@@ -7,7 +7,6 @@
 use std::sync::Arc;
 
 use eo_domain::entities::{Audit, TipoMovimiento};
-use eo_domain::RowVersion;
 use tracing::info;
 use uuid::Uuid;
 
@@ -20,6 +19,9 @@ use crate::paging::PagedResult;
 use crate::ports::repositories::UnitOfWork;
 use crate::ports::{ClockPort, IdGeneratorPort};
 use crate::result::AppResult;
+use crate::use_cases::shared::{
+    checked_sort, finish_read, finish_write, normalise, parse_row_version,
+};
 use crate::validation;
 
 const ENTITY: &str = "TipoMovimiento";
@@ -47,7 +49,7 @@ impl TiposMovimientoService {
         &self,
         query: ListQuery<TipoMovimientoFiltroDto>,
     ) -> AppResult<PagedResult<TipoMovimientoListItem>> {
-        let sort_by = self.checked_sort(query.sort_by.as_deref())?;
+        let sort_by = checked_sort(query.sort_by.as_deref(), &SORTABLE)?;
         let page = query.page_request();
         page.validate()?;
         let filtro = query.filtro.into();
@@ -197,17 +199,6 @@ impl TiposMovimientoService {
         info!(%id, "tipo de movimiento eliminado");
         Ok(())
     }
-
-    fn checked_sort<'a>(&self, sort_by: Option<&'a str>) -> AppResult<Option<&'a str>> {
-        match sort_by {
-            None => Ok(None),
-            Some(field) if SORTABLE.contains(&field) => Ok(Some(field)),
-            Some(_) => Err(AppError::Validation(vec![crate::FieldError::new(
-                "sortBy",
-                "Validation.Common.SortByNotAllowed",
-            )])),
-        }
-    }
 }
 
 async fn load_detalle(
@@ -235,48 +226,4 @@ async fn ensure_nombre_libre(
         });
     }
     Ok(())
-}
-
-/// Closes a read-only transaction. Reads are wrapped too, so a listing that spans several
-/// queries sees one consistent snapshot.
-async fn finish_read<T>(
-    tx: Box<dyn crate::ports::Transaction>,
-    outcome: AppResult<T>,
-) -> AppResult<T> {
-    match outcome {
-        Ok(value) => {
-            tx.rollback().await?;
-            Ok(value)
-        }
-        Err(e) => {
-            tx.rollback().await?;
-            Err(e)
-        }
-    }
-}
-
-async fn finish_write<T>(
-    tx: Box<dyn crate::ports::Transaction>,
-    outcome: AppResult<T>,
-) -> AppResult<T> {
-    match outcome {
-        Ok(value) => {
-            tx.commit().await?;
-            Ok(value)
-        }
-        Err(e) => {
-            tx.rollback().await?;
-            Err(e)
-        }
-    }
-}
-
-fn parse_row_version(raw: &str) -> AppResult<RowVersion> {
-    RowVersion::parse_hex(raw).map_err(AppError::from)
-}
-
-/// An empty optional text is `None`, not `Some("")`: two ways of saying nothing make every later
-/// comparison ambiguous.
-fn normalise(value: Option<String>) -> Option<String> {
-    value.map(|v| v.trim().to_owned()).filter(|v| !v.is_empty())
 }

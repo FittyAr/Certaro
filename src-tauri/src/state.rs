@@ -8,6 +8,8 @@ use std::sync::{Arc, OnceLock};
 use eo_application::config::AppConfig;
 use eo_application::ports::repositories::UnitOfWork;
 use eo_application::ports::settings::SettingsStore;
+use eo_application::use_cases::categorias::CategoriasService;
+use eo_application::use_cases::movimientos::MovimientosService;
 use eo_application::use_cases::tipos_movimiento::TiposMovimientoService;
 use eo_application::AppError;
 use eo_domain::clock::{Clock, SystemClock};
@@ -17,12 +19,29 @@ use eo_infrastructure::paths::AppPaths;
 /// The use cases, available only once the background bootstrap has opened the database.
 pub struct Services {
     pub tipos_movimiento: TiposMovimientoService,
+    pub categorias: CategoriasService,
+    pub movimientos: MovimientosService,
 }
 
 impl Services {
-    fn build(uow: Arc<dyn UnitOfWork>, clock: Arc<dyn Clock>, ids: Arc<dyn IdGenerator>) -> Self {
+    fn build(
+        uow: Arc<dyn UnitOfWork>,
+        clock: Arc<dyn Clock>,
+        ids: Arc<dyn IdGenerator>,
+        settings: Arc<dyn SettingsStore>,
+    ) -> Self {
         Self {
-            tipos_movimiento: TiposMovimientoService::new(uow, clock, ids),
+            tipos_movimiento: TiposMovimientoService::new(
+                Arc::clone(&uow),
+                Arc::clone(&clock),
+                Arc::clone(&ids),
+            ),
+            categorias: CategoriasService::new(
+                Arc::clone(&uow),
+                Arc::clone(&clock),
+                Arc::clone(&ids),
+            ),
+            movimientos: MovimientosService::new(uow, clock, ids, settings),
         }
     }
 }
@@ -55,7 +74,12 @@ impl AppState {
     /// Publishes the use cases. Called exactly once; a second call is ignored, which can only
     /// happen if bootstrap were ever run twice.
     pub fn install_services(&self, uow: Arc<dyn UnitOfWork>) {
-        let services = Services::build(uow, Arc::clone(&self.clock), Arc::clone(&self.ids));
+        let services = Services::build(
+            uow,
+            Arc::clone(&self.clock),
+            Arc::clone(&self.ids),
+            Arc::clone(&self.settings),
+        );
         let _ = self.services.set(services);
     }
 

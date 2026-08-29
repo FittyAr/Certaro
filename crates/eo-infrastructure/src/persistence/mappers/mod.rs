@@ -3,6 +3,8 @@
 //! Everything the database stores as text or as a scaled integer is interpreted exactly here and
 //! nowhere else. A model never leaves this layer.
 
+pub mod categoria;
+pub mod movimiento;
 pub mod tipo_movimiento;
 
 use chrono::{DateTime, Utc};
@@ -25,6 +27,10 @@ pub fn instant_opt(raw: Option<&str>) -> Result<Option<DateTime<Utc>>, AppError>
 pub fn uuid(raw: &str) -> Result<Uuid, AppError> {
     Uuid::parse_str(raw)
         .map_err(|e| AppError::persistence(anyhow::anyhow!("invalid uuid {raw:?}: {e}")))
+}
+
+pub fn uuid_opt(raw: Option<&str>) -> Result<Option<Uuid>, AppError> {
+    raw.map(uuid).transpose()
 }
 
 pub fn row_version(raw: &[u8]) -> Result<RowVersion, AppError> {

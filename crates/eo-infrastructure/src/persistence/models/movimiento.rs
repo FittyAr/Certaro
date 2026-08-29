@@ -30,7 +30,23 @@ pub struct Model {
     pub deleted_at: Option<String>,
 }
 
+/// Only the two relations the listing joins. The rest of the foreign keys are read as plain
+/// identifiers, because loading the whole graph for a table of thousands of rows is what made the
+/// legacy listing slow.
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::tipo_movimiento::Entity",
+        from = "Column::TipoMovimientoId",
+        to = "super::tipo_movimiento::Column::Id"
+    )]
+    TipoMovimiento,
+    #[sea_orm(
+        belongs_to = "super::categoria::Entity",
+        from = "Column::CategoriaId",
+        to = "super::categoria::Column::Id"
+    )]
+    Categoria,
+}
 
 impl ActiveModelBehavior for ActiveModel {}

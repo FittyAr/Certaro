@@ -268,3 +268,38 @@ proptest! {
         prop_assert_eq!(m.checked_mul(Decimal4::ONE), Ok(m));
     }
 }
+
+/// A SQL `SUM(monto * cantidad)` comes back at scale 1e8; rescaling it must agree with adding the
+/// per-row totals in Rust, or the summary under a listing would disagree with the rows above it.
+#[test]
+fn la_suma_de_productos_se_reescala_igual_que_sumar_fila_por_fila() {
+    let filas = [
+        (money("1500.5000"), dec("2.0000")),
+        (money("333.3333"), dec("3.0000")),
+        (money("40000.0000"), dec("1.0000")),
+    ];
+
+    let por_fila = Money::try_sum(filas.map(|(m, c)| m.checked_mul(c).unwrap())).unwrap();
+    let bruto: i128 = filas
+        .iter()
+        .map(|(m, c)| i128::from(m.raw()) * i128::from(c.raw()))
+        .sum();
+
+    assert_eq!(Money::from_product_sum(bruto).unwrap(), por_fila);
+}
+
+#[test]
+fn el_reescalado_de_la_suma_redondea_alejandose_del_cero() {
+    // 0.00005 in both directions: neither rounds to even.
+    assert_eq!(Money::from_product_sum(5_000).unwrap(), money("0.0001"));
+    assert_eq!(Money::from_product_sum(-5_000).unwrap(), money("-0.0001"));
+    assert_eq!(Money::from_product_sum(4_999).unwrap(), Money::ZERO);
+}
+
+#[test]
+fn una_suma_que_no_entra_en_i64_es_un_error_y_no_un_numero_truncado() {
+    assert_eq!(
+        Money::from_product_sum(i128::from(i64::MAX) * 10_001),
+        Err(DomainError::MoneyOverflow)
+    );
+}

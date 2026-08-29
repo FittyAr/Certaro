@@ -104,6 +104,18 @@ pub fn run() {
             commands::tipos_movimiento::tipos_movimiento_update,
             commands::tipos_movimiento::tipos_movimiento_delete,
             commands::tipos_movimiento::tipos_movimiento_lookup,
+            commands::categorias::categorias_list,
+            commands::categorias::categorias_get,
+            commands::categorias::categorias_create,
+            commands::categorias::categorias_update,
+            commands::categorias::categorias_delete,
+            commands::categorias::categorias_lookup,
+            commands::movimientos::movimientos_list,
+            commands::movimientos::movimientos_get,
+            commands::movimientos::movimientos_resumen,
+            commands::movimientos::movimientos_create,
+            commands::movimientos::movimientos_update,
+            commands::movimientos::movimientos_delete,
         ])
         .run(tauri::generate_context!())
         .unwrap_or_else(|e| {

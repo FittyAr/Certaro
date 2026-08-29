@@ -11,6 +11,7 @@ pub mod clock;
 pub mod constants;
 pub mod decimal4;
 pub mod entities;
+pub mod enums;
 pub mod error;
 pub mod ids;
 pub mod money;
@@ -19,7 +20,8 @@ mod scaled;
 pub mod time;
 
 pub use decimal4::Decimal4;
-pub use entities::{Audit, TipoMovimiento};
+pub use entities::{Audit, Categoria, Movimiento, TipoMovimiento};
+pub use enums::Moneda;
 pub use error::DomainError;
 pub use money::{Money, SCALE};
 pub use row_version::RowVersion;

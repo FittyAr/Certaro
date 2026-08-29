@@ -115,6 +115,30 @@ impl Money {
     pub fn percent(self, percentage: Decimal4) -> Result<Money, DomainError> {
         self.checked_mul(percentage)?.checked_div(Decimal4::HUNDRED)
     }
+
+    /// Narrows a sum of `monto * cantidad` products back to a monetary amount.
+    ///
+    /// Two values scaled by 10 000 multiply to one scaled by 100 000 000, so an aggregation done
+    /// in SQL comes back at that scale. Rescaling in Rust, in `i128`, keeps the rounding
+    /// half-away-from-zero and matches summing the per-row totals one by one.
+    pub fn from_product_sum(sum_e8: i128) -> Result<Money, DomainError> {
+        let scale = SCALE as i128;
+        let half = scale / 2;
+        let q = sum_e8 / scale;
+        let r = sum_e8 % scale;
+        let adjusted = if r.abs() >= half {
+            if sum_e8 >= 0 {
+                q + 1
+            } else {
+                q - 1
+            }
+        } else {
+            q
+        };
+        i64::try_from(adjusted)
+            .map(Money)
+            .map_err(|_| DomainError::MoneyOverflow)
+    }
 }
 
 /// `10^decimals`, clamped to the four decimals the type can represent.

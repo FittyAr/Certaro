@@ -10,7 +10,8 @@ pub mod settings;
 pub use clock::ClockPort;
 pub use id_generator::IdGeneratorPort;
 pub use repositories::{
-    SortDir, TipoMovimientoConUso, TipoMovimientoFiltro, TipoMovimientoRepository, Transaction,
-    UnitOfWork,
+    CategoriaConUso, CategoriaFiltro, CategoriaRepository, MovimientoConRelaciones,
+    MovimientoFiltro, MovimientoRepository, MovimientoResumen, ReferenciaTabla, SortDir,
+    TipoMovimientoConUso, TipoMovimientoFiltro, TipoMovimientoRepository, Transaction, UnitOfWork,
 };
 pub use settings::SettingsStore;

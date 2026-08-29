@@ -6,10 +6,14 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use eo_application::ports::repositories::{TipoMovimientoRepository, Transaction, UnitOfWork};
+use eo_application::ports::repositories::{
+    CategoriaRepository, MovimientoRepository, TipoMovimientoRepository, Transaction, UnitOfWork,
+};
 use eo_application::{AppError, AppResult};
 use sea_orm::{DatabaseConnection, DatabaseTransaction, TransactionTrait};
 
+use crate::persistence::repositories::categoria::SeaOrmCategoriaRepository;
+use crate::persistence::repositories::movimiento::SeaOrmMovimientoRepository;
 use crate::persistence::repositories::tipo_movimiento::SeaOrmTipoMovimientoRepository;
 
 pub struct SeaOrmUnitOfWork {
@@ -37,12 +41,16 @@ impl UnitOfWork for SeaOrmUnitOfWork {
 pub struct SeaOrmTransaction {
     tx: Arc<DatabaseTransaction>,
     tipos_movimiento: SeaOrmTipoMovimientoRepository,
+    categorias: SeaOrmCategoriaRepository,
+    movimientos: SeaOrmMovimientoRepository,
 }
 
 impl SeaOrmTransaction {
     fn new(tx: Arc<DatabaseTransaction>) -> Self {
         Self {
             tipos_movimiento: SeaOrmTipoMovimientoRepository::new(Arc::clone(&tx)),
+            categorias: SeaOrmCategoriaRepository::new(Arc::clone(&tx)),
+            movimientos: SeaOrmMovimientoRepository::new(Arc::clone(&tx)),
             tx,
         }
     }
@@ -54,8 +62,12 @@ impl SeaOrmTransaction {
         let Self {
             tx,
             tipos_movimiento,
+            categorias,
+            movimientos,
         } = self;
         drop(tipos_movimiento);
+        drop(categorias);
+        drop(movimientos);
         Arc::try_unwrap(tx).map_err(|_| {
             AppError::unexpected(anyhow::anyhow!("transaction still borrowed when finishing"))
         })
@@ -66,6 +78,14 @@ impl SeaOrmTransaction {
 impl Transaction for SeaOrmTransaction {
     fn tipos_movimiento(&self) -> &dyn TipoMovimientoRepository {
         &self.tipos_movimiento
+    }
+
+    fn categorias(&self) -> &dyn CategoriaRepository {
+        &self.categorias
+    }
+
+    fn movimientos(&self) -> &dyn MovimientoRepository {
+        &self.movimientos
     }
 
     async fn commit(self: Box<Self>) -> AppResult<()> {
