@@ -163,6 +163,20 @@ dotnet test ElectroObraApp.Tests/ElectroObraApp.Tests.csproj --collect:"XPlat Co
 ### Almacenamiento decimal en SQLite
 Los campos monetarios usan `decimal` en el dominio. EF Core los persiste como `long` mediante conversores personalizados (`DecimalToLongConverter`), reemplazando el antiguo mapeo a `double` y evitando errores de redondeo.
 
+### Design System UI (Agosto 2026)
+ElectroObraApp utiliza un design system basado en tokens semánticos en `ElectroObraApp/Styles/`:
+
+| Recurso | Propósito |
+|---|---|
+| `Palette.axaml` | Diccionarios Light/Dark: superficies, bordes, texto, acento, estados |
+| `Tokens.axaml` | Espaciado, radios, tipografía (`H1`, `BodySmall`, `Caption`) |
+| `Components.axaml` | `eo-primary`, `eo-secondary`, `eo-grid`, `eo-input`, `eo-card` |
+| `Controls.axaml` | `filterPanel`, `filterLabel`, `pageSizeLabel`, `card` |
+
+**Reglas de migración:** usar `PageHeader`, `FilterBar` y `ListStateOverlay`; colores vía `DynamicResource` (sin hex hardcodeado); textos en `Assets/i18n/*.json`.
+
+**Estado del rediseño:** vistas CRUD, pantallas admin (Categorías, Tipos de Movimiento), Centro de Reportes y formulario extendido de Movimientos migrados. Pendiente tokenización completa de Certificados/Dashboard.
+
 ---
 
 ## 📄 Licencia

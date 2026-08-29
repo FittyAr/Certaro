@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
+             xmlns:controls="clr-namespace:ElectroObraApp.Controls"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:loc="using:ElectroObraApp.Markup"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="500"
+             x:Class="ElectroObraApp.Views.ReportsView"
+             x:DataType="vm:ReportsViewModel">
+    <DockPanel Margin="20">
+        <controls:PageHeader DockPanel.Dock="Top"
+                             Title="{Binding Title}"
+                             Subtitle="{Binding Subtitle}" />
+
+        <ScrollViewer>
+            <StackPanel Spacing="16" MaxWidth="720">
+                <Border Classes="card">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="{loc:Translate Key=Reports.MovimientosSection}" Classes="H1" FontSize="18" />
+                        <TextBlock Text="{loc:Translate Key=Reports.MovimientosDescription}" Classes="BodySmall" Foreground="{DynamicResource TextSecondary}" />
+                        <WrapPanel Orientation="Horizontal" Margin="-4">
+                            <Button Margin="4" Classes="eo-secondary" Command="{Binding ExportMovimientosPdfCommand}" IsEnabled="{Binding !IsExporting}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="FilePdfBox" Width="16" Height="16" />
+                                    <TextBlock Text="{loc:Translate Key=Movements.ExportPdf}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Margin="4" Classes="eo-secondary" Command="{Binding ExportMovimientosExcelCommand}" IsEnabled="{Binding !IsExporting}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="FileExcelBox" Width="16" Height="16" />
+                                    <TextBlock Text="{loc:Translate Key=Movements.ExportExcel}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Margin="4" Classes="eo-secondary" Command="{Binding ExportMovimientosWordCommand}" IsEnabled="{Binding !IsExporting}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="FileWordBox" Width="16" Height="16" />
+                                    <TextBlock Text="{loc:Translate Key=Movements.ExportWord}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Margin="4" Classes="eo-secondary" Command="{Binding ExportMovimientosCsvCommand}" IsEnabled="{Binding !IsExporting}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="FileDelimited" Width="16" Height="16" />
+                                    <TextBlock Text="{loc:Translate Key=Movements.ExportCsv}" />
+                                </StackPanel>
+                            </Button>
+                            <Button Margin="4" Classes="eo-secondary" Command="{Binding ExportMovimientosJsonCommand}" IsEnabled="{Binding !IsExporting}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <materialIcons:MaterialIcon Kind="CodeJson" Width="16" Height="16" />
+                                    <TextBlock Text="{loc:Translate Key=Movements.ExportJson}" />
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="{DynamicResource Error}"
+                           IsVisible="{Binding HasError}" />
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

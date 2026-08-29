@@ -14,47 +14,47 @@
     <UserControl.Styles>
         <Style Selector="TextBlock.label">
             <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Foreground" Value="#888"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextTertiary}"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
         </Style>
         <Style Selector="TextBlock.sectionTitle">
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#ccc"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
         </Style>
         <Style Selector="NumericUpDown">
             <Setter Property="ShowButtonSpinner" Value="False"/>
         </Style>
         <Style Selector="Border.certCard">
-            <Setter Property="Background" Value="#252525"/>
-            <Setter Property="CornerRadius" Value="5"/>
-            <Setter Property="BorderBrush" Value="#383838"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceRaised}"/>
+            <Setter Property="CornerRadius" Value="{StaticResource Radius6}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="12"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
         </Style>
         <Style Selector="TextBlock.colHead">
             <Setter Property="FontSize" Value="10"/>
-            <Setter Property="Foreground" Value="#555"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextTertiary}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
     </UserControl.Styles>
 
     <!-- DockPanel raíz: header arriba, contenido llena el resto -->
-    <DockPanel Background="#181818" Focusable="True">
+    <DockPanel Background="{DynamicResource SurfaceBase}" Focusable="True">
 
         <!-- ── HEADER ── -->
         <Border DockPanel.Dock="Top"
-                Background="#1e1e1e"
-                BorderBrush="#2a2a2a" BorderThickness="0,0,0,1"
+                Background="{DynamicResource SurfaceRaised}"
+                BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="0,0,0,1"
                 Padding="24,12">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Left">
                     <TextBlock Text="{Binding Title}"
-                               FontSize="20" FontWeight="Bold" Foreground="White"/>
+                               FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                     <TextBlock Text="Gestioná los datos generales y las certificaciones del trabajo"
-                               FontSize="11" Foreground="#555" Margin="0,2,0,0"/>
+                               FontSize="11" Foreground="{DynamicResource TextTertiary}" Margin="0,2,0,0"/>
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
                             Spacing="10" VerticalAlignment="Center">
@@ -72,18 +72,18 @@
 
             <!-- IZQUIERDA: Datos generales con scroll propio -->
             <ScrollViewer Grid.Column="0"
-                          BorderBrush="#2a2a2a" BorderThickness="0,0,1,0">
+                          BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="0,0,1,0">
                 <StackPanel Spacing="14" Margin="20,16">
 
                     <TextBlock Classes="sectionTitle" Text="Datos Generales"/>
 
                     <StackPanel Spacing="4">
-                        <TextBlock Classes="label" Text="CLIENTE *"/>
-                        <ComboBox ItemsSource="{Binding Clientes}"
-                                  SelectedValue="{Binding Trabajo.ClienteId}"
+                        <TextBlock Classes="label" Text="OBRA *"/>
+                        <ComboBox ItemsSource="{Binding Obras}"
+                                  SelectedValue="{Binding Trabajo.ObraId}"
                                   SelectedValueBinding="{Binding Id}"
                                   HorizontalAlignment="Stretch"
-                                  ToolTip.Tip="Cliente al que pertenece este trabajo">
+                                  ToolTip.Tip="Obra a la que pertenece este trabajo">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Nombre}"/>
@@ -113,16 +113,17 @@
                                     HorizontalAlignment="Stretch"/>
                     </StackPanel>
 
-                    <Border Background="#252525" CornerRadius="5" Padding="12,10">
-                        <CheckBox IsChecked="{Binding Trabajo.Finalizado}"
-                                  Content="Trabajo Finalizado"
-                                  ToolTip.Tip="Marcar cuando el trabajo esté terminado y cobrado"/>
-                    </Border>
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="label" Text="ESTADO"/>
+                        <ComboBox SelectedItem="{Binding Trabajo.Estado}"
+                                  ItemsSource="{Binding EstadosTrabajo}"
+                                  HorizontalAlignment="Stretch"/>
+                    </StackPanel>
 
-                    <Border Background="#161f16" CornerRadius="5" Padding="12,10">
+                    <Border Background="{DynamicResource SuccessSubtle}" CornerRadius="{StaticResource Radius6}" Padding="12,10" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1">
                         <StackPanel Spacing="4">
-                            <TextBlock Text="💡 Certificaciones" FontSize="12" FontWeight="SemiBold" Foreground="#98c379"/>
-                            <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#666"
+                            <TextBlock Text="💡 Certificaciones" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource Success}"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource TextTertiary}"
                                        Text="En la columna derecha podés agregar órdenes de trabajo o certificados de avance. Cada ítem tiene un % Anterior (ya certificado) y un % Actual (a certificar ahora)."/>
                         </StackPanel>
                     </Border>
@@ -135,14 +136,14 @@
 
                 <!-- Sub-header certificaciones -->
                 <Border DockPanel.Dock="Top"
-                        Background="#1a1a1a"
-                        BorderBrush="#2a2a2a" BorderThickness="0,0,0,1"
+                        Background="{DynamicResource SurfaceSunken}"
+                        BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="0,0,0,1"
                         Padding="16,10">
                     <DockPanel>
                         <StackPanel DockPanel.Dock="Left">
                             <TextBlock Text="Certificaciones / Órdenes de Trabajo"
-                                       FontSize="13" FontWeight="SemiBold" Foreground="#ccc"/>
-                            <TextBlock FontSize="11" Foreground="#555"
+                                       FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock FontSize="11" Foreground="{DynamicResource TextTertiary}"
                                        Text="Cada certificado representa un avance parcial. Usá Act% para indicar el avance del período."/>
                         </StackPanel>
                         <Button Content="＋ Agregar Certificado"
@@ -178,13 +179,13 @@
                                                         Content="✕ Eliminar"
                                                         Command="{Binding $parent[UserControl].((vm:TrabajoEditViewModel)DataContext).RemoveOrdenCommand}"
                                                         CommandParameter="{Binding}"
-                                                        Foreground="#e06c75" Background="Transparent"
-                                                        BorderBrush="#e06c75" BorderThickness="1"
+                                                        Foreground="{DynamicResource Error}" Background="Transparent"
+                                                        BorderBrush="{DynamicResource Error}" BorderThickness="1"
                                                         ToolTip.Tip="Eliminar esta certificación"/>
                                             </Grid>
 
                                             <!-- Tabla ítems -->
-                                            <Border Background="#1a1a1a" CornerRadius="4" Padding="10,8">
+                                            <Border Background="{DynamicResource SurfaceSunken}" CornerRadius="{StaticResource Radius4}" Padding="10,8">
                                                 <StackPanel Spacing="3">
                                                     <!-- Cabecera columnas -->
                                                     <Grid ColumnDefinitions="*,70,55,100,55,55,70,34"
@@ -197,13 +198,13 @@
                                                         <TextBlock Grid.Column="4" Classes="colHead" Text="Ant %"
                                                                    ToolTip.Tip="% certificado en períodos anteriores"/>
                                                         <TextBlock Grid.Column="5" Classes="colHead" Text="Act %"
-                                                                   Foreground="#abb2bf"
+                                                                   Foreground="{DynamicResource TextSecondary}"
                                                                    ToolTip.Tip="% a certificar en este período"/>
                                                         <TextBlock Grid.Column="6" Classes="colHead" Text="Acum %"
                                                                    ToolTip.Tip="Total acumulado"/>
                                                     </Grid>
 
-                                                    <Separator Background="#2a2a2a" Margin="0,0,0,3"/>
+                                                    <Separator Background="{DynamicResource BorderSubtle}" Margin="0,0,0,3"/>
 
                                                     <!-- Filas -->
                                                     <ItemsControl ItemsSource="{Binding Items}">
@@ -223,24 +224,24 @@
                                                                     <NumericUpDown Grid.Column="4" Value="{Binding PorcentajeAnterior}"
                                                                                    Minimum="0" Maximum="100" FontSize="12"
                                                                                    ShowButtonSpinner="False"
-                                                                                   Foreground="#555" IsReadOnly="True"
+                                                                                   Foreground="{DynamicResource TextTertiary}" IsReadOnly="True"
                                                                                    ToolTip.Tip="% anterior (automático)"/>
                                                                     <NumericUpDown Grid.Column="5" Value="{Binding PorcentajeActual}"
                                                                                    Minimum="0" Maximum="100" FontSize="12"
                                                                                    ShowButtonSpinner="False" FontWeight="SemiBold"
                                                                                    ToolTip.Tip="% de este período"/>
-                                                                    <Border Grid.Column="6" Background="#1a2a1a"
-                                                                            CornerRadius="3" VerticalAlignment="Center"
+                                                                    <Border Grid.Column="6" Background="{DynamicResource SuccessSubtle}"
+                                                                            CornerRadius="{StaticResource Radius4}" VerticalAlignment="Center"
                                                                             Padding="6,4"
                                                                             ToolTip.Tip="Acumulado total">
                                                                         <TextBlock Text="{Binding PorcentajeAcumulado, StringFormat={}{0:N1}%}"
                                                                                    HorizontalAlignment="Center" FontSize="12"
-                                                                                   Foreground="#98c379" FontWeight="SemiBold"/>
+                                                                                   Foreground="{DynamicResource Success}" FontWeight="SemiBold"/>
                                                                     </Border>
                                                                     <Button Grid.Column="7" Content="✕"
                                                                             Command="{Binding $parent[UserControl].((vm:TrabajoEditViewModel)DataContext).RemoveItemCommand}"
                                                                             CommandParameter="{Binding}"
-                                                                            Foreground="#e06c75" Background="Transparent"
+                                                                            Foreground="{DynamicResource Error}" Background="Transparent"
                                                                             Padding="4,2" FontSize="12"
                                                                             ToolTip.Tip="Eliminar ítem"/>
                                                                 </Grid>
@@ -261,13 +262,13 @@
                                             <Grid ColumnDefinitions="Auto,85,16,Auto,120"
                                                   ColumnSpacing="6" Margin="2,0,0,0">
                                                 <TextBlock Text="Ajuste UOCRA (%):"
-                                                           VerticalAlignment="Center" FontSize="12" Foreground="#888"
+                                                           VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextTertiary}"
                                                            ToolTip.Tip="% ajuste UOCRA"/>
                                                 <NumericUpDown Grid.Column="1" Value="{Binding AjusteUocraPorcentaje}"
                                                                ShowButtonSpinner="False"/>
                                                 <TextBlock Grid.Column="2"/>
                                                 <TextBlock Grid.Column="3" Text="Otros descuentos ($):"
-                                                           VerticalAlignment="Center" FontSize="12" Foreground="#888"/>
+                                                           VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextTertiary}"/>
                                                 <NumericUpDown Grid.Column="4" Value="{Binding OtrosDescuentos}"
                                                                FormatString="C2" ShowButtonSpinner="False"/>
                                             </Grid>
@@ -280,14 +281,19 @@
 
                         <!-- Estado vacío -->
                         <Border IsVisible="{Binding !Trabajo.OrdenesTrabajo.Count}"
-                                Background="#1e1e1e" CornerRadius="6" Padding="40" Margin="0,10">
+                                Background="{DynamicResource SurfaceRaised}"
+                                CornerRadius="{StaticResource Radius6}"
+                                Padding="40"
+                                Margin="0,10"
+                                BorderBrush="{DynamicResource BorderSubtle}"
+                                BorderThickness="1">
                             <StackPanel HorizontalAlignment="Center" Spacing="8">
                                 <TextBlock Text="📋" FontSize="32" HorizontalAlignment="Center"/>
                                 <TextBlock Text="Sin certificaciones aún"
                                            FontSize="14" FontWeight="SemiBold"
-                                           Foreground="#555" HorizontalAlignment="Center"/>
+                                           Foreground="{DynamicResource TextTertiary}" HorizontalAlignment="Center"/>
                                 <TextBlock Text="Hacé clic en '+ Agregar Certificado' para registrar el primer avance."
-                                           FontSize="12" Foreground="#444" TextWrapping="Wrap"
+                                           FontSize="12" Foreground="{DynamicResource TextDisabled}" TextWrapping="Wrap"
                                            TextAlignment="Center" MaxWidth="280"
                                            HorizontalAlignment="Center"/>
                             </StackPanel>

@@ -13,7 +13,8 @@ public class OrdenTrabajoItemDto
     public decimal PorcentajeAnterior { get; set; }
     public decimal PorcentajeActual { get; set; }
     public decimal PorcentajeAcumulado => PorcentajeAnterior + PorcentajeActual;
-    
+    public bool Ejecutado { get; set; }
+    public string? Nota { get; set; }
     public decimal SubtotalActual => Cantidad * PrecioUnitario * (PorcentajeActual / 100);
     public decimal SubtotalAcumulado => Cantidad * PrecioUnitario * (PorcentajeAcumulado / 100);
 }

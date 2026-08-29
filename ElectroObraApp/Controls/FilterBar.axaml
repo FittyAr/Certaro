@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ElectroObraApp.Controls"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="ElectroObraApp.Controls.FilterBar"
+             x:DataType="controls:FilterBar">
+    <Border Classes="filterPanel">
+        <StackPanel Spacing="{StaticResource Space12}">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space8}">
+                    <materialIcons:MaterialIcon Kind="Filter"
+                                                Width="16"
+                                                Height="16"
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource TextTertiary}" />
+                    <TextBlock Text="{Binding Header, RelativeSource={RelativeSource AncestorType=controls:FilterBar}}"
+                               Classes="filterTitle" />
+                </StackPanel>
+                <Button Grid.Column="2"
+                        Classes="eo-secondary"
+                        Padding="8"
+                        Command="{Binding ToggleCommand, RelativeSource={RelativeSource AncestorType=controls:FilterBar}}">
+                    <materialIcons:MaterialIcon x:Name="ExpandIcon"
+                                                Width="16"
+                                                Height="16"
+                                                VerticalAlignment="Center" />
+                </Button>
+            </Grid>
+            <ContentPresenter Content="{Binding FilterContent, RelativeSource={RelativeSource AncestorType=controls:FilterBar}}"
+                              IsVisible="{Binding IsExpanded, RelativeSource={RelativeSource AncestorType=controls:FilterBar}}" />
+        </StackPanel>
+    </Border>
+</UserControl>

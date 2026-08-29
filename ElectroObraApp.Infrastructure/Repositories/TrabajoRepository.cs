@@ -16,7 +16,8 @@ public class TrabajoRepository : Repository<Trabajo>, ITrabajoRepository
     {
         return await _context.Trabajos
             .AsNoTracking()
-            .Include(t => t.Cliente)
+            .Include(t => t.Obra)
+                .ThenInclude(o => o.Cliente)
             .Include(t => t.OrdenesTrabajo)
                 .ThenInclude(o => o.Items)
             .ToListAsync();
@@ -26,7 +27,8 @@ public class TrabajoRepository : Repository<Trabajo>, ITrabajoRepository
     {
         return await _context.Trabajos
             .AsNoTracking()
-            .Include(t => t.Cliente)
+            .Include(t => t.Obra)
+                .ThenInclude(o => o.Cliente)
             .Include(t => t.OrdenesTrabajo)
                 .ThenInclude(o => o.Items)
             .FirstOrDefaultAsync(t => t.Id == id);

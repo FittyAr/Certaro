@@ -133,5 +133,23 @@ El proyecto se divide en las siguientes capas para asegurar el desacoplamiento:
 *   **Release**: Workflow manual (`release.yml`) ejecuta `build_installer.ps1`.
 *   **Versionado**: `Directory.Build.props` lee la versión desde el archivo `VERSION`.
 
+### Rediseño UI / Design System (Agosto 2026)
+*   **Tokens semánticos**: `Styles/Palette.axaml` (Light/Dark), `Tokens.axaml`, `Components.axaml`, `Controls.axaml`. Prohibido hardcodear colores (`#252525`, `#aaa`, `#AA000000`); usar `TextTertiary`, `FilterPanelBackgroundBrush`, `OverlayBackgroundBrush`, etc.
+*   **Controles reutilizables**: `PageHeader`, `FilterBar`, `ListStateOverlay`, `StatusPill`, `PercentBar`, `PaginationControl`, `MoneyText`.
+*   **Reglas de migración de vistas**:
+    1. Encabezado con `PageHeader` + acciones en slot `Actions` (`eo-primary` / `eo-secondary`).
+    2. Filtros con `FilterBar` y labels `filterLabel` + `TextTertiary`.
+    3. Grillas con `DataGrid Classes="eo-grid"`.
+    4. Estados de lista con `ListStateOverlay` (`IsLoading`, `IsEmpty`, `HasError`).
+    5. Overlays modales con `OverlayBackgroundBrush`.
+    6. Textos vía i18n (`loc:Translate`), nunca strings fijos en XAML.
+*   **Estado del rediseño**:
+    - [x] Vistas CRUD migradas: Movimientos, Clientes, Trabajos, Facturas, Empleados.
+    - [x] Admin: Categorías, Tipos de Movimiento.
+    - [x] Centro de reportes (`ReportsView` + `IExportService`).
+    - [x] `MovimientoEditView` extendido (Cliente/Obra/Trabajo/Factura).
+    - [x] Columna Estado en Trabajos con `StatusPill`.
+    - [ ] Pendiente: tokenizar completamente `CertificadosView`, `DashboardView`, formularios edit legacy.
+
 ---
 **Nota**: Cada paso de la implementación será validado con sus respectivos tests antes de pasar al siguiente.

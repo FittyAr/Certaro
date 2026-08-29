@@ -11,6 +11,7 @@ public interface IUnitOfWork : IDisposable
     ILiquidacionRepository Liquidaciones { get; }
     ITrabajoRepository Trabajos { get; }
     IFacturaRepository Facturas { get; }
+    IObraRepository Obras { get; }
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitTransactionAsync();

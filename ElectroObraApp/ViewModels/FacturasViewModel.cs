@@ -86,21 +86,37 @@ public partial class FacturasViewModel : ViewModelBase
 
     public async Task LoadFacturasAsync()
     {
-        var result = await _facturaService.GetAllAsync();
-        var query = result.AsEnumerable();
+        IsLoading = true;
+        ErrorMessage = null;
 
-        if (!string.IsNullOrWhiteSpace(FiltroNumero))
+        try
         {
-            query = query.Where(f =>
-                f.Numero.Contains(FiltroNumero, StringComparison.OrdinalIgnoreCase) ||
-                (f.ClienteNombre != null && f.ClienteNombre.Contains(FiltroNumero, StringComparison.OrdinalIgnoreCase)));
+            var result = await _facturaService.GetAllAsync();
+            var query = result.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(FiltroNumero))
+            {
+                query = query.Where(f =>
+                    f.Numero.Contains(FiltroNumero, StringComparison.OrdinalIgnoreCase) ||
+                    (f.ClienteNombre != null && f.ClienteNombre.Contains(FiltroNumero, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            IEnumerable<FacturaDto> paginated = PageSize > 0
+                ? query.Skip((CurrentPage - 1) * PageSize).Take(PageSize)
+                : query;
+
+            Facturas = new ObservableCollection<FacturaDto>(paginated);
+            IsEmpty = !Facturas.Any();
         }
-
-        IEnumerable<FacturaDto> paginated = PageSize > 0
-            ? query.Skip((CurrentPage - 1) * PageSize).Take(PageSize)
-            : query;
-
-        Facturas = new ObservableCollection<FacturaDto>(paginated);
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+            IsEmpty = false;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private void Add()

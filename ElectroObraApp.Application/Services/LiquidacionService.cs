@@ -9,6 +9,7 @@ using ElectroObraApp.Application.Interfaces;
 using ElectroObraApp.Application.Validation;
 using ElectroObraApp.Core.Common;
 using ElectroObraApp.Core.Entities;
+using ElectroObraApp.Core.Enums;
 using ElectroObraApp.Core.Interfaces;
 using FluentValidation;
 
@@ -59,6 +60,49 @@ public class LiquidacionService : BaseCrudService<Liquidacion, LiquidacionDto>, 
         return Result<LiquidacionDto>.Success(entity.Adapt<LiquidacionDto>());
     }
 
+    public async Task<Result<IReadOnlyList<LiquidacionDto>>> CreateBatchAsync(IEnumerable<LiquidacionDto> dtos)
+    {
+        var list = dtos.ToList();
+        if (list.Count == 0)
+            return Result<IReadOnlyList<LiquidacionDto>>.Failure(ValidationMessages.LiquidacionBatchEmpty);
+
+        await Uow.BeginTransactionAsync();
+        try
+        {
+            var created = new List<LiquidacionDto>();
+
+            foreach (var dto in list)
+            {
+                var validation = await ValidateAsync(dto);
+                if (!validation.IsSuccess)
+                {
+                    await Uow.RollbackTransactionAsync();
+                    return Result<IReadOnlyList<LiquidacionDto>>.Failure(validation.Errors);
+                }
+
+                Logger.LogInformation("Creando liquidación batch para empleado: {EmpleadoId}", dto.EmpleadoId);
+                var entity = dto.Adapt<Liquidacion>();
+                await Repository.AddAsync(entity);
+                created.Add(entity.Adapt<LiquidacionDto>());
+            }
+
+            if (await Uow.SaveChangesAsync() <= 0)
+            {
+                await Uow.RollbackTransactionAsync();
+                return Result<IReadOnlyList<LiquidacionDto>>.Failure(ValidationMessages.SaveFailed);
+            }
+
+            await Uow.CommitTransactionAsync();
+            return Result<IReadOnlyList<LiquidacionDto>>.Success(created);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al crear liquidaciones en batch");
+            await Uow.RollbackTransactionAsync();
+            throw;
+        }
+    }
+
     public async Task<LiquidacionDto> SugerirLiquidacionAsync(Guid empleadoId, DateTime inicio, DateTime fin, decimal diasTrabajados)
     {
         var empleado = await Uow.Repository<Empleado>().GetByIdAsync(empleadoId);
@@ -79,25 +123,46 @@ public class LiquidacionService : BaseCrudService<Liquidacion, LiquidacionDto>, 
 
         if (diasTrabajados == 0)
         {
-            totalDias = 0;
-            totalBruto = 0;
+            var calculoAsistencia = await CalcularDesdeAsistenciaAsync(
+                empleadoId,
+                inicio,
+                fin,
+                empleado,
+                feriados,
+                incluirSabados,
+                incluirDomingos,
+                incluirFeriados,
+                multiplicadorSabado,
+                multiplicadorDomingo,
+                multiplicadorFeriado);
 
-            for (var date = inicio.Date; date <= fin.Date; date = date.AddDays(1))
+            if (calculoAsistencia.HasValue)
             {
-                var multiplicador = ObtenerMultiplicador(
-                    date,
-                    feriados,
-                    incluirSabados,
-                    incluirDomingos,
-                    incluirFeriados,
-                    multiplicadorSabado,
-                    multiplicadorDomingo,
-                    multiplicadorFeriado);
+                totalDias = calculoAsistencia.Value.Dias;
+                totalBruto = calculoAsistencia.Value.Bruto;
+            }
+            else
+            {
+                totalDias = 0;
+                totalBruto = 0;
 
-                if (multiplicador <= 0) continue;
+                for (var date = inicio.Date; date <= fin.Date; date = date.AddDays(1))
+                {
+                    var multiplicador = ObtenerMultiplicador(
+                        date,
+                        feriados,
+                        incluirSabados,
+                        incluirDomingos,
+                        incluirFeriados,
+                        multiplicadorSabado,
+                        multiplicadorDomingo,
+                        multiplicadorFeriado);
 
-                totalDias += 1.0m;
-                totalBruto += empleado.TarifaDiaria * multiplicador;
+                    if (multiplicador <= 0) continue;
+
+                    totalDias += 1.0m;
+                    totalBruto += empleado.TarifaDiaria * multiplicador;
+                }
             }
         }
         else
@@ -184,4 +249,64 @@ public class LiquidacionService : BaseCrudService<Liquidacion, LiquidacionDto>, 
 
         return 1.0m;
     }
+
+    private async Task<(decimal Dias, decimal Bruto)?> CalcularDesdeAsistenciaAsync(
+        Guid empleadoId,
+        DateTime inicio,
+        DateTime fin,
+        Empleado empleado,
+        HashSet<DateTime> feriados,
+        bool incluirSabados,
+        bool incluirDomingos,
+        bool incluirFeriados,
+        decimal multiplicadorSabado,
+        decimal multiplicadorDomingo,
+        decimal multiplicadorFeriado)
+    {
+        var asistencias = await Uow.Repository<AsistenciaEmpleado>().FindAsync(a =>
+            a.EmpleadoId == empleadoId &&
+            a.Fecha >= inicio.Date &&
+            a.Fecha <= fin.Date);
+
+        var registros = asistencias.ToList();
+        if (registros.Count == 0)
+            return null;
+
+        decimal totalDias = 0;
+        decimal totalBruto = 0;
+
+        foreach (var asistencia in registros)
+        {
+            var factor = ObtenerFactorJornada(asistencia.TipoJornada);
+            if (factor <= 0) continue;
+
+            var multiplicador = asistencia.TipoJornada == TipoJornada.Feriado
+                ? (incluirFeriados ? multiplicadorFeriado : 0.0m)
+                : ObtenerMultiplicador(
+                    asistencia.Fecha,
+                    feriados,
+                    incluirSabados,
+                    incluirDomingos,
+                    incluirFeriados,
+                    multiplicadorSabado,
+                    multiplicadorDomingo,
+                    multiplicadorFeriado);
+
+            if (multiplicador <= 0) continue;
+
+            totalDias += factor;
+            totalBruto += empleado.TarifaDiaria * factor * multiplicador;
+        }
+
+        return (totalDias, totalBruto);
+    }
+
+    private static decimal ObtenerFactorJornada(TipoJornada tipoJornada) =>
+        tipoJornada switch
+        {
+            TipoJornada.Completa => 1.0m,
+            TipoJornada.Media => 0.5m,
+            TipoJornada.Feriado => 1.0m,
+            _ => 0.0m
+        };
 }

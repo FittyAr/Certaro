@@ -1,0 +1,88 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
+             xmlns:controls="clr-namespace:ElectroObraApp.Controls"
+             xmlns:loc="using:ElectroObraApp.Markup"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="500"
+             x:Class="ElectroObraApp.Views.TiposMovimientoView"
+             x:DataType="vm:TiposMovimientoViewModel">
+    <Grid>
+        <DockPanel Margin="20" IsVisible="{Binding !IsEditing}">
+            <controls:PageHeader DockPanel.Dock="Top"
+                                 Title="{Binding Title}"
+                                 Subtitle="{loc:Translate Key=MovementTypes.Subtitle}">
+                <controls:PageHeader.Actions>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="{loc:Translate Key=General.Add}" Classes="eo-primary" Command="{Binding AddCommand}" />
+                        <Button Content="{loc:Translate Key=General.Refresh}" Classes="eo-secondary" Command="{Binding LoadCommand}" />
+                    </StackPanel>
+                </controls:PageHeader.Actions>
+            </controls:PageHeader>
+
+            <Grid>
+                <DataGrid ItemsSource="{Binding Tipos}"
+                          Classes="eo-grid"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          x:CompileBindings="False"
+                          DoubleTapped="OnDataGridDoubleTapped"
+                          IsVisible="{Binding !IsLoading}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="{loc:Translate Key=Clients.Name}" Binding="{Binding Nombre, Mode=OneWay}" Width="*" />
+                        <DataGridTextColumn Header="{loc:Translate Key=Categories.Description}" Binding="{Binding Descripcion, Mode=OneWay}" Width="*" />
+                        <DataGridCheckBoxColumn Header="{loc:Translate Key=MovementTypes.IsIncome}" Binding="{Binding EsIngreso, Mode=OneWay}" />
+                        <DataGridCheckBoxColumn Header="{loc:Translate Key=MovementTypes.IsSystem}" Binding="{Binding EsSistema, Mode=OneWay}" />
+                        <DataGridTemplateColumn Header="{loc:Translate Key=General.Delete}" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="{loc:Translate Key=General.Delete}"
+                                            Command="{Binding $parent[UserControl].((vm:TiposMovimientoViewModel)DataContext).DeleteCommand}"
+                                            CommandParameter="{Binding}"
+                                            IsEnabled="{Binding !EsSistema}"
+                                            Classes="danger" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <controls:ListStateOverlay IsLoading="{Binding IsLoading}"
+                                           IsEmpty="{Binding IsEmpty}"
+                                           HasError="{Binding HasError}"
+                                           ErrorMessage="{Binding ErrorMessage}"
+                                           RetryCommand="{Binding LoadCommand}" />
+            </Grid>
+        </DockPanel>
+
+        <Border Background="{DynamicResource OverlayBackgroundBrush}" IsVisible="{Binding IsEditing}" Focusable="True">
+            <Border Background="{DynamicResource SurfaceRaised}"
+                    CornerRadius="{StaticResource Radius12}"
+                    Padding="24"
+                    Width="420"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    BorderBrush="{DynamicResource BorderSubtle}"
+                    BorderThickness="1">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="{loc:Translate Key=MovementTypes.EditTitle}" Classes="H1" />
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Clients.Name}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <TextBox Text="{Binding EditItem.Nombre}" Classes="eo-input" />
+                    </StackPanel>
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Categories.Description}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <TextBox Text="{Binding EditItem.Descripcion}" Classes="eo-input" />
+                    </StackPanel>
+                    <CheckBox Content="{loc:Translate Key=MovementTypes.IsIncome}"
+                              IsChecked="{Binding EditItem.EsIngreso}"
+                              IsEnabled="{Binding !EditItem.EsSistema}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+                        <Button Content="{loc:Translate Key=General.Cancel}" Classes="eo-secondary" Command="{Binding CancelCommand}" />
+                        <Button Content="{loc:Translate Key=General.Save}" Classes="eo-primary" Command="{Binding SaveCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Border>
+    </Grid>
+</UserControl>

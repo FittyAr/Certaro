@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
+using Avalonia.Styling;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -136,7 +136,21 @@ public partial class App : Avalonia.Application
         try
         {
             logger.LogInformation("Verificando y aplicando migraciones de base de datos...");
-            await context.Database.MigrateAsync();
+            var migrationRunner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+            var migrationResult = await migrationRunner.RunPendingMigrationsAsync();
+
+            if (!migrationResult.Success)
+            {
+                logger.LogCritical("Migración fallida: {Error}", migrationResult.ErrorMessage);
+                throw new InvalidOperationException(migrationResult.ErrorMessage ?? "Error desconocido en migración.");
+            }
+
+            if (migrationResult.MigrationsApplied)
+            {
+                logger.LogInformation("Migraciones aplicadas: {Migrations}. Backup: {Backup}",
+                    string.Join(", ", migrationResult.AppliedMigrations),
+                    migrationResult.BackupPath ?? "N/A");
+            }
 
             var seedService = scope.ServiceProvider.GetRequiredService<IDatabaseSeedService>();
             if (seedService.IsSeedEnabled())
@@ -157,58 +171,21 @@ public partial class App : Avalonia.Application
 
     public void SetTheme(string themeName)
     {
-        if (Resources.TryGetResource("MainBackgroundBrush", null, out var mb) && mb is SolidColorBrush mbBrush &&
-            Resources.TryGetResource("PaneBackgroundBrush", null, out var pb) && pb is SolidColorBrush pbBrush &&
-            Resources.TryGetResource("AccentBrush", null, out var ab) && ab is SolidColorBrush abBrush &&
-            Resources.TryGetResource("SidebarSeparatorBrush", null, out var sb) && sb is SolidColorBrush sbBrush &&
-            Resources.TryGetResource("MainForegroundBrush", null, out var mf) && mf is SolidColorBrush mfBrush &&
-            Resources.TryGetResource("SecondaryForegroundBrush", null, out var sf) && sf is SolidColorBrush sfBrush)
+        RequestedThemeVariant = string.IsNullOrWhiteSpace(themeName)
+            ? ThemeVariant.Dark
+            : ResolveThemeVariant(themeName);
+    }
+
+    private static ThemeVariant ResolveThemeVariant(string themeName)
+    {
+        return themeName.Trim().ToLowerInvariant() switch
         {
-            switch (themeName)
-            {
-                case "Media Noche":
-                    mbBrush.Color = Color.Parse("#0f0f12");
-                    pbBrush.Color = Color.Parse("#1a1a2e");
-                    abBrush.Color = Color.Parse("#6c5ce7");
-                    sbBrush.Color = Color.Parse("#2e2e4e");
-                    break;
-                case "Industrial":
-                    mbBrush.Color = Color.Parse("#2c3e50");
-                    pbBrush.Color = Color.Parse("#34495e");
-                    abBrush.Color = Color.Parse("#e67e22");
-                    sbBrush.Color = Color.Parse("#465e75");
-                    break;
-                case "Solar":
-                    mbBrush.Color = Color.Parse("#2d2d2d");
-                    pbBrush.Color = Color.Parse("#3d3d3d");
-                    abBrush.Color = Color.Parse("#f1c40f");
-                    sbBrush.Color = Color.Parse("#4d4d4d");
-                    break;
-                case "Cibernético":
-                    mbBrush.Color = Color.Parse("#050505");
-                    pbBrush.Color = Color.Parse("#101010");
-                    abBrush.Color = Color.Parse("#ff00ff");
-                    sbBrush.Color = Color.Parse("#202020");
-                    break;
-                case "Océano":
-                    mbBrush.Color = Color.Parse("#0b132b");
-                    pbBrush.Color = Color.Parse("#1c2541");
-                    abBrush.Color = Color.Parse("#5bc0be");
-                    sbBrush.Color = Color.Parse("#3a506b");
-                    break;
-                case "Claro":
-                    mbBrush.Color = Color.Parse("#f5f5f5");
-                    pbBrush.Color = Color.Parse("#ffffff");
-                    abBrush.Color = Color.Parse("#094771");
-                    sbBrush.Color = Color.Parse("#dddddd");
-                    break;
-                default: // Oscuro
-                    mbBrush.Color = Color.Parse("#1e1e1e");
-                    pbBrush.Color = Color.Parse("#252526");
-                    abBrush.Color = Color.Parse("#094771");
-                    sbBrush.Color = Color.Parse("#3e3e42");
-                    break;
-            }
-        }
+            "light" or "claro" => ThemeVariant.Light,
+            "dark" or "oscuro" => ThemeVariant.Dark,
+            "system" or "default" or "sistema" => ThemeVariant.Default,
+            // Legacy decorative theme names map to Dark
+            "media noche" or "industrial" or "solar" or "cibernético" or "cibernetico" or "océano" or "oceano" => ThemeVariant.Dark,
+            _ => ThemeVariant.Dark
+        };
     }
 }

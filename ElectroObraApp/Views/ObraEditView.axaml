@@ -1,0 +1,74 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
+             xmlns:loc="using:ElectroObraApp.Markup"
+             mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="520"
+             x:Class="ElectroObraApp.Views.ObraEditView"
+             x:DataType="vm:ObraEditViewModel">
+    <UserControl.KeyBindings>
+        <KeyBinding Gesture="Escape" Command="{Binding CancelCommand}" />
+    </UserControl.KeyBindings>
+    <Border Padding="25"
+            Background="{DynamicResource SurfaceRaised}"
+            CornerRadius="{StaticResource Radius12}"
+            BoxShadow="{StaticResource Elevation2}"
+            Width="640"
+            BorderBrush="{DynamicResource BorderSubtle}"
+            BorderThickness="1">
+        <ScrollViewer MaxHeight="700">
+            <StackPanel Spacing="18" Margin="0,0,15,0">
+                <TextBlock Text="{Binding Title}" Classes="H1" />
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="20" RowDefinitions="Auto,Auto,Auto" RowSpacing="15">
+                    <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Obras.Number}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <NumericUpDown Value="{Binding Obra.Numero}" Minimum="1" Classes="eo-input" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="0" Grid.Column="1" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Obras.Status}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <ComboBox ItemsSource="{Binding EstadosObra}"
+                                  SelectedItem="{Binding Obra.Estado}"
+                                  Classes="eo-input"
+                                  HorizontalAlignment="Stretch" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Obras.Name}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <TextBox Text="{Binding Obra.Nombre}" Classes="eo-input" PlaceholderText="{loc:Translate Key=Obras.NamePlaceholder}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2" Grid.Column="0" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Obras.Address}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <TextBox Text="{Binding Obra.Direccion}" Classes="eo-input" PlaceholderText="{loc:Translate Key=Obras.AddressPlaceholder}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Obras.Locality}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <TextBox Text="{Binding Obra.Localidad}" Classes="eo-input" PlaceholderText="{loc:Translate Key=Obras.LocalityPlaceholder}" />
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Spacing="5">
+                    <TextBlock Text="{loc:Translate Key=Obras.Client}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                    <ComboBox ItemsSource="{Binding Clientes}"
+                              SelectedValue="{Binding Obra.ClienteId}"
+                              SelectedValueBinding="{Binding Id}"
+                              Classes="eo-input"
+                              HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Nombre}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,10,0,0">
+                    <Button Content="{loc:Translate Key=General.Cancel}" Classes="eo-secondary" Command="{Binding CancelCommand}" IsCancel="True" Padding="20,0" />
+                    <Button Content="{loc:Translate Key=General.Save}" Classes="eo-primary" Command="{Binding SaveCommand}" IsDefault="True" Padding="20,0" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

@@ -15,15 +15,15 @@
     
     <UserControl.Resources>
         <conv:BoolToObjectConverter x:Key="BoolToIconConverter" TrueValue="EyeOff" FalseValue="Eye" />
-        <conv:BoolToObjectConverter x:Key="BoolToColorConverter" TrueValue="#ff5252" FalseValue="#4caf50" />
-        <conv:BoolToObjectConverter x:Key="AlertBackgroundConverter" TrueValue="#20ff9800" FalseValue="#204caf50" />
-        <conv:BoolToObjectConverter x:Key="AlertBorderConverter" TrueValue="#ff9800" FalseValue="#4caf50" />
+        <conv:BoolToObjectConverter x:Key="BoolToColorConverter" TrueValue="{DynamicResource Error}" FalseValue="{DynamicResource Success}" />
+        <conv:BoolToObjectConverter x:Key="AlertBackgroundConverter" TrueValue="{DynamicResource WarningSubtle}" FalseValue="{DynamicResource SuccessSubtle}" />
+        <conv:BoolToObjectConverter x:Key="AlertBorderConverter" TrueValue="{DynamicResource Warning}" FalseValue="{DynamicResource Success}" />
         <conv:BoolToObjectConverter x:Key="AlertIconConverter" TrueValue="⚠️" FalseValue="✅" />
     </UserControl.Resources>
 
     <Grid>
     <ScrollViewer IsVisible="{Binding !IsLoading}">
-        <Grid RowDefinitions="Auto, Auto, Auto, *, *, *" Margin="25">
+        <Grid RowDefinitions="Auto, Auto, Auto, Auto, *, *, *" Margin="25">
             <!-- Header & Controls -->
             <Grid Grid.Row="0" ColumnDefinitions="*, Auto, Auto" Margin="0,0,0,20">
                 <StackPanel Grid.Column="0" Spacing="5">
@@ -31,7 +31,6 @@
                     <TextBlock Text="{loc:Translate Key=Dashboard.Subtitle}" Foreground="{DynamicResource SecondaryForegroundBrush}" FontSize="14"/>
                 </StackPanel>
 
-                <!-- Period Selector -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="0,0,20,0">
                     <TextBlock Text="{loc:Translate Key=Dashboard.Period}" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                     <ComboBox ItemsSource="{Binding TimeRanges}" 
@@ -39,7 +38,6 @@
                               Width="120" />
                 </StackPanel>
 
-                <!-- Modern Privacy Toggle (Icon Only) -->
                 <ToggleButton Grid.Column="2" 
                               IsChecked="{Binding IsPrivacyModeActive}"
                               Classes="privacyButton"
@@ -56,7 +54,7 @@
                     CornerRadius="15" Margin="0,0,0,20" Padding="15,10">
                 <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <materialIcons:MaterialIcon Kind="CurrencyUsd" Foreground="#ff9800" Width="20" Height="20"/>
+                        <materialIcons:MaterialIcon Kind="CurrencyUsd" Foreground="{DynamicResource Warning}" Width="20" Height="20"/>
                         <TextBlock Text="{loc:Translate Key=Dashboard.DollarRate}" FontWeight="Bold" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
                     </StackPanel>
                     
@@ -72,11 +70,11 @@
                                     <TextBlock Text="{Binding Nombre}" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                                     <StackPanel Orientation="Horizontal" Spacing="5">
                                         <TextBlock Text="{loc:Translate Key=Dashboard.Buy}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                                        <TextBlock Text="{Binding Compra, StringFormat=\{0:C\}}" FontWeight="Bold" VerticalAlignment="Center" Foreground="#4caf50"/>
+                                        <TextBlock Text="{Binding Compra, StringFormat=\{0:C\}}" FontWeight="Bold" VerticalAlignment="Center" Foreground="{DynamicResource AmountPositive}"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="5">
                                         <TextBlock Text="{loc:Translate Key=Dashboard.Sell}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                                        <TextBlock Text="{Binding Venta, StringFormat=\{0:C\}}" FontWeight="Bold" VerticalAlignment="Center" Foreground="#ff5252"/>
+                                        <TextBlock Text="{Binding Venta, StringFormat=\{0:C\}}" FontWeight="Bold" VerticalAlignment="Center" Foreground="{DynamicResource AmountNegative}"/>
                                     </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
@@ -85,39 +83,34 @@
                 </StackPanel>
             </Border>
 
-            <!-- Top Metrics Row -->
+            <!-- KPI Cards Row -->
             <UniformGrid Grid.Row="2" Columns="4" Margin="0,0,0,20">
-                <Border Classes="card metricCard" Background="#1b3a1b" BorderBrush="#4caf50">
-                    <StackPanel>
-                        <TextBlock Text="{loc:Translate Key=Dashboard.Income}" Classes="cardLabel" Foreground="#aaa"/>
-                        <TextBlock Text="{Binding DisplayTotalIngresos}" Classes="cardValue" Foreground="#4caf50"/>
-                    </StackPanel>
-                </Border>
+                <controls:KpiCard Title="{loc:Translate Key=Dashboard.Income}"
+                                  Value="{Binding DisplayTotalIngresos}"
+                                  Trend="{Binding IngresosTrend}"
+                                  TrendIsPositive="{Binding IngresosTrendIsPositive}" />
+                <controls:KpiCard Title="{loc:Translate Key=Dashboard.Expenses}"
+                                  Value="{Binding DisplayTotalGastos}"
+                                  Trend="{Binding GastosTrend}"
+                                  TrendIsPositive="{Binding GastosTrendIsPositive}" />
+                <controls:KpiCard Title="{loc:Translate Key=Dashboard.Balance}"
+                                  Value="{Binding DisplayBalance}" />
+                <controls:KpiCard Title="{loc:Translate Key=Dashboard.Profitability}"
+                                  Value="{Binding DisplayRentabilidad}" />
+            </UniformGrid>
 
-                <Border Classes="card metricCard" Background="#3a1b1b" BorderBrush="#f44336">
-                    <StackPanel>
-                        <TextBlock Text="{loc:Translate Key=Dashboard.Expenses}" Classes="cardLabel" Foreground="#aaa"/>
-                        <TextBlock Text="{Binding DisplayTotalGastos}" Classes="cardValue" Foreground="#f44336"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Classes="card metricCard" Background="#1b1b3a" BorderBrush="#2196f3">
-                    <StackPanel>
-                        <TextBlock Text="{loc:Translate Key=Dashboard.Balance}" Classes="cardLabel" Foreground="#aaa"/>
-                        <TextBlock Text="{Binding DisplayBalance}" Classes="cardValue" Foreground="#2196f3"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Classes="card metricCard" Background="{DynamicResource PaneBackgroundBrush}" BorderBrush="#ff9800">
-                    <StackPanel>
-                        <TextBlock Text="{loc:Translate Key=Dashboard.Pending}" Classes="cardLabel" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
-                        <TextBlock Text="{Binding TrabajosPendientes}" Classes="cardValue" Foreground="#ff9800"/>
-                    </StackPanel>
-                </Border>
+            <!-- Secondary KPI Row -->
+            <UniformGrid Grid.Row="3" Columns="3" Margin="0,0,0,20">
+                <controls:KpiCard Title="{loc:Translate Key=Dashboard.ActiveClients}"
+                                  Value="{Binding DisplayClientesActivos}" />
+                <controls:KpiCard Title="{loc:Translate Key=Dashboard.Pending}"
+                                  Value="{Binding TrabajosPendientes}" />
+                <controls:KpiCard Title="{loc:Translate Key=Dashboard.OverdueInvoices}"
+                                  Value="{Binding FacturasVencidasCount}" />
             </UniformGrid>
 
             <!-- Main Charts Row -->
-            <Grid Grid.Row="3" ColumnDefinitions="2*, *" Margin="0,0,0,20">
+            <Grid Grid.Row="4" ColumnDefinitions="2*, *" Margin="0,0,0,20">
                 <Border Classes="chartCard" Grid.Column="0" Margin="0,0,10,0">
                     <StackPanel Spacing="10">
                         <TextBlock Text="{loc:Translate Key=Dashboard.FinancialEvolution}" FontSize="20" FontWeight="Bold" Margin="0,0,0,10" Foreground="{DynamicResource MainForegroundBrush}"/>
@@ -142,18 +135,17 @@
             </Grid>
 
             <!-- Bottom Intelligence Row -->
-            <Grid Grid.Row="4" ColumnDefinitions="*, *, *" Margin="0,0,0,20">
-                <!-- Top Clientes -->
+            <Grid Grid.Row="5" ColumnDefinitions="*, *, *" Margin="0,0,0,20">
                 <Border Classes="chartCard" Grid.Column="0" Margin="0,0,10,0">
                     <StackPanel Spacing="15">
                         <TextBlock Text="{loc:Translate Key=Dashboard.TopClients}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
                         <ItemsControl ItemsSource="{Binding TopClientes}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:TopClienteDto">
-                                    <Border Background="#10888888" Margin="0,0,0,8" Padding="12" CornerRadius="10">
+                                    <Border Background="{DynamicResource SurfaceSunken}" Margin="0,0,0,8" Padding="12" CornerRadius="{StaticResource Radius8}">
                                         <Grid ColumnDefinitions="*, Auto">
-                                            <TextBlock Text="{Binding Nombre}" FontWeight="Medium" Foreground="{DynamicResource MainForegroundBrush}"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding Total, StringFormat=\{0:C\}}" Foreground="#4caf50" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Nombre}" FontWeight="Medium" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Total, StringFormat=\{0:C\}}" Foreground="{DynamicResource AmountPositive}" FontWeight="Bold"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -162,14 +154,32 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Recent Activity -->
                 <Border Classes="chartCard" Grid.Column="1" Margin="10,0,10,0">
+                    <StackPanel Spacing="15">
+                        <TextBlock Text="{loc:Translate Key=Dashboard.WorksRanking}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                        <ItemsControl ItemsSource="{Binding RankingObras}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ObraRankingDto">
+                                    <Border Background="{DynamicResource SurfaceSunken}" Margin="0,0,0,8" Padding="12" CornerRadius="{StaticResource Radius8}">
+                                        <Grid ColumnDefinitions="*, Auto, Auto">
+                                            <TextBlock Text="{Binding Nombre}" FontWeight="Medium" Foreground="{DynamicResource TextPrimary}"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding DisplayRentabilidad}" Foreground="{DynamicResource Info}" FontWeight="Bold" Margin="0,0,10,0"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding MargenPorcentaje, StringFormat=\{0:N1\}%}" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="chartCard" Grid.Column="2" Margin="10,0,0,0">
                     <StackPanel Spacing="15">
                         <TextBlock Text="{loc:Translate Key=Dashboard.RecentActivity}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
                         <ItemsControl ItemsSource="{Binding RecentMovimientos}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="dto:MovimientoDto">
-                                    <Border BorderBrush="#20888888" BorderThickness="0,0,0,1" Padding="0,5,0,5">
+                                    <Border BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="0,0,0,1" Padding="0,5,0,5">
                                         <Grid ColumnDefinitions="Auto, *, Auto">
                                             <TextBlock Text="{Binding Fecha, StringFormat=\{0:dd/MM\}}" Foreground="{DynamicResource SecondaryForegroundBrush}" Width="40"/>
                                             <TextBlock Grid.Column="1" Text="{Binding Concepto}" Foreground="{DynamicResource MainForegroundBrush}" TextTrimming="CharacterEllipsis" Margin="5,0"/>
@@ -184,12 +194,14 @@
                         </ItemsControl>
                     </StackPanel>
                 </Border>
+            </Grid>
 
-                <!-- Notifications & Health -->
-                <Border Classes="chartCard" Grid.Column="2" Margin="10,0,0,0">
-                    <StackPanel Spacing="15">
-                        <TextBlock Text="{loc:Translate Key=Dashboard.Alerts}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
-                        <Button Classes="alertButton" Command="{Binding NavigateToAlertCommand}" CommandParameter="Liquidaciones">
+            <!-- Alerts Row -->
+            <Border Grid.Row="6" Classes="chartCard">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="{loc:Translate Key=Dashboard.Alerts}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource MainForegroundBrush}"/>
+                    <UniformGrid Columns="3">
+                        <Button Classes="alertButton" Command="{Binding NavigateToAlertCommand}" CommandParameter="liquidaciones" Margin="0,0,8,0">
                             <Border Background="{Binding ShowLiquidacionesAlert, Converter={StaticResource AlertBackgroundConverter}}" 
                                     Padding="12" CornerRadius="10" 
                                     BorderBrush="{Binding ShowLiquidacionesAlert, Converter={StaticResource AlertBorderConverter}}" 
@@ -200,15 +212,37 @@
                                 </StackPanel>
                             </Border>
                         </Button>
-                        <Border Background="#202196f3" Padding="12" CornerRadius="10" BorderBrush="#2196f3" BorderThickness="1">
-                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                <TextBlock Text="ℹ️" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding DatabaseStatus}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </Border>
-            </Grid>
+                        <Button Classes="alertButton" Command="{Binding NavigateToAlertCommand}" CommandParameter="facturas" Margin="4,0">
+                            <Border Background="{Binding ShowFacturasVencidasAlert, Converter={StaticResource AlertBackgroundConverter}}" 
+                                    Padding="12" CornerRadius="10" 
+                                    BorderBrush="{Binding ShowFacturasVencidasAlert, Converter={StaticResource AlertBorderConverter}}" 
+                                    BorderThickness="1">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <TextBlock Text="{Binding ShowFacturasVencidasAlert, Converter={StaticResource AlertIconConverter}}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding FacturasVencidasText}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                </StackPanel>
+                            </Border>
+                        </Button>
+                        <Button Classes="alertButton" Command="{Binding NavigateToAlertCommand}" CommandParameter="obras" Margin="8,0,0,0">
+                            <Border Background="{Binding ShowObrasPausadasAlert, Converter={StaticResource AlertBackgroundConverter}}" 
+                                    Padding="12" CornerRadius="10" 
+                                    BorderBrush="{Binding ShowObrasPausadasAlert, Converter={StaticResource AlertBorderConverter}}" 
+                                    BorderThickness="1">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <TextBlock Text="{Binding ShowObrasPausadasAlert, Converter={StaticResource AlertIconConverter}}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding ObrasPausadasText}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
+                                </StackPanel>
+                            </Border>
+                        </Button>
+                    </UniformGrid>
+                    <Border Background="{DynamicResource InfoSubtle}" Padding="12" CornerRadius="{StaticResource Radius8}" BorderBrush="{DynamicResource Info}" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="ℹ️" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding DatabaseStatus}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
         </Grid>
     </ScrollViewer>
 
@@ -220,25 +254,6 @@
     </Grid>
 
     <UserControl.Styles>
-        <Style Selector="Border.metricCard">
-            <Setter Property="CornerRadius" Value="18" />
-            <Setter Property="Margin" Value="8" />
-            <Setter Property="Padding" Value="24" />
-            <Setter Property="BorderThickness" Value="0,6,0,0" />
-            <Setter Property="BoxShadow" Value="0 8 20 0 #30000000" />
-        </Style>
-        
-        <Style Selector="TextBlock.cardLabel">
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Margin" Value="0,0,0,8" />
-        </Style>
-        
-        <Style Selector="TextBlock.cardValue">
-            <Setter Property="FontSize" Value="28" />
-            <Setter Property="FontWeight" Value="Black" />
-        </Style>
-
         <Style Selector="Border.chartCard">
             <Setter Property="Background" Value="{DynamicResource PaneBackgroundBrush}" />
             <Setter Property="CornerRadius" Value="20" />
@@ -274,8 +289,8 @@
         </Style>
         
         <Style Selector="ToggleButton.privacyButton:checked">
-            <Setter Property="Background" Value="#30ff5252" />
-            <Setter Property="BorderBrush" Value="#ff5252" />
+            <Setter Property="Background" Value="{DynamicResource ErrorSubtle}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Error}" />
         </Style>
 
         <Style Selector="Button.alertButton">

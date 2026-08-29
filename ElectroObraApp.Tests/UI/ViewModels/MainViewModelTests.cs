@@ -2,6 +2,7 @@ using System;
 using FluentAssertions;
 using NSubstitute;
 using ElectroObraApp.Application.Interfaces;
+using ElectroObraApp.Services;
 using ElectroObraApp.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,29 +14,29 @@ public class MainViewModelTests
 {
     private readonly ILocalizationService _localizationService;
     private readonly IConfiguration _configuration;
-    private readonly IConfirmDialogService _confirmDialogService;
 
     public MainViewModelTests()
     {
         _localizationService = Substitute.For<ILocalizationService>();
         _configuration = Substitute.For<IConfiguration>();
-        _confirmDialogService = Substitute.For<IConfirmDialogService>();
     }
+
+    private static CuentaCorrienteViewModel CreateCuentaCorrienteViewModel() =>
+        new(
+            Substitute.For<IComercialService>(),
+            Substitute.For<IClienteService>(),
+            Substitute.For<ILocalizationService>());
 
     private static DashboardViewModel CreateDashboardViewModel() =>
         new(
             Substitute.For<IDashboardService>(),
             Substitute.For<IUserSettingsService>(),
-            Substitute.For<IDollarService>());
+            Substitute.For<IDollarService>(),
+            Substitute.For<INavigationService>(),
+            Substitute.For<ILocalizationService>());
 
-    private static TrabajosViewModel CreateTrabajosViewModel(IServiceProvider serviceProvider) =>
-        new(
-            Substitute.For<ITrabajoService>(),
-            Substitute.For<IClienteService>(),
-            Substitute.For<IUserSettingsService>(),
-            Substitute.For<IConfirmDialogService>(),
-            Substitute.For<ILocalizationService>(),
-            serviceProvider);
+    private static NavigationService CreateNavigationService(IServiceProvider serviceProvider) =>
+        new(serviceProvider);
 
     private static ClientesViewModel CreateClientesViewModel(IServiceProvider serviceProvider) =>
         new(
@@ -43,7 +44,8 @@ public class MainViewModelTests
             Substitute.For<IUserSettingsService>(),
             Substitute.For<IConfirmDialogService>(),
             Substitute.For<ILocalizationService>(),
-            serviceProvider);
+            serviceProvider,
+            CreateCuentaCorrienteViewModel());
 
     private static EmpleadosViewModel CreateEmpleadosViewModel(IServiceProvider serviceProvider) =>
         new(
@@ -53,19 +55,29 @@ public class MainViewModelTests
             Substitute.For<ILocalizationService>(),
             serviceProvider);
 
+    private static CommandPaletteViewModel CreateCommandPaletteViewModel(INavigationService navigationService) =>
+        new(navigationService, Substitute.For<ILocalizationService>());
+
     [Fact]
     public void Constructor_ShouldSetGreetingFromLocalizationService()
     {
         var serviceProvider = Substitute.For<IServiceProvider>();
         var dashboardVm = CreateDashboardViewModel();
+        var navigationService = CreateNavigationService(serviceProvider);
 
         serviceProvider.GetService(typeof(DashboardViewModel)).Returns(dashboardVm);
+        serviceProvider.GetService(typeof(NavigationService)).Returns(navigationService);
         _configuration["Application:Name"].Returns("Proyecto Pablito");
-        _localizationService.GetString("General.AppName").Returns("Proyecto Pablito");
+        _localizationService.GetString(Arg.Any<string>()).Returns(call => call.Arg<string>());
 
         var seedService = Substitute.For<IDatabaseSeedService>();
 
-        var vm = new MainViewModel(_localizationService, serviceProvider, seedService, _configuration);
+        var vm = new MainViewModel(
+            _localizationService,
+            navigationService,
+            seedService,
+            _configuration,
+            CreateCommandPaletteViewModel(navigationService));
 
         vm.Greeting.Should().Be("Proyecto Pablito");
     }
@@ -86,35 +98,54 @@ public class MainViewModelTests
             Substitute.For<ILocalizationService>(),
             Substitute.For<IFileSaveDialogService>(),
             serviceProvider);
+        var navigationService = CreateNavigationService(serviceProvider);
 
         serviceProvider.GetService(typeof(DashboardViewModel)).Returns(dashboardVm);
         serviceProvider.GetService(typeof(MovimientosViewModel)).Returns(movimientosVm);
-        _localizationService.GetString(Arg.Any<string>()).Returns("Test");
+        _localizationService.GetString(Arg.Any<string>()).Returns(call => call.Arg<string>());
 
-        var vm = new MainViewModel(_localizationService, serviceProvider, seedService, _configuration);
+        var vm = new MainViewModel(
+            _localizationService,
+            navigationService,
+            seedService,
+            _configuration,
+            CreateCommandPaletteViewModel(navigationService));
 
-        vm.NavigateToMovimientosCommand.Execute(null);
+        vm.NavigateToCommand.Execute("movimientos");
 
         vm.CurrentPage.Should().Be(movimientosVm);
+        vm.CurrentRoute.Should().Be("movimientos");
     }
 
     [Fact]
-    public void NavigateToTrabajos_ShouldSetCurrentPage()
+    public void NavigateToCertificados_ShouldSetCurrentPage()
     {
         var serviceProvider = Substitute.For<IServiceProvider>();
         var seedService = Substitute.For<IDatabaseSeedService>();
         var dashboardVm = CreateDashboardViewModel();
-        var trabajosVm = CreateTrabajosViewModel(serviceProvider);
+        var certificadosVm = new CertificadosViewModel(
+            Substitute.For<ITrabajoService>(),
+            Substitute.For<IExportService>(),
+            Substitute.For<IFileSaveDialogService>(),
+            Substitute.For<INotificationService>(),
+            _localizationService);
+        var navigationService = CreateNavigationService(serviceProvider);
 
         serviceProvider.GetService(typeof(DashboardViewModel)).Returns(dashboardVm);
-        serviceProvider.GetService(typeof(TrabajosViewModel)).Returns(trabajosVm);
-        _localizationService.GetString(Arg.Any<string>()).Returns("Test");
+        serviceProvider.GetService(typeof(CertificadosViewModel)).Returns(certificadosVm);
+        _localizationService.GetString(Arg.Any<string>()).Returns(call => call.Arg<string>());
 
-        var vm = new MainViewModel(_localizationService, serviceProvider, seedService, _configuration);
+        var vm = new MainViewModel(
+            _localizationService,
+            navigationService,
+            seedService,
+            _configuration,
+            CreateCommandPaletteViewModel(navigationService));
 
-        vm.NavigateToTrabajosCommand.Execute(null);
+        vm.NavigateToCommand.Execute("certificados");
 
-        vm.CurrentPage.Should().Be(trabajosVm);
+        vm.CurrentPage.Should().Be(certificadosVm);
+        vm.CurrentRoute.Should().Be("certificados");
     }
 
     [Fact]
@@ -124,13 +155,20 @@ public class MainViewModelTests
         var seedService = Substitute.For<IDatabaseSeedService>();
         var dashboardVm = CreateDashboardViewModel();
         var clientesVm = CreateClientesViewModel(serviceProvider);
+        var navigationService = CreateNavigationService(serviceProvider);
+
         serviceProvider.GetService(typeof(DashboardViewModel)).Returns(dashboardVm);
         serviceProvider.GetService(typeof(ClientesViewModel)).Returns(clientesVm);
-        _localizationService.GetString(Arg.Any<string>()).Returns("Test");
+        _localizationService.GetString(Arg.Any<string>()).Returns(call => call.Arg<string>());
 
-        var vm = new MainViewModel(_localizationService, serviceProvider, seedService, _configuration);
+        var vm = new MainViewModel(
+            _localizationService,
+            navigationService,
+            seedService,
+            _configuration,
+            CreateCommandPaletteViewModel(navigationService));
 
-        vm.NavigateToClientesCommand.Execute(null);
+        vm.NavigateToCommand.Execute("clientes");
 
         vm.CurrentPage.Should().Be(clientesVm);
     }
@@ -142,14 +180,20 @@ public class MainViewModelTests
         var seedService = Substitute.For<IDatabaseSeedService>();
         var dashboardVm = CreateDashboardViewModel();
         var empleadosVm = CreateEmpleadosViewModel(serviceProvider);
+        var navigationService = CreateNavigationService(serviceProvider);
 
         serviceProvider.GetService(typeof(DashboardViewModel)).Returns(dashboardVm);
         serviceProvider.GetService(typeof(EmpleadosViewModel)).Returns(empleadosVm);
-        _localizationService.GetString(Arg.Any<string>()).Returns("Test");
+        _localizationService.GetString(Arg.Any<string>()).Returns(call => call.Arg<string>());
 
-        var vm = new MainViewModel(_localizationService, serviceProvider, seedService, _configuration);
+        var vm = new MainViewModel(
+            _localizationService,
+            navigationService,
+            seedService,
+            _configuration,
+            CreateCommandPaletteViewModel(navigationService));
 
-        vm.NavigateToEmpleadosCommand.Execute(null);
+        vm.NavigateToCommand.Execute("empleados");
 
         vm.CurrentPage.Should().Be(empleadosVm);
     }

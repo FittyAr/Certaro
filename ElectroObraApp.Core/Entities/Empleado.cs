@@ -34,5 +34,6 @@ public class Empleado : BaseEntity
 
     public ICollection<Movimiento> AdelantosYPagos { get; set; } = new List<Movimiento>();
     public ICollection<Liquidacion> Liquidaciones { get; set; } = new List<Liquidacion>();
+    public ICollection<AsistenciaEmpleado> Asistencias { get; set; } = new List<AsistenciaEmpleado>();
 }
 

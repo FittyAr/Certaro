@@ -3,77 +3,215 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
+             xmlns:loc="using:ElectroObraApp.Markup"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
              x:Class="ElectroObraApp.Views.LiquidacionesView"
              x:DataType="vm:LiquidacionesViewModel">
     <Grid RowDefinitions="Auto, *">
-        <!-- Header -->
-        <Border Grid.Row="0" Padding="20" Background="#1e1e1e">
+        <Border Grid.Row="0" Padding="20" Background="{DynamicResource SurfaceRaised}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="0,0,0,1">
             <DockPanel>
                 <StackPanel Spacing="5">
-                    <TextBlock Text="Liquidaciones de Empleados" FontSize="24" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text="Gestión de haberes, adelantos y saldos" Foreground="#888"/>
+                    <TextBlock Text="{loc:Translate Key=Settlements.Title}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{loc:Translate Key=Settlements.Subtitle}" Foreground="{DynamicResource TextTertiary}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Button Content="Actualizar" Command="{Binding LoadCommand}" Classes="outline"/>
-                    <Button Content="+ Nueva Liquidación" Classes="accent" Command="{Binding NuevaLiquidacionCommand}"/>
+                    <Button Content="{loc:Translate Key=General.Refresh}" Command="{Binding LoadCommand}" Classes="outline"
+                            IsVisible="{Binding !IsWizardActive}"/>
+                    <Button Content="{loc:Translate Key=Settlements.Wizard.NewBatch}" Classes="accent"
+                            Command="{Binding StartWizardCommand}" IsVisible="{Binding !IsWizardActive}"/>
                 </StackPanel>
             </DockPanel>
         </Border>
 
-        <!-- Main Content -->
         <Border Grid.Row="1" Padding="20">
             <Grid>
-                <DataGrid ItemsSource="{Binding Liquidaciones}"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          GridLinesVisibility="All"
-                          BorderThickness="1" BorderBrush="#333"
-                          Background="Transparent"
-                          IsVisible="{Binding HasLiquidaciones}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Empleado" Binding="{Binding EmpleadoNombre}" Width="*"/>
-                        <DataGridTextColumn Header="Inicio" Binding="{Binding FechaInicio, StringFormat=dd/MM/yyyy}"/>
-                        <DataGridTextColumn Header="Fin" Binding="{Binding FechaFin, StringFormat=dd/MM/yyyy}"/>
-                        <DataGridTextColumn Header="Días" Binding="{Binding DiasTrabajados}" Width="80"/>
-                        <DataGridTextColumn Header="Total Bruto" Binding="{Binding TotalBruto, StringFormat=C2}" Width="120"/>
-                        <DataGridTextColumn Header="Adelantos" Binding="{Binding TotalAdelantos, StringFormat=C2}" Width="120"/>
-                        <DataGridTextColumn Header="Neto" Binding="{Binding TotalNeto, StringFormat=C2}" Width="120" FontWeight="Bold"/>
-                        <DataGridTemplateColumn Header="Acciones" Width="Auto">
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="5" Margin="5">
-                                    <Button Command="{Binding $parent[UserControl].((vm:LiquidacionesViewModel)DataContext).ExportPdfCommand}" 
-                                            CommandParameter="{Binding}"
-                                            ToolTip.Tip="Descargar PDF"
-                                            Classes="outline">
-                                        <materialIcons:MaterialIcon Kind="FilePdfBox" Width="16" Height="16"/>
-                                    </Button>
-                                    <Button Command="{Binding $parent[UserControl].((vm:LiquidacionesViewModel)DataContext).ShareEmailCommand}" 
-                                            CommandParameter="{Binding}"
-                                            ToolTip.Tip="Enviar por Email"
-                                            Classes="outline">
-                                        <materialIcons:MaterialIcon Kind="Email" Width="16" Height="16"/>
-                                    </Button>
-                                    <Button Command="{Binding $parent[UserControl].((vm:LiquidacionesViewModel)DataContext).ShareWhatsAppCommand}" 
-                                            CommandParameter="{Binding}"
-                                            ToolTip.Tip="Enviar por WhatsApp"
-                                            Classes="outline">
-                                        <materialIcons:MaterialIcon Kind="Whatsapp" Width="16" Height="16" Foreground="#25D366"/>
-                                    </Button>
+                <!-- Listado histórico -->
+                <Grid IsVisible="{Binding !IsWizardActive}">
+                    <DataGrid ItemsSource="{Binding Liquidaciones}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              GridLinesVisibility="All"
+                              BorderThickness="1"
+                              BorderBrush="{DynamicResource BorderSubtle}"
+                              Background="Transparent"
+                              Classes="eo-grid"
+                              IsVisible="{Binding HasLiquidaciones}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="{loc:Translate Key=Employees.Name}" Binding="{Binding EmpleadoNombre}" Width="*"/>
+                            <DataGridTextColumn Header="{loc:Translate Key=General.From}" Binding="{Binding FechaInicio, StringFormat=dd/MM/yyyy}"/>
+                            <DataGridTextColumn Header="{loc:Translate Key=General.To}" Binding="{Binding FechaFin, StringFormat=dd/MM/yyyy}"/>
+                            <DataGridTextColumn Header="{loc:Translate Key=Settlements.Days}" Binding="{Binding DiasTrabajados}" Width="80"/>
+                            <DataGridTextColumn Header="{loc:Translate Key=Settlements.GrossTotal}" Binding="{Binding TotalBruto, StringFormat=C2}" Width="120"/>
+                            <DataGridTextColumn Header="{loc:Translate Key=Settlements.Advances}" Binding="{Binding TotalAdelantos, StringFormat=C2}" Width="120"/>
+                            <DataGridTextColumn Header="{loc:Translate Key=Settlements.NetTotal}" Binding="{Binding TotalNeto, StringFormat=C2}" Width="120" FontWeight="Bold"/>
+                            <DataGridTemplateColumn Header="{loc:Translate Key=Settlements.Actions}" Width="Auto">
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="5" Margin="5">
+                                        <Button Command="{Binding $parent[UserControl].((vm:LiquidacionesViewModel)DataContext).ExportPdfCommand}"
+                                                CommandParameter="{Binding}" Classes="outline">
+                                            <materialIcons:MaterialIcon Kind="FilePdfBox" Width="16" Height="16"/>
+                                        </Button>
+                                        <Button Command="{Binding $parent[UserControl].((vm:LiquidacionesViewModel)DataContext).ShareEmailCommand}"
+                                                CommandParameter="{Binding}" Classes="outline">
+                                            <materialIcons:MaterialIcon Kind="Email" Width="16" Height="16"/>
+                                        </Button>
+                                        <Button Command="{Binding $parent[UserControl].((vm:LiquidacionesViewModel)DataContext).ShareWhatsAppCommand}"
+                                                CommandParameter="{Binding}" Classes="outline">
+                                            <materialIcons:MaterialIcon Kind="Whatsapp" Width="16" Height="16" Foreground="#25D366"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <TextBlock Text="{loc:Translate Key=Settlements.EmptyList}"
+                               IsVisible="{Binding ShowEmptyMessage}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextTertiary}"/>
+                </Grid>
+
+                <!-- Wizard -->
+                <Border IsVisible="{Binding IsWizardActive}"
+                        Background="{DynamicResource SurfaceRaised}"
+                        CornerRadius="{StaticResource Radius12}"
+                        Padding="24"
+                        BorderBrush="{DynamicResource BorderSubtle}"
+                        BorderThickness="1"
+                        BoxShadow="{StaticResource Elevation2}">
+                    <Grid RowDefinitions="Auto, Auto, *, Auto, Auto">
+                        <StackPanel Grid.Row="0" Spacing="6">
+                            <TextBlock Text="{Binding StepTitle}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="{Binding StepIndicatorText}" Foreground="{DynamicResource TextTertiary}"/>
+                        </StackPanel>
+
+                        <Border Grid.Row="1"
+                                Background="{DynamicResource SurfaceSunken}"
+                                CornerRadius="{StaticResource Radius6}"
+                                Padding="12,8"
+                                Margin="0,16,0,24"
+                                BorderBrush="{DynamicResource BorderSubtle}"
+                                BorderThickness="1">
+                            <TextBlock HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       Text="{loc:Translate Key=Settlements.Wizard.ProgressHint}"/>
+                        </Border>
+
+                        <!-- Step 1 -->
+                        <ScrollViewer Grid.Row="2" IsVisible="{Binding IsStepPeriod}">
+                            <StackPanel Spacing="16">
+                                <Grid ColumnDefinitions="*, *" ColumnSpacing="16">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="{loc:Translate Key=General.From}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                                        <CalendarDatePicker SelectedDate="{Binding FechaInicioOffset}" HorizontalAlignment="Stretch" Classes="eo-input"/>
+                                    </StackPanel>
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="{loc:Translate Key=General.To}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                                        <CalendarDatePicker SelectedDate="{Binding FechaFinOffset}" HorizontalAlignment="Stretch" Classes="eo-input"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <TextBlock Text="{loc:Translate Key=Settlements.Wizard.SelectEmployees}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                    <Button Content="{loc:Translate Key=General.All}" Command="{Binding SelectAllEmployeesCommand}" Classes="outline"/>
+                                    <Button Content="{loc:Translate Key=Settlements.Wizard.ClearSelection}" Command="{Binding ClearEmployeeSelectionCommand}" Classes="outline"/>
+                                    <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource TextTertiary}"
+                                               Text="{Binding SelectedEmployeesText}"/>
                                 </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-                
-                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsLoading}" VerticalAlignment="Center" HorizontalAlignment="Center" Width="200"/>
-                
-                <TextBlock Text="No hay liquidaciones registradas." 
-                           IsVisible="{Binding ShowEmptyMessage}"
-                           HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#666"/>
+
+                                <DataGrid ItemsSource="{Binding EmpleadosSeleccionables}"
+                                          AutoGenerateColumns="False"
+                                          CanUserReorderColumns="False"
+                                          CanUserResizeColumns="True"
+                                          GridLinesVisibility="Horizontal"
+                                          Classes="eo-grid"
+                                          MaxHeight="360">
+                                    <DataGrid.Columns>
+                                        <DataGridCheckBoxColumn Header="{loc:Translate Key=Settlements.Wizard.Include}"
+                                                                Binding="{Binding IsSelected}" Width="90"/>
+                                        <DataGridTextColumn Header="{loc:Translate Key=Employees.Name}" Binding="{Binding Nombre}" Width="*"/>
+                                        <DataGridTextColumn Header="{loc:Translate Key=Employees.DailyRate}" Binding="{Binding Empleado.TarifaDiaria, StringFormat=C2}" Width="120"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Step 2 -->
+                        <ScrollViewer Grid.Row="2" IsVisible="{Binding IsStepReview}">
+                            <StackPanel Spacing="12">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <TextBlock Text="{loc:Translate Key=Settlements.Wizard.ReviewHint}" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                                    <Button Content="{loc:Translate Key=Settlements.Wizard.Recalculate}" Command="{Binding RecalculatePreviewCommand}" Classes="outline"/>
+                                </StackPanel>
+
+                                <DataGrid ItemsSource="{Binding PreviewLiquidaciones}"
+                                          AutoGenerateColumns="False"
+                                          CanUserReorderColumns="False"
+                                          GridLinesVisibility="All"
+                                          Classes="eo-grid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="{loc:Translate Key=Employees.Name}" Binding="{Binding EmpleadoNombre}" Width="*" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="{loc:Translate Key=Settlements.Days}" Binding="{Binding DiasTrabajados, Mode=TwoWay}" Width="90"/>
+                                        <DataGridTextColumn Header="{loc:Translate Key=Settlements.GrossTotal}" Binding="{Binding TotalBruto, StringFormat=C2}" Width="120" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="{loc:Translate Key=Settlements.Advances}" Binding="{Binding TotalAdelantos, StringFormat=C2}" Width="120" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="{loc:Translate Key=Settlements.NetTotal}" Binding="{Binding TotalNeto, StringFormat=C2}" Width="120" IsReadOnly="True" FontWeight="Bold"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Step 3 -->
+                        <ScrollViewer Grid.Row="2" IsVisible="{Binding IsStepConfirm}">
+                            <StackPanel Spacing="16">
+                                <TextBlock Text="{loc:Translate Key=Settlements.Wizard.ConfirmHint}" Foreground="{DynamicResource TextSecondary}"/>
+
+                                <DataGrid ItemsSource="{Binding PreviewLiquidaciones}"
+                                          AutoGenerateColumns="False"
+                                          IsReadOnly="True"
+                                          GridLinesVisibility="Horizontal"
+                                          Classes="eo-grid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="{loc:Translate Key=Employees.Name}" Binding="{Binding EmpleadoNombre}" Width="*"/>
+                                        <DataGridTextColumn Header="{loc:Translate Key=Settlements.Days}" Binding="{Binding DiasTrabajados}" Width="80"/>
+                                        <DataGridTextColumn Header="{loc:Translate Key=Settlements.NetTotal}" Binding="{Binding TotalNeto, StringFormat=C2}" Width="120"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <Border Background="{DynamicResource SurfaceSunken}"
+                                        CornerRadius="{StaticResource Radius8}"
+                                        Padding="16"
+                                        BorderBrush="{DynamicResource BorderSubtle}"
+                                        BorderThickness="1">
+                                    <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto, Auto" RowSpacing="8">
+                                        <TextBlock Grid.Row="0" Text="{loc:Translate Key=Settlements.GrossTotal}" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding BatchTotalBruto, StringFormat=C2}"/>
+                                        <TextBlock Grid.Row="1" Text="{loc:Translate Key=Settlements.Advances}" Foreground="{DynamicResource AmountNegative}"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding BatchTotalAdelantos, StringFormat=C2}" Foreground="{DynamicResource AmountNegative}"/>
+                                        <TextBlock Grid.Row="2" Text="{loc:Translate Key=Settlements.BatchNetTotal}" FontWeight="Bold" FontSize="16"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding BatchTotalNeto, StringFormat=C2}" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource AmountPositive}"/>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <TextBlock Grid.Row="3" Text="{Binding ErrorMessage}" Foreground="{DynamicResource Error}" Margin="0,12,0,0"
+                                   IsVisible="{Binding HasError}"/>
+
+                        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,16,0,0">
+                            <Button Content="{loc:Translate Key=General.Cancel}" Command="{Binding CancelWizardCommand}" Classes="outline"/>
+                            <Button Content="{loc:Translate Key=General.Previous}" Command="{Binding PreviousStepCommand}"
+                                    IsVisible="{Binding CanGoPrevious}" Classes="outline"/>
+                            <Button Content="{loc:Translate Key=General.Next}" Command="{Binding NextStepCommand}"
+                                    IsVisible="{Binding CanGoNext}" Classes="accent"/>
+                            <Button Content="{loc:Translate Key=Settlements.Wizard.ConfirmBatch}" Command="{Binding ConfirmBatchCommand}"
+                                    IsVisible="{Binding IsLastStep}" Classes="accent"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsLoading}"
+                             VerticalAlignment="Center" HorizontalAlignment="Center" Width="200"/>
             </Grid>
         </Border>
     </Grid>
 </UserControl>
-

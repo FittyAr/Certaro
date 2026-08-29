@@ -10,60 +10,68 @@
     <UserControl.KeyBindings>
         <KeyBinding Gesture="Escape" Command="{Binding CancelCommand}"/>
     </UserControl.KeyBindings>
-    <Border Padding="25" Background="#2d2d2d" CornerRadius="12" BoxShadow="0 4 10 0 #40000000" Width="520">
+    <Border Padding="25"
+            Background="{DynamicResource SurfaceRaised}"
+            CornerRadius="{StaticResource Radius12}"
+            BoxShadow="{StaticResource Elevation2}"
+            Width="520"
+            BorderBrush="{DynamicResource BorderSubtle}"
+            BorderThickness="1">
         <ScrollViewer MaxHeight="650">
             <StackPanel Spacing="15">
-                <TextBlock Text="{Binding Title}" FontSize="22" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="{Binding Title}" Classes="H1"/>
 
                 <StackPanel Spacing="5">
-                    <TextBlock Text="{loc:Translate Key=Invoices.Number}" FontSize="11" Foreground="#888"/>
-                    <TextBox Text="{Binding Factura.Numero}"/>
+                    <TextBlock Text="{loc:Translate Key=Invoices.Number}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                    <TextBox Text="{Binding Factura.Numero}" Classes="eo-input"/>
                 </StackPanel>
 
                 <StackPanel Spacing="5">
-                    <TextBlock Text="{loc:Translate Key=Movements.Date}" FontSize="11" Foreground="#888"/>
-                    <CalendarDatePicker SelectedDate="{Binding FechaOffset}"/>
+                    <TextBlock Text="{loc:Translate Key=Movements.Date}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                    <CalendarDatePicker SelectedDate="{Binding FechaOffset}" Classes="eo-input" HorizontalAlignment="Stretch"/>
                 </StackPanel>
 
                 <StackPanel Spacing="5">
-                    <TextBlock Text="{loc:Translate Key=Jobs.Client}" FontSize="11" Foreground="#888"/>
+                    <TextBlock Text="{loc:Translate Key=Jobs.Client}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
                     <ComboBox ItemsSource="{Binding Clientes}"
                               SelectedValue="{Binding Factura.ClienteId}"
                               SelectedValueBinding="{Binding Id}"
-                              DisplayMemberBinding="{Binding Nombre}"/>
+                              DisplayMemberBinding="{Binding Nombre}"
+                              Classes="eo-input"
+                              HorizontalAlignment="Stretch"/>
                 </StackPanel>
 
                 <StackPanel Spacing="5">
-                    <TextBlock Text="{loc:Translate Key=Invoices.Status}" FontSize="11" Foreground="#888"/>
-                    <ComboBox ItemsSource="{Binding EstadosFactura}" SelectedItem="{Binding Factura.Estado}"/>
+                    <TextBlock Text="{loc:Translate Key=Invoices.Status}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                    <ComboBox ItemsSource="{Binding EstadosFactura}" SelectedItem="{Binding Factura.Estado}" Classes="eo-input" HorizontalAlignment="Stretch"/>
                 </StackPanel>
 
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
                     <StackPanel Grid.Column="0" Spacing="5">
-                        <TextBlock Text="{loc:Translate Key=Invoices.Subtotal}" FontSize="11" Foreground="#888"/>
-                        <NumericUpDown Value="{Binding Factura.Subtotal}" Minimum="0" FormatString="C"/>
+                        <TextBlock Text="{loc:Translate Key=Invoices.Subtotal}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                        <NumericUpDown Value="{Binding Factura.Subtotal}" Minimum="0" FormatString="C" Classes="eo-input" HorizontalAlignment="Stretch"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Spacing="5">
-                        <TextBlock Text="{loc:Translate Key=Invoices.Iva}" FontSize="11" Foreground="#888"/>
-                        <NumericUpDown Value="{Binding Factura.Iva}" Minimum="0" FormatString="C"/>
+                        <TextBlock Text="{loc:Translate Key=Invoices.Iva}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                        <NumericUpDown Value="{Binding Factura.Iva}" Minimum="0" FormatString="C" Classes="eo-input" HorizontalAlignment="Stretch"/>
                     </StackPanel>
                 </Grid>
 
                 <StackPanel Spacing="5">
-                    <TextBlock Text="{loc:Translate Key=Movements.Total}" FontSize="11" Foreground="#888"/>
-                    <TextBlock Text="{Binding Factura.Total, StringFormat='C'}" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
+                    <TextBlock Text="{loc:Translate Key=Movements.Total}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                    <TextBlock Text="{Binding Factura.Total, StringFormat='C'}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                 </StackPanel>
 
                 <StackPanel Spacing="5">
-                    <TextBlock Text="{loc:Translate Key=Invoices.Observations}" FontSize="11" Foreground="#888"/>
-                    <TextBox Text="{Binding Factura.Observaciones}" AcceptsReturn="True" MinHeight="80"/>
+                    <TextBlock Text="{loc:Translate Key=Invoices.Observations}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                    <TextBox Text="{Binding Factura.Observaciones}" AcceptsReturn="True" MinHeight="80" Classes="eo-input"/>
                 </StackPanel>
 
-                <TextBlock Text="{Binding ErrorMessage}" Foreground="#e74c3c" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Error}" TextWrapping="Wrap"/>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
-                    <Button Content="{loc:Translate Key=General.Cancel}" Command="{Binding CancelCommand}"/>
-                    <Button Content="{loc:Translate Key=General.Save}" Classes="accent" Command="{Binding SaveCommand}"/>
+                    <Button Content="{loc:Translate Key=General.Cancel}" Classes="eo-secondary" Command="{Binding CancelCommand}"/>
+                    <Button Content="{loc:Translate Key=General.Save}" Classes="eo-primary" Command="{Binding SaveCommand}"/>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

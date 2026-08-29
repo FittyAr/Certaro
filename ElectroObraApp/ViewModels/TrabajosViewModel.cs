@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using ElectroObraApp.Core.Enums;
 using Mapster;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -45,7 +46,7 @@ public partial class TrabajosViewModel : ViewModelBase
     private Guid? _filtroClienteId;
 
     [ObservableProperty]
-    private bool? _filtroFinalizado;
+    private EstadoTrabajo? _filtroEstado;
 
     [ObservableProperty]
     private DateTime? _filtroFechaDesde;
@@ -102,9 +103,10 @@ public partial class TrabajosViewModel : ViewModelBase
     
     partial void OnFiltroEstadoIndexChanged(int value)
     {
-        FiltroFinalizado = value switch {
-            1 => false,
-            2 => true,
+        FiltroEstado = value switch {
+            1 => EstadoTrabajo.EnProceso,
+            2 => EstadoTrabajo.Finalizado,
+            3 => EstadoTrabajo.Pausado,
             _ => null
         };
         _ = LoadTrabajosAsync();
@@ -118,7 +120,7 @@ public partial class TrabajosViewModel : ViewModelBase
         FiltroNombre = string.Empty;
         FiltroClienteId = null;
         FiltroEstadoIndex = 0;
-        FiltroFinalizado = null;
+        FiltroEstado = null;
         FiltroFechaDesde = null;
         FiltroFechaHasta = null;
         _ = LoadTrabajosAsync();
@@ -140,8 +142,8 @@ public partial class TrabajosViewModel : ViewModelBase
             if (FiltroClienteId.HasValue)
                 query = query.Where(t => t.ClienteId == FiltroClienteId.Value);
 
-            if (FiltroFinalizado.HasValue)
-                query = query.Where(t => t.Finalizado == FiltroFinalizado.Value);
+            if (FiltroEstado.HasValue)
+                query = query.Where(t => t.Estado == FiltroEstado.Value);
 
             if (FiltroFechaDesde.HasValue)
                 query = query.Where(t => t.FechaInicio.Date >= FiltroFechaDesde.Value.Date);

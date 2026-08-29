@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ElectroObraApp.Application.Interfaces;
 using ElectroObraApp.Core.Interfaces;
 using ElectroObraApp.Infrastructure.Data;
+using ElectroObraApp.Infrastructure.Migrations;
 using ElectroObraApp.Infrastructure.Repositories;
 using ElectroObraApp.Infrastructure.Services;
 
@@ -25,7 +26,12 @@ public static class DependencyInjection
         services.AddScoped<IDatabaseSeedService, DatabaseSeedService>();
         services.AddScoped<IUserSettingsService, UserSettingsService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IComercialService, ComercialService>();
         services.AddScoped<IEmailService, SmtpEmailService>();
+        services.AddScoped<DatabaseCensusService>();
+        services.AddScoped<IBackupService, BackupService>();
+        services.AddScoped<IAdjuntoService, AdjuntoService>();
+        services.AddScoped<IMigrationRunner, SafeMigrationRunner>();
 
         services.AddHttpClient<IHolidayService, HolidayService>()
             .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromSeconds(httpTimeoutSeconds));

@@ -3,25 +3,40 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
+             xmlns:loc="using:ElectroObraApp.Markup"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ElectroObraApp.Views.SeedView"
              x:DataType="vm:SeedViewModel">
 
     <StackPanel Margin="40" Spacing="20" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <TextBlock Text="Base de Datos - Sembrado" Classes="h1" HorizontalAlignment="Center"/>
-        
-        <Border Padding="20" Background="#FFF3CD" BorderBrush="#FFEEBA" BorderThickness="1" CornerRadius="8" IsVisible="{Binding ShowWarning}">
+        <TextBlock Text="{loc:Translate Key=Seed.Title}" Classes="H1" HorizontalAlignment="Center"/>
+
+        <Border Padding="20"
+                Background="{DynamicResource WarningSubtle}"
+                BorderBrush="{DynamicResource Warning}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource Radius8}"
+                IsVisible="{Binding ShowWarning}">
             <StackPanel Spacing="10">
-                <TextBlock Text="¡ADVERTENCIA!" FontWeight="Bold" Foreground="#856404" FontSize="18" HorizontalAlignment="Center"/>
-                <TextBlock Text="Esta acción ELIMINARÁ todos los datos actuales (Clientes, Empleados, Trabajos y Movimientos) y los reemplazará con datos de prueba aleatorios." 
-                           Foreground="#856404" TextWrapping="Wrap" MaxWidth="500" TextAlignment="Center"/>
-                <TextBlock Text="Solo debe usarse en entornos de desarrollo o pruebas." 
-                           Foreground="#856404" FontWeight="SemiBold" TextAlignment="Center"/>
+                <TextBlock Text="{loc:Translate Key=Seed.WarningTitle}"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource Warning}"
+                           FontSize="18"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="{loc:Translate Key=Seed.WarningMessage}"
+                           Foreground="{DynamicResource Warning}"
+                           TextWrapping="Wrap"
+                           MaxWidth="500"
+                           TextAlignment="Center"/>
+                <TextBlock Text="{loc:Translate Key=Seed.WarningDevOnly}"
+                           Foreground="{DynamicResource Warning}"
+                           FontWeight="SemiBold"
+                           TextAlignment="Center"/>
             </StackPanel>
         </Border>
 
-        <Button Command="{Binding PrepareSeedCommand}" 
-                Content="Iniciar Sembrado Completo" 
+        <Button Command="{Binding PrepareSeedCommand}"
+                Content="{loc:Translate Key=Seed.StartSeed}"
                 Classes="accent"
                 HorizontalAlignment="Center"
                 IsVisible="{Binding !ShowConfirmation}"
@@ -29,22 +44,25 @@
                 Padding="20,10"/>
 
         <StackPanel IsVisible="{Binding ShowConfirmation}" Spacing="15">
-            <TextBlock Text="¿Está ABSOLUTAMENTE seguro?" Classes="h2" Foreground="Red" HorizontalAlignment="Center"/>
+            <TextBlock Text="{loc:Translate Key=Seed.ConfirmQuestion}"
+                       Classes="H2"
+                       Foreground="{DynamicResource Error}"
+                       HorizontalAlignment="Center"/>
             <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
-                <Button Content="SÍ, PROCEDER" Command="{Binding SeedCommand}" Background="Red" Foreground="White" Padding="20,10"/>
-                <Button Content="CANCELAR" Command="{Binding CancelConfirmationCommand}" Padding="20,10"/>
+                <Button Content="{loc:Translate Key=Seed.ConfirmYes}" Command="{Binding SeedCommand}" Classes="eo-primary" Padding="20,10"/>
+                <Button Content="{loc:Translate Key=General.Cancel}" Command="{Binding CancelConfirmationCommand}" Classes="eo-secondary" Padding="20,10"/>
             </StackPanel>
         </StackPanel>
 
         <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Width="300"/>
-        
+
         <TextBlock Text="{Binding StatusMessage}" HorizontalAlignment="Center" FontSize="16" FontWeight="SemiBold"/>
-        
-        <Button Content="Regresar" 
+
+        <Button Content="{loc:Translate Key=Seed.GoBack}"
                 IsVisible="{Binding !IsBusy}"
-                Command="{Binding $parent[UserControl;1].((vm:MainViewModel)DataContext).NavigateToDashboardCommand}"
+                Command="{Binding $parent[UserControl;1].((vm:MainViewModel)DataContext).NavigateToCommand}"
+                CommandParameter="dashboard"
                 HorizontalAlignment="Center"
                 Theme="{StaticResource ButtonLowAlpha}"/>
     </StackPanel>
 </UserControl>
-

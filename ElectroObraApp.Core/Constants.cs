@@ -11,4 +11,13 @@ public static class Constants
         public static readonly Guid Adelanto = Guid.Parse("00000000-0000-0000-0000-000000000003");
         public static readonly Guid Ajuste = Guid.Parse("00000000-0000-0000-0000-000000000004");
     }
+
+    public static class EntidadesAdjunto
+    {
+        public const string Obra = "Obra";
+        public const string Trabajo = "Trabajo";
+        public const string Factura = "Factura";
+        public const string Movimiento = "Movimiento";
+        public const string Empleado = "Empleado";
+    }
 }

@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ElectroObraApp.Controls"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="ElectroObraApp.Controls.SearchBox"
+             x:DataType="controls:SearchBox">
+    <Grid>
+        <TextBox Classes="eo-input"
+                 Padding="36,8,12,8"
+                 Text="{Binding Text, RelativeSource={RelativeSource AncestorType=controls:SearchBox}, Mode=TwoWay}"
+                 PlaceholderText="{Binding PlaceholderText, RelativeSource={RelativeSource AncestorType=controls:SearchBox}}" />
+        <materialIcons:MaterialIcon Kind="Magnify"
+                                    Width="16"
+                                    Height="16"
+                                    Margin="12,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    IsHitTestVisible="False"
+                                    Foreground="{DynamicResource TextTertiary}" />
+    </Grid>
+</UserControl>

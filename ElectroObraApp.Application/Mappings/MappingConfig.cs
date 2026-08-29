@@ -14,11 +14,26 @@ public class MappingConfig
             .Map(dest => dest.TipoMovimientoSuma, src => src.TipoMovimiento!.EsIngreso)
             .Map(dest => dest.EsIngreso, src => src.TipoMovimiento.EsIngreso)
             .Map(dest => dest.CategoriaNombre, src => src.Categoria != null ? src.Categoria.Nombre : null)
-            .Map(dest => dest.ClienteNombre, src => src.Cliente != null ? src.Cliente.Nombre : null);
+            .Map(dest => dest.ClienteNombre, src => src.Cliente != null ? src.Cliente.Nombre : null)
+            .Map(dest => dest.TrabajoDescripcion, src => src.Trabajo != null ? src.Trabajo.Descripcion : null)
+            .Map(dest => dest.FacturaNumero, src => src.Factura != null ? src.Factura.Numero : null)
+            .Map(dest => dest.TipoConceptoPagoNombre, src => src.TipoConceptoPago != null ? src.TipoConceptoPago.Nombre : null);
+
+        TypeAdapterConfig<AsistenciaEmpleado, AsistenciaEmpleadoDto>.NewConfig()
+            .Map(dest => dest.EmpleadoNombre, src => src.Empleado != null ? src.Empleado.Nombre : null)
+            .Map(dest => dest.TrabajoDescripcion, src => src.Trabajo != null ? src.Trabajo.Descripcion : null);
+
+        TypeAdapterConfig<PagoFactura, PagoFacturaDto>.NewConfig()
+            .Map(dest => dest.FacturaNumero, src => src.Factura != null ? src.Factura.Numero : null);
 
         TypeAdapterConfig<Trabajo, TrabajoDto>.NewConfig()
-            .Map(dest => dest.ClienteNombre, src => src.Cliente!.Nombre)
+            .Map(dest => dest.ObraNombre, src => src.Obra!.Nombre)
+            .Map(dest => dest.ClienteId, src => src.Obra!.ClienteId)
+            .Map(dest => dest.ClienteNombre, src => src.Obra!.Cliente!.Nombre)
             .Map(dest => dest.OrdenesTrabajo, src => src.OrdenesTrabajo);
+
+        TypeAdapterConfig<Obra, ObraDto>.NewConfig()
+            .Map(dest => dest.ClienteNombre, src => src.Cliente!.Nombre);
 
         TypeAdapterConfig<Liquidacion, LiquidacionDto>.NewConfig()
             .Map(dest => dest.EmpleadoNombre, src => src.Empleado!.Nombre);
@@ -34,7 +49,7 @@ public class MappingConfig
 
         // CONFIGURACIÓN DTO -> ENTIDAD (EVITA STACKOVERFLOW Y PROBLEMAS DE TRACKING)
         TypeAdapterConfig<TrabajoDto, Trabajo>.NewConfig()
-            .Ignore(dest => dest.Cliente!)
+            .Ignore(dest => dest.Obra!)
             .Map(dest => dest.OrdenesTrabajo, src => src.OrdenesTrabajo);
 
         TypeAdapterConfig<OrdenTrabajoDto, OrdenTrabajo>.NewConfig()
@@ -56,7 +71,20 @@ public class MappingConfig
             .Ignore(dest => dest.Categoria!)
             .Ignore(dest => dest.Empleado!)
             .Ignore(dest => dest.Cliente!)
+            .Ignore(dest => dest.Trabajo!)
+            .Ignore(dest => dest.Factura!)
+            .Ignore(dest => dest.TipoConceptoPago!);
+
+        TypeAdapterConfig<ObraDto, Obra>.NewConfig()
+            .Ignore(dest => dest.Cliente!)
+            .Ignore(dest => dest.Trabajos);
+
+        TypeAdapterConfig<AsistenciaEmpleadoDto, AsistenciaEmpleado>.NewConfig()
+            .Ignore(dest => dest.Empleado!)
             .Ignore(dest => dest.Trabajo!);
+
+        TypeAdapterConfig<PagoFacturaDto, PagoFactura>.NewConfig()
+            .Ignore(dest => dest.Factura!);
             
         TypeAdapterConfig<EmpleadoDto, Empleado>.NewConfig()
             .Ignore(dest => dest.AdelantosYPagos)

@@ -16,6 +16,9 @@ public class OrdenTrabajoItem : BaseEntity
     public decimal PorcentajeActual { get; set; }
     public decimal PorcentajeAcumulado => PorcentajeAnterior + PorcentajeActual;
 
+    public bool Ejecutado { get; set; }
+    public string? Nota { get; set; }
+
     public (decimal SubtotalActual, decimal SubtotalAcumulado) CalculateSubtotals()
     {
         var baseAmount = Cantidad * PrecioUnitario;

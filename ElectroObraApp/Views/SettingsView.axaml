@@ -178,11 +178,11 @@
                                 </StackPanel>
                             </StackPanel>
                             
-                            <Border Background="#20FFCC00" Padding="15" CornerRadius="8">
+                            <Border Background="{DynamicResource WarningSubtle}" Padding="15" CornerRadius="{StaticResource Radius8}" BorderBrush="{DynamicResource Warning}" BorderThickness="1">
                                 <StackPanel Orientation="Horizontal" Spacing="10">
-                                    <material:MaterialIcon Kind="Info" Foreground="#FFCC00"/>
-                                    <TextBlock Text="Nota: Algunos cambios estéticos pueden requerir reiniciar la aplicación para aplicarse por completo." 
-                                               VerticalAlignment="Center" FontSize="12" Foreground="#DDAA00"/>
+                                    <material:MaterialIcon Kind="Info" Foreground="{DynamicResource Warning}"/>
+                                    <TextBlock Text="{loc:Translate Key=Settings.AestheticNote}"
+                                               VerticalAlignment="Center" FontSize="12" Foreground="{DynamicResource Warning}"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -238,7 +238,7 @@
                                                         Command="{Binding $parent[UserControl].((vm:SettingsViewModel)DataContext).RemoveHolidayCommand}"
                                                         CommandParameter="{Binding}"
                                                         Padding="5" Background="Transparent" BorderThickness="0">
-                                                    <material:MaterialIcon Kind="Delete" Width="16" Height="16" Foreground="#FF5555"/>
+                                                    <material:MaterialIcon Kind="Delete" Width="16" Height="16" Foreground="{DynamicResource Error}"/>
                                                 </Button>
                                             </Grid>
                                         </DataTemplate>
@@ -286,6 +286,100 @@
                                           SelectedItem="{Binding SelectedEmailClient}" 
                                           HorizontalAlignment="Left" Width="250"/>
                             </StackPanel>
+
+                            <Separator Background="{DynamicResource SidebarSeparatorBrush}"/>
+
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="{loc:Translate Key=Settings.Migration.Title}" FontWeight="Medium"/>
+                                <TextBlock Text="{loc:Translate Key=Settings.Migration.Description}" FontSize="12" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+
+                                <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,8,0,0">
+                                    <Button Content="{loc:Translate Key=General.Refresh}"
+                                            Command="{Binding RefreshMigrationStatusCommand}"
+                                            Classes="outline"
+                                            IsEnabled="{Binding !IsMigrationLoading}"/>
+                                    <Button Content="{loc:Translate Key=Settings.Migration.ExportJson}"
+                                            Command="{Binding ExportDatabaseJsonCommand}"
+                                            Classes="outline"
+                                            IsEnabled="{Binding !IsMigrationLoading}"/>
+                                    <ProgressBar IsIndeterminate="True"
+                                                   IsVisible="{Binding IsMigrationLoading}"
+                                                   Width="120"
+                                                   Height="4"
+                                                   VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*, *" ColumnSpacing="16">
+                                <StackPanel Grid.Column="0" Spacing="8">
+                                    <TextBlock Text="{loc:Translate Key=Settings.Migration.AppliedTitle}" FontWeight="Medium" FontSize="13"/>
+                                    <Border Background="{DynamicResource MainBackgroundBrush}"
+                                            CornerRadius="8"
+                                            BorderBrush="{DynamicResource SidebarSeparatorBrush}"
+                                            BorderThickness="1"
+                                            Height="180">
+                                        <ListBox ItemsSource="{Binding AppliedMigrations}"
+                                                 Background="Transparent"
+                                                 BorderThickness="0">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}" Margin="8,4" FontSize="12"/>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </Border>
+                                    <TextBlock Text="{loc:Translate Key=Settings.Migration.PendingTitle}" FontWeight="Medium" FontSize="13"/>
+                                    <Border Background="{DynamicResource MainBackgroundBrush}"
+                                            CornerRadius="8"
+                                            BorderBrush="{DynamicResource SidebarSeparatorBrush}"
+                                            BorderThickness="1"
+                                            Height="100">
+                                        <ListBox ItemsSource="{Binding PendingMigrations}"
+                                                 Background="Transparent"
+                                                 BorderThickness="0">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}" Margin="8,4" FontSize="12" Foreground="{DynamicResource AccentBrush}"/>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </Border>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Spacing="8">
+                                    <TextBlock Text="{loc:Translate Key=Settings.Migration.BackupsTitle}" FontWeight="Medium" FontSize="13"/>
+                                    <Border Background="{DynamicResource MainBackgroundBrush}"
+                                            CornerRadius="8"
+                                            BorderBrush="{DynamicResource SidebarSeparatorBrush}"
+                                            BorderThickness="1"
+                                            Height="280">
+                                        <ListBox ItemsSource="{Binding Backups}"
+                                                 SelectedItem="{Binding SelectedBackup}"
+                                                 Background="Transparent"
+                                                 BorderThickness="0">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:BackupListItem">
+                                                    <Grid ColumnDefinitions="*, Auto" Margin="8,6">
+                                                        <StackPanel Spacing="2">
+                                                            <TextBlock Text="{Binding FileName}" FontWeight="Medium" FontSize="12"/>
+                                                            <TextBlock Text="{Binding DateDisplay}" FontSize="11" Foreground="{DynamicResource TextTertiary}"/>
+                                                        </StackPanel>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding SizeDisplay}"
+                                                                   VerticalAlignment="Center"
+                                                                   FontSize="11"
+                                                                   Foreground="{DynamicResource TextTertiary}"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </Border>
+                                    <Button Content="{loc:Translate Key=Settings.Migration.RestoreBackup}"
+                                            Command="{Binding RestoreBackupCommand}"
+                                            Classes="accent"
+                                            HorizontalAlignment="Left"/>
+                                </StackPanel>
+                            </Grid>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -297,8 +391,8 @@
                 <StackPanel Orientation="Horizontal" Spacing="20">
                     <Button Content="Guardar Cambios" Command="{Binding ApplyChangesCommand}" Classes="accent" Padding="25,10" IsEnabled="{Binding !IsSaved}"/>
                     <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsSaved}" VerticalAlignment="Center">
-                        <material:MaterialIcon Kind="CheckCircle" Foreground="#FF4CAF50" Width="20" Height="20"/>
-                        <TextBlock Text="Configuración guardada correctamente" Foreground="#FF4CAF50" FontWeight="Medium"/>
+                        <material:MaterialIcon Kind="CheckCircle" Foreground="{DynamicResource Success}" Width="20" Height="20"/>
+                        <TextBlock Text="{loc:Translate Key=General.SettingsSaved}" Foreground="{DynamicResource Success}" FontWeight="Medium"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

@@ -1,0 +1,126 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.ThemeDictionaries>
+
+        <!-- Light theme -->
+        <ResourceDictionary x:Key="Light">
+
+            <!-- Surfaces -->
+            <SolidColorBrush x:Key="SurfaceBase" Color="#F6F7F9" />
+            <SolidColorBrush x:Key="SurfaceRaised" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="SurfaceSunken" Color="#EEF0F3" />
+            <SolidColorBrush x:Key="SurfaceOverlay" Color="#99000000" />
+
+            <!-- Borders -->
+            <SolidColorBrush x:Key="BorderSubtle" Color="#E2E5EA" />
+            <SolidColorBrush x:Key="BorderStrong" Color="#C8CDD5" />
+
+            <!-- Text -->
+            <SolidColorBrush x:Key="TextPrimary" Color="#151A21" />
+            <SolidColorBrush x:Key="TextSecondary" Color="#5A6472" />
+            <SolidColorBrush x:Key="TextTertiary" Color="#8A939F" />
+            <SolidColorBrush x:Key="TextDisabled" Color="#B8BFC8" />
+
+            <!-- Accent -->
+            <SolidColorBrush x:Key="Accent" Color="#0B5FAE" />
+            <SolidColorBrush x:Key="AccentHover" Color="#0A5499" />
+            <SolidColorBrush x:Key="AccentPressed" Color="#094A85" />
+            <SolidColorBrush x:Key="AccentSubtle" Color="#E6F0FA" />
+
+            <!-- Semantic -->
+            <SolidColorBrush x:Key="Success" Color="#1F7A3D" />
+            <SolidColorBrush x:Key="SuccessSubtle" Color="#E8F5EC" />
+            <SolidColorBrush x:Key="Warning" Color="#B26A00" />
+            <SolidColorBrush x:Key="WarningSubtle" Color="#FFF4E5" />
+            <SolidColorBrush x:Key="Error" Color="#C62828" />
+            <SolidColorBrush x:Key="ErrorSubtle" Color="#FDECEA" />
+            <SolidColorBrush x:Key="Info" Color="#1565C0" />
+            <SolidColorBrush x:Key="InfoSubtle" Color="#E3F2FD" />
+
+            <!-- Amounts -->
+            <SolidColorBrush x:Key="AmountPositive" Color="#1F7A3D" />
+            <SolidColorBrush x:Key="AmountNegative" Color="#C62828" />
+
+            <!-- Legacy compatibility aliases -->
+            <SolidColorBrush x:Key="MainBackgroundBrush" Color="#F6F7F9" />
+            <SolidColorBrush x:Key="PaneBackgroundBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="AccentBrush" Color="#0B5FAE" />
+            <SolidColorBrush x:Key="SidebarSeparatorBrush" Color="#E2E5EA" />
+            <SolidColorBrush x:Key="MainForegroundBrush" Color="#151A21" />
+            <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#5A6472" />
+            <SolidColorBrush x:Key="FilterPanelBackgroundBrush" Color="#EEF0F3" />
+            <SolidColorBrush x:Key="FilterPanelBorderBrush" Color="#E2E5EA" />
+            <SolidColorBrush x:Key="MutedForegroundBrush" Color="#5A6472" />
+            <SolidColorBrush x:Key="DimForegroundBrush" Color="#8A939F" />
+            <SolidColorBrush x:Key="SuccessBrush" Color="#1F7A3D" />
+            <SolidColorBrush x:Key="ErrorBrush" Color="#C62828" />
+            <SolidColorBrush x:Key="WarningBrush" Color="#B26A00" />
+            <SolidColorBrush x:Key="InfoBrush" Color="#1565C0" />
+            <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="#99000000" />
+
+        </ResourceDictionary>
+
+        <!-- Dark theme -->
+        <ResourceDictionary x:Key="Dark">
+
+            <!-- Surfaces -->
+            <SolidColorBrush x:Key="SurfaceBase" Color="#12161C" />
+            <SolidColorBrush x:Key="SurfaceRaised" Color="#1A2028" />
+            <SolidColorBrush x:Key="SurfaceSunken" Color="#0D1117" />
+            <SolidColorBrush x:Key="SurfaceOverlay" Color="#B3000000" />
+
+            <!-- Borders -->
+            <SolidColorBrush x:Key="BorderSubtle" Color="#2A3140" />
+            <SolidColorBrush x:Key="BorderStrong" Color="#3A4354" />
+
+            <!-- Text -->
+            <SolidColorBrush x:Key="TextPrimary" Color="#E8ECF1" />
+            <SolidColorBrush x:Key="TextSecondary" Color="#9AA3B0" />
+            <SolidColorBrush x:Key="TextTertiary" Color="#6B7585" />
+            <SolidColorBrush x:Key="TextDisabled" Color="#4A5362" />
+
+            <!-- Accent -->
+            <SolidColorBrush x:Key="Accent" Color="#3B8FD9" />
+            <SolidColorBrush x:Key="AccentHover" Color="#4A9AE0" />
+            <SolidColorBrush x:Key="AccentPressed" Color="#2E7EC4" />
+            <SolidColorBrush x:Key="AccentSubtle" Color="#1A2A3D" />
+
+            <!-- Semantic -->
+            <SolidColorBrush x:Key="Success" Color="#4CAF6A" />
+            <SolidColorBrush x:Key="SuccessSubtle" Color="#1A2E22" />
+            <SolidColorBrush x:Key="Warning" Color="#E09A2E" />
+            <SolidColorBrush x:Key="WarningSubtle" Color="#2E2618" />
+            <SolidColorBrush x:Key="Error" Color="#EF5350" />
+            <SolidColorBrush x:Key="ErrorSubtle" Color="#2E1A1A" />
+            <SolidColorBrush x:Key="Info" Color="#64B5F6" />
+            <SolidColorBrush x:Key="InfoSubtle" Color="#182430" />
+
+            <!-- Amounts -->
+            <SolidColorBrush x:Key="AmountPositive" Color="#4CAF6A" />
+            <SolidColorBrush x:Key="AmountNegative" Color="#EF5350" />
+
+            <!-- Legacy compatibility aliases -->
+            <SolidColorBrush x:Key="MainBackgroundBrush" Color="#12161C" />
+            <SolidColorBrush x:Key="PaneBackgroundBrush" Color="#1A2028" />
+            <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#1A2028" />
+            <SolidColorBrush x:Key="AccentBrush" Color="#3B8FD9" />
+            <SolidColorBrush x:Key="SidebarSeparatorBrush" Color="#2A3140" />
+            <SolidColorBrush x:Key="MainForegroundBrush" Color="#E8ECF1" />
+            <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#9AA3B0" />
+            <SolidColorBrush x:Key="FilterPanelBackgroundBrush" Color="#0D1117" />
+            <SolidColorBrush x:Key="FilterPanelBorderBrush" Color="#2A3140" />
+            <SolidColorBrush x:Key="MutedForegroundBrush" Color="#9AA3B0" />
+            <SolidColorBrush x:Key="DimForegroundBrush" Color="#6B7585" />
+            <SolidColorBrush x:Key="SuccessBrush" Color="#4CAF6A" />
+            <SolidColorBrush x:Key="ErrorBrush" Color="#EF5350" />
+            <SolidColorBrush x:Key="WarningBrush" Color="#E09A2E" />
+            <SolidColorBrush x:Key="InfoBrush" Color="#64B5F6" />
+            <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="#B3000000" />
+
+        </ResourceDictionary>
+
+    </ResourceDictionary.ThemeDictionaries>
+
+</ResourceDictionary>

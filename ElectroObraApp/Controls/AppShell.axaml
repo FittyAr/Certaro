@@ -1,0 +1,276 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ElectroObraApp.ViewModels"
+             xmlns:controls="clr-namespace:ElectroObraApp.Controls"
+             xmlns:loc="using:ElectroObraApp.Markup"
+             xmlns:automation="using:Avalonia.Automation"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="ElectroObraApp.Controls.AppShell"
+             x:DataType="vm:MainViewModel"
+             Focusable="True"
+             MinWidth="320">
+
+    <UserControl.KeyBindings>
+        <KeyBinding Gesture="Ctrl+K" Command="{Binding OpenCommandPaletteCommand}" />
+        <KeyBinding Gesture="Ctrl+N" Command="{Binding HandleContextNewCommand}" />
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding HandleContextSaveCommand}" />
+        <KeyBinding Gesture="F5" Command="{Binding HandleRefreshCommand}" />
+        <KeyBinding Gesture="Escape" Command="{Binding HandleEscapeCommand}" />
+        <KeyBinding Gesture="Ctrl+1" Command="{Binding NavigateShortcutCommand}" CommandParameter="1" />
+        <KeyBinding Gesture="Ctrl+2" Command="{Binding NavigateShortcutCommand}" CommandParameter="2" />
+        <KeyBinding Gesture="Ctrl+3" Command="{Binding NavigateShortcutCommand}" CommandParameter="3" />
+        <KeyBinding Gesture="Ctrl+4" Command="{Binding NavigateShortcutCommand}" CommandParameter="4" />
+        <KeyBinding Gesture="Ctrl+5" Command="{Binding NavigateShortcutCommand}" CommandParameter="5" />
+        <KeyBinding Gesture="Ctrl+6" Command="{Binding NavigateShortcutCommand}" CommandParameter="6" />
+        <KeyBinding Gesture="Ctrl+7" Command="{Binding NavigateShortcutCommand}" CommandParameter="7" />
+        <KeyBinding Gesture="Ctrl+8" Command="{Binding NavigateShortcutCommand}" CommandParameter="8" />
+        <KeyBinding Gesture="Ctrl+9" Command="{Binding NavigateShortcutCommand}" CommandParameter="9" />
+    </UserControl.KeyBindings>
+
+    <UserControl.Styles>
+        <Style Selector="Button.menuItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
+        <Style Selector="Button.menuItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SidebarSeparatorBrush}" />
+        </Style>
+        <Style Selector="Button.active">
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="TextBlock.groupHeader">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource TextTertiary}" />
+            <Setter Property="Margin" Value="12,12,12,4" />
+            <Setter Property="LetterSpacing" Value="0.8" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto, *, Auto"
+          Background="{DynamicResource MainBackgroundBrush}">
+
+        <Border Grid.RowSpan="3"
+                ZIndex="100"
+                IsVisible="{Binding IsCommandPaletteOpen}">
+            <controls:CommandPaletteOverlay DataContext="{Binding CommandPalette}" />
+        </Border>
+
+        <!-- Header -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource SurfaceRaised}"
+                BorderBrush="{DynamicResource BorderSubtle}"
+                BorderThickness="0,0,0,1"
+                Padding="12,8">
+            <Grid ColumnDefinitions="Auto, Auto, *">
+                <Button Grid.Column="0"
+                        Classes="eo-secondary"
+                        Padding="8"
+                        MinHeight="36"
+                        MinWidth="36"
+                        Command="{Binding ToggleSidebarCommand}"
+                        automation:AutomationProperties.Name="{loc:Translate Key=Navigation.ToggleSidebar}">
+                    <materialIcons:MaterialIcon Kind="Menu" Width="20" Height="20" />
+                </Button>
+
+                <Image Grid.Column="1"
+                       Source="{Binding LogoImage}"
+                       Height="32"
+                       Margin="12,0,0,0"
+                       VerticalAlignment="Center" />
+
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            Spacing="6"
+                            VerticalAlignment="Center"
+                            Margin="16,0,0,0">
+                    <materialIcons:MaterialIcon Kind="ChevronRight" Width="16" Height="16"
+                                                Foreground="{DynamicResource TextTertiary}" />
+                    <TextBlock Text="{Binding BreadcrumbText}"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextSecondary}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main content with sidebar -->
+        <SplitView Grid.Row="1"
+                   x:Name="NavigationSplitView"
+                   IsPaneOpen="{Binding IsSidebarOpen, Mode=TwoWay}"
+                   DisplayMode="CompactInline"
+                   CompactPaneLength="52"
+                   OpenPaneLength="240"
+                   PaneBackground="{DynamicResource PaneBackgroundBrush}">
+            <SplitView.Pane>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="4,8,4,12" Spacing="2">
+
+                        <!-- Operación -->
+                        <TextBlock Classes="groupHeader" Text="{loc:Translate Key=Menu.Group.Operacion}" />
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=dashboard}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="dashboard"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.Dashboard}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="ViewDashboard" Width="18" Height="18" />
+                                <TextBlock Text="{loc:Translate Key=Menu.Dashboard}" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=movimientos}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="movimientos"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.Movimientos}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="SwapHorizontal" Width="18" Height="18" />
+                                <TextBlock Text="{loc:Translate Key=Menu.Movimientos}" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Comercial -->
+                        <TextBlock Classes="groupHeader" Text="{loc:Translate Key=Menu.Group.Comercial}" />
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=clientes}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="clientes"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.Clientes}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="AccountGroup" Width="18" Height="18" />
+                                <TextBlock Text="{loc:Translate Key=Menu.Clientes}" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=obras}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="obras"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.Obras}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="Domain" Width="18" Height="18" />
+                                <TextBlock Text="{loc:Translate Key=Menu.Obras}" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=certificados}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="certificados"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.Certificados}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="Certificate" Width="18" Height="18" />
+                                <TextBlock Text="{loc:Translate Key=Menu.Certificados}" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=facturas}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="facturas"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.Facturas}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="Receipt" Width="18" Height="18" />
+                                <TextBlock Text="{loc:Translate Key=Menu.Facturas}" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Personal -->
+                        <TextBlock Classes="groupHeader" Text="{loc:Translate Key=Menu.Group.Personal}" />
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=empleados}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="empleados"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.Empleados}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="BadgeAccount" Width="18" Height="18" />
+                                <TextBlock Text="{loc:Translate Key=Menu.Empleados}" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=asistencia}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="asistencia"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.Asistencia}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="CalendarCheck" Width="18" Height="18" />
+                                <TextBlock Text="{loc:Translate Key=Menu.Asistencia}" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=liquidaciones}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="liquidaciones"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.Liquidaciones}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="CashMultiple" Width="18" Height="18" />
+                                <TextBlock Text="{loc:Translate Key=Menu.Liquidaciones}" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Sistema -->
+                        <TextBlock Classes="groupHeader" Text="{loc:Translate Key=Menu.Group.Sistema}" />
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=reportes}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="reportes"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.Reports}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="FileChart" Width="18" Height="18" />
+                                <TextBlock Text="{loc:Translate Key=Menu.Reports}" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=categorias}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="categorias"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.Categories}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="TagMultiple" Width="18" Height="18" />
+                                <TextBlock Text="{loc:Translate Key=Menu.Categories}" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=tipos-movimiento}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="tipos-movimiento"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.MovementTypes}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="FormatListBulletedType" Width="18" Height="18" />
+                                <TextBlock Text="{loc:Translate Key=Menu.MovementTypes}" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=configuracion}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="configuracion"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.Settings}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="Cog" Width="18" Height="18" />
+                                <TextBlock Text="{loc:Translate Key=Menu.Settings}" Foreground="{DynamicResource MainForegroundBrush}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Classes="menuItem"
+                                Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=seed}"
+                                Command="{Binding NavigateToCommand}" CommandParameter="seed"
+                                IsVisible="{Binding IsSeedEnabled}"
+                                automation:AutomationProperties.Name="{loc:Translate Key=Menu.Seed}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <materialIcons:MaterialIcon Kind="Database" Width="18" Height="18" Foreground="Orange" />
+                                <TextBlock Text="{loc:Translate Key=Menu.Seed}" Foreground="Orange" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+            </SplitView.Pane>
+
+            <Grid>
+                <Image Source="{Binding BackgroundImage}"
+                       Opacity="0.05"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+                <TransitioningContentControl Content="{Binding CurrentPage}" />
+            </Grid>
+        </SplitView>
+
+        <!-- Status bar -->
+        <controls:AppStatusBar Grid.Row="2"
+                                 StatusText="{Binding Greeting}"
+                                 RouteText="{Binding CurrentSection}"
+                                 GoBackCommand="{Binding GoBackCommand}"
+                                 CanGoBack="{Binding CanGoBack}" />
+    </Grid>
+</UserControl>

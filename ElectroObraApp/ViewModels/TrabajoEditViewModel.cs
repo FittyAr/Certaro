@@ -5,13 +5,14 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ElectroObraApp.Application.DTOs;
 using ElectroObraApp.Application.Interfaces;
+using ElectroObraApp.Core.Enums;
 
 namespace ElectroObraApp.ViewModels;
 
 public partial class TrabajoEditViewModel : ViewModelBase
 {
     private readonly ITrabajoService _trabajoService;
-    private readonly IClienteService _clienteService;
+    private readonly IObraService _obraService;
     private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
@@ -23,7 +24,9 @@ public partial class TrabajoEditViewModel : ViewModelBase
     }
 
     [ObservableProperty]
-    private ObservableCollection<ClienteDto> _clientes = new();
+    private ObservableCollection<ObraDto> _obras = new();
+
+    public ObservableCollection<EstadoTrabajo> EstadosTrabajo { get; } = new(Enum.GetValues<EstadoTrabajo>());
 
     [ObservableProperty]
     private string _title = "Nuevo Trabajo";
@@ -43,11 +46,11 @@ public partial class TrabajoEditViewModel : ViewModelBase
 
     public TrabajoEditViewModel(
         ITrabajoService trabajoService,
-        IClienteService clienteService,
+        IObraService obraService,
         ILocalizationService localizationService)
     {
         _trabajoService = trabajoService;
-        _clienteService = clienteService;
+        _obraService = obraService;
         _localizationService = localizationService;
         SaveCommand = new AsyncRelayCommand(SaveAsync);
         CancelCommand = new RelayCommand(Cancel);
@@ -104,8 +107,8 @@ public partial class TrabajoEditViewModel : ViewModelBase
 
     public async Task LoadDataAsync()
     {
-        var list = await _clienteService.GetAllAsync();
-        Clientes = new ObservableCollection<ClienteDto>(list);
+        var list = await _obraService.GetAllAsync();
+        Obras = new ObservableCollection<ObraDto>(list);
     }
 
     private async Task SaveAsync()

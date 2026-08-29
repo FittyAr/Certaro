@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ElectroObraApp.Controls"
+             x:Class="ElectroObraApp.Controls.StatusPill"
+             x:DataType="controls:StatusPill">
+    <Border x:Name="PillBorder"
+            CornerRadius="{StaticResource Radius12}"
+            Padding="8,4"
+            HorizontalAlignment="Left">
+        <TextBlock x:Name="PillText"
+                   Classes="BodySmall"
+                   FontWeight="SemiBold"
+                   VerticalAlignment="Center" />
+    </Border>
+</UserControl>

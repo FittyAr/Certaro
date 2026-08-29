@@ -60,7 +60,7 @@ public class TrabajosViewModelTests
     public async Task AddAsync_ShouldSetIsEditingAndEditViewModel()
     {
         // Arrange
-        var editVm = new TrabajoEditViewModel(_trabajoService, _clienteService, Substitute.For<ILocalizationService>());
+        var editVm = new TrabajoEditViewModel(_trabajoService, Substitute.For<IObraService>(), Substitute.For<ILocalizationService>());
         _serviceProvider.GetService(typeof(TrabajoEditViewModel)).Returns(editVm);
 
         // Act

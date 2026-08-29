@@ -10,7 +10,6 @@ using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
-using CommunityToolkit.Mvvm.Messaging;
 
 namespace ElectroObraApp.ViewModels;
 
@@ -20,11 +19,21 @@ public class TopClienteDto
     public decimal Total { get; set; }
 }
 
+public class ObraRankingDto
+{
+    public string Nombre { get; set; } = string.Empty;
+    public decimal Rentabilidad { get; set; }
+    public decimal MargenPorcentaje { get; set; }
+    public string DisplayRentabilidad { get; set; } = string.Empty;
+}
+
 public partial class DashboardViewModel : ViewModelBase
 {
     private readonly IDashboardService _dashboardService;
     private readonly IUserSettingsService _settingsService;
     private readonly IDollarService _dollarService;
+    private readonly INavigationService _navigationService;
+    private readonly ILocalizationService _localizationService;
 
     [ObservableProperty]
     private string _title = "Dashboard Operativo";
@@ -33,7 +42,7 @@ public partial class DashboardViewModel : ViewModelBase
     private ObservableCollection<DollarDto> _dollarRates = new();
 
     [ObservableProperty]
-    private bool _showDollarRates = false;
+    private bool _showDollarRates;
 
     [ObservableProperty]
     private decimal _totalIngresos;
@@ -57,6 +66,24 @@ public partial class DashboardViewModel : ViewModelBase
     private int _liquidacionesPendientesCount;
 
     [ObservableProperty]
+    private int _facturasVencidasCount;
+
+    [ObservableProperty]
+    private int _obrasPausadasCount;
+
+    [ObservableProperty]
+    private string? _ingresosTrend;
+
+    [ObservableProperty]
+    private bool? _ingresosTrendIsPositive;
+
+    [ObservableProperty]
+    private string? _gastosTrend;
+
+    [ObservableProperty]
+    private bool? _gastosTrendIsPositive;
+
+    [ObservableProperty]
     private string _databaseStatus = "Saludable";
 
     [ObservableProperty]
@@ -65,12 +92,7 @@ public partial class DashboardViewModel : ViewModelBase
     partial void OnIsPrivacyModeActiveChanged(bool value)
     {
         _ = _settingsService.SetIsPrivacyModeAsync(value);
-        OnPropertyChanged(nameof(DisplayTotalIngresos));
-        OnPropertyChanged(nameof(DisplayTotalGastos));
-        OnPropertyChanged(nameof(DisplayBalance));
-        OnPropertyChanged(nameof(DisplayRentabilidad));
-        OnPropertyChanged(nameof(ChartTooltipPosition));
-        OnPropertyChanged(nameof(PieTooltipPosition));
+        NotifyDisplayPropertiesChanged();
     }
 
     [ObservableProperty]
@@ -84,11 +106,13 @@ public partial class DashboardViewModel : ViewModelBase
     public ObservableCollection<string> TimeRanges { get; } = new() { "Mensual", "Anual", "Total" };
     public ObservableCollection<TopClienteDto> TopClientes { get; } = new();
     public ObservableCollection<MovimientoDto> RecentMovimientos { get; } = new();
+    public ObservableCollection<ObraRankingDto> RankingObras { get; } = new();
 
     public string DisplayTotalIngresos => IsPrivacyModeActive ? "$ *********" : TotalIngresos.ToString("C");
     public string DisplayTotalGastos => IsPrivacyModeActive ? "$ *********" : TotalGastos.ToString("C");
     public string DisplayBalance => IsPrivacyModeActive ? "$ *********" : Balance.ToString("C");
     public string DisplayRentabilidad => IsPrivacyModeActive ? "** %**" : $"{Rentabilidad:N1} %";
+    public string DisplayClientesActivos => IsPrivacyModeActive ? "**" : ClientesActivos.ToString();
 
     public LiveChartsCore.Measure.TooltipPosition ChartTooltipPosition => IsPrivacyModeActive
         ? LiveChartsCore.Measure.TooltipPosition.Hidden
@@ -99,10 +123,20 @@ public partial class DashboardViewModel : ViewModelBase
         : LiveChartsCore.Measure.TooltipPosition.Right;
 
     public string LiquidacionesPendientesText => LiquidacionesPendientesCount > 0
-        ? $"{LiquidacionesPendientesCount} Liquidaciones Pendientes"
-        : "Personal al día";
+        ? string.Format(_localizationService.GetString("Dashboard.LiquidacionesAlert"), LiquidacionesPendientesCount)
+        : _localizationService.GetString("Dashboard.PayrollUpToDate");
+
+    public string FacturasVencidasText => FacturasVencidasCount > 0
+        ? string.Format(_localizationService.GetString("Dashboard.OverdueInvoicesAlert"), FacturasVencidasCount)
+        : _localizationService.GetString("Dashboard.NoOverdueInvoices");
+
+    public string ObrasPausadasText => ObrasPausadasCount > 0
+        ? string.Format(_localizationService.GetString("Dashboard.PausedWorksAlert"), ObrasPausadasCount)
+        : _localizationService.GetString("Dashboard.NoPausedWorks");
 
     public bool ShowLiquidacionesAlert => LiquidacionesPendientesCount > 0;
+    public bool ShowFacturasVencidasAlert => FacturasVencidasCount > 0;
+    public bool ShowObrasPausadasAlert => ObrasPausadasCount > 0;
 
     public Func<LiveChartsCore.Kernel.ChartPoint, string> PieFormatter =>
         point => $"{point.Context.Series.Name}: {point.Coordinate.PrimaryValue:C}";
@@ -118,11 +152,15 @@ public partial class DashboardViewModel : ViewModelBase
     public DashboardViewModel(
         IDashboardService dashboardService,
         IUserSettingsService settingsService,
-        IDollarService dollarService)
+        IDollarService dollarService,
+        INavigationService navigationService,
+        ILocalizationService localizationService)
     {
         _dashboardService = dashboardService;
         _settingsService = settingsService;
         _dollarService = dollarService;
+        _navigationService = navigationService;
+        _localizationService = localizationService;
 
         CurrentTimeRange = settingsService.GetDashboardPeriod();
         IsPrivacyModeActive = settingsService.GetIsPrivacyMode();
@@ -152,7 +190,7 @@ public partial class DashboardViewModel : ViewModelBase
     private void NavigateToAlert(string? destination)
     {
         if (string.IsNullOrEmpty(destination)) return;
-        WeakReferenceMessenger.Default.Send(destination);
+        _navigationService.NavigateTo(destination);
     }
 
     public async Task LoadStatsAsync()
@@ -171,11 +209,13 @@ public partial class DashboardViewModel : ViewModelBase
             ClientesActivos = stats.ClientesActivos;
             TrabajosPendientes = stats.TrabajosPendientes;
             LiquidacionesPendientesCount = stats.LiquidacionesPendientes;
+            FacturasVencidasCount = stats.FacturasVencidasCount;
+            ObrasPausadasCount = stats.ObrasPausadasCount;
             DatabaseStatus = stats.DatabaseStatus;
 
-            OnPropertyChanged(nameof(LiquidacionesPendientesText));
-            OnPropertyChanged(nameof(ShowLiquidacionesAlert));
-            OnPropertyChanged(nameof(DisplayRentabilidad));
+            UpdateTrendProperties(stats);
+            NotifyDisplayPropertiesChanged();
+            NotifyAlertPropertiesChanged();
 
             TopClientes.Clear();
             foreach (var t in stats.TopClientes)
@@ -184,6 +224,20 @@ public partial class DashboardViewModel : ViewModelBase
             RecentMovimientos.Clear();
             foreach (var r in stats.RecentMovimientos)
                 RecentMovimientos.Add(r);
+
+            RankingObras.Clear();
+            foreach (var obra in stats.RankingObras)
+            {
+                RankingObras.Add(new ObraRankingDto
+                {
+                    Nombre = obra.Nombre,
+                    Rentabilidad = obra.Rentabilidad,
+                    MargenPorcentaje = obra.MargenPorcentaje,
+                    DisplayRentabilidad = IsPrivacyModeActive
+                        ? "$ *********"
+                        : obra.Rentabilidad.ToString("C")
+                });
+            }
 
             Series.Clear();
             Series.Add(new ColumnSeries<double>
@@ -226,5 +280,55 @@ public partial class DashboardViewModel : ViewModelBase
         {
             IsLoading = false;
         }
+    }
+
+    private void UpdateTrendProperties(DashboardStatsDto stats)
+    {
+        var vsPrevious = _localizationService.GetString("Dashboard.VsPreviousPeriod");
+
+        if (stats.IngresosChangePercent.HasValue)
+        {
+            var sign = stats.IngresosChangePercent.Value >= 0 ? "+" : string.Empty;
+            IngresosTrend = $"{sign}{stats.IngresosChangePercent.Value:N1}% {vsPrevious}";
+            IngresosTrendIsPositive = stats.IngresosChangePercent.Value >= 0;
+        }
+        else
+        {
+            IngresosTrend = null;
+            IngresosTrendIsPositive = null;
+        }
+
+        if (stats.GastosChangePercent.HasValue)
+        {
+            var sign = stats.GastosChangePercent.Value >= 0 ? "+" : string.Empty;
+            GastosTrend = $"{sign}{stats.GastosChangePercent.Value:N1}% {vsPrevious}";
+            GastosTrendIsPositive = stats.GastosChangePercent.Value <= 0;
+        }
+        else
+        {
+            GastosTrend = null;
+            GastosTrendIsPositive = null;
+        }
+    }
+
+    private void NotifyDisplayPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(DisplayTotalIngresos));
+        OnPropertyChanged(nameof(DisplayTotalGastos));
+        OnPropertyChanged(nameof(DisplayBalance));
+        OnPropertyChanged(nameof(DisplayRentabilidad));
+        OnPropertyChanged(nameof(DisplayClientesActivos));
+        OnPropertyChanged(nameof(ChartTooltipPosition));
+        OnPropertyChanged(nameof(PieTooltipPosition));
+    }
+
+    private void NotifyAlertPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(LiquidacionesPendientesText));
+        OnPropertyChanged(nameof(FacturasVencidasText));
+        OnPropertyChanged(nameof(ObrasPausadasText));
+        OnPropertyChanged(nameof(ShowLiquidacionesAlert));
+        OnPropertyChanged(nameof(ShowFacturasVencidasAlert));
+        OnPropertyChanged(nameof(ShowObrasPausadasAlert));
     }
 }

@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ElectroObraApp.Controls"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="ElectroObraApp.Controls.EmptyState"
+             x:DataType="controls:EmptyState">
+    <Border Background="{DynamicResource SurfaceRaised}"
+            BorderBrush="{DynamicResource BorderSubtle}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource Radius12}"
+            Padding="{StaticResource Padding32}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            MaxWidth="420">
+        <StackPanel Spacing="{StaticResource Space16}" HorizontalAlignment="Center">
+            <materialIcons:MaterialIcon Kind="{Binding IconKind, RelativeSource={RelativeSource AncestorType=controls:EmptyState}}"
+                                        Width="48"
+                                        Height="48"
+                                        Foreground="{DynamicResource TextTertiary}"
+                                        HorizontalAlignment="Center" />
+            <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=controls:EmptyState}}"
+                       Classes="H3"
+                       TextAlignment="Center"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="{Binding Description, RelativeSource={RelativeSource AncestorType=controls:EmptyState}}"
+                       Classes="BodySmall"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"
+                       IsVisible="{Binding Description, RelativeSource={RelativeSource AncestorType=controls:EmptyState}, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <Button Content="{Binding ActionText, RelativeSource={RelativeSource AncestorType=controls:EmptyState}}"
+                    Command="{Binding ActionCommand, RelativeSource={RelativeSource AncestorType=controls:EmptyState}}"
+                    Classes="eo-primary"
+                    HorizontalAlignment="Center"
+                    IsVisible="{Binding ActionText, RelativeSource={RelativeSource AncestorType=controls:EmptyState}, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+    </Border>
+</UserControl>

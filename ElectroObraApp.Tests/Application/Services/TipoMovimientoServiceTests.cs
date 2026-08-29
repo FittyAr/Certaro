@@ -1,7 +1,9 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentValidation;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using ElectroObraApp.Application.DTOs;
 using ElectroObraApp.Application.Services;
@@ -22,22 +24,21 @@ public class TipoMovimientoServiceTests
         _uow = Substitute.For<IUnitOfWork>();
         _repo = Substitute.For<IRepository<TipoMovimiento>>();
         _uow.Repository<TipoMovimiento>().Returns(_repo);
-        _service = new TipoMovimientoService(_uow);
+        _service = new TipoMovimientoService(
+            _uow,
+            NullLogger<TipoMovimientoService>.Instance,
+            Substitute.For<IValidator<TipoMovimientoDto>>());
     }
 
     [Fact]
     public async Task GetAllAsync_ShouldReturnList()
     {
-        // Arrange
         var list = new List<TipoMovimiento> { new() { Nombre = "Efectivo" } };
         _repo.GetAllAsync().Returns(list);
 
-        // Act
         var result = await _service.GetAllAsync();
 
-        // Assert
         result.Should().HaveCount(1);
         result.First().Nombre.Should().Be("Efectivo");
     }
 }
-

@@ -34,7 +34,11 @@ public class ClientesViewModelTests
             _settingsService,
             Substitute.For<IConfirmDialogService>(),
             _localizationService,
-            _serviceProvider);
+            _serviceProvider,
+            new CuentaCorrienteViewModel(
+                Substitute.For<IComercialService>(),
+                _clienteService,
+                _localizationService));
     }
 
     [Fact]

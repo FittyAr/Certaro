@@ -13,20 +13,25 @@ public class DashboardViewModelTests
     private readonly IDashboardService _dashboardService;
     private readonly IUserSettingsService _settingsService;
     private readonly IDollarService _dollarService;
+    private readonly INavigationService _navigationService;
+    private readonly ILocalizationService _localizationService;
 
     public DashboardViewModelTests()
     {
         _dashboardService = Substitute.For<IDashboardService>();
         _settingsService = Substitute.For<IUserSettingsService>();
         _dollarService = Substitute.For<IDollarService>();
+        _navigationService = Substitute.For<INavigationService>();
+        _localizationService = Substitute.For<ILocalizationService>();
 
         _settingsService.GetDashboardPeriod().Returns("Mes");
         _settingsService.GetIsPrivacyMode().Returns(false);
         _settingsService.GetAutoUpdateDollar().Returns(false);
+        _localizationService.GetString(Arg.Any<string>()).Returns(call => call.Arg<string>());
     }
 
     private DashboardViewModel CreateDashboardViewModel() =>
-        new(_dashboardService, _settingsService, _dollarService);
+        new(_dashboardService, _settingsService, _dollarService, _navigationService, _localizationService);
 
     [Fact]
     public async Task Constructor_ShouldCalculateTotals()
@@ -72,5 +77,15 @@ public class DashboardViewModelTests
         vm.TotalIngresos.Should().Be(200);
         vm.TotalGastos.Should().Be(0);
         vm.Balance.Should().Be(200);
+    }
+
+    [Fact]
+    public void NavigateToAlert_ShouldUseNavigationService()
+    {
+        var vm = CreateDashboardViewModel();
+
+        vm.NavigateToAlertCommand.Execute("facturas");
+
+        _navigationService.Received(1).NavigateTo("facturas");
     }
 }

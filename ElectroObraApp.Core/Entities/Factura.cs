@@ -16,4 +16,5 @@ public class Factura : BaseEntity
     public decimal Total { get; set; }
     public string? Observaciones { get; set; }
     public ICollection<Movimiento> Movimientos { get; set; } = new List<Movimiento>();
+    public ICollection<PagoFactura> Pagos { get; set; } = new List<PagoFactura>();
 }

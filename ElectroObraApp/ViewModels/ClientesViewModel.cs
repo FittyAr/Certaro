@@ -41,18 +41,25 @@ public partial class ClientesViewModel : ViewModelBase
     [ObservableProperty]
     private string _filtroNombre = string.Empty;
 
+    [ObservableProperty]
+    private int _selectedTabIndex;
+
+    public CuentaCorrienteViewModel CuentaCorrienteViewModel { get; }
+
     public ClientesViewModel(
         IClienteService clienteService,
         IUserSettingsService settingsService,
         IConfirmDialogService confirmDialogService,
         ILocalizationService localizationService,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        CuentaCorrienteViewModel cuentaCorrienteViewModel)
     {
         _clienteService = clienteService;
         _settingsService = settingsService;
         _confirmDialogService = confirmDialogService;
         _localizationService = localizationService;
         _serviceProvider = serviceProvider;
+        CuentaCorrienteViewModel = cuentaCorrienteViewModel;
         _pageSize = _settingsService.GetPageSize();
 
         LoadClientesCommand = new AsyncRelayCommand(LoadClientesAsync);

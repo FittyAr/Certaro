@@ -12,8 +12,8 @@ public class TrabajoValidator : AbstractValidator<TrabajoDto>
             .NotEmpty().WithMessage(ValidationMessages.TrabajoDescripcionRequired)
             .MaximumLength(200).WithMessage(ValidationMessages.TrabajoDescripcionMaxLength);
 
-        RuleFor(x => x.ClienteId)
-            .NotEmpty().WithMessage(ValidationMessages.TrabajoClienteRequired);
+        RuleFor(x => x.ObraId)
+            .NotEmpty().WithMessage(ValidationMessages.TrabajoObraRequired);
 
         RuleForEach(x => x.OrdenesTrabajo).SetValidator(new OrdenTrabajoValidator());
     }

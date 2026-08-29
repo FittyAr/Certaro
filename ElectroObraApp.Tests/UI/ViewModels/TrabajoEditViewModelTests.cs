@@ -14,17 +14,17 @@ namespace ElectroObraApp.Tests.UI.ViewModels;
 public class TrabajoEditViewModelTests
 {
     private readonly ITrabajoService _trabajoService;
-    private readonly IClienteService _clienteService;
+    private readonly IObraService _obraService;
     private readonly ILocalizationService _localizationService;
     private readonly TrabajoEditViewModel _viewModel;
 
     public TrabajoEditViewModelTests()
     {
         _trabajoService = Substitute.For<ITrabajoService>();
-        _clienteService = Substitute.For<IClienteService>();
+        _obraService = Substitute.For<IObraService>();
         _localizationService = Substitute.For<ILocalizationService>();
         _localizationService.GetString(Arg.Any<string>()).Returns(call => call.Arg<string>());
-        _viewModel = new TrabajoEditViewModel(_trabajoService, _clienteService, _localizationService);
+        _viewModel = new TrabajoEditViewModel(_trabajoService, _obraService, _localizationService);
     }
 
     [Fact]
@@ -99,14 +99,14 @@ public class TrabajoEditViewModelTests
     }
 
     [Fact]
-    public async Task LoadData_ShouldPopulateClientes()
+    public async Task LoadData_ShouldPopulateObras()
     {
-        var clientes = new List<ClienteDto> { new() { Nombre = "Cliente 1" } };
-        _clienteService.GetAllAsync().Returns(clientes);
+        var obras = new List<ObraDto> { new() { Nombre = "Obra 1" } };
+        _obraService.GetAllAsync().Returns(obras);
 
         await _viewModel.LoadDataCommand.ExecuteAsync(null);
 
-        _viewModel.Clientes.Should().HaveCount(1);
+        _viewModel.Obras.Should().HaveCount(1);
     }
 
     [Fact]

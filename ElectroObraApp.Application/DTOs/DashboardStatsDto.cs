@@ -19,6 +19,23 @@ public class DashboardStatsDto
     public double[] MonthlyIncome { get; set; } = new double[12];
     public double[] MonthlyExpenses { get; set; } = new double[12];
     public List<DashboardCategoryStatDto> CategoryExpenses { get; set; } = new();
+    public int FacturasVencidasCount { get; set; }
+    public int ObrasPausadasCount { get; set; }
+    public decimal PreviousPeriodIngresos { get; set; }
+    public decimal PreviousPeriodGastos { get; set; }
+    public decimal? IngresosChangePercent { get; set; }
+    public decimal? GastosChangePercent { get; set; }
+    public List<DashboardObraRentabilidadDto> RankingObras { get; set; } = new();
+}
+
+public class DashboardObraRentabilidadDto
+{
+    public Guid ObraId { get; set; }
+    public string Nombre { get; set; } = string.Empty;
+    public decimal Ingresos { get; set; }
+    public decimal Gastos { get; set; }
+    public decimal Rentabilidad => Ingresos - Gastos;
+    public decimal MargenPorcentaje { get; set; }
 }
 
 public class DashboardTopClienteDto

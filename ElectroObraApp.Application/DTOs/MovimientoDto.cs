@@ -27,5 +27,11 @@ public class MovimientoDto : IHasGuidId
     public Guid? ClienteId { get; set; }
     public string? ClienteNombre { get; set; }
     public Guid? TrabajoId { get; set; }
+    public string? TrabajoDescripcion { get; set; }
+    public Guid? FacturaId { get; set; }
+    public string? FacturaNumero { get; set; }
+    public decimal? CotizacionAplicada { get; set; }
+    public Guid? TipoConceptoPagoId { get; set; }
+    public string? TipoConceptoPagoNombre { get; set; }
 }
 

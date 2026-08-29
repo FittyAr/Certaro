@@ -16,6 +16,10 @@ public class MovimientoEditViewModelTests
     private readonly ICategoriaService _categoriaService;
     private readonly ITipoMovimientoService _tipoMovimientoService;
     private readonly IEmpleadoService _empleadoService;
+    private readonly IClienteService _clienteService;
+    private readonly IObraService _obraService;
+    private readonly ITrabajoService _trabajoService;
+    private readonly IFacturaService _facturaService;
     private readonly ILocalizationService _localizationService;
     private readonly MovimientoEditViewModel _viewModel;
 
@@ -25,10 +29,22 @@ public class MovimientoEditViewModelTests
         _categoriaService = Substitute.For<ICategoriaService>();
         _tipoMovimientoService = Substitute.For<ITipoMovimientoService>();
         _empleadoService = Substitute.For<IEmpleadoService>();
+        _clienteService = Substitute.For<IClienteService>();
+        _obraService = Substitute.For<IObraService>();
+        _trabajoService = Substitute.For<ITrabajoService>();
+        _facturaService = Substitute.For<IFacturaService>();
         _localizationService = Substitute.For<ILocalizationService>();
         _localizationService.GetString(Arg.Any<string>()).Returns(call => call.Arg<string>());
         _viewModel = new MovimientoEditViewModel(
-            _movimientoService, _categoriaService, _tipoMovimientoService, _empleadoService, _localizationService);
+            _movimientoService,
+            _categoriaService,
+            _tipoMovimientoService,
+            _empleadoService,
+            _clienteService,
+            _obraService,
+            _trabajoService,
+            _facturaService,
+            _localizationService);
     }
 
     [Fact]
@@ -84,6 +100,10 @@ public class MovimientoEditViewModelTests
         _categoriaService.GetAllAsync().Returns(cats);
         _tipoMovimientoService.GetAllAsync().Returns(tipos);
         _empleadoService.GetAllAsync().Returns(new System.Collections.Generic.List<EmpleadoDto>());
+        _clienteService.GetAllAsync().Returns(new System.Collections.Generic.List<ClienteDto>());
+        _obraService.GetAllAsync().Returns(new System.Collections.Generic.List<ObraDto>());
+        _trabajoService.GetAllAsync().Returns(new System.Collections.Generic.List<TrabajoDto>());
+        _facturaService.GetAllAsync().Returns(new System.Collections.Generic.List<FacturaDto>());
 
         await _viewModel.LoadDataCommand.ExecuteAsync(null);
 
@@ -99,6 +119,10 @@ public class MovimientoEditViewModelTests
         _tipoMovimientoService.GetAllAsync().Returns(tipos);
         _categoriaService.GetAllAsync().Returns(new System.Collections.Generic.List<CategoriaDto>());
         _empleadoService.GetAllAsync().Returns(new System.Collections.Generic.List<EmpleadoDto>());
+        _clienteService.GetAllAsync().Returns(new System.Collections.Generic.List<ClienteDto>());
+        _obraService.GetAllAsync().Returns(new System.Collections.Generic.List<ObraDto>());
+        _trabajoService.GetAllAsync().Returns(new System.Collections.Generic.List<TrabajoDto>());
+        _facturaService.GetAllAsync().Returns(new System.Collections.Generic.List<FacturaDto>());
 
         await _viewModel.LoadDataCommand.ExecuteAsync(null);
 

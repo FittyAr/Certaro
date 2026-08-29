@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ElectroObraApp.Controls"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="ElectroObraApp.Controls.KpiCard"
+             x:DataType="controls:KpiCard">
+    <Border Classes="eo-card" MinWidth="160">
+        <StackPanel Spacing="{StaticResource Space8}">
+            <TextBlock Text="{Binding Title}"
+                       Classes="BodySmall"
+                       IsVisible="{Binding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Text="{Binding Value}"
+                       Classes="H2"
+                       IsVisible="{Binding Value, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <StackPanel Orientation="Horizontal"
+                        Spacing="{StaticResource Space4}"
+                        IsVisible="{Binding Trend, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <materialIcons:MaterialIcon x:Name="TrendIcon"
+                                            Width="14"
+                                            Height="14"
+                                            VerticalAlignment="Center" />
+                <TextBlock x:Name="TrendTextBlock"
+                           Classes="Caption"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

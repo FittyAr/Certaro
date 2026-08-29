@@ -1,0 +1,85 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
+             xmlns:dto="clr-namespace:ElectroObraApp.Application.DTOs;assembly=ElectroObraApp.Application"
+             xmlns:controls="clr-namespace:ElectroObraApp.Controls"
+             xmlns:loc="using:ElectroObraApp.Markup"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+             x:Class="ElectroObraApp.Views.CuentaCorrienteView"
+             x:DataType="vm:CuentaCorrienteViewModel">
+    <Grid>
+        <DockPanel Margin="0,10,0,0" IsVisible="{Binding !IsLoading}">
+            <StackPanel DockPanel.Dock="Top" Spacing="12" Margin="0,0,0,20">
+                <Grid ColumnDefinitions="Auto,*">
+                    <TextBlock Text="{loc:Translate Key=Commercial.SelectClient}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,0"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}" />
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding Clientes}"
+                              SelectedItem="{Binding SelectedCliente}"
+                              HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="dto:ClienteDto">
+                                <TextBlock Text="{Binding Nombre}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Grid>
+
+                <UniformGrid Columns="5" Margin="0,8,0,0">
+                    <controls:KpiCard Title="{loc:Translate Key=Commercial.TotalDebt}"
+                                      Value="{Binding DisplayTotalDeuda}" />
+                    <controls:KpiCard Title="{loc:Translate Key=Commercial.Bucket0_30}"
+                                      Value="{Binding DisplayBucket0To30}" />
+                    <controls:KpiCard Title="{loc:Translate Key=Commercial.Bucket31_60}"
+                                      Value="{Binding DisplayBucket31To60}" />
+                    <controls:KpiCard Title="{loc:Translate Key=Commercial.Bucket61_90}"
+                                      Value="{Binding DisplayBucket61To90}" />
+                    <controls:KpiCard Title="{loc:Translate Key=Commercial.Bucket90Plus}"
+                                      Value="{Binding DisplayBucketOver90}" />
+                </UniformGrid>
+            </StackPanel>
+
+            <StackPanel DockPanel.Dock="Bottom"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="10"
+                        Margin="0,10,0,0">
+                <Button Content="{loc:Translate Key=General.Refresh}"
+                        Command="{Binding LoadCommand}" />
+            </StackPanel>
+
+            <Grid>
+                <DataGrid ItemsSource="{Binding Items}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          GridLinesVisibility="All"
+                          IsVisible="{Binding !IsLoading}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="{loc:Translate Key=Commercial.InvoiceNumber}"
+                                            Binding="{Binding Numero, Mode=OneWay}" Width="*" />
+                        <DataGridTextColumn Header="{loc:Translate Key=Movements.Date}"
+                                            Binding="{Binding Fecha, StringFormat=\{0:dd/MM/yyyy\}, Mode=OneWay}" />
+                        <DataGridTextColumn Header="{loc:Translate Key=Movements.Total}"
+                                            Binding="{Binding Total, StringFormat=\{0:C\}, Mode=OneWay}" />
+                        <DataGridTextColumn Header="{loc:Translate Key=Commercial.PaidAmount}"
+                                            Binding="{Binding Pagado, StringFormat=\{0:C\}, Mode=OneWay}" />
+                        <DataGridTextColumn Header="{loc:Translate Key=Commercial.DueAmount}"
+                                            Binding="{Binding Saldo, StringFormat=\{0:C\}, Mode=OneWay}" />
+                        <DataGridTextColumn Header="{loc:Translate Key=Commercial.DaysOverdue}"
+                                            Binding="{Binding DiasVencido, Mode=OneWay}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <controls:ListStateOverlay IsLoading="{Binding IsLoading}"
+                                           IsEmpty="{Binding IsEmpty}"
+                                           HasError="{Binding HasError}"
+                                           ErrorMessage="{Binding ErrorMessage}"
+                                           RetryCommand="{Binding LoadCommand}" />
+            </Grid>
+        </DockPanel>
+    </Grid>
+</UserControl>

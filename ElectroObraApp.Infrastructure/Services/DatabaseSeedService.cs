@@ -57,6 +57,7 @@ public class DatabaseSeedService : IDatabaseSeedService
         // Limpiar tablas
         _context.Movimientos.RemoveRange(_context.Movimientos);
         _context.Trabajos.RemoveRange(_context.Trabajos);
+        _context.Obras.RemoveRange(_context.Obras);
         _context.Clientes.RemoveRange(_context.Clientes);
         _context.Empleados.RemoveRange(_context.Empleados);
         _context.Categorias.RemoveRange(_context.Categorias);
@@ -126,25 +127,38 @@ public class DatabaseSeedService : IDatabaseSeedService
 
         await _context.SaveChangesAsync();
 
-        // 5. Sembrar Trabajos y Movimientos
-        _logger.LogInformation("Sembrando Trabajos y Movimientos (esto puede tardar unos segundos)...");
+        // 5. Sembrar Obras, Trabajos y Movimientos
+        _logger.LogInformation("Sembrando Obras, Trabajos y Movimientos (esto puede tardar unos segundos)...");
         var allMovimientos = new List<Movimiento>();
         var startYear = DateTime.Now.AddYears(-1);
+        var obraNumero = 1;
         foreach (var cliente in clientes)
         {
             int workCount = _random.Next(10, 21);
             for (int i = 0; i < workCount; i++)
             {
                 var workStartDate = startYear.AddDays(_random.Next(0, 365));
+                var obra = new Obra
+                {
+                    Numero = obraNumero++,
+                    Nombre = $"{pool.DescripcionesTrabajos[_random.Next(pool.DescripcionesTrabajos.Count)]} - {cliente.Nombre}",
+                    Direccion = cliente.Direccion,
+                    Localidad = "Buenos Aires",
+                    ClienteId = cliente.Id,
+                    Estado = EstadoObra.Activa
+                };
+                _context.Obras.Add(obra);
+
+                var finalizado = workStartDate.AddDays(30) < DateTime.Now && _random.Next(10) > 2;
                 var trabajo = new Trabajo
                 {
                     Descripcion = $"{pool.DescripcionesTrabajos[_random.Next(pool.DescripcionesTrabajos.Count)]} #{i + 1}",
-                    ClienteId = cliente.Id,
+                    Obra = obra,
                     FechaInicio = workStartDate,
                     Presupuesto = _random.Next(50000, 500000),
-                    Finalizado = workStartDate.AddDays(30) < DateTime.Now && _random.Next(10) > 2
+                    Estado = finalizado ? EstadoTrabajo.Finalizado : EstadoTrabajo.EnProceso
                 };
-                if (trabajo.Finalizado) trabajo.FechaFin = trabajo.FechaInicio.AddDays(_random.Next(5, 45));
+                if (finalizado) trabajo.FechaFin = trabajo.FechaInicio.AddDays(_random.Next(5, 45));
                 
                 // 5.1 Sembrar Ordenes de Trabajo (Certificados)
                 int certCount = _random.Next(1, 4);

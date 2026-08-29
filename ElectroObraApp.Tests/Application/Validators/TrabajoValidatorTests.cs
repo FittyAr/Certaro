@@ -24,19 +24,18 @@ public class TrabajoValidatorTests
     }
 
     [Fact]
-    public void Should_HaveError_When_ClienteIdIsEmpty()
+    public void Should_HaveError_When_ObraIdIsEmpty()
     {
-        var model = new TrabajoDto { Descripcion = "Trabajo 1", ClienteId = Guid.Empty };
+        var model = new TrabajoDto { Descripcion = "Trabajo 1", ObraId = Guid.Empty };
         var result = _validator.TestValidate(model);
-        result.ShouldHaveValidationErrorFor(x => x.ClienteId);
+        result.ShouldHaveValidationErrorFor(x => x.ObraId);
     }
 
     [Fact]
     public void Should_NotHaveError_When_ModelIsValid()
     {
-        var model = new TrabajoDto { Descripcion = "Trabajo 1", ClienteId = Guid.NewGuid() };
+        var model = new TrabajoDto { Descripcion = "Trabajo 1", ObraId = Guid.NewGuid() };
         var result = _validator.TestValidate(model);
         result.ShouldNotHaveAnyValidationErrors();
     }
 }
-

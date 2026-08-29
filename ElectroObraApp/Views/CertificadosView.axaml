@@ -1,0 +1,228 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
+             xmlns:dto="clr-namespace:ElectroObraApp.Application.DTOs;assembly=ElectroObraApp.Application"
+             xmlns:controls="clr-namespace:ElectroObraApp.Controls"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:loc="using:ElectroObraApp.Markup"
+             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="700"
+             x:Class="ElectroObraApp.Views.CertificadosView"
+             x:DataType="vm:CertificadosViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Border.docCard">
+            <Setter Property="Background" Value="{DynamicResource SurfaceRaised}"/>
+            <Setter Property="CornerRadius" Value="{StaticResource Radius6}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+        <Style Selector="Border.docCard:selected">
+            <Setter Property="BorderBrush" Value="{DynamicResource Accent}"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceSunken}"/>
+        </Style>
+        <Style Selector="TextBlock.colHead">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextTertiary}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <DockPanel Margin="20">
+        <controls:PageHeader DockPanel.Dock="Top"
+                             Title="{Binding Title}"
+                             Subtitle="{Binding Subtitle}">
+            <controls:PageHeader.Actions>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="{loc:Translate Key=General.Refresh}"
+                            Command="{Binding LoadCommand}"
+                            Classes="outline"/>
+                    <Button Command="{Binding ExportPdfCommand}"
+                            Classes="accent"
+                            IsEnabled="{Binding HasSelection}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <materialIcons:MaterialIcon Kind="FilePdfBox" Width="16" Height="16"/>
+                            <TextBlock Text="{loc:Translate Key=Certificates.ExportPdf}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </controls:PageHeader.Actions>
+        </controls:PageHeader>
+
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="16">
+            <!-- Lista de documentos -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource SurfaceSunken}"
+                    CornerRadius="{StaticResource Radius8}"
+                    BorderBrush="{DynamicResource BorderSubtle}"
+                    BorderThickness="1"
+                    Padding="8">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top"
+                               Text="{loc:Translate Key=Certificates.DocumentList}"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextTertiary}"
+                               Margin="4,4,4,10"/>
+
+                    <ListBox ItemsSource="{Binding Certificados}"
+                             SelectedItem="{Binding SelectedCertificado}"
+                             Background="Transparent"
+                             BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:CertificadoDocumentItem">
+                                <Border Classes="docCard" Margin="0,0,0,6">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="{Binding ListTitle}"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextPrimary}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding ListSubtitle}"
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource TextSecondary}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <controls:MoneyText Amount="{Binding TotalActual}"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Vista documento -->
+            <Grid Grid.Column="1">
+                <Border IsVisible="{Binding HasSelection}"
+                        Classes="docCard"
+                        Padding="20">
+                    <ScrollViewer>
+                        <StackPanel Spacing="16" DataContext="{Binding SelectedCertificado}">
+                            <!-- Encabezado del certificado -->
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
+                                           Text="{Binding Certificado.Titulo}"
+                                           FontSize="20"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource TextPrimary}"/>
+                                <StackPanel Grid.Row="1" Grid.Column="0" Spacing="4" Margin="0,8,0,0">
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource TextTertiary}">
+                                        <Run Text="{loc:Translate Key=Certificates.Job}"/>
+                                        <Run Text="{Binding Trabajo.Descripcion}"/>
+                                    </TextBlock>
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource TextTertiary}">
+                                        <Run Text="{loc:Translate Key=Certificates.Client}"/>
+                                        <Run Text="{Binding Trabajo.ClienteNombre}"/>
+                                    </TextBlock>
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource TextTertiary}">
+                                        <Run Text="{loc:Translate Key=Certificates.Date}"/>
+                                        <Run Text="{Binding Certificado.Fecha, StringFormat={}{0:dd/MM/yyyy}}"/>
+                                    </TextBlock>
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource TextTertiary}"
+                                               IsVisible="{Binding Certificado.NumeroCertificado, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                        <Run Text="{loc:Translate Key=Certificates.Number}"/>
+                                        <Run Text="{Binding Certificado.NumeroCertificado}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="1"
+                                            VerticalAlignment="Top"
+                                            Spacing="4"
+                                            Margin="16,8,0,0">
+                                    <TextBlock Text="{loc:Translate Key=Certificates.PeriodTotal}"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextTertiary}"
+                                               HorizontalAlignment="Right"/>
+                                    <controls:MoneyText Amount="{Binding TotalActual}"
+                                                        HorizontalAlignment="Right"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Separator Background="{DynamicResource BorderSubtle}"/>
+
+                            <!-- Ítems -->
+                            <StackPanel Spacing="8">
+                                <Grid ColumnDefinitions="*,80,80,120,100"
+                                      ColumnSpacing="8"
+                                      Margin="0,0,0,4">
+                                    <TextBlock Classes="colHead" Text="{loc:Translate Key=Certificates.ItemDescription}"/>
+                                    <TextBlock Grid.Column="1" Classes="colHead" Text="{loc:Translate Key=Certificates.Executed}"/>
+                                    <TextBlock Grid.Column="2" Classes="colHead" Text="{loc:Translate Key=Certificates.CurrentPercent}"/>
+                                    <TextBlock Grid.Column="3" Classes="colHead" Text="{loc:Translate Key=Certificates.Note}"/>
+                                    <TextBlock Grid.Column="4" Classes="colHead" Text="{loc:Translate Key=Certificates.Subtotal}" HorizontalAlignment="Right"/>
+                                </Grid>
+
+                                <ItemsControl ItemsSource="{Binding Certificado.Items}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="dto:OrdenTrabajoItemDto">
+                                            <Border Background="{DynamicResource SurfaceSunken}"
+                                                    CornerRadius="{StaticResource Radius4}"
+                                                    Padding="10,8"
+                                                    Margin="0,0,0,6">
+                                                <Grid ColumnDefinitions="*,80,80,120,100"
+                                                      ColumnSpacing="8">
+                                                    <TextBlock Text="{Binding Descripcion}"
+                                                               TextWrapping="Wrap"
+                                                               VerticalAlignment="Center"/>
+                                                    <CheckBox Grid.Column="1"
+                                                              IsChecked="{Binding Ejecutado}"
+                                                              IsEnabled="False"
+                                                              HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center"/>
+                                                    <StackPanel Grid.Column="2"
+                                                                VerticalAlignment="Center">
+                                                        <controls:PercentBar Value="{Binding PorcentajeActual}" />
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="3"
+                                                               Text="{Binding Nota}"
+                                                               Foreground="{DynamicResource TextSecondary}"
+                                                               FontSize="12"
+                                                               TextWrapping="Wrap"
+                                                               VerticalAlignment="Center"/>
+                                                    <controls:MoneyText Grid.Column="4"
+                                                                        Amount="{Binding SubtotalActual}"
+                                                                        HorizontalAlignment="Right"
+                                                                        VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <!-- Totales -->
+                            <Border Background="{DynamicResource SurfaceSunken}"
+                                    CornerRadius="{StaticResource Radius4}"
+                                    Padding="12">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="{loc:Translate Key=Certificates.AccumulatedTotal}"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextTertiary}"/>
+                                    <controls:MoneyText Grid.Column="1"
+                                                        Amount="{Binding TotalAcumulado}"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <StackPanel IsVisible="{Binding ShowEmptyDetail}"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            Spacing="8">
+                    <TextBlock Text="📋"
+                               FontSize="36"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{loc:Translate Key=Certificates.SelectPrompt}"
+                               Foreground="{DynamicResource TextTertiary}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <controls:ListStateOverlay IsLoading="{Binding IsLoading}"
+                                           IsEmpty="{Binding IsEmpty}"
+                                           HasError="{Binding HasError}"
+                                           ErrorMessage="{Binding ErrorMessage}"
+                                           RetryCommand="{Binding LoadCommand}"/>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</UserControl>

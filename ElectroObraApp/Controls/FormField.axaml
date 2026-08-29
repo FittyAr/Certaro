@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ElectroObraApp.Controls"
+             x:Class="ElectroObraApp.Controls.FormField"
+             x:DataType="controls:FormField">
+    <StackPanel Spacing="{StaticResource Space4}">
+        <StackPanel Orientation="Horizontal" Spacing="{StaticResource Space4}">
+            <TextBlock Text="{Binding Label, RelativeSource={RelativeSource AncestorType=controls:FormField}}"
+                       Classes="BodySmall"
+                       FontWeight="SemiBold"
+                       IsVisible="{Binding Label, RelativeSource={RelativeSource AncestorType=controls:FormField}, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Text="*"
+                       Foreground="{DynamicResource Error}"
+                       FontWeight="Bold"
+                       IsVisible="{Binding IsRequired, RelativeSource={RelativeSource AncestorType=controls:FormField}}" />
+        </StackPanel>
+        <ContentPresenter Content="{Binding FieldContent, RelativeSource={RelativeSource AncestorType=controls:FormField}}" />
+        <TextBlock Text="{Binding Error, RelativeSource={RelativeSource AncestorType=controls:FormField}}"
+                   Classes="Caption"
+                   Foreground="{DynamicResource Error}"
+                   IsVisible="{Binding Error, RelativeSource={RelativeSource AncestorType=controls:FormField}, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    </StackPanel>
+</UserControl>

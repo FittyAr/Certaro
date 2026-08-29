@@ -3,21 +3,29 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
+             xmlns:loc="using:ElectroObraApp.Markup"
              mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="600"
              x:Class="ElectroObraApp.Views.LiquidacionEditView"
              x:DataType="vm:LiquidacionEditViewModel">
-    <Border Padding="25" Background="#2d2d2d" CornerRadius="12" BoxShadow="0 4 10 0 #40000000" Width="750">
+    <Border Padding="25"
+            Background="{DynamicResource SurfaceRaised}"
+            CornerRadius="{StaticResource Radius12}"
+            BoxShadow="{StaticResource Elevation2}"
+            Width="750"
+            BorderBrush="{DynamicResource BorderSubtle}"
+            BorderThickness="1">
         <ScrollViewer MaxHeight="750">
             <StackPanel Spacing="18" Margin="0,0,15,0">
-                <TextBlock Text="Generar Nueva Liquidación" FontSize="22" FontWeight="Bold" Margin="0,0,0,5" Foreground="White"/>
+                <TextBlock Text="{loc:Translate Key=Settlements.NewTitle}" Classes="H1" Margin="0,0,0,5"/>
             <Grid ColumnDefinitions="1.2*, *" ColumnSpacing="35" Margin="0,5">
                 <!-- Columna Izquierda: Identificación y Fechas -->
                 <StackPanel Grid.Column="0" Spacing="20">
                     <StackPanel Spacing="5">
-                        <TextBlock Text="Empleado" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                        <ComboBox ItemsSource="{Binding Empleados}" 
+                        <TextBlock Text="{loc:Translate Key=Employees.Name}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                        <ComboBox ItemsSource="{Binding Empleados}"
                                   SelectedValue="{Binding Liquidacion.EmpleadoId}"
                                   SelectedValueBinding="{Binding Id}"
+                                  Classes="eo-input"
                                   HorizontalAlignment="Stretch">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
@@ -28,79 +36,90 @@
                     </StackPanel>
 
                     <StackPanel Spacing="5">
-                        <TextBlock Text="Fecha Inicio" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                        <CalendarDatePicker SelectedDate="{Binding FechaInicioOffset}" HorizontalAlignment="Stretch"/>
-                    </StackPanel>
-                    
-                    <StackPanel Spacing="5">
-                        <TextBlock Text="Fecha Fin" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                        <CalendarDatePicker SelectedDate="{Binding FechaFinOffset}" HorizontalAlignment="Stretch"/>
+                        <TextBlock Text="{loc:Translate Key=General.From}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                        <CalendarDatePicker SelectedDate="{Binding FechaInicioOffset}" Classes="eo-input" HorizontalAlignment="Stretch"/>
                     </StackPanel>
 
-                    <Button Content="Sugerir Liquidación" 
-                            Command="{Binding SugerirCommand}" 
-                            HorizontalAlignment="Stretch" Classes="outline" Height="40" Margin="0,10,0,0"/>
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=General.To}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                        <CalendarDatePicker SelectedDate="{Binding FechaFinOffset}" Classes="eo-input" HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+
+                    <Button Content="{loc:Translate Key=Settlements.Suggest}"
+                            Command="{Binding SugerirCommand}"
+                            HorizontalAlignment="Stretch"
+                            Classes="eo-secondary"
+                            Height="40"
+                            Margin="0,10,0,0"/>
                 </StackPanel>
 
                 <!-- Columna Derecha: Días y Configuración Especial -->
                 <StackPanel Grid.Column="1" Spacing="20">
                     <StackPanel Spacing="5">
-                        <TextBlock Text="Días Trabajados (Total)" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                        <NumericUpDown Value="{Binding Liquidacion.DiasTrabajados}" Minimum="0" Maximum="31" HorizontalAlignment="Stretch"/>
+                        <TextBlock Text="{loc:Translate Key=Settlements.WorkedDaysTotal}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                        <NumericUpDown Value="{Binding Liquidacion.DiasTrabajados}" Minimum="0" Maximum="31" Classes="eo-input" HorizontalAlignment="Stretch"/>
                     </StackPanel>
 
-                    <Border Background="#353535" CornerRadius="8" Padding="15">
+                    <Border Background="{DynamicResource SurfaceSunken}"
+                            CornerRadius="{StaticResource Radius8}"
+                            Padding="15"
+                            BorderBrush="{DynamicResource BorderSubtle}"
+                            BorderThickness="1">
                         <StackPanel Spacing="15">
-                            <TextBlock Text="Días Especiales" FontSize="12" FontWeight="Bold" Margin="0,0,0,5"/>
-                            
+                            <TextBlock Text="{loc:Translate Key=Settlements.SpecialDays}" FontSize="12" FontWeight="Bold" Margin="0,0,0,5"/>
+
                             <Grid ColumnDefinitions="*, Auto, 115" ColumnSpacing="12" Margin="0,2">
-                                <CheckBox Grid.Column="0" Content="Sábados" IsChecked="{Binding IncluirSabados}" FontSize="12"/>
-                                <TextBlock Grid.Column="1" Text="x" VerticalAlignment="Center" Foreground="#666"/>
-                                <NumericUpDown Grid.Column="2" Value="{Binding Liquidacion.MultiplicadorSabado}" Increment="0.1" Minimum="0" FormatString="0.0" HorizontalContentAlignment="Center"/>
+                                <CheckBox Grid.Column="0" Content="{loc:Translate Key=Settings.Saturday}" IsChecked="{Binding IncluirSabados}" FontSize="12"/>
+                                <TextBlock Grid.Column="1" Text="x" VerticalAlignment="Center" Foreground="{DynamicResource TextTertiary}"/>
+                                <NumericUpDown Grid.Column="2" Value="{Binding Liquidacion.MultiplicadorSabado}" Increment="0.1" Minimum="0" FormatString="0.0" HorizontalContentAlignment="Center" Classes="eo-input"/>
                             </Grid>
-                            
+
                             <Grid ColumnDefinitions="*, Auto, 115" ColumnSpacing="12" Margin="0,2">
-                                <CheckBox Grid.Column="0" Content="Domingos" IsChecked="{Binding IncluirDomingos}" FontSize="12"/>
-                                <TextBlock Grid.Column="1" Text="x" VerticalAlignment="Center" Foreground="#666"/>
-                                <NumericUpDown Grid.Column="2" Value="{Binding Liquidacion.MultiplicadorDomingo}" Increment="0.1" Minimum="0" FormatString="0.0" HorizontalContentAlignment="Center"/>
+                                <CheckBox Grid.Column="0" Content="{loc:Translate Key=Settings.Sunday}" IsChecked="{Binding IncluirDomingos}" FontSize="12"/>
+                                <TextBlock Grid.Column="1" Text="x" VerticalAlignment="Center" Foreground="{DynamicResource TextTertiary}"/>
+                                <NumericUpDown Grid.Column="2" Value="{Binding Liquidacion.MultiplicadorDomingo}" Increment="0.1" Minimum="0" FormatString="0.0" HorizontalContentAlignment="Center" Classes="eo-input"/>
                             </Grid>
-                            
+
                             <Grid ColumnDefinitions="*, Auto, 115" ColumnSpacing="12" Margin="0,2">
-                                <CheckBox Grid.Column="0" Content="Feriados" IsChecked="{Binding IncluirFeriados}" FontSize="12"/>
-                                <TextBlock Grid.Column="1" Text="x" VerticalAlignment="Center" Foreground="#666"/>
-                                <NumericUpDown Grid.Column="2" Value="{Binding Liquidacion.MultiplicadorFeriado}" Increment="0.1" Minimum="0" FormatString="0.0" HorizontalContentAlignment="Center"/>
+                                <CheckBox Grid.Column="0" Content="{loc:Translate Key=Settings.Holiday}" IsChecked="{Binding IncluirFeriados}" FontSize="12"/>
+                                <TextBlock Grid.Column="1" Text="x" VerticalAlignment="Center" Foreground="{DynamicResource TextTertiary}"/>
+                                <NumericUpDown Grid.Column="2" Value="{Binding Liquidacion.MultiplicadorFeriado}" Increment="0.1" Minimum="0" FormatString="0.0" HorizontalContentAlignment="Center" Classes="eo-input"/>
                             </Grid>
                         </StackPanel>
                     </Border>
                 </StackPanel>
             </Grid>
 
-            <Border Background="#353535" CornerRadius="8" Padding="15" Margin="0,10,0,0">
+            <Border Background="{DynamicResource SurfaceSunken}"
+                    CornerRadius="{StaticResource Radius8}"
+                    Padding="15"
+                    Margin="0,10,0,0"
+                    BorderBrush="{DynamicResource BorderSubtle}"
+                    BorderThickness="1">
                 <Grid RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="*, Auto" RowSpacing="8">
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Bruto:" Foreground="#aaa"/>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Translate Key=Settlements.GrossTotal}" Foreground="{DynamicResource TextSecondary}"/>
                     <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Liquidacion.TotalBruto, StringFormat=C2}" FontWeight="SemiBold"/>
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Total Adelantos (Descuento):" Foreground="#e74c3c"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Liquidacion.TotalAdelantos, StringFormat=C2}" Foreground="#e74c3c"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Translate Key=Settlements.AdvancesDiscount}" Foreground="{DynamicResource AmountNegative}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Liquidacion.TotalAdelantos, StringFormat=C2}" Foreground="{DynamicResource AmountNegative}"/>
 
-                    <Separator Grid.Row="2" Grid.ColumnSpan="2" Background="#444" Margin="0,5"/>
-                    
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="NETO A PAGAR:" FontWeight="Bold" FontSize="18" VerticalAlignment="Bottom"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Liquidacion.TotalNeto, StringFormat=C2}" FontWeight="Bold" FontSize="20" Foreground="#2ecc71" VerticalAlignment="Bottom"/>
+                    <Separator Grid.Row="2" Grid.ColumnSpan="2" Background="{DynamicResource BorderStrong}" Margin="0,5"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Translate Key=Settlements.NetPayLabel}" FontWeight="Bold" FontSize="18" VerticalAlignment="Bottom"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Liquidacion.TotalNeto, StringFormat=C2}" FontWeight="Bold" FontSize="20" Foreground="{DynamicResource AmountPositive}" VerticalAlignment="Bottom"/>
                 </Grid>
             </Border>
 
             <StackPanel Spacing="5" Margin="0,10,0,0">
-                <TextBlock Text="Observaciones" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                <TextBox Text="{Binding Liquidacion.Observaciones}" TextWrapping="Wrap" AcceptsReturn="True" Height="60" PlaceholderText="Notas adicionales..."/>
+                <TextBlock Text="{loc:Translate Key=Invoices.Observations}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                <TextBox Text="{Binding Liquidacion.Observaciones}" TextWrapping="Wrap" AcceptsReturn="True" Height="60" PlaceholderText="{loc:Translate Key=Settlements.ObservationsPlaceholder}" Classes="eo-input"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,15,0,0">
-                <Button Content="Cancelar" Command="{Binding CancelCommand}" IsCancel="True" Padding="20,0"/>
-                <Button Content="Confirmar y Guardar" Classes="accent" Command="{Binding SaveCommand}" IsDefault="True" Padding="20,0"/>
+                <Button Content="{loc:Translate Key=General.Cancel}" Command="{Binding CancelCommand}" IsCancel="True" Padding="20,0" Classes="eo-secondary"/>
+                <Button Content="{loc:Translate Key=Settlements.ConfirmSave}" Classes="eo-primary" Command="{Binding SaveCommand}" IsDefault="True" Padding="20,0"/>
             </StackPanel>
             </StackPanel>
         </ScrollViewer>
     </Border>
 </UserControl>
-

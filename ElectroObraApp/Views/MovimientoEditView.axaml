@@ -3,87 +3,159 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="550"
+             xmlns:controls="using:ElectroObraApp.Controls"
+             xmlns:core="clr-namespace:ElectroObraApp.Core;assembly=ElectroObraApp.Core"
+             xmlns:loc="using:ElectroObraApp.Markup"
+             mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="680"
              x:Class="ElectroObraApp.Views.MovimientoEditView"
              x:DataType="vm:MovimientoEditViewModel">
     <UserControl.KeyBindings>
-        <KeyBinding Gesture="Escape" Command="{Binding CancelCommand}"/>
+        <KeyBinding Gesture="Escape" Command="{Binding CancelCommand}" />
     </UserControl.KeyBindings>
-    <Border Padding="25" Background="#2d2d2d" CornerRadius="12" BoxShadow="0 4 10 0 #40000000" Width="600">
+    <Border Padding="25"
+            Background="{DynamicResource SurfaceRaised}"
+            CornerRadius="{StaticResource Radius12}"
+            BoxShadow="{StaticResource Elevation2}"
+            Width="640"
+            BorderBrush="{DynamicResource BorderSubtle}"
+            BorderThickness="1">
         <ScrollViewer MaxHeight="700">
             <StackPanel Spacing="18" Margin="0,0,15,0">
-                <TextBlock Text="{Binding Title}" FontSize="22" FontWeight="Bold" Margin="0,0,0,5" Foreground="White"/>
-            
-            <StackPanel Spacing="5">
-                <TextBlock Text="Concepto" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                <TextBox Text="{Binding Movimiento.Concepto}" PlaceholderText="Ej: Pago de materiales eléctricos"/>
-            </StackPanel>
+                <TextBlock Text="{Binding Title}" Classes="H1" />
 
-            <Grid ColumnDefinitions="*, *" ColumnSpacing="20" RowDefinitions="Auto, Auto, Auto" RowSpacing="15">
-                <!-- Fila 1: Monto y Cantidad -->
-                <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
-                    <TextBlock Text="Monto Unitario" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <NumericUpDown Value="{Binding Movimiento.Monto}" FormatString="C2" HorizontalAlignment="Stretch"/>
-                </StackPanel>
-                <StackPanel Grid.Row="0" Grid.Column="1" Spacing="5">
-                    <TextBlock Text="Cantidad" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <NumericUpDown Value="{Binding Movimiento.Cantidad}" Minimum="1" HorizontalAlignment="Stretch"/>
+                <StackPanel Spacing="5">
+                    <TextBlock Text="{loc:Translate Key=Movements.Concept}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                    <TextBox Text="{Binding Movimiento.Concepto}" Classes="eo-input" PlaceholderText="{loc:Translate Key=Movements.ConceptPlaceholder}" />
                 </StackPanel>
 
-                <!-- Fila 2: Tipo y Categoría -->
-                <StackPanel Grid.Row="1" Grid.Column="0" Spacing="5">
-                    <TextBlock Text="Tipo" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <ComboBox ItemsSource="{Binding TiposMovimiento}" 
-                              SelectedValue="{Binding Movimiento.TipoMovimientoId}"
-                              SelectedValueBinding="{Binding Id}"
-                              HorizontalAlignment="Stretch">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Nombre}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
-                <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5">
-                    <TextBlock Text="Categoría" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <ComboBox ItemsSource="{Binding Categorias}" 
-                              SelectedValue="{Binding Movimiento.CategoriaId}"
-                              SelectedValueBinding="{Binding Id}"
-                              HorizontalAlignment="Stretch">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Nombre}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="20" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="15">
+                    <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Movements.UnitAmount}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <NumericUpDown Value="{Binding Movimiento.Monto}" FormatString="C2" Classes="eo-input" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="0" Grid.Column="1" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Movements.Quantity}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <NumericUpDown Value="{Binding Movimiento.Cantidad}" Minimum="1" Classes="eo-input" HorizontalAlignment="Stretch" />
+                    </StackPanel>
 
-                <!-- Fila 3: Empleado y Fecha -->
-                <StackPanel Grid.Row="2" Grid.Column="0" Spacing="5">
-                    <TextBlock Text="Empleado (Opcional)" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <ComboBox ItemsSource="{Binding Empleados}" 
-                              SelectedValue="{Binding Movimiento.EmpleadoId}"
-                              SelectedValueBinding="{Binding Id}"
-                              HorizontalAlignment="Stretch">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Nombre}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
-                <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5">
-                    <TextBlock Text="Fecha" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <CalendarDatePicker SelectedDate="{Binding FechaOffset}" HorizontalAlignment="Stretch"/>
-                </StackPanel>
-            </Grid>
+                    <StackPanel Grid.Row="1" Grid.Column="0" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Movements.Type}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <ComboBox ItemsSource="{Binding TiposMovimiento}"
+                                  SelectedValue="{Binding Movimiento.TipoMovimientoId}"
+                                  SelectedValueBinding="{Binding Id}"
+                                  Classes="eo-input"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Nombre}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Movements.Category}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <ComboBox ItemsSource="{Binding Categorias}"
+                                  SelectedValue="{Binding Movimiento.CategoriaId}"
+                                  SelectedValueBinding="{Binding Id}"
+                                  Classes="eo-input"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Nombre}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,10,0,0">
-                <Button Content="Cancelar" Command="{Binding CancelCommand}" IsCancel="True" Padding="20,0"/>
-                <Button Content="Guardar" Classes="accent" Command="{Binding SaveCommand}" IsDefault="True" Padding="20,0"/>
-            </StackPanel>
+                    <StackPanel Grid.Row="2" Grid.Column="0" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Jobs.Client}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <ComboBox ItemsSource="{Binding Clientes}"
+                                  SelectedValue="{Binding SelectedClienteId}"
+                                  SelectedValueBinding="{Binding Id}"
+                                  Classes="eo-input"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Nombre}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Menu.Obras}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <ComboBox ItemsSource="{Binding Obras}"
+                                  SelectedValue="{Binding SelectedObraId}"
+                                  SelectedValueBinding="{Binding Id}"
+                                  Classes="eo-input"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Nombre}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="3" Grid.Column="0" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Menu.Trabajos}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <ComboBox ItemsSource="{Binding Trabajos}"
+                                  SelectedValue="{Binding Movimiento.TrabajoId}"
+                                  SelectedValueBinding="{Binding Id}"
+                                  Classes="eo-input"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Descripcion}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Row="3" Grid.Column="1" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Menu.Facturas}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <ComboBox ItemsSource="{Binding Facturas}"
+                                  SelectedValue="{Binding Movimiento.FacturaId}"
+                                  SelectedValueBinding="{Binding Id}"
+                                  Classes="eo-input"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Numero}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
+                    <StackPanel Grid.Column="0" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Movements.EmployeeOptional}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <ComboBox ItemsSource="{Binding Empleados}"
+                                  SelectedValue="{Binding Movimiento.EmpleadoId}"
+                                  SelectedValueBinding="{Binding Id}"
+                                  Classes="eo-input"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Nombre}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="5">
+                        <TextBlock Text="{loc:Translate Key=Movements.Date}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                        <CalendarDatePicker SelectedDate="{Binding FechaOffset}" Classes="eo-input" HorizontalAlignment="Stretch" />
+                    </StackPanel>
+                </Grid>
+
+                <controls:AttachmentPanel EntidadTipo="{x:Static core:Constants+EntidadesAdjunto.Movimiento}"
+                                          EntidadId="{Binding Movimiento.Id}"
+                                          IsVisible="{Binding ShowAttachments}" />
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,10,0,0">
+                    <Button Content="{loc:Translate Key=General.Cancel}" Classes="eo-secondary" Command="{Binding CancelCommand}" IsCancel="True" Padding="20,0" />
+                    <Button Content="{loc:Translate Key=General.Save}" Classes="eo-primary" Command="{Binding SaveCommand}" IsDefault="True" Padding="20,0" />
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
     </Border>
 </UserControl>
-

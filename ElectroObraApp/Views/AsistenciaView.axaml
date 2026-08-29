@@ -1,0 +1,116 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
+             xmlns:loc="using:ElectroObraApp.Markup"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="ElectroObraApp.Views.AsistenciaView"
+             x:DataType="vm:AsistenciaViewModel">
+    <Grid RowDefinitions="Auto, Auto, *" Margin="20">
+        <DockPanel Grid.Row="0" Margin="0,0,0,16">
+            <StackPanel Spacing="4">
+                <TextBlock Text="{loc:Translate Key=Menu.Asistencia}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
+                <TextBlock Text="{loc:Translate Key=Attendance.Subtitle}" Foreground="{DynamicResource TextSecondary}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Button Command="{Binding PreviousMonthCommand}" Classes="outline" ToolTip.Tip="{loc:Translate Key=Attendance.PreviousMonth}">
+                    <materialIcons:MaterialIcon Kind="ChevronLeft" Width="18" Height="18"/>
+                </Button>
+                <TextBlock Text="{Binding MonthTitle}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" MinWidth="160" TextAlignment="Center"/>
+                <Button Command="{Binding NextMonthCommand}" Classes="outline" ToolTip.Tip="{loc:Translate Key=Attendance.NextMonth}">
+                    <materialIcons:MaterialIcon Kind="ChevronRight" Width="18" Height="18"/>
+                </Button>
+                <Button Content="{loc:Translate Key=General.Refresh}" Command="{Binding LoadCommand}" Classes="outline"/>
+            </StackPanel>
+        </DockPanel>
+
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceSunken}" CornerRadius="{StaticResource Radius8}" Padding="12" Margin="0,0,0,12" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1">
+            <StackPanel Orientation="Horizontal" Spacing="16">
+                <TextBlock Text="{loc:Translate Key=Attendance.Legend}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Border Width="22" Height="22" CornerRadius="{StaticResource Radius4}" Background="{DynamicResource Success}"/>
+                    <TextBlock Text="{loc:Translate Key=Attendance.TipoJornada.Completa.Label}" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Border Width="22" Height="22" CornerRadius="{StaticResource Radius4}" Background="{DynamicResource Warning}"/>
+                    <TextBlock Text="{loc:Translate Key=Attendance.TipoJornada.Media.Label}" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Border Width="22" Height="22" CornerRadius="{StaticResource Radius4}" Background="{DynamicResource Error}"/>
+                    <TextBlock Text="{loc:Translate Key=Attendance.TipoJornada.Falta.Label}" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Border Width="22" Height="22" CornerRadius="{StaticResource Radius4}" Background="{DynamicResource Warning}"/>
+                    <TextBlock Text="{loc:Translate Key=Attendance.TipoJornada.FaltaJustificada.Label}" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Border Width="22" Height="22" CornerRadius="{StaticResource Radius4}" Background="{DynamicResource Info}"/>
+                    <TextBlock Text="{loc:Translate Key=Attendance.TipoJornada.Feriado.Label}" VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Text="{loc:Translate Key=Attendance.ClickHint}" Foreground="{DynamicResource TextTertiary}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="0">
+                <Grid ColumnDefinitions="180, *" Margin="0,0,0,4">
+                    <Border Grid.Column="0" Background="{DynamicResource SurfaceSunken}" Padding="8" BorderBrush="{DynamicResource BorderStrong}" BorderThickness="1">
+                        <TextBlock Text="{loc:Translate Key=Employees.Name}" FontWeight="Bold"/>
+                    </Border>
+                    <ItemsControl Grid.Column="1" ItemsSource="{Binding DayHeaders}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="34" Padding="4" Background="{DynamicResource SurfaceSunken}" BorderBrush="{DynamicResource BorderStrong}" BorderThickness="0,1,1,1">
+                                    <TextBlock Text="{Binding}" HorizontalAlignment="Center" FontWeight="Bold" FontSize="11"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+
+                <ItemsControl ItemsSource="{Binding Rows}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:AsistenciaRowViewModel">
+                            <Grid ColumnDefinitions="180, *">
+                                <Border Grid.Column="0" Padding="8" BorderBrush="{DynamicResource BorderStrong}" BorderThickness="1,0,1,1" Background="{DynamicResource SurfaceRaised}">
+                                    <TextBlock Text="{Binding EmpleadoNombre}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                </Border>
+                                <ItemsControl Grid.Column="1" ItemsSource="{Binding Days}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:AsistenciaDayCellViewModel">
+                                            <Button Width="34" Height="34" Padding="0" Margin="0"
+                                                    Command="{Binding $parent[UserControl].((vm:AsistenciaViewModel)DataContext).CycleCellCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    ToolTip.Tip="{Binding ToolTipText}"
+                                                    Background="{Binding BackgroundBrush}"
+                                                    BorderBrush="{DynamicResource BorderStrong}" BorderThickness="0,0,1,1"
+                                                    CornerRadius="0">
+                                                <TextBlock Text="{Binding DisplaySymbol}" FontWeight="Bold" FontSize="11"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Text="{loc:Translate Key=General.NoData}" Margin="0,24,0,0" HorizontalAlignment="Center"
+                           IsVisible="{Binding IsEmpty}"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <ProgressBar Grid.Row="2" IsIndeterminate="True" IsVisible="{Binding IsLoading}"
+                     VerticalAlignment="Center" HorizontalAlignment="Center" Width="200"/>
+    </Grid>
+</UserControl>

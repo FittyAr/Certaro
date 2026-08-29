@@ -62,3 +62,13 @@ erDiagram
 *   **Dependency Injection**: Uso extensivo del contenedor de .NET para servicios y repositorios.
 *   **Configuración por entorno**: `appsettings.Development.json` (`SeedEnabled=true`) y `appsettings.Production.json` (`SeedEnabled=false`), seleccionados vía `DOTNET_ENVIRONMENT`.
 *   **DevOps**: `.editorconfig`, `Directory.Build.props` (versión desde `VERSION`), GitHub Actions y Dependabot para NuGet.
+
+### 7. Design System UI (Rediseño — Agosto 2026)
+*   **Tokens**: `Palette.axaml` (temas Light/Dark), `Tokens.axaml`, `Components.axaml`, `Controls.axaml`.
+*   **Controles**: `PageHeader`, `FilterBar`, `ListStateOverlay`, `StatusPill`, `PercentBar`, `PaginationControl`.
+*   **Reglas de migración**:
+    1. Sin colores hex en XAML; usar recursos semánticos (`TextTertiary`, `OverlayBackgroundBrush`, etc.).
+    2. Encabezados con `PageHeader`; filtros con `FilterBar`.
+    3. Grillas con `eo-grid`; estados vacío/carga/error con `ListStateOverlay`.
+    4. Textos vía i18n (`Assets/i18n/es.json`, `en.json`).
+*   **Estado**: migradas vistas CRUD principales, admin (Categorías/TiposMovimiento), centro de reportes y edición extendida de movimientos. Pendiente: tokenización total de Certificados y Dashboard.

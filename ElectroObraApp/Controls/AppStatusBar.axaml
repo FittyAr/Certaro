@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ElectroObraApp.Controls"
+             xmlns:loc="using:ElectroObraApp.Markup"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="ElectroObraApp.Controls.AppStatusBar"
+             x:DataType="controls:AppStatusBar"
+             Height="28">
+    <Border Background="{DynamicResource SurfaceSunken}"
+            BorderBrush="{DynamicResource BorderSubtle}"
+            BorderThickness="0,1,0,0"
+            Padding="12,0">
+        <Grid ColumnDefinitions="Auto, *, Auto">
+            <Button Grid.Column="0"
+                    Classes="eo-secondary"
+                    Padding="6,2"
+                    MinHeight="24"
+                    IsVisible="{Binding CanGoBack}"
+                    Command="{Binding GoBackCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <materialIcons:MaterialIcon Kind="ArrowLeft" Width="14" Height="14" />
+                    <TextBlock Text="{loc:Translate Key=Navigation.Back}" VerticalAlignment="Center" FontSize="12" />
+                </StackPanel>
+            </Button>
+
+            <TextBlock Grid.Column="1"
+                       Text="{Binding StatusText}"
+                       VerticalAlignment="Center"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextSecondary}"
+                       Margin="8,0" />
+
+            <TextBlock Grid.Column="2"
+                       Text="{Binding RouteText}"
+                       VerticalAlignment="Center"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextTertiary}" />
+        </Grid>
+    </Border>
+</UserControl>

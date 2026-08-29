@@ -1,28 +1,9 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Theme base colors (default: dark) -->
-    <SolidColorBrush x:Key="MainBackgroundBrush" Color="#1e1e1e" />
-    <SolidColorBrush x:Key="PaneBackgroundBrush" Color="#252526" />
-    <SolidColorBrush x:Key="AccentBrush" Color="#094771" />
-    <SolidColorBrush x:Key="SidebarSeparatorBrush" Color="#3e3e42" />
-    <SolidColorBrush x:Key="MainForegroundBrush" Color="#ffffff" />
-    <SolidColorBrush x:Key="SecondaryForegroundBrush" Color="#aaaaaa" />
-    <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#252526" />
-
-    <!-- Filter panel & muted UI -->
-    <SolidColorBrush x:Key="FilterPanelBackgroundBrush" Color="#252525" />
-    <SolidColorBrush x:Key="FilterPanelBorderBrush" Color="#3d3d3d" />
-    <SolidColorBrush x:Key="MutedForegroundBrush" Color="#aaaaaa" />
-    <SolidColorBrush x:Key="DimForegroundBrush" Color="#888888" />
-
-    <!-- Semantic colors -->
-    <SolidColorBrush x:Key="SuccessBrush" Color="#4caf50" />
-    <SolidColorBrush x:Key="ErrorBrush" Color="#f44336" />
-    <SolidColorBrush x:Key="WarningBrush" Color="#ff9800" />
-    <SolidColorBrush x:Key="InfoBrush" Color="#2196f3" />
-
-    <!-- Overlay -->
-    <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="#AA000000" />
+    <!--
+        Legacy color aliases are defined per-theme in Palette.axaml.
+        This file is kept for backward compatibility with existing includes.
+    -->
 
 </ResourceDictionary>

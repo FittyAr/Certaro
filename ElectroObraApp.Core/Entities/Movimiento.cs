@@ -15,7 +15,11 @@ public class Movimiento : BaseEntity
     public virtual TipoMovimiento TipoMovimiento { get; set; } = null!;
 
     public Moneda Moneda { get; set; } = Moneda.ARS;
-    
+    public decimal? CotizacionAplicada { get; set; }
+
+    public Guid? TipoConceptoPagoId { get; set; }
+    public TipoConceptoPago? TipoConceptoPago { get; set; }
+
     // Relaciones
     public Guid? CategoriaId { get; set; }
     public Categoria? Categoria { get; set; }

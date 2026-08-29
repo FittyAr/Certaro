@@ -19,6 +19,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<TipoMovimiento> TiposMovimiento { get; set; }
     public DbSet<Categoria> Categorias { get; set; }
     public DbSet<Cliente> Clientes { get; set; }
+    public DbSet<Obra> Obras { get; set; }
     public DbSet<Empleado> Empleados { get; set; }
     public DbSet<Trabajo> Trabajos { get; set; }
     public DbSet<OrdenTrabajo> OrdenesTrabajo { get; set; }
@@ -26,6 +27,12 @@ public class ApplicationDbContext : DbContext
     public DbSet<Liquidacion> Liquidaciones { get; set; }
     public DbSet<ClienteContacto> ClienteContactos { get; set; }
     public DbSet<Factura> Facturas { get; set; }
+    public DbSet<AsistenciaEmpleado> AsistenciasEmpleado { get; set; }
+    public DbSet<PagoFactura> PagosFactura { get; set; }
+    public DbSet<Adjunto> Adjuntos { get; set; }
+    public DbSet<TipoConceptoPago> TiposConceptoPago { get; set; }
+    public DbSet<SchemaVersion> SchemaVersions { get; set; }
+    public DbSet<AppMetadata> AppMetadata { get; set; }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -127,15 +134,33 @@ public class ApplicationDbContext : DbContext
                 .WithMany(x => x.Movimientos)
                 .HasForeignKey(x => x.FacturaId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(x => x.TipoConceptoPago)
+                .WithMany(x => x.Movimientos)
+                .HasForeignKey(x => x.TipoConceptoPagoId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<Obra>(entity =>
+        {
+            entity.Property(x => x.Nombre).HasMaxLength(200);
+            entity.Property(x => x.Direccion).HasMaxLength(500);
+            entity.Property(x => x.Localidad).HasMaxLength(200);
+            entity.HasIndex(x => x.Numero).IsUnique();
+
+            entity.HasOne(x => x.Cliente)
+                .WithMany()
+                .HasForeignKey(x => x.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Trabajo>(entity =>
         {
             entity.Property(x => x.Descripcion).HasMaxLength(500);
 
-            entity.HasOne(x => x.Cliente)
-                .WithMany()
-                .HasForeignKey(x => x.ClienteId)
+            entity.HasOne(x => x.Obra)
+                .WithMany(x => x.Trabajos)
+                .HasForeignKey(x => x.ObraId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -167,6 +192,8 @@ public class ApplicationDbContext : DbContext
         {
             entity.Property(x => x.Descripcion).HasMaxLength(500);
             entity.Property(x => x.Unidad).HasMaxLength(20);
+            entity.Property(x => x.Nota).HasMaxLength(1000);
+            entity.Property(x => x.Ejecutado).HasDefaultValue(false);
 
             entity.HasOne(x => x.OrdenTrabajo)
                 .WithMany(x => x.Items)
@@ -206,6 +233,62 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(x => x.ClienteId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<AsistenciaEmpleado>(entity =>
+        {
+            entity.Property(x => x.Observaciones).HasMaxLength(1000);
+            entity.HasIndex(x => new { x.EmpleadoId, x.Fecha }).IsUnique();
+
+            entity.HasOne(x => x.Empleado)
+                .WithMany(x => x.Asistencias)
+                .HasForeignKey(x => x.EmpleadoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(x => x.Trabajo)
+                .WithMany(x => x.Asistencias)
+                .HasForeignKey(x => x.TrabajoId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<PagoFactura>(entity =>
+        {
+            entity.Property(x => x.MedioPago).HasMaxLength(100);
+            entity.HasIndex(x => x.Fecha);
+
+            entity.HasOne(x => x.Factura)
+                .WithMany(x => x.Pagos)
+                .HasForeignKey(x => x.FacturaId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Adjunto>(entity =>
+        {
+            entity.Property(x => x.EntidadTipo).HasMaxLength(50);
+            entity.Property(x => x.NombreArchivo).HasMaxLength(255);
+            entity.Property(x => x.RutaRelativa).HasMaxLength(500);
+            entity.Property(x => x.Mime).HasMaxLength(100);
+            entity.HasIndex(x => new { x.EntidadTipo, x.EntidadId });
+        });
+
+        modelBuilder.Entity<TipoConceptoPago>(entity =>
+        {
+            entity.Property(x => x.Nombre).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<SchemaVersion>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).ValueGeneratedNever();
+            entity.Property(x => x.MigrationId).HasMaxLength(200);
+            entity.Property(x => x.AppVersion).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<AppMetadata>(entity =>
+        {
+            entity.HasKey(x => x.Key);
+            entity.Property(x => x.Key).HasMaxLength(100);
+            entity.Property(x => x.Value).HasMaxLength(500);
         });
 
         var systemDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);

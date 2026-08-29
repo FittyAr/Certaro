@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ElectroObraApp.Controls"
+             x:Class="ElectroObraApp.Controls.MoneyText"
+             x:DataType="controls:MoneyText">
+    <TextBlock x:Name="AmountText"
+               Classes="Mono"
+               FontWeight="SemiBold"
+               VerticalAlignment="Center" />
+</UserControl>

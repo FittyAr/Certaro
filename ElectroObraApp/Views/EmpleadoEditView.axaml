@@ -3,73 +3,76 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
+             xmlns:loc="using:ElectroObraApp.Markup"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
              x:Class="ElectroObraApp.Views.EmpleadoEditView"
              x:DataType="vm:EmpleadoEditViewModel">
     <UserControl.KeyBindings>
         <KeyBinding Gesture="Escape" Command="{Binding CancelCommand}"/>
     </UserControl.KeyBindings>
-    <Border Padding="25" Background="#2d2d2d" CornerRadius="12" BoxShadow="0 4 10 0 #40000000" Width="600">
+    <Border Padding="25"
+            Background="{DynamicResource SurfaceRaised}"
+            CornerRadius="{StaticResource Radius12}"
+            BoxShadow="{StaticResource Elevation2}"
+            Width="600"
+            BorderBrush="{DynamicResource BorderSubtle}"
+            BorderThickness="1">
         <ScrollViewer MaxHeight="700">
             <StackPanel Spacing="18" Margin="0,0,15,0">
-                <TextBlock Text="{Binding Title}" FontSize="22" FontWeight="Bold" Margin="0,0,0,5" Foreground="White"/>
-            
+                <TextBlock Text="{Binding Title}" Classes="H1" Margin="0,0,0,5"/>
+
             <StackPanel Spacing="5">
-                <TextBlock Text="Nombre Completo" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                <TextBox Text="{Binding Empleado.Nombre}" PlaceholderText="Ej: Juan Pérez"/>
+                <TextBlock Text="{loc:Translate Key=Employees.FullName}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                <TextBox Text="{Binding Empleado.Nombre}" PlaceholderText="Ej: Juan Pérez" Classes="eo-input"/>
             </StackPanel>
 
             <Grid ColumnDefinitions="*, *" ColumnSpacing="20" RowDefinitions="Auto, Auto, Auto, Auto" RowSpacing="15">
-                <!-- Fila 1: DNI y Cargo -->
                 <StackPanel Grid.Row="0" Grid.Column="0" Spacing="5">
-                    <TextBlock Text="DNI" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <TextBox Text="{Binding Empleado.Dni}" PlaceholderText="8 dígitos"/>
+                    <TextBlock Text="{loc:Translate Key=Employees.Dni}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                    <TextBox Text="{Binding Empleado.Dni}" PlaceholderText="8 dígitos" Classes="eo-input"/>
                 </StackPanel>
                 <StackPanel Grid.Row="0" Grid.Column="1" Spacing="5">
-                    <TextBlock Text="Cargo / Función" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <TextBox Text="{Binding Empleado.Cargo}" PlaceholderText="Ej: Electricista"/>
+                    <TextBlock Text="{loc:Translate Key=Employees.Role}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                    <TextBox Text="{Binding Empleado.Cargo}" PlaceholderText="Ej: Electricista" Classes="eo-input"/>
                 </StackPanel>
 
-                <!-- Fila 2: Sueldo y Frecuencia -->
                 <StackPanel Grid.Row="1" Grid.Column="0" Spacing="5">
-                    <TextBlock Text="Sueldo Base" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <NumericUpDown Value="{Binding Empleado.SueldoBase}" FormatString="C2" HorizontalAlignment="Stretch"/>
+                    <TextBlock Text="{loc:Translate Key=Employees.BaseSalary}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                    <NumericUpDown Value="{Binding Empleado.SueldoBase}" FormatString="C2" Classes="eo-input" HorizontalAlignment="Stretch"/>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5">
-                    <TextBlock Text="Frecuencia de Pago" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <ComboBox ItemsSource="{Binding PaymentFrequencies}" 
+                    <TextBlock Text="{loc:Translate Key=Employees.PaymentFrequency}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                    <ComboBox ItemsSource="{Binding PaymentFrequencies}"
                               SelectedItem="{Binding Empleado.PagoFrecuencia}"
+                              Classes="eo-input"
                               HorizontalAlignment="Stretch"/>
                 </StackPanel>
 
-                <!-- Fila 3: Tarifa Diaria y Fecha Ingreso -->
                 <StackPanel Grid.Row="2" Grid.Column="0" Spacing="5">
-                    <TextBlock Text="Tarifa Diaria (Calculada)" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <NumericUpDown Value="{Binding Empleado.TarifaDiaria}" FormatString="C2" HorizontalAlignment="Stretch"
+                    <TextBlock Text="{loc:Translate Key=Employees.DailyRateCalculated}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                    <NumericUpDown Value="{Binding Empleado.TarifaDiaria}" FormatString="C2" Classes="eo-input" HorizontalAlignment="Stretch"
                                    ToolTip.Tip="Valor diario para liquidaciones. Si es mensual: Sueldo/30."/>
                 </StackPanel>
                 <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5">
-                    <TextBlock Text="Fecha de Ingreso" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <CalendarDatePicker SelectedDate="{Binding FechaIngresoOffset}" HorizontalAlignment="Stretch"/>
+                    <TextBlock Text="{loc:Translate Key=Employees.HireDate}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                    <CalendarDatePicker SelectedDate="{Binding FechaIngresoOffset}" Classes="eo-input" HorizontalAlignment="Stretch"/>
                 </StackPanel>
 
-                <!-- Fila 4: Email y Teléfono -->
                 <StackPanel Grid.Row="3" Grid.Column="0" Spacing="5">
-                    <TextBlock Text="Email" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <TextBox Text="{Binding Empleado.Email}" PlaceholderText="ejemplo@correo.com"/>
+                    <TextBlock Text="{loc:Translate Key=Employees.Email}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                    <TextBox Text="{Binding Empleado.Email}" PlaceholderText="ejemplo@correo.com" Classes="eo-input"/>
                 </StackPanel>
                 <StackPanel Grid.Row="3" Grid.Column="1" Spacing="5">
-                    <TextBlock Text="Teléfono" FontSize="11" FontWeight="SemiBold" Foreground="#888"/>
-                    <TextBox Text="{Binding Empleado.Telefono}" PlaceholderText="Cód. Área + Número"/>
+                    <TextBlock Text="{loc:Translate Key=Employees.Phone}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}"/>
+                    <TextBox Text="{Binding Empleado.Telefono}" PlaceholderText="Cód. Área + Número" Classes="eo-input"/>
                 </StackPanel>
             </Grid>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12" Margin="0,10,0,0">
-                <Button Content="Cancelar" Command="{Binding CancelCommand}" IsCancel="True" Padding="20,0"/>
-                <Button Content="Guardar" Classes="accent" Command="{Binding SaveCommand}" IsDefault="True" Padding="20,0"/>
+                <Button Content="{loc:Translate Key=General.Cancel}" Command="{Binding CancelCommand}" IsCancel="True" Padding="20,0" Classes="eo-secondary"/>
+                <Button Content="{loc:Translate Key=General.Save}" Classes="eo-primary" Command="{Binding SaveCommand}" IsDefault="True" Padding="20,0"/>
             </StackPanel>
             </StackPanel>
         </ScrollViewer>
     </Border>
 </UserControl>
-

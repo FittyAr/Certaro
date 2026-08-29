@@ -16,6 +16,7 @@ public class UnitOfWork : IUnitOfWork
     private ILiquidacionRepository? _liquidacionRepository;
     private ITrabajoRepository? _trabajoRepository;
     private IFacturaRepository? _facturaRepository;
+    private IObraRepository? _obraRepository;
     private IDbContextTransaction? _transaction;
     private bool _disposed;
 
@@ -35,6 +36,7 @@ public class UnitOfWork : IUnitOfWork
     public ILiquidacionRepository Liquidaciones => _liquidacionRepository ??= new LiquidacionRepository(_context);
     public ITrabajoRepository Trabajos => _trabajoRepository ??= new TrabajoRepository(_context);
     public IFacturaRepository Facturas => _facturaRepository ??= new FacturaRepository(_context);
+    public IObraRepository Obras => _obraRepository ??= new ObraRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {
