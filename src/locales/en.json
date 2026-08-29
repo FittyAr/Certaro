@@ -4,6 +4,20 @@
     "InitializingHint": "Preparing the database",
     "Ready": "Ready"
   },
+  "Categorias": {
+    "Color": "Colour",
+    "Descripcion": "Description",
+    "Empty": "No categories yet",
+    "EnUso": "Movements",
+    "Hijas": "Subcategories",
+    "NoBorrableConHijas": "It has subcategories",
+    "NoBorrableEnUso": "It has movements attached",
+    "Nombre": "Name",
+    "Padre": "Parent category",
+    "SinPadre": "No parent category",
+    "SoloRaiz": "Root categories only",
+    "Subtitle": "Classification of income and expenses"
+  },
   "Comercial": {
     "CuentaCorriente": {
       "Title": "Account statement"
@@ -20,7 +34,26 @@
     "NoResults": "No matches",
     "SearchPlaceholder": "Search or jump to…"
   },
+  "Conflict": {
+    "Categoria": {
+      "ConHijas": "The category has {count} subcategories",
+      "EnUso": "The category is used by {count} movements",
+      "NombreDuplicado": "A category “{nombre}” already exists under the same parent"
+    },
+    "TipoMovimiento": {
+      "EnUso": "The type is used by {count} movements",
+      "EsDeSistema": "System types cannot be deleted",
+      "NombreDuplicado": "A movement type “{nombre}” already exists",
+      "SignoDeSistema": "The sign of a system type cannot be changed"
+    }
+  },
+  "Entity": {
+    "Categoria": "category",
+    "Movimiento": "movement",
+    "TipoMovimiento": "movement type"
+  },
   "Error": {
+    "AppNotReady": "The application is still starting",
     "BootstrapFailed": "The application could not start",
     "Concurrency": "Someone else changed this record. Reload and try again.",
     "Domain": "The operation breaks a rule of the system",
@@ -39,6 +72,7 @@
   "General": {
     "Actions": "Actions",
     "Add": "Add",
+    "All": "All",
     "Back": "Back",
     "Cancel": "Cancel",
     "Clear": "Clear",
@@ -109,6 +143,30 @@
     },
     "Trabajos": "Jobs"
   },
+  "Movimientos": {
+    "Balance": "Balance",
+    "BloqueadoLiquidacion": "The advance was already discounted in a payroll run",
+    "Cantidad": "Quantity",
+    "Categoria": "Category",
+    "Concepto": "Concept",
+    "Cotizacion": "Applied rate",
+    "Desde": "From",
+    "Empty": "No movements yet",
+    "Fecha": "Date",
+    "Gastos": "Expenses",
+    "Hasta": "To",
+    "Ingresos": "Income",
+    "Moneda": {
+      "Ars": "Pesos",
+      "Label": "Currency",
+      "Usd": "Dollars"
+    },
+    "Monto": "Amount",
+    "ResumenCantidad": "{count} movements",
+    "Subtitle": "Cash flow income and expenses",
+    "Tipo": "Type",
+    "Total": "Total"
+  },
   "Obras": {
     "Caja": {
       "Title": "Site cash flow"
@@ -145,13 +203,56 @@
     "initializing": "Starting…",
     "ready": "Ready"
   },
+  "TiposMovimiento": {
+    "Descripcion": "Description",
+    "Empty": "No movement types yet",
+    "EnUso": "Movements",
+    "EsIngreso": "Adds to the balance",
+    "NoBorrableSistema": "System types cannot be deleted",
+    "Nombre": "Name",
+    "Signo": {
+      "Gasto": "Expense",
+      "Ingreso": "Income",
+      "Label": "Sign"
+    },
+    "Subtitle": "Primary classification of movements"
+  },
   "Validation": {
+    "Categoria": {
+      "ColorInvalid": "The colour must look like #RRGGBB",
+      "DescripcionMaxLength": "The description cannot exceed {max} characters",
+      "IconoMaxLength": "The icon cannot exceed {max} characters",
+      "NombreMaxLength": "The name cannot exceed {max} characters",
+      "NombreRequired": "The name is required",
+      "PadreCiclico": "A category cannot depend on itself"
+    },
+    "Common": {
+      "FechaOutOfRange": "The date must be between {min} and {max}",
+      "ReferenciaInexistente": "No {entidad} exists with that identifier",
+      "SortByNotAllowed": "That column cannot be sorted by"
+    },
     "Config": {
       "ValorNoPermitido": "The value is not allowed"
+    },
+    "Movimiento": {
+      "AdelantoLiquidado": "The advance was already discounted in a payroll run",
+      "CantidadRequired": "The quantity must be greater than zero",
+      "CategoriaRequired": "The category is required",
+      "ConceptoMaxLength": "The concept cannot exceed {max} characters",
+      "ConceptoRequired": "The concept is required",
+      "CotizacionNotApplicable": "The rate only applies to dollars",
+      "CotizacionRequired": "The rate is required for dollars",
+      "EmpleadoRequeridoAdelanto": "An advance needs an employee so it can be settled",
+      "MontoRequired": "The amount must be greater than zero",
+      "TipoRequired": "The movement type is required"
     },
     "Paging": {
       "PageOutOfRange": "That page does not exist",
       "SizeNotAllowed": "Page size must be one of: {allowed}"
+    },
+    "TipoMovimiento": {
+      "NombreMaxLength": "The name cannot exceed {max} characters",
+      "NombreRequired": "The name is required"
     }
   }
 }

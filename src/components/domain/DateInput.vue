@@ -33,7 +33,8 @@ const props = withDefaults(
   },
 )
 
-const model = defineModel<CivilDate | Instant | null>({ required: true })
+/** `undefined` is accepted so an optional filter field can be bound directly. */
+const model = defineModel<CivilDate | Instant | null | undefined>({ required: true })
 
 const { civilToDate, dateToCivil, instantToDate, dateToInstant } = useDateFormat()
 const config = useConfigStore()
@@ -49,7 +50,8 @@ const pickerFormat = computed(() =>
 const firstDayOfWeek = computed(() => config.config?.locale.primerDiaSemana ?? 1)
 
 const inner = computed({
-  get: () => (props.instant ? instantToDate(model.value) : civilToDate(model.value)),
+  get: () =>
+    props.instant ? instantToDate(model.value ?? null) : civilToDate(model.value ?? null),
   set: (date: Date | null) => {
     model.value = props.instant ? dateToInstant(date) : dateToCivil(date)
   },

@@ -4,6 +4,20 @@
     "InitializingHint": "Preparando la base de datos",
     "Ready": "Listo"
   },
+  "Categorias": {
+    "Color": "Color",
+    "Descripcion": "Descripción",
+    "Empty": "Todavía no hay categorías",
+    "EnUso": "Movimientos",
+    "Hijas": "Subcategorías",
+    "NoBorrableConHijas": "Tiene subcategorías",
+    "NoBorrableEnUso": "Tiene movimientos asociados",
+    "Nombre": "Nombre",
+    "Padre": "Categoría padre",
+    "SinPadre": "Sin categoría padre",
+    "SoloRaiz": "Sólo categorías raíz",
+    "Subtitle": "Clasificación de ingresos y gastos"
+  },
   "Comercial": {
     "CuentaCorriente": {
       "Title": "Cuenta corriente"
@@ -20,7 +34,26 @@
     "NoResults": "Sin coincidencias",
     "SearchPlaceholder": "Buscar o ir a…"
   },
+  "Conflict": {
+    "Categoria": {
+      "ConHijas": "La categoría tiene {count} subcategorías",
+      "EnUso": "La categoría se usa en {count} movimientos",
+      "NombreDuplicado": "Ya existe una categoría «{nombre}» con la misma categoría padre"
+    },
+    "TipoMovimiento": {
+      "EnUso": "El tipo se usa en {count} movimientos",
+      "EsDeSistema": "Los tipos de sistema no se pueden eliminar",
+      "NombreDuplicado": "Ya existe un tipo de movimiento «{nombre}»",
+      "SignoDeSistema": "No se puede cambiar el signo de un tipo de sistema"
+    }
+  },
+  "Entity": {
+    "Categoria": "categoría",
+    "Movimiento": "movimiento",
+    "TipoMovimiento": "tipo de movimiento"
+  },
   "Error": {
+    "AppNotReady": "La aplicación todavía se está iniciando",
     "BootstrapFailed": "No se pudo iniciar la aplicación",
     "Concurrency": "Alguien más modificó este registro. Recargá y volvé a intentar.",
     "Domain": "La operación no cumple una regla del sistema",
@@ -39,6 +72,7 @@
   "General": {
     "Actions": "Acciones",
     "Add": "Agregar",
+    "All": "Todos",
     "Back": "Volver",
     "Cancel": "Cancelar",
     "Clear": "Limpiar",
@@ -109,6 +143,30 @@
     },
     "Trabajos": "Trabajos"
   },
+  "Movimientos": {
+    "Balance": "Balance",
+    "BloqueadoLiquidacion": "El adelanto ya fue descontado en una liquidación",
+    "Cantidad": "Cantidad",
+    "Categoria": "Categoría",
+    "Concepto": "Concepto",
+    "Cotizacion": "Cotización aplicada",
+    "Desde": "Desde",
+    "Empty": "Todavía no hay movimientos",
+    "Fecha": "Fecha",
+    "Gastos": "Gastos",
+    "Hasta": "Hasta",
+    "Ingresos": "Ingresos",
+    "Moneda": {
+      "Ars": "Pesos",
+      "Label": "Moneda",
+      "Usd": "Dólares"
+    },
+    "Monto": "Monto",
+    "ResumenCantidad": "{count} movimientos",
+    "Subtitle": "Ingresos y gastos del flujo de caja",
+    "Tipo": "Tipo",
+    "Total": "Total"
+  },
   "Obras": {
     "Caja": {
       "Title": "Caja de la obra"
@@ -145,13 +203,56 @@
     "initializing": "Iniciando…",
     "ready": "Listo"
   },
+  "TiposMovimiento": {
+    "Descripcion": "Descripción",
+    "Empty": "Todavía no hay tipos de movimiento",
+    "EnUso": "Movimientos",
+    "EsIngreso": "Suma al balance",
+    "NoBorrableSistema": "Los tipos de sistema no se pueden eliminar",
+    "Nombre": "Nombre",
+    "Signo": {
+      "Gasto": "Gasto",
+      "Ingreso": "Ingreso",
+      "Label": "Signo"
+    },
+    "Subtitle": "Clasificación principal de los movimientos"
+  },
   "Validation": {
+    "Categoria": {
+      "ColorInvalid": "El color debe tener el formato #RRGGBB",
+      "DescripcionMaxLength": "La descripción no puede superar los {max} caracteres",
+      "IconoMaxLength": "El ícono no puede superar los {max} caracteres",
+      "NombreMaxLength": "El nombre no puede superar los {max} caracteres",
+      "NombreRequired": "El nombre es obligatorio",
+      "PadreCiclico": "Una categoría no puede depender de sí misma"
+    },
+    "Common": {
+      "FechaOutOfRange": "La fecha debe estar entre {min} y {max}",
+      "ReferenciaInexistente": "No existe {entidad} con ese identificador",
+      "SortByNotAllowed": "No se puede ordenar por esa columna"
+    },
     "Config": {
       "ValorNoPermitido": "El valor no está permitido"
+    },
+    "Movimiento": {
+      "AdelantoLiquidado": "El adelanto ya fue descontado en una liquidación",
+      "CantidadRequired": "La cantidad debe ser mayor a cero",
+      "CategoriaRequired": "La categoría es obligatoria",
+      "ConceptoMaxLength": "El concepto no puede superar los {max} caracteres",
+      "ConceptoRequired": "El concepto es obligatorio",
+      "CotizacionNotApplicable": "La cotización sólo se carga en dólares",
+      "CotizacionRequired": "La cotización es obligatoria en dólares",
+      "EmpleadoRequeridoAdelanto": "Un adelanto necesita un empleado para poder liquidarse",
+      "MontoRequired": "El monto debe ser mayor a cero",
+      "TipoRequired": "El tipo de movimiento es obligatorio"
     },
     "Paging": {
       "PageOutOfRange": "La página no existe",
       "SizeNotAllowed": "El tamaño de página debe ser uno de: {allowed}"
+    },
+    "TipoMovimiento": {
+      "NombreMaxLength": "El nombre no puede superar los {max} caracteres",
+      "NombreRequired": "El nombre es obligatorio"
     }
   }
 }
