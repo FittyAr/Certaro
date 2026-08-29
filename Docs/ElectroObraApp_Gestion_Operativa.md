@@ -1,4 +1,4 @@
-# Proyecto Pablito: Sistema de Gestión Operativa
+# ElectroObra: Sistema de Gestión Operativa
 ## Documento de Visión y Requerimientos (No Técnico)
 
 ### 1. Objetivo del Proyecto

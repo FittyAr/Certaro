@@ -9,10 +9,10 @@
              mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="500"
              x:Class="ElectroObraApp.Views.ClientesView"
              x:DataType="vm:ClientesViewModel">
-    <Grid>
-        <TabControl SelectedIndex="{Binding SelectedTabIndex}" Margin="20">
+    <Grid ColumnDefinitions="*, 400" ColumnSpacing="16">
+        <TabControl SelectedIndex="{Binding SelectedTabIndex}">
             <TabItem Header="{loc:Translate Key=Clients.ListTab}">
-                <DockPanel IsVisible="{Binding !IsEditing}">
+                <DockPanel>
                     <controls:PageHeader DockPanel.Dock="Top" Title="{loc:Translate Key=Clients.Title}">
                         <controls:PageHeader.Actions>
                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -96,10 +96,26 @@
             </TabItem>
         </TabControl>
 
-        <Border Background="{DynamicResource OverlayBackgroundBrush}" IsVisible="{Binding IsEditing}" Focusable="True">
-            <ContentControl Content="{Binding EditViewModel}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center" />
+        <Border Grid.Column="1"
+                Background="{DynamicResource SurfaceRaised}"
+                BorderBrush="{DynamicResource BorderSubtle}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource Radius12}"
+                Padding="0"
+                MinWidth="320">
+            <Grid>
+                <ContentControl Content="{Binding EditViewModel}"
+                                IsVisible="{Binding IsEditing}"
+                                Margin="0" />
+                <controls:EmptyState IsVisible="{Binding !IsEditing}"
+                                     IconKind="AccountGroup"
+                                     Title="{loc:Translate Key=Clients.Title}"
+                                     Description="{loc:Translate Key=General.SelectRecordHint}"
+                                     ActionText="{loc:Translate Key=General.Add}"
+                                     ActionCommand="{Binding AddCommand}"
+                                     VerticalAlignment="Center"
+                                     HorizontalAlignment="Stretch" />
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

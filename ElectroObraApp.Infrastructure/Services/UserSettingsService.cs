@@ -49,7 +49,7 @@ public class UserSettingsService : IUserSettingsService
     public string GetBackgroundPath() => GetValue("Application:Branding:BackgroundPath", "avares://ElectroObraApp/Assets/Images/electro-obra3.png");
     public Task SetBackgroundPathAsync(string path) => SetValueAsync("Application:Branding:BackgroundPath", path);
 
-    public string GetAppName() => GetValue("Application:Name", "ElectroObraApp");
+    public string GetAppName() => GetValue("Application:Name", "ElectroObra");
     public Task SetAppNameAsync(string name) => SetValueAsync("Application:Name", name);
 
     public string GetDashboardPeriod() => GetValue("Application:Dashboard:Period", "Mensual");

@@ -1,6 +1,6 @@
 {
   "General": {
-    "AppName": "Pablito Project",
+    "AppName": "ElectroObra",
     "Loading": "Loading...",
     "Error": "Error",
     "Success": "Success",
@@ -23,7 +23,8 @@
     "NoData": "No data to display",
     "Retry": "Retry",
     "SaveChanges": "Save Changes",
-    "SettingsSaved": "Settings saved successfully"
+    "SettingsSaved": "Settings saved successfully",
+    "SelectRecordHint": "Select a record from the list to view or edit."
   },
   "Menu": {
     "Group": {
@@ -52,7 +53,9 @@
     "Back": "Back",
     "Breadcrumb": "{0} / {1}",
     "ComingSoon": "Module under development.",
-    "ToggleSidebar": "Toggle sidebar menu"
+    "ToggleSidebar": "Toggle sidebar menu",
+    "Search": "Search ElectroObra",
+    "SearchShortcut": "Ctrl+K"
   },
   "Dashboard": {
     "Title": "Main Dashboard",

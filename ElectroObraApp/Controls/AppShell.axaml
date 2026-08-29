@@ -39,11 +39,16 @@
             <Setter Property="HorizontalContentAlignment" Value="Left" />
         </Style>
         <Style Selector="Button.menuItem:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource SidebarSeparatorBrush}" />
+            <Setter Property="Background" Value="{DynamicResource Revoque}" />
         </Style>
-        <Style Selector="Button.active">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+        <Style Selector="Button.menuItem.active">
+            <Setter Property="Background" Value="{DynamicResource NavActiveBackground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource NavActiveIndicator}" />
+            <Setter Property="BorderThickness" Value="2,0,0,0" />
             <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.menuItem.active /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource NavActiveBackground}" />
         </Style>
         <Style Selector="TextBlock.groupHeader">
             <Setter Property="FontSize" Value="11" />
@@ -68,8 +73,8 @@
                 Background="{DynamicResource SurfaceRaised}"
                 BorderBrush="{DynamicResource BorderSubtle}"
                 BorderThickness="0,0,0,1"
-                Padding="12,8">
-            <Grid ColumnDefinitions="Auto, Auto, *">
+                Padding="16,10">
+            <Grid ColumnDefinitions="Auto, Auto, *, Auto, Auto" ColumnSpacing="12">
                 <Button Grid.Column="0"
                         Classes="eo-secondary"
                         Padding="8"
@@ -80,22 +85,49 @@
                     <materialIcons:MaterialIcon Kind="Menu" Width="20" Height="20" />
                 </Button>
 
-                <Image Grid.Column="1"
-                       Source="{Binding LogoImage}"
-                       Height="32"
-                       Margin="12,0,0,0"
-                       VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Image Source="{Binding LogoImage}" Height="28" VerticalAlignment="Center" />
+                    <TextBlock Text="{loc:Translate Key=General.AppName}"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
 
-                <StackPanel Grid.Column="2"
+                <Button Grid.Column="2"
+                        Classes="eo-secondary"
+                        HorizontalAlignment="Stretch"
+                        MaxWidth="480"
+                        Margin="8,0"
+                        Command="{Binding OpenCommandPaletteCommand}"
+                        automation:AutomationProperties.Name="{loc:Translate Key=Navigation.Search}">
+                    <Grid ColumnDefinitions="Auto, *, Auto">
+                        <materialIcons:MaterialIcon Kind="Magnify" Width="16" Height="16"
+                                                    Grid.Column="0" VerticalAlignment="Center"
+                                                    Foreground="{DynamicResource TextTertiary}" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{loc:Translate Key=Navigation.Search}"
+                                   Margin="8,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextTertiary}"
+                                   FontSize="13" />
+                        <TextBlock Grid.Column="2"
+                                   Text="{loc:Translate Key=Navigation.SearchShortcut}"
+                                   VerticalAlignment="Center"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextDisabled}" />
+                    </Grid>
+                </Button>
+
+                <StackPanel Grid.Column="3"
                             Orientation="Horizontal"
                             Spacing="6"
-                            VerticalAlignment="Center"
-                            Margin="16,0,0,0">
-                    <materialIcons:MaterialIcon Kind="ChevronRight" Width="16" Height="16"
+                            VerticalAlignment="Center">
+                    <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14"
                                                 Foreground="{DynamicResource TextTertiary}" />
                     <TextBlock Text="{Binding BreadcrumbText}"
-                               FontSize="14"
-                               FontWeight="SemiBold"
+                               FontSize="13"
+                               FontWeight="Medium"
                                Foreground="{DynamicResource TextSecondary}"
                                VerticalAlignment="Center" />
                 </StackPanel>
@@ -108,8 +140,8 @@
                    IsPaneOpen="{Binding IsSidebarOpen, Mode=TwoWay}"
                    DisplayMode="CompactInline"
                    CompactPaneLength="52"
-                   OpenPaneLength="240"
-                   PaneBackground="{DynamicResource PaneBackgroundBrush}">
+                   OpenPaneLength="260"
+                   PaneBackground="{DynamicResource MainBackgroundBrush}">
             <SplitView.Pane>
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="4,8,4,12" Spacing="2">
@@ -256,12 +288,7 @@
                 </ScrollViewer>
             </SplitView.Pane>
 
-            <Grid>
-                <Image Source="{Binding BackgroundImage}"
-                       Opacity="0.05"
-                       Stretch="Uniform"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center" />
+            <Grid Margin="24">
                 <TransitioningContentControl Content="{Binding CurrentPage}" />
             </Grid>
         </SplitView>

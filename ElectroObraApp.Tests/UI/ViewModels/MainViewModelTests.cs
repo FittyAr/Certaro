@@ -67,7 +67,7 @@ public class MainViewModelTests
 
         serviceProvider.GetService(typeof(DashboardViewModel)).Returns(dashboardVm);
         serviceProvider.GetService(typeof(NavigationService)).Returns(navigationService);
-        _configuration["Application:Name"].Returns("Proyecto Pablito");
+        _configuration["Application:Name"].Returns("ElectroObra");
         _localizationService.GetString(Arg.Any<string>()).Returns(call => call.Arg<string>());
 
         var seedService = Substitute.For<IDatabaseSeedService>();
@@ -79,7 +79,7 @@ public class MainViewModelTests
             _configuration,
             CreateCommandPaletteViewModel(navigationService));
 
-        vm.Greeting.Should().Be("Proyecto Pablito");
+        vm.Greeting.Should().Be("ElectroObra");
     }
 
     [Fact]

@@ -5,11 +5,11 @@
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="ElectroObraApp.Views.AsistenciaView"
              x:DataType="vm:AsistenciaViewModel">
-    <Grid RowDefinitions="Auto, Auto, *" Margin="20">
+    <Grid RowDefinitions="Auto, Auto, *" Margin="0">
         <DockPanel Grid.Row="0" Margin="0,0,0,16">
             <StackPanel Spacing="4">
-                <TextBlock Text="{loc:Translate Key=Menu.Asistencia}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
-                <TextBlock Text="{loc:Translate Key=Attendance.Subtitle}" Foreground="{DynamicResource TextSecondary}"/>
+                <TextBlock Text="{loc:Translate Key=Menu.Asistencia}" Classes="H1"/>
+                <TextBlock Text="{loc:Translate Key=Attendance.Subtitle}" Classes="BodySmall"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <Button Command="{Binding PreviousMonthCommand}" Classes="outline" ToolTip.Tip="{loc:Translate Key=Attendance.PreviousMonth}">

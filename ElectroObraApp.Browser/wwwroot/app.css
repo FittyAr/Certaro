@@ -1,54 +1,69 @@
-﻿/* HTML styles for the splash screen */
+﻿/* ElectroObra web splash */
 .avalonia-splash {
     position: absolute;
     height: 100%;
     width: 100%;
-    background: white;
-    font-family: 'Outfit', sans-serif;
+    background: #F3F1EC;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
     justify-content: center;
     align-items: center;
     display: flex;
     pointer-events: none;
 }
 
-/* Light theme styles */
-@media (prefers-color-scheme: light) {
-    .avalonia-splash {
-        background: white;
-    }
+.splash-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
 
-    .avalonia-splash h2 {
-        color: #1b2a4e;
-    }
+.splash-mark {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: #B87333;
+    color: #FFF;
+    font-weight: 700;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.05em;
+    box-shadow: 0 2px 8px rgba(26, 25, 22, 0.12);
+}
 
-    .avalonia-splash a {
-        color: #0D6EFD;
-    }
+.splash-title {
+    font-weight: 600;
+    font-size: 1.75rem;
+    color: #1A1916;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.splash-subtitle {
+    font-size: 0.875rem;
+    color: #5C574F;
+    margin: 0;
+    font-weight: 400;
 }
 
 @media (prefers-color-scheme: dark) {
     .avalonia-splash {
-        background: #1b2a4e;
+        background: #1A1916;
     }
 
-    .avalonia-splash h2 {
-        color: white;
+    .splash-title {
+        color: #F3F1EC;
     }
 
-    .avalonia-splash a {
-        color: white;
+    .splash-subtitle {
+        color: #9A948A;
     }
-}
 
-.avalonia-splash h2 {
-    font-weight: 400;
-    font-size: 1.5rem;
-}
-
-.avalonia-splash a {
-    text-decoration: none;
-    font-size: 2.5rem;
-    display: block;   
+    .splash-mark {
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
 }
 
 .avalonia-splash.splash-close {

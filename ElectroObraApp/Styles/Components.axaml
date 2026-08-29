@@ -56,9 +56,9 @@
         <Setter Property="Background" Value="{DynamicResource SurfaceSunken}" />
     </Style>
 
-    <!-- Base TextBox -->
+    <!-- Base TextBox (inset) -->
     <Style Selector="TextBox.eo-input">
-        <Setter Property="Background" Value="{DynamicResource SurfaceRaised}" />
+        <Setter Property="Background" Value="{DynamicResource SurfaceSunken}" />
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}" />
         <Setter Property="BorderThickness" Value="1" />
@@ -98,6 +98,10 @@
         <Setter Property="Padding" Value="12,8" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtle}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+
+    <Style Selector="DataGrid.eo-grid /template/ DataGridRowsPresenter DataGridRow:nth-child(2n)">
+        <Setter Property="Background" Value="{DynamicResource SurfaceSunken}" />
     </Style>
 
     <Style Selector="DataGrid.eo-grid /template/ DataGridRowsPresenter DataGridRow:pointerover">

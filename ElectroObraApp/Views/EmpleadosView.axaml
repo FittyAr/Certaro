@@ -9,8 +9,8 @@
              mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="500"
              x:Class="ElectroObraApp.Views.EmpleadosView"
              x:DataType="vm:EmpleadosViewModel">
-    <Grid>
-        <DockPanel Margin="20" IsVisible="{Binding !IsEditing}">
+    <Grid ColumnDefinitions="*, 400" ColumnSpacing="16">
+        <DockPanel Grid.Column="0">
             <controls:PageHeader DockPanel.Dock="Top" Title="{loc:Translate Key=Employees.Title}">
                 <controls:PageHeader.Actions>
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -103,10 +103,21 @@
             </Grid>
         </DockPanel>
 
-        <Border Background="{DynamicResource OverlayBackgroundBrush}" IsVisible="{Binding IsEditing}" Focusable="True">
-            <ContentControl Content="{Binding EditViewModel}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center" />
+        <Border Grid.Column="1"
+                Background="{DynamicResource SurfaceRaised}"
+                BorderBrush="{DynamicResource BorderSubtle}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource Radius12}"
+                MinWidth="320">
+            <Grid>
+                <ContentControl Content="{Binding EditViewModel}" IsVisible="{Binding IsEditing}" />
+                <controls:EmptyState IsVisible="{Binding !IsEditing}"
+                                     IconKind="BadgeAccount"
+                                     Title="{loc:Translate Key=Employees.Title}"
+                                     Description="{loc:Translate Key=General.SelectRecordHint}"
+                                     ActionText="{loc:Translate Key=General.Add}"
+                                     ActionCommand="{Binding AddCommand}" />
+            </Grid>
         </Border>
     </Grid>
 </UserControl>
