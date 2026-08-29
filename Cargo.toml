@@ -74,6 +74,9 @@ csv = "1"
 # Config
 figment = { version = "0.10", features = ["json", "env"] }
 
+# CLI (eo-import-legacy only)
+clap = { version = "4", features = ["derive"] }
+
 # Tauri shell
 tauri = { version = "2", features = [] }
 tauri-build = { version = "2", features = [] }

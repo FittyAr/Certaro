@@ -1,0 +1,54 @@
+{
+  "App": {
+    "Initializing": "Starting…",
+    "InitializingHint": "Preparing the database",
+    "Ready": "Ready"
+  },
+  "Error": {
+    "BootstrapFailed": "The application could not start",
+    "Concurrency": "Someone else changed this record. Reload and try again.",
+    "Domain": "The operation breaks a rule of the system",
+    "ExternalUnavailable": "The {service} service is unavailable",
+    "Io": "A file could not be read or written",
+    "NotFound": "Record not found",
+    "Persistence": "The data could not be reached",
+    "Unexpected": "Something went wrong",
+    "Validation": "Check the highlighted fields"
+  },
+  "General": {
+    "Actions": "Actions",
+    "Add": "Add",
+    "Cancel": "Cancel",
+    "Clear": "Clear",
+    "Close": "Close",
+    "Delete": "Delete",
+    "Edit": "Edit",
+    "Empty": "Nothing to show",
+    "Error": "Error",
+    "Filters": "Filters",
+    "Loading": "Loading…",
+    "New": "New",
+    "PageSizeAll": "All",
+    "Refresh": "Refresh",
+    "Retry": "Retry",
+    "Save": "Save",
+    "Search": "Search",
+    "Success": "Done",
+    "Theme": {
+      "Dark": "Dark",
+      "Light": "Light",
+      "System": "System",
+      "Toggle": "Toggle theme"
+    },
+    "Version": "Version {version}"
+  },
+  "Validation": {
+    "Config": {
+      "ValorNoPermitido": "The value is not allowed"
+    },
+    "Paging": {
+      "PageOutOfRange": "That page does not exist",
+      "SizeNotAllowed": "Page size must be one of: {allowed}"
+    }
+  }
+}

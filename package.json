@@ -21,7 +21,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "i18n:check": "node scripts/check-i18n.mjs"
+    "i18n:check": "node scripts/check-i18n.mjs",
+    "version:check": "node scripts/sync-version.mjs --check",
+    "version:sync": "node scripts/sync-version.mjs"
   },
   "dependencies": {
     "@primeuix/themes": "^1.0.0",
@@ -43,6 +45,7 @@
     "vue-router": "^4.4.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.13.0",
     "@tauri-apps/cli": "^2.0.0",
     "@types/node": "^22.0.0",
     "@vitejs/plugin-vue": "^5.1.0",
@@ -51,6 +54,7 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^9.13.0",
     "eslint-plugin-vue": "^9.30.0",
+    "globals": "^15.11.0",
     "jsdom": "^25.0.0",
     "postcss": "^8.4.47",
     "prettier": "^3.3.3",

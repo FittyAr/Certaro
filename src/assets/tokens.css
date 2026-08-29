@@ -1,0 +1,113 @@
+/**
+ * Design tokens. See `docs/16-frontend.md` §3.2.
+ *
+ * Every token defined in `:root` must also be defined in `.dark`; the architecture test
+ * `tokens_completos_en_ambos_temas` parses this file and fails otherwise. Values are bare HSL
+ * triplets so Tailwind can wrap them in `hsl(var(--token) / <alpha>)`.
+ */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --surface-card: 0 0% 100%;
+    --surface-raised: 210 40% 98%;
+    --surface-overlay: 222 47% 11%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 222 47% 11%;
+
+    --primary: 222 47% 11%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 47% 11%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 210 40% 98%;
+
+    /* business semantics */
+    --money-positive: 142 71% 45%;
+    --money-negative: 0 72% 51%;
+    --money-neutral: 215 16% 47%;
+
+    /* one token per enum variant; StatePill maps them, views never pick a colour */
+    --state-draft: 215 16% 47%;
+    --state-issued: 217 91% 60%;
+    --state-paid: 142 71% 45%;
+    --state-partial: 38 92% 50%;
+    --state-overdue: 0 72% 51%;
+    --state-void: 215 16% 65%;
+    --state-active: 142 71% 45%;
+    --state-paused: 38 92% 50%;
+    --state-finished: 217 91% 60%;
+    --state-cancelled: 215 16% 65%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222 47% 8%;
+    --foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --surface-card: 222 47% 11%;
+    --surface-raised: 217 33% 17%;
+    --surface-overlay: 222 47% 4%;
+
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 213 27% 84%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --warning: 38 92% 55%;
+    --warning-foreground: 222 47% 8%;
+
+    --success: 142 64% 48%;
+    --success-foreground: 222 47% 8%;
+
+    --money-positive: 142 64% 48%;
+    --money-negative: 0 63% 58%;
+    --money-neutral: 215 20% 65%;
+
+    --state-draft: 215 20% 65%;
+    --state-issued: 217 91% 65%;
+    --state-paid: 142 64% 48%;
+    --state-partial: 38 92% 55%;
+    --state-overdue: 0 63% 58%;
+    --state-void: 215 16% 45%;
+    --state-active: 142 64% 48%;
+    --state-paused: 38 92% 55%;
+    --state-finished: 217 91% 65%;
+    --state-cancelled: 215 16% 45%;
+
+    --radius: 0.5rem;
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "App": {
+    "Initializing": "Iniciando…",
+    "InitializingHint": "Preparando la base de datos",
+    "Ready": "Listo"
+  },
+  "Error": {
+    "BootstrapFailed": "No se pudo iniciar la aplicación",
+    "Concurrency": "Alguien más modificó este registro. Recargá y volvé a intentar.",
+    "Domain": "La operación no cumple una regla del sistema",
+    "ExternalUnavailable": "El servicio {service} no está disponible",
+    "Io": "No se pudo leer o escribir un archivo",
+    "NotFound": "No se encontró el registro",
+    "Persistence": "No se pudo acceder a los datos",
+    "Unexpected": "Ocurrió un error inesperado",
+    "Validation": "Revisá los campos marcados"
+  },
+  "General": {
+    "Actions": "Acciones",
+    "Add": "Agregar",
+    "Cancel": "Cancelar",
+    "Clear": "Limpiar",
+    "Close": "Cerrar",
+    "Delete": "Eliminar",
+    "Edit": "Editar",
+    "Empty": "No hay datos para mostrar",
+    "Error": "Error",
+    "Filters": "Filtros",
+    "Loading": "Cargando…",
+    "New": "Nuevo",
+    "PageSizeAll": "Todos",
+    "Refresh": "Actualizar",
+    "Retry": "Reintentar",
+    "Save": "Guardar",
+    "Search": "Buscar",
+    "Success": "Listo",
+    "Theme": {
+      "Dark": "Oscuro",
+      "Light": "Claro",
+      "System": "Sistema",
+      "Toggle": "Cambiar tema"
+    },
+    "Version": "Versión {version}"
+  },
+  "Validation": {
+    "Config": {
+      "ValorNoPermitido": "El valor no está permitido"
+    },
+    "Paging": {
+      "PageOutOfRange": "La página no existe",
+      "SizeNotAllowed": "El tamaño de página debe ser uno de: {allowed}"
+    }
+  }
+}

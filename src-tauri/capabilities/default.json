@@ -1,0 +1,17 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capabilities the main window needs. Kept minimal on purpose: the frontend never reads or writes files directly, it asks the backend.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "core:window:allow-start-dragging",
+    "dialog:allow-save",
+    "dialog:allow-open",
+    "dialog:allow-message",
+    "dialog:allow-confirm",
+    "opener:allow-open-url",
+    "opener:allow-open-path"
+  ]
+}
