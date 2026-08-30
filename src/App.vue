@@ -49,6 +49,14 @@ onMounted(async () => {
       ui.markFailed(event.payload)
     }),
   )
+  // The maintenance task runs in the background after bootstrap. Its result is informational:
+  // a backup was created, old backups were deleted, attachment trash was purged. None of these
+  // warrant a dialog, but the status bar could show them.
+  unlisteners.push(
+    await listen<Record<string, unknown>>('mantenimiento:done', () => {
+      // The result is available if a future status bar wants to display it.
+    }),
+  )
 })
 
 onUnmounted(() => {

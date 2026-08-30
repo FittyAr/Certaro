@@ -22,6 +22,19 @@
       "Presupuestado": "Volver a presupuesto"
     }
   },
+  "Adjuntos": {
+    "Add": "Agregar adjunto",
+    "DeleteConfirm": "¿Eliminar el adjunto {nombre}?",
+    "Empty": "No hay adjuntos",
+    "EmptyHint": "Arrastrá un archivo o hacé clic en Agregar",
+    "Fecha": "Fecha",
+    "Mime": "Tipo",
+    "Nombre": "Nombre",
+    "Open": "Abrir",
+    "Reveal": "Mostrar en carpeta",
+    "Tamano": "Tamaño",
+    "Title": "Adjuntos"
+  },
   "App": {
     "Initializing": "Iniciando…",
     "InitializingHint": "Preparando la base de datos",
@@ -35,6 +48,20 @@
     "SoloDiasHabiles": "Saltear sábados, domingos y feriados",
     "Subtitle": "Un click recorre los tipos de jornada y vuelve al vacío",
     "TipoJornada": "Tipo de jornada"
+  },
+  "Backup": {
+    "Create": "Crear backup",
+    "Created": "Backup creado",
+    "Empty": "No hay backups",
+    "ExportJson": "Exportar JSON",
+    "ImportJson": "Importar JSON",
+    "Restore": "Restaurar",
+    "RestoreConfirm": "¿Restaurar el backup {nombre}? Se creará un backup del estado actual antes de restaurar.",
+    "RestoreDone": "Backup restaurado. La aplicación se reiniciará.",
+    "Title": "Backups",
+    "Verify": "Verificar",
+    "VerifyFail": "El backup está corrupto",
+    "VerifyOk": "El backup está íntegro"
   },
   "Categorias": {
     "Color": "Color",
@@ -140,6 +167,18 @@
     "Hint": "↑↓ para moverte · Enter para abrir · Esc para cerrar",
     "NoResults": "Sin coincidencias",
     "SearchPlaceholder": "Buscar o ir a…"
+  },
+  "Configuracion": {
+    "Applied": "Configuración guardada",
+    "Apply": "Aplicar",
+    "Business": "Negocio",
+    "Communication": "Comunicación",
+    "General": "General",
+    "Integrations": "Integraciones",
+    "LeaveConfirm": "Hay cambios sin aplicar. ¿Salir de todas formas?",
+    "Reset": "Restaurar valor",
+    "Sistema": "Sistema",
+    "Title": "Configuración"
   },
   "Conflict": {
     "Categoria": {
@@ -248,6 +287,7 @@
     "UsarTarifaSugerida": "Usar la tarifa sugerida ({valor})"
   },
   "Entity": {
+    "Adjunto": "adjunto",
     "Categoria": "categoría",
     "Certificado": "certificado",
     "Cliente": "cliente",
@@ -661,6 +701,14 @@
     "Subtitle": "Cada reporte pide sus parámetros y guarda donde elijas",
     "Title": "Reportes"
   },
+  "Sistema": {
+    "BaseCorrupta": "Base de datos corrupta",
+    "BaseSaludable": "Base de datos saludable",
+    "Migraciones": "Migraciones",
+    "Tamano": "Tamaño",
+    "Title": "Sistema",
+    "Version": "Versión"
+  },
   "State": {
     "Asistencia": {
       "EmpleadoEgresado": "El empleado egresó el {fecha}: no se puede cargar asistencia posterior."
@@ -730,10 +778,21 @@
     "Subtitle": "Trabajos contratados dentro de cada obra"
   },
   "Validation": {
+    "Adjunto": {
+      "ArchivoNoEncontrado": "El archivo no se encontró: {ruta}",
+      "ContenidoNoCoincide": "El contenido del archivo no corresponde a la extensión {extension}",
+      "CupoExcedido": "El tamaño total de adjuntos no puede superar {max} MB",
+      "DemasiadoGrande": "El archivo no puede superar {max} MB (tiene {actual} MB)",
+      "ExtensionNoPermitida": "La extensión .{extension} no está permitida",
+      "NoEsArchivo": "La ruta no es un archivo válido"
+    },
     "Asistencia": {
       "EmpleadoRequired": "Elegí un empleado.",
       "ObservacionesMaxLength": "Las observaciones no pueden pasar de {max} caracteres.",
       "RangoInvalid": "La fecha final no puede ser anterior a la inicial."
+    },
+    "Backup": {
+      "VersionIncompatible": "El backup es de una versión más nueva de la aplicación"
     },
     "Categoria": {
       "ColorInvalid": "El color debe tener el formato #RRGGBB",

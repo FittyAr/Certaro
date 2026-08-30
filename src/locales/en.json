@@ -22,6 +22,19 @@
       "Presupuestado": "Back to quote"
     }
   },
+  "Adjuntos": {
+    "Add": "Add attachment",
+    "DeleteConfirm": "Delete attachment {nombre}?",
+    "Empty": "No attachments",
+    "EmptyHint": "Drag a file or click Add",
+    "Fecha": "Date",
+    "Mime": "Type",
+    "Nombre": "Name",
+    "Open": "Open",
+    "Reveal": "Show in folder",
+    "Tamano": "Size",
+    "Title": "Attachments"
+  },
   "App": {
     "Initializing": "Starting…",
     "InitializingHint": "Preparing the database",
@@ -35,6 +48,20 @@
     "SoloDiasHabiles": "Skip Saturdays, Sundays and holidays",
     "Subtitle": "One click cycles the day types and back to empty",
     "TipoJornada": "Day type"
+  },
+  "Backup": {
+    "Create": "Create backup",
+    "Created": "Backup created",
+    "Empty": "No backups",
+    "ExportJson": "Export JSON",
+    "ImportJson": "Import JSON",
+    "Restore": "Restore",
+    "RestoreConfirm": "Restore backup {nombre}? A backup of the current state will be created first.",
+    "RestoreDone": "Backup restored. The application will restart.",
+    "Title": "Backups",
+    "Verify": "Verify",
+    "VerifyFail": "Backup is corrupt",
+    "VerifyOk": "Backup is intact"
   },
   "Categorias": {
     "Color": "Colour",
@@ -140,6 +167,18 @@
     "Hint": "↑↓ to move · Enter to open · Esc to close",
     "NoResults": "No matches",
     "SearchPlaceholder": "Search or jump to…"
+  },
+  "Configuracion": {
+    "Applied": "Settings saved",
+    "Apply": "Apply",
+    "Business": "Business",
+    "Communication": "Communication",
+    "General": "General",
+    "Integrations": "Integrations",
+    "LeaveConfirm": "You have unsaved changes. Leave anyway?",
+    "Reset": "Reset to default",
+    "Sistema": "System",
+    "Title": "Settings"
   },
   "Conflict": {
     "Categoria": {
@@ -248,6 +287,7 @@
     "UsarTarifaSugerida": "Use the suggested rate ({valor})"
   },
   "Entity": {
+    "Adjunto": "attachment",
     "Categoria": "category",
     "Certificado": "certificate",
     "Cliente": "customer",
@@ -661,6 +701,14 @@
     "Subtitle": "Each report asks for its parameters and saves where you choose",
     "Title": "Reports"
   },
+  "Sistema": {
+    "BaseCorrupta": "Database corrupt",
+    "BaseSaludable": "Database healthy",
+    "Migraciones": "Migrations",
+    "Tamano": "Size",
+    "Title": "System",
+    "Version": "Version"
+  },
   "State": {
     "Asistencia": {
       "EmpleadoEgresado": "The employee left on {fecha}: attendance cannot be recorded after that."
@@ -730,10 +778,21 @@
     "Subtitle": "Jobs contracted inside each site"
   },
   "Validation": {
+    "Adjunto": {
+      "ArchivoNoEncontrado": "File not found: {ruta}",
+      "ContenidoNoCoincide": "File content does not match the .{extension} extension",
+      "CupoExcedido": "Total attachment size cannot exceed {max} MB",
+      "DemasiadoGrande": "File cannot exceed {max} MB (it is {actual} MB)",
+      "ExtensionNoPermitida": "The .{extension} extension is not allowed",
+      "NoEsArchivo": "The path is not a valid file"
+    },
     "Asistencia": {
       "EmpleadoRequired": "Pick an employee.",
       "ObservacionesMaxLength": "The notes cannot exceed {max} characters.",
       "RangoInvalid": "The end date cannot precede the start date."
+    },
+    "Backup": {
+      "VersionIncompatible": "The backup is from a newer version of the application"
     },
     "Categoria": {
       "ColorInvalid": "The colour must look like #RRGGBB",

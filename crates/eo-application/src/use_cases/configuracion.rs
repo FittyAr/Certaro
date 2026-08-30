@@ -120,7 +120,9 @@ fn leer<'v>(documento: &'v Value, clave: &str) -> Option<&'v Value> {
 fn escribir(documento: &mut Value, clave: &str, valor: Value) {
     let mut actual = documento;
     let segmentos: Vec<&str> = clave.split('.').collect();
-    let (ultimo, previos) = segmentos.split_last().expect("la clave no está vacía");
+    let Some((ultimo, previos)) = segmentos.split_last() else {
+        return;
+    };
     for segmento in previos {
         actual = match actual.get_mut(*segmento) {
             Some(siguiente) => siguiente,
