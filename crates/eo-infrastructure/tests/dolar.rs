@@ -16,6 +16,7 @@ use eo_domain::clock::FixedClock;
 use eo_domain::Money;
 use eo_infrastructure::config::FileSettingsStore;
 use eo_infrastructure::external::dolar::HttpExchangeRateProvider;
+use eo_infrastructure::persistence::DbHandle;
 use eo_infrastructure::persistence::{open_in_memory, SeaOrmUnitOfWork};
 use pretty_assertions::assert_eq;
 use wiremock::matchers::{method, path};
@@ -71,7 +72,7 @@ async fn servicio(
     reloj: DateTime<Utc>,
 ) -> CotizacionesService {
     let db = open_in_memory().await.unwrap();
-    let uow: Arc<dyn UnitOfWork> = Arc::new(SeaOrmUnitOfWork::new(db));
+    let uow: Arc<dyn UnitOfWork> = Arc::new(SeaOrmUnitOfWork::new(DbHandle::new(db)));
     let clock: Arc<dyn ClockPort> = Arc::new(FixedClock(reloj));
     let settings: Arc<dyn SettingsStore> = Arc::new(FileSettingsStore::new(
         std::env::temp_dir().join("eo-test-dolar.json"),
@@ -201,7 +202,7 @@ async fn con_el_servicio_caido_se_sirve_la_cache_marcada_como_vieja() {
     let server =
         servidor(ResponseTemplate::new(200).set_body_raw(PAYLOAD, "application/json")).await;
     let db = open_in_memory().await.unwrap();
-    let uow: Arc<dyn UnitOfWork> = Arc::new(SeaOrmUnitOfWork::new(db));
+    let uow: Arc<dyn UnitOfWork> = Arc::new(SeaOrmUnitOfWork::new(DbHandle::new(db)));
     let settings: Arc<dyn SettingsStore> = Arc::new(FileSettingsStore::new(
         std::env::temp_dir().join("eo-test-dolar-cache.json"),
         AppConfig::default(),

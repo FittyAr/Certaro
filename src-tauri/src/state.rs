@@ -10,10 +10,12 @@ use eo_application::ports::exchange_rate::ExchangeRateProvider;
 use eo_application::ports::holidays::HolidayProvider;
 use eo_application::ports::repositories::UnitOfWork;
 use eo_application::ports::settings::SettingsStore;
+use eo_application::use_cases::adjuntos::AdjuntosService;
 use eo_application::use_cases::asistencias::AsistenciasService;
 use eo_application::use_cases::categorias::CategoriasService;
 use eo_application::use_cases::certificados::CertificadosService;
 use eo_application::use_cases::clientes::ClientesService;
+use eo_application::use_cases::configuracion::ConfiguracionService;
 use eo_application::use_cases::comercial::ComercialService;
 use eo_application::use_cases::cotizaciones::CotizacionesService;
 use eo_application::use_cases::dashboard::DashboardService;
@@ -25,11 +27,13 @@ use eo_application::use_cases::movimientos::MovimientosService;
 use eo_application::use_cases::obras::ObrasService;
 use eo_application::use_cases::ordenes_trabajo::OrdenesTrabajoService;
 use eo_application::use_cases::reportes::ReportesService;
+use eo_application::use_cases::sistema::SistemaService;
 use eo_application::use_cases::tipos_movimiento::TiposMovimientoService;
 use eo_application::use_cases::trabajos::TrabajosService;
 use eo_application::AppError;
 use eo_domain::clock::{Clock, SystemClock};
 use eo_domain::ids::{IdGenerator, UuidV7Generator};
+use eo_application::ports::{AttachmentStore, BackupPort, OpenerPort};
 use eo_infrastructure::paths::AppPaths;
 use eo_infrastructure::reporting::adapter::{FsFileWriter, ReportGeneratorAdapter};
 
@@ -52,6 +56,9 @@ pub struct Services {
     pub comercial: ComercialService,
     pub cotizaciones: CotizacionesService,
     pub reportes: ReportesService,
+    pub adjuntos: AdjuntosService,
+    pub sistema: SistemaService,
+    pub configuracion: ConfiguracionService,
 }
 
 impl Services {
@@ -62,6 +69,9 @@ impl Services {
         settings: Arc<dyn SettingsStore>,
         holidays: Arc<dyn HolidayProvider>,
         dolar: Arc<dyn ExchangeRateProvider>,
+        attachments: Arc<dyn AttachmentStore>,
+        opener: Arc<dyn OpenerPort>,
+        backup: Arc<dyn BackupPort>,
     ) -> Self {
         Self {
             tipos_movimiento: TiposMovimientoService::new(
@@ -140,6 +150,22 @@ impl Services {
                 )),
                 Arc::new(FsFileWriter),
             ),
+            adjuntos: AdjuntosService::new(
+                Arc::clone(&uow),
+                Arc::clone(&attachments),
+                opener,
+                Arc::clone(&clock),
+                Arc::clone(&ids),
+                Arc::clone(&settings),
+            ),
+            sistema: SistemaService::new(
+                Arc::clone(&uow),
+                backup,
+                attachments,
+                Arc::clone(&settings),
+                Arc::clone(&clock),
+            ),
+            configuracion: ConfiguracionService::new(Arc::clone(&settings)),
             movimientos: MovimientosService::new(uow, clock, ids, settings),
         }
     }
@@ -177,6 +203,9 @@ impl AppState {
         uow: Arc<dyn UnitOfWork>,
         holidays: Arc<dyn HolidayProvider>,
         dolar: Arc<dyn ExchangeRateProvider>,
+        attachments: Arc<dyn AttachmentStore>,
+        opener: Arc<dyn OpenerPort>,
+        backup: Arc<dyn BackupPort>,
     ) {
         let services = Services::build(
             uow,
@@ -185,6 +214,9 @@ impl AppState {
             Arc::clone(&self.settings),
             holidays,
             dolar,
+            attachments,
+            opener,
+            backup,
         );
         let _ = self.services.set(services);
     }

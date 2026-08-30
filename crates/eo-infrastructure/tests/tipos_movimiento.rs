@@ -14,6 +14,7 @@ use eo_application::use_cases::tipos_movimiento::TiposMovimientoService;
 use eo_application::AppError;
 use eo_domain::clock::FixedClock;
 use eo_domain::ids::UuidV7Generator;
+use eo_infrastructure::persistence::DbHandle;
 use eo_infrastructure::persistence::{open_in_memory, SeaOrmUnitOfWork};
 use pretty_assertions::assert_eq;
 use sea_orm::{ConnectionTrait, DatabaseConnection};
@@ -22,7 +23,7 @@ const GASTO: &str = "00000000-0000-0000-0000-000000000002";
 
 async fn service() -> (TiposMovimientoService, DatabaseConnection) {
     let db = open_in_memory().await.unwrap();
-    let uow: Arc<dyn UnitOfWork> = Arc::new(SeaOrmUnitOfWork::new(db.clone()));
+    let uow: Arc<dyn UnitOfWork> = Arc::new(SeaOrmUnitOfWork::new(DbHandle::new(db.clone())));
     let clock: Arc<dyn ClockPort> = Arc::new(FixedClock(
         chrono::DateTime::parse_from_rfc3339("2026-08-29T12:00:00Z")
             .unwrap()

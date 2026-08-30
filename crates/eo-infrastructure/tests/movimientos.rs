@@ -18,6 +18,7 @@ use eo_domain::constants::tipos_movimiento;
 use eo_domain::ids::UuidV7Generator;
 use eo_domain::{Decimal4, Moneda, Money};
 use eo_infrastructure::config::FileSettingsStore;
+use eo_infrastructure::persistence::DbHandle;
 use eo_infrastructure::persistence::{open_in_memory, SeaOrmUnitOfWork};
 use pretty_assertions::assert_eq;
 use sea_orm::{ConnectionTrait, DatabaseConnection};
@@ -31,7 +32,7 @@ struct Fixture {
 
 async fn fixture() -> Fixture {
     let db = open_in_memory().await.unwrap();
-    let uow: Arc<dyn UnitOfWork> = Arc::new(SeaOrmUnitOfWork::new(db.clone()));
+    let uow: Arc<dyn UnitOfWork> = Arc::new(SeaOrmUnitOfWork::new(DbHandle::new(db.clone())));
     let clock: Arc<dyn ClockPort> = Arc::new(FixedClock(
         DateTime::parse_from_rfc3339("2026-08-29T12:00:00Z")
             .unwrap()

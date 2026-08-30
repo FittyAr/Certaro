@@ -1,5 +1,6 @@
 //! Data transfer objects: the shape of the Tauri contract. See `docs/11-contratos-tauri.md`.
 
+pub mod adjuntos;
 pub mod asistencias;
 pub mod categorias;
 pub mod certificados;

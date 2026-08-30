@@ -1,5 +1,6 @@
 //! Tauri commands: one module per functional area.
 
+pub mod adjuntos;
 pub mod app;
 pub mod asistencias;
 pub mod categorias;
@@ -15,5 +16,6 @@ pub mod movimientos;
 pub mod obras;
 pub mod ordenes_trabajo;
 pub mod reportes;
+pub mod sistema;
 pub mod tipos_movimiento;
 pub mod trabajos;

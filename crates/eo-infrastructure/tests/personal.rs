@@ -34,6 +34,7 @@ use eo_domain::entities::{Feriado, OrigenFeriado};
 use eo_domain::ids::UuidV7Generator;
 use eo_domain::{Decimal4, FrecuenciaPago, Moneda, Money, TipoJornada};
 use eo_infrastructure::config::FileSettingsStore;
+use eo_infrastructure::persistence::DbHandle;
 use eo_infrastructure::persistence::{open_in_memory, SeaOrmUnitOfWork};
 use pretty_assertions::assert_eq;
 use uuid::Uuid;
@@ -99,7 +100,7 @@ fn dia(mes: u32, dia: u32) -> NaiveDate {
 
 async fn fixture_con(provider: FakeHolidays) -> Fixture {
     let db = open_in_memory().await.unwrap();
-    let uow: Arc<dyn UnitOfWork> = Arc::new(SeaOrmUnitOfWork::new(db));
+    let uow: Arc<dyn UnitOfWork> = Arc::new(SeaOrmUnitOfWork::new(DbHandle::new(db)));
     let clock: Arc<dyn ClockPort> = Arc::new(FixedClock(ahora()));
     let ids: Arc<dyn IdGeneratorPort> = Arc::new(UuidV7Generator);
     let settings: Arc<dyn SettingsStore> = Arc::new(FileSettingsStore::new(

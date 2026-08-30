@@ -8,8 +8,10 @@ pub mod error;
 pub mod state;
 
 use eo_application::config::{AppConfig, Environment};
+use eo_infrastructure::backup::SqliteBackupService;
 use eo_infrastructure::external::dolar::HttpExchangeRateProvider;
 use eo_infrastructure::external::holidays::HttpHolidayProvider;
+use eo_infrastructure::files::{FsAttachmentStore, SystemOpener};
 use eo_infrastructure::paths::AppPaths;
 use eo_infrastructure::{config as infra_config, telemetry};
 use state::AppState;
@@ -24,6 +26,8 @@ pub const EVENT_FATAL: &str = "app://fatal";
 /// Emitted when the dollar quotes were refreshed in the background, so the status bar updates
 /// without polling. See `docs/11-contratos-tauri.md` §6.
 pub const EVENT_COTIZACIONES: &str = "cotizaciones:updated";
+/// Emitted once the startup housekeeping finished, so the system section can show what it did.
+pub const EVENT_MANTENIMIENTO: &str = "mantenimiento:done";
 
 pub fn run() {
     // Configuration and logging come up before the window, so a failure in either is on disk.
@@ -199,6 +203,21 @@ pub fn run() {
             commands::comercial::clientes_antiguedad_deuda,
             commands::comercial::obras_rentabilidad,
             commands::comercial::trabajos_rentabilidad,
+            commands::adjuntos::adjuntos_list,
+            commands::adjuntos::adjuntos_add,
+            commands::adjuntos::adjuntos_delete,
+            commands::adjuntos::adjuntos_open,
+            commands::adjuntos::adjuntos_reveal,
+            commands::sistema::config_get_all,
+            commands::sistema::config_set,
+            commands::sistema::config_reset,
+            commands::sistema::sistema_info,
+            commands::sistema::backup_list,
+            commands::sistema::backup_create,
+            commands::sistema::backup_verify,
+            commands::sistema::backup_restore,
+            commands::sistema::backup_export_json,
+            commands::sistema::backup_import_json,
         ])
         .run(tauri::generate_context!())
         .unwrap_or_else(|e| {
@@ -211,13 +230,31 @@ pub fn run() {
 async fn bootstrap(handle: &tauri::AppHandle) -> anyhow::Result<()> {
     let state = handle.state::<AppState>();
     let db = eo_infrastructure::persistence::open(&state.paths.database()).await?;
+    // Behind a handle so that restoring a backup can close the connection before the file under it
+    // is replaced. See `docs/13-servicios-externos-y-archivos.md` §4.3.
+    let db = eo_infrastructure::persistence::DbHandle::new(db);
     let config = state.config();
     let holidays = Arc::new(HttpHolidayProvider::new(&config.external_apis)?);
     let dolar = Arc::new(HttpExchangeRateProvider::new(&config.external_apis)?);
+    let attachments = Arc::new(FsAttachmentStore::new(
+        state.paths.clone(),
+        Arc::clone(&state.settings),
+        Arc::clone(&state.clock),
+    ));
+    let backup = Arc::new(SqliteBackupService::new(
+        db.clone(),
+        state.paths.clone(),
+        Arc::clone(&state.settings),
+        Arc::clone(&state.clock),
+        env!("CARGO_PKG_VERSION"),
+    ));
     state.install_services(
         Arc::new(eo_infrastructure::persistence::SeaOrmUnitOfWork::new(db)),
         holidays,
         dolar,
+        attachments,
+        Arc::new(SystemOpener),
+        backup,
     );
 
     // The calendar is synced here and not on demand: a settlement that cannot see the holidays pays
@@ -239,6 +276,17 @@ async fn bootstrap(handle: &tauri::AppHandle) -> anyhow::Result<()> {
             }
         }
     }
+
+    // Housekeeping runs after everything the interface needs is in place, in its own task, so a
+    // slow backup never delays `app://ready`. See `docs/13` §6.
+    let mantenimiento = handle.clone();
+    tauri::async_runtime::spawn(async move {
+        let state = mantenimiento.state::<AppState>();
+        if let Ok(services) = state.services() {
+            let resultado = services.sistema.mantenimiento().await;
+            let _ = mantenimiento.emit(EVENT_MANTENIMIENTO, resultado);
+        }
+    });
 
     Ok(())
 }
