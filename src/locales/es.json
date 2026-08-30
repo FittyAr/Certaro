@@ -279,11 +279,20 @@
     "Validation": "Revisá los campos marcados"
   },
   "Export": {
+    "Exportar": "Exportar",
     "Formato": "Formato",
     "Generando": "Generando el archivo…",
-    "Listo": "Se generó {archivo}",
+    "Listo": "Exportación lista",
+    "ListoDetalle": "{registros} registros en {archivo}",
     "OpenFolder": "Abrir carpeta",
-    "ScopeNotice": "Se exportan los {cantidad} registros que cumplen el filtro, no solo la página visible."
+    "ScopeNotice": "Se exportan los {cantidad} registros que cumplen el filtro, no solo la página visible.",
+    "Tipo": {
+      "Csv": "Valores separados por comas",
+      "Docx": "Documento de Word",
+      "Json": "Datos JSON",
+      "Pdf": "Documento PDF",
+      "Xlsx": "Planilla de Excel"
+    }
   },
   "Facturas": {
     "BuscarHint": "Número o cliente",
@@ -582,6 +591,12 @@
       "Unidad": "Unidad"
     },
     "DefaultLema": "Cuentas claras",
+    "Export": {
+      "DestinoInvalido": "La ruta de destino no es válida",
+      "DirectorioNoExiste": "La carpeta elegida no existe",
+      "ExtensionNoCoincide": "La extensión del archivo no corresponde al formato elegido",
+      "FormatoNoSoportado": "El reporte {reporte} no se puede generar en ese formato"
+    },
     "Filtro": {
       "Categoria": "categoría: {valor}",
       "Cliente": "cliente: {valor}",
@@ -760,6 +775,12 @@
       "SueldoNegative": "El sueldo no puede ser negativo.",
       "TarifaNegative": "La tarifa no puede ser negativa.",
       "TelefonoMaxLength": "El teléfono no puede pasar de {max} caracteres."
+    },
+    "Export": {
+      "DestinoInvalido": "La ruta de destino no es válida",
+      "DirectorioNoExiste": "La carpeta elegida no existe",
+      "ExtensionNoCoincide": "La extensión del archivo no corresponde al formato elegido",
+      "FormatoNoSoportado": "El reporte {reporte} no se puede generar en ese formato"
     },
     "Liquidacion": {
       "AdelantoConceptoMaxLength": "El concepto del adelanto no puede pasar de {max} caracteres.",

@@ -1,4 +1,4 @@
-ï»¿<script setup lang="ts">
+<script setup lang="ts">
 import Column from 'primevue/column'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
@@ -11,6 +11,7 @@ import DataGrid from '@/components/domain/DataGrid.vue'
 import DateInput from '@/components/domain/DateInput.vue'
 import DateText from '@/components/domain/DateText.vue'
 import FieldError from '@/components/domain/FieldError.vue'
+import ExportMenu from '@/components/domain/ExportMenu.vue'
 import FilterBar from '@/components/domain/FilterBar.vue'
 import MoneyInput from '@/components/domain/MoneyInput.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
@@ -22,6 +23,7 @@ import { useCrudDrawer } from '@/composables/useCrudDrawer'
 import { useServerTable } from '@/composables/useServerTable'
 import { useShortcuts } from '@/composables/useShortcuts'
 import { useCatalogStore, type LookupItem } from '@/stores/useCatalogStore'
+import { useReportesStore } from '@/stores/useReportesStore'
 import {
   useMovimientosStore,
   type Moneda,
@@ -32,7 +34,7 @@ import {
 } from '@/stores/useMovimientosStore'
 
 /**
- * The cash ledger. See `docs/09-modulos-funcionales.md` Â§3.2.
+ * The cash ledger. See `docs/09-modulos-funcionales.md` §3.2.
  *
  * This is the only screen whose filtering and paging happen on the server: the table grows without
  * bound and cannot be shipped whole to the frontend. The totals under the table describe the whole
@@ -43,6 +45,7 @@ const { t } = useI18n()
 const { confirmDelete } = useConfirmDelete()
 const store = useMovimientosStore()
 const catalog = useCatalogStore()
+const reportes = useReportesStore()
 
 const table = useServerTable<MovimientoFiltro, MovimientoListItem, MovimientoResumen>({
   key: 'movimientos',
@@ -148,6 +151,12 @@ onMounted(() => {
   <section class="flex h-full flex-col gap-4 p-6">
     <PageHeader :title="$t('Menu.Movimientos')" :subtitle="$t('Movimientos.Subtitle')">
       <template #actions>
+        <!-- Exports the filter, not the page: the count in the tooltip says so. -->
+        <ExportMenu
+          reporte="movimientos"
+          :cantidad="resumen?.cantidad"
+          :run="(formato, destino) => reportes.exportMovimientos(table.filter.value, formato, destino)"
+        />
         <Button @click="drawer.openCreate()">
           <AppIcon name="plus" :size="16" />
           {{ $t('General.New') }}
@@ -212,7 +221,7 @@ onMounted(() => {
               class="inline-block size-3 rounded-full border border-border"
               :style="{ backgroundColor: data.categoriaColor }"
             />
-            {{ data.categoriaNombre ?? 'â€”' }}
+            {{ data.categoriaNombre ?? '—' }}
           </span>
         </template>
       </Column>

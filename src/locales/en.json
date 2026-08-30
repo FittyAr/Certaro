@@ -279,11 +279,20 @@
     "Validation": "Check the highlighted fields"
   },
   "Export": {
+    "Exportar": "Export",
     "Formato": "Format",
     "Generando": "Generating the file…",
-    "Listo": "{archivo} was generated",
+    "Listo": "Export ready",
+    "ListoDetalle": "{registros} records in {archivo}",
     "OpenFolder": "Open folder",
-    "ScopeNotice": "All {cantidad} records matching the filter are exported, not just the visible page."
+    "ScopeNotice": "All {cantidad} records matching the filter are exported, not just the visible page.",
+    "Tipo": {
+      "Csv": "Comma-separated values",
+      "Docx": "Word document",
+      "Json": "JSON data",
+      "Pdf": "PDF document",
+      "Xlsx": "Excel spreadsheet"
+    }
   },
   "Facturas": {
     "BuscarHint": "Number or customer",
@@ -582,6 +591,12 @@
       "Unidad": "Unit"
     },
     "DefaultLema": "Clear accounts",
+    "Export": {
+      "DestinoInvalido": "The destination path is not valid",
+      "DirectorioNoExiste": "The chosen folder does not exist",
+      "ExtensionNoCoincide": "The file extension does not match the chosen format",
+      "FormatoNoSoportado": "The {reporte} report cannot be generated in that format"
+    },
     "Filtro": {
       "Categoria": "category: {valor}",
       "Cliente": "customer: {valor}",
@@ -760,6 +775,12 @@
       "SueldoNegative": "The salary cannot be negative.",
       "TarifaNegative": "The rate cannot be negative.",
       "TelefonoMaxLength": "The phone cannot exceed {max} characters."
+    },
+    "Export": {
+      "DestinoInvalido": "The destination path is not valid",
+      "DirectorioNoExiste": "The chosen folder does not exist",
+      "ExtensionNoCoincide": "The file extension does not match the chosen format",
+      "FormatoNoSoportado": "The {reporte} report cannot be generated in that format"
     },
     "Liquidacion": {
       "AdelantoConceptoMaxLength": "The advance's description cannot exceed {max} characters.",
