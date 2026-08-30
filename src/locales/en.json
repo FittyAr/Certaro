@@ -431,6 +431,11 @@
     "WorkInProgress": "This screen is not implemented yet",
     "Yes": "Yes"
   },
+  "Import": {
+    "ViewReport": "View report",
+    "WarningDetail": "{count} warnings were generated. Please review the import report.",
+    "WarningTitle": "Import completed with warnings"
+  },
   "Liquidaciones": {
     "Adelantos": "Advances in the period",
     "Anular": "Void settlement",
@@ -777,6 +782,10 @@
     "Presupuesto": "Budget",
     "Subtitle": "Jobs contracted inside each site"
   },
+  "Update": {
+    "Available": "A new version is available: v{version}",
+    "Download": "Download"
+  },
   "Validation": {
     "Adjunto": {
       "ArchivoNoEncontrado": "File not found: {ruta}",
@@ -895,5 +904,13 @@
       "NombreMaxLength": "The name cannot exceed {max} characters",
       "NombreRequired": "The name is required"
     }
+  },
+  "Welcome": {
+    "Import": "Migrate from legacy system",
+    "ImportHint": "If you are coming from the C# version, you can import your database.",
+    "Start": "Start fresh",
+    "StartHint": "Create a new empty database.",
+    "Subtitle": "Operations management for electrical contractors",
+    "Title": "Welcome to ElectroObra"
   }
 }

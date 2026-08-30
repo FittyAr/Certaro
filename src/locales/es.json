@@ -431,6 +431,11 @@
     "WorkInProgress": "Esta pantalla todavía no está implementada",
     "Yes": "Sí"
   },
+  "Import": {
+    "ViewReport": "Ver reporte",
+    "WarningDetail": "Se generaron {count} advertencias. Revisá el reporte de importación.",
+    "WarningTitle": "El import terminó con advertencias"
+  },
   "Liquidaciones": {
     "Adelantos": "Adelantos del período",
     "Anular": "Anular liquidación",
@@ -777,6 +782,10 @@
     "Presupuesto": "Presupuesto",
     "Subtitle": "Trabajos contratados dentro de cada obra"
   },
+  "Update": {
+    "Available": "Hay una nueva versión disponible: v{version}",
+    "Download": "Descargar"
+  },
   "Validation": {
     "Adjunto": {
       "ArchivoNoEncontrado": "El archivo no se encontró: {ruta}",
@@ -895,5 +904,13 @@
       "NombreMaxLength": "El nombre no puede superar los {max} caracteres",
       "NombreRequired": "El nombre es obligatorio"
     }
+  },
+  "Welcome": {
+    "Import": "Migrar datos del sistema anterior",
+    "ImportHint": "Si venís de la versión C#, podés importar tu base de datos.",
+    "Start": "Empezar desde cero",
+    "StartHint": "Creá una base de datos nueva.",
+    "Subtitle": "Sistema de gestión operativa para contratistas eléctricos",
+    "Title": "Bienvenido a ElectroObra"
   }
 }

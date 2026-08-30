@@ -9,6 +9,7 @@ import AppStatusBar from '@/components/layout/AppStatusBar.vue'
 import CommandPalette from '@/components/layout/CommandPalette.vue'
 import { handleEscape } from '@/composables/useEscapeStack'
 import { useShortcuts } from '@/composables/useShortcuts'
+import { useVersionCheck } from '@/composables/useVersionCheck'
 import { numericShortcutRoutes } from '@/router/menu'
 import { useNavigationStore } from '@/stores/useNavigationStore'
 import { useUiStore } from '@/stores/useUiStore'
@@ -23,6 +24,7 @@ const ui = useUiStore()
 const navigation = useNavigationStore()
 const router = useRouter()
 const route = useRoute()
+const versionCheck = useVersionCheck()
 
 /** The single breakpoint of §7: below it the sidebar floats over the content. */
 const isNarrow = useMediaQuery('(max-width: 767px)')
@@ -69,6 +71,19 @@ useShortcuts(globalShortcuts)
       <AppSidebar :overlay="overlayMode" />
 
       <main class="min-w-0 overflow-y-auto">
+        <div
+          v-if="versionCheck.available.value"
+          class="flex items-center justify-between bg-primary/10 px-4 py-2 text-sm"
+        >
+          <span>{{ $t('Update.Available', { version: versionCheck.available.value.version }) }}</span>
+          <a
+            :href="versionCheck.available.value.url"
+            target="_blank"
+            class="font-medium text-primary underline"
+          >
+            {{ $t('Update.Download') }}
+          </a>
+        </div>
         <RouterView />
       </main>
     </div>

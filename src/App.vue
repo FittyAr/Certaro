@@ -8,11 +8,13 @@ import AppShell from '@/components/layout/AppShell.vue'
 import { useConfigStore } from '@/stores/useConfigStore'
 import { useDashboardStore, type Cotizacion } from '@/stores/useDashboardStore'
 import { useUiStore } from '@/stores/useUiStore'
+import { useVersionCheck } from '@/composables/useVersionCheck'
 import ErrorView from '@/views/errors/ErrorView.vue'
 
 const ui = useUiStore()
 const config = useConfigStore()
 const dashboard = useDashboardStore()
+const versionCheck = useVersionCheck()
 
 const unlisteners: Array<() => void> = []
 
@@ -36,6 +38,8 @@ onMounted(async () => {
       // The status bar shows the rate, so it is loaded once here instead of only by the dashboard.
       // A failure is expected and ignored: the bar just does not show it (doc 13 §2.4).
       dashboard.fetchCotizaciones().catch(() => undefined)
+      // Check for a newer version on GitHub. Short timeout, silent degradation.
+      versionCheck.check()
     }),
   )
   // The backend refreshes the rate on startup and announces it when it arrives.
