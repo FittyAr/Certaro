@@ -71,6 +71,7 @@ export const MENU: MenuGroup[] = [
       { route: 'reportes', labelKey: 'Menu.Reports', icon: 'file-chart-column' },
       { route: 'categorias', labelKey: 'Menu.Categories', icon: 'tags' },
       { route: 'tipos-movimiento', labelKey: 'Menu.MovementTypes', icon: 'list-tree' },
+      { route: 'feriados', labelKey: 'Menu.Feriados', icon: 'calendar-days' },
       { route: 'configuracion', labelKey: 'Menu.Settings', icon: 'settings' },
       { route: 'seed', labelKey: 'Menu.Seed', icon: 'database', devOnly: true },
     ],

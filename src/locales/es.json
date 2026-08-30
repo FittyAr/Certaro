@@ -27,6 +27,15 @@
     "InitializingHint": "Preparando la base de datos",
     "Ready": "Listo"
   },
+  "Asistencia": {
+    "CargaMasiva": "Carga por rango",
+    "Empty": "No hay empleados activos para el período",
+    "Jornadas": "Jornadas",
+    "SinRegistro": "Sin registro",
+    "SoloDiasHabiles": "Saltear sábados, domingos y feriados",
+    "Subtitle": "Un click recorre los tipos de jornada y vuelve al vacío",
+    "TipoJornada": "Tipo de jornada"
+  },
   "Categorias": {
     "Color": "Color",
     "Descripcion": "Descripción",
@@ -118,6 +127,10 @@
       "EnUso": "La categoría se usa en {count} movimientos",
       "NombreDuplicado": "Ya existe una categoría «{nombre}» con la misma categoría padre"
     },
+    "Empleado": {
+      "ConLiquidaciones": "El empleado tiene {cantidad} liquidaciones y no se puede eliminar.",
+      "ConMovimientos": "El empleado tiene {cantidad} movimientos y no se puede eliminar."
+    },
     "OrdenTrabajo": {
       "ConCertificados": "La orden tiene {count} certificado(s) emitido(s) y no se puede eliminar.",
       "ItemCertificado": "No se puede quitar un ítem que ya fue certificado."
@@ -129,11 +142,35 @@
       "SignoDeSistema": "No se puede cambiar el signo de un tipo de sistema"
     }
   },
+  "Empleados": {
+    "Activo": "Activo",
+    "BuscarHint": "Nombre, documento o cargo",
+    "Cargo": "Cargo",
+    "Dni": "Documento",
+    "Email": "Correo",
+    "Empty": "Todavía no hay empleados cargados",
+    "FechaEgreso": "Fecha de egreso",
+    "FechaIngreso": "Fecha de ingreso",
+    "MultDomingo": "Multiplicador domingo",
+    "MultFeriado": "Multiplicador feriado",
+    "MultSabado": "Multiplicador sábado",
+    "Nombre": "Nombre",
+    "PagoFrecuencia": "Frecuencia de pago",
+    "SoloActivos": "Solo activos",
+    "Subtitle": "Legajo, tarifas y multiplicadores por día especial",
+    "SueldoBase": "Sueldo base",
+    "TarifaDiaria": "Tarifa diaria",
+    "Telefono": "Teléfono",
+    "UsarTarifaSugerida": "Usar la tarifa sugerida ({valor})"
+  },
   "Entity": {
     "Categoria": "categoría",
     "Certificado": "certificado",
     "Cliente": "cliente",
+    "Empleado": "empleado",
     "Factura": "factura",
+    "Feriado": "feriado",
+    "Liquidacion": "liquidación",
     "Movimiento": "movimiento",
     "Obra": "obra",
     "OrdenTrabajo": "orden de trabajo",
@@ -185,6 +222,29 @@
     "Total": "Total",
     "Vencimiento": "Vencimiento"
   },
+  "Feriados": {
+    "Agregar": "Agregar feriado",
+    "Anio": "Año",
+    "Empty": "No hay feriados cargados para el año",
+    "Fecha": "Fecha",
+    "Nombre": "Nombre",
+    "Origen": {
+      "Api": "Del servicio",
+      "Manual": "Cargado a mano"
+    },
+    "SincronizadoConError": "Se sincronizaron {total} feriados; {aniosConError} año(s) no se pudieron consultar.",
+    "SincronizadoOk": "Se agregaron {agregados} feriados de {total}.",
+    "Sincronizar": "Sincronizar",
+    "SincronizarAyuda": "Sincroniza el año en curso y el siguiente. Nunca sobreescribe los manuales.",
+    "Subtitle": "Calendario que usa el cálculo de liquidaciones",
+    "Tipo": "Tipo"
+  },
+  "FrecuenciaPago": {
+    "Diario": "Diario",
+    "Mensual": "Mensual",
+    "Quincenal": "Quincenal",
+    "Semanal": "Semanal"
+  },
   "General": {
     "Actions": "Acciones",
     "Add": "Agregar",
@@ -207,10 +267,13 @@
     "Empty": "No hay datos para mostrar",
     "Error": "Error",
     "Filters": "Filtros",
+    "From": "Desde",
     "KeepEditing": "Seguir editando",
     "Loading": "Cargando…",
     "New": "Nuevo",
     "NewOf": "Nuevo {entity}",
+    "Next": "Siguiente",
+    "No": "No",
     "NoResults": "Ningún registro coincide con los filtros",
     "PageReport": "{first} a {last} de {totalRecords}",
     "PageSizeAll": "Todos",
@@ -223,8 +286,46 @@
     "Search": "Buscar",
     "Success": "Listo",
     "Theme": "Cambiar tema",
+    "To": "Hasta",
     "Version": "Versión {version}",
-    "WorkInProgress": "Esta pantalla todavía no está implementada"
+    "WorkInProgress": "Esta pantalla todavía no está implementada",
+    "Yes": "Sí"
+  },
+  "Liquidaciones": {
+    "Adelantos": "Adelantos del período",
+    "Anular": "Anular liquidación",
+    "AsistenteTitulo": "Nueva liquidación · paso {paso} de 3",
+    "Calcular": "Calcular",
+    "Confirmar": "Confirmar y guardar",
+    "ConfirmarTexto": "Se van a generar {cantidad} liquidaciones en una sola operación.",
+    "Dias": "Días",
+    "ElegirEmpleados": "Elegí uno o más empleados",
+    "Empleados": "Empleados",
+    "Empty": "Todavía no hay liquidaciones",
+    "ImportesCongelados": "El PDF ya se entregó: los importes quedaron congelados.",
+    "Nueva": "Nueva liquidación",
+    "Observaciones": "Observaciones",
+    "Origen": {
+      "Asistencia": "Calculado desde la asistencia",
+      "Calendario": "Calculado desde el calendario",
+      "Manual": "Días ingresados a mano"
+    },
+    "PasoUnoAyuda": "El cálculo toma los días de la asistencia cargada; si no hay, usa el calendario del período.",
+    "Periodo": "Período",
+    "Recargos": "Recargos",
+    "ReglasAplicadas": "Reglas aplicadas",
+    "SinAdelantos": "No se descontaron adelantos",
+    "SoloSinPdf": "Solo sin PDF entregado",
+    "Subtitle": "Períodos liquidados, con sus tarifas y adelantos congelados",
+    "Tarifa": "Tarifa aplicada",
+    "TotalAdelantos": "Adelantos",
+    "TotalBruto": "Bruto",
+    "TotalDelLote": "Total del lote",
+    "TotalNeto": "Neto",
+    "Warning": {
+      "FeriadosNoDisponibles": "El período no tiene feriados cargados. Si el calendario no se sincronizó, el recargo por feriado no se está aplicando."
+    },
+    "YaDescontado": "ya descontado"
   },
   "MedioPago": {
     "Cheque": "Cheque",
@@ -248,6 +349,7 @@
     "Dashboard": "Panel",
     "Empleados": "Empleados",
     "Facturas": "Facturas",
+    "Feriados": "Feriados",
     "Group": {
       "Comercial": "Comercial",
       "Operacion": "Operación",
@@ -343,6 +445,9 @@
     "VerDetalle": "Ver detalle"
   },
   "State": {
+    "Asistencia": {
+      "EmpleadoEgresado": "El empleado egresó el {fecha}: no se puede cargar asistencia posterior."
+    },
     "Factura": {
       "Anulada": "Anulada",
       "Borrador": "Borrador",
@@ -350,6 +455,9 @@
       "Pagada": "Pagada",
       "PagadaParcial": "Pago parcial",
       "Vencida": "Vencida"
+    },
+    "Liquidacion": {
+      "YaEntregada": "La liquidación de {empleado} ya tiene el PDF entregado: los importes no se pueden cambiar."
     },
     "Obra": {
       "Activa": "Activa",
@@ -369,6 +477,13 @@
     "failed": "Sin conexión con la base",
     "initializing": "Iniciando…",
     "ready": "Listo"
+  },
+  "TipoJornada": {
+    "Completa": "Jornada completa",
+    "Falta": "Ausencia",
+    "FaltaJustificada": "Ausencia justificada",
+    "Feriado": "Feriado trabajado",
+    "Media": "Media jornada"
   },
   "TiposMovimiento": {
     "Descripcion": "Descripción",
@@ -398,6 +513,11 @@
     "Subtitle": "Trabajos contratados dentro de cada obra"
   },
   "Validation": {
+    "Asistencia": {
+      "EmpleadoRequired": "Elegí un empleado.",
+      "ObservacionesMaxLength": "Las observaciones no pueden pasar de {max} caracteres.",
+      "RangoInvalid": "La fecha final no puede ser anterior a la inicial."
+    },
     "Categoria": {
       "ColorInvalid": "El color debe tener el formato #RRGGBB",
       "DescripcionMaxLength": "La descripción no puede superar los {max} caracteres",
@@ -424,6 +544,34 @@
     },
     "Config": {
       "ValorNoPermitido": "El valor no está permitido"
+    },
+    "Empleado": {
+      "CargoMaxLength": "El cargo no puede pasar de {max} caracteres.",
+      "DniFormat": "El documento solo admite números.",
+      "DniLength": "El documento tiene que tener entre {min} y {max} dígitos.",
+      "EmailInvalid": "El correo no tiene un formato válido.",
+      "EmailMaxLength": "El correo no puede pasar de {max} caracteres.",
+      "FechaEgresoInvalid": "El egreso no puede ser anterior al ingreso.",
+      "MultiplicadorNegative": "El multiplicador no puede ser negativo.",
+      "NombreMaxLength": "El nombre no puede pasar de {max} caracteres.",
+      "NombreRequired": "El nombre es obligatorio.",
+      "SueldoNegative": "El sueldo no puede ser negativo.",
+      "TarifaNegative": "La tarifa no puede ser negativa.",
+      "TelefonoMaxLength": "El teléfono no puede pasar de {max} caracteres."
+    },
+    "Liquidacion": {
+      "AdelantoConceptoMaxLength": "El concepto del adelanto no puede pasar de {max} caracteres.",
+      "AdelantoMovimientoRequired": "El adelanto tiene que referenciar un movimiento.",
+      "AdelantosNegative": "El total de adelantos no puede ser negativo.",
+      "AdelantoYaDescontado": "El adelanto «{concepto}» del {fecha} ya se descontó en otra liquidación.",
+      "BatchEmpty": "No hay liquidaciones para generar.",
+      "BrutoNegative": "El total bruto no puede ser negativo.",
+      "DiasTrabajadosRequired": "Los días trabajados tienen que ser mayores que cero.",
+      "EmpleadoRequired": "Elegí un empleado.",
+      "FechaInicioInvalid": "La fecha final no puede ser anterior a la inicial.",
+      "ObservacionesMaxLength": "Las observaciones no pueden pasar de {max} caracteres.",
+      "PeriodoSolapado": "{empleado} ya tiene una liquidación que se solapa con el período {desde} – {hasta}.",
+      "TarifaRequired": "La tarifa tiene que ser mayor que cero."
     },
     "Movimiento": {
       "AdelantoLiquidado": "El adelanto ya fue descontado en una liquidación",

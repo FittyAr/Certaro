@@ -192,6 +192,12 @@ export const routes: RouteRecordRaw[] = [
     meta: { titleKey: 'Menu.MovementTypes' },
   },
   {
+    path: '/admin/feriados',
+    name: 'feriados',
+    component: () => import('@/views/feriados/FeriadosView.vue'),
+    meta: { titleKey: 'Menu.Feriados' },
+  },
+  {
     path: '/configuracion',
     name: 'configuracion',
     component: () => import('@/views/configuracion/ConfiguracionView.vue'),

@@ -27,6 +27,15 @@
     "InitializingHint": "Preparing the database",
     "Ready": "Ready"
   },
+  "Asistencia": {
+    "CargaMasiva": "Bulk entry",
+    "Empty": "No active employees for the period",
+    "Jornadas": "Days",
+    "SinRegistro": "No record",
+    "SoloDiasHabiles": "Skip Saturdays, Sundays and holidays",
+    "Subtitle": "One click cycles the day types and back to empty",
+    "TipoJornada": "Day type"
+  },
   "Categorias": {
     "Color": "Colour",
     "Descripcion": "Description",
@@ -118,6 +127,10 @@
       "EnUso": "The category is used by {count} movements",
       "NombreDuplicado": "A category “{nombre}” already exists under the same parent"
     },
+    "Empleado": {
+      "ConLiquidaciones": "The employee has {cantidad} settlements and cannot be deleted.",
+      "ConMovimientos": "The employee has {cantidad} movements and cannot be deleted."
+    },
     "OrdenTrabajo": {
       "ConCertificados": "The order has {count} issued certificate(s) and cannot be deleted.",
       "ItemCertificado": "An item that has already been certified cannot be removed."
@@ -129,11 +142,35 @@
       "SignoDeSistema": "The sign of a system type cannot be changed"
     }
   },
+  "Empleados": {
+    "Activo": "Active",
+    "BuscarHint": "Name, ID or role",
+    "Cargo": "Role",
+    "Dni": "ID number",
+    "Email": "Email",
+    "Empty": "No employees yet",
+    "FechaEgreso": "Leaving date",
+    "FechaIngreso": "Joining date",
+    "MultDomingo": "Sunday multiplier",
+    "MultFeriado": "Holiday multiplier",
+    "MultSabado": "Saturday multiplier",
+    "Nombre": "Name",
+    "PagoFrecuencia": "Pay frequency",
+    "SoloActivos": "Active only",
+    "Subtitle": "Records, rates and special-day multipliers",
+    "SueldoBase": "Base salary",
+    "TarifaDiaria": "Daily rate",
+    "Telefono": "Phone",
+    "UsarTarifaSugerida": "Use the suggested rate ({valor})"
+  },
   "Entity": {
     "Categoria": "category",
     "Certificado": "certificate",
     "Cliente": "customer",
+    "Empleado": "employee",
     "Factura": "invoice",
+    "Feriado": "holiday",
+    "Liquidacion": "settlement",
     "Movimiento": "movement",
     "Obra": "site",
     "OrdenTrabajo": "work order",
@@ -185,6 +222,29 @@
     "Total": "Total",
     "Vencimiento": "Due date"
   },
+  "Feriados": {
+    "Agregar": "Add holiday",
+    "Anio": "Year",
+    "Empty": "No holidays loaded for this year",
+    "Fecha": "Date",
+    "Nombre": "Name",
+    "Origen": {
+      "Api": "From the service",
+      "Manual": "Added by hand"
+    },
+    "SincronizadoConError": "{total} holidays are loaded; {aniosConError} year(s) could not be reached.",
+    "SincronizadoOk": "{agregados} of {total} holidays were added.",
+    "Sincronizar": "Sync",
+    "SincronizarAyuda": "Syncs the current year and the next. Never overwrites manual entries.",
+    "Subtitle": "Calendar used by the settlement calculation",
+    "Tipo": "Type"
+  },
+  "FrecuenciaPago": {
+    "Diario": "Daily",
+    "Mensual": "Monthly",
+    "Quincenal": "Fortnightly",
+    "Semanal": "Weekly"
+  },
   "General": {
     "Actions": "Actions",
     "Add": "Add",
@@ -207,10 +267,13 @@
     "Empty": "Nothing to show",
     "Error": "Error",
     "Filters": "Filters",
+    "From": "From",
     "KeepEditing": "Keep editing",
     "Loading": "Loading…",
     "New": "New",
     "NewOf": "New {entity}",
+    "Next": "Next",
+    "No": "No",
     "NoResults": "No record matches the filters",
     "PageReport": "{first} to {last} of {totalRecords}",
     "PageSizeAll": "All",
@@ -223,8 +286,46 @@
     "Search": "Search",
     "Success": "Done",
     "Theme": "Toggle theme",
+    "To": "To",
     "Version": "Version {version}",
-    "WorkInProgress": "This screen is not implemented yet"
+    "WorkInProgress": "This screen is not implemented yet",
+    "Yes": "Yes"
+  },
+  "Liquidaciones": {
+    "Adelantos": "Advances in the period",
+    "Anular": "Void settlement",
+    "AsistenteTitulo": "New settlement · step {paso} of 3",
+    "Calcular": "Calculate",
+    "Confirmar": "Confirm and save",
+    "ConfirmarTexto": "{cantidad} settlements will be created in a single operation.",
+    "Dias": "Days",
+    "ElegirEmpleados": "Pick one or more employees",
+    "Empleados": "Employees",
+    "Empty": "No settlements yet",
+    "ImportesCongelados": "The PDF was handed over: the amounts are frozen.",
+    "Nueva": "New settlement",
+    "Observaciones": "Notes",
+    "Origen": {
+      "Asistencia": "Computed from attendance",
+      "Calendario": "Computed from the calendar",
+      "Manual": "Days entered by hand"
+    },
+    "PasoUnoAyuda": "The calculation uses the recorded attendance; with none, it falls back to the calendar.",
+    "Periodo": "Period",
+    "Recargos": "Surcharges",
+    "ReglasAplicadas": "Applied rules",
+    "SinAdelantos": "No advances were discounted",
+    "SoloSinPdf": "Without a handed-over PDF",
+    "Subtitle": "Settled periods, with their frozen rates and advances",
+    "Tarifa": "Applied rate",
+    "TotalAdelantos": "Advances",
+    "TotalBruto": "Gross",
+    "TotalDelLote": "Batch total",
+    "TotalNeto": "Net",
+    "Warning": {
+      "FeriadosNoDisponibles": "The period has no holidays loaded. If the calendar failed to sync, the holiday surcharge is not being applied."
+    },
+    "YaDescontado": "already discounted"
   },
   "MedioPago": {
     "Cheque": "Cheque",
@@ -248,6 +349,7 @@
     "Dashboard": "Dashboard",
     "Empleados": "Employees",
     "Facturas": "Invoices",
+    "Feriados": "Holidays",
     "Group": {
       "Comercial": "Commercial",
       "Operacion": "Operations",
@@ -343,6 +445,9 @@
     "VerDetalle": "View detail"
   },
   "State": {
+    "Asistencia": {
+      "EmpleadoEgresado": "The employee left on {fecha}: attendance cannot be recorded after that."
+    },
     "Factura": {
       "Anulada": "Void",
       "Borrador": "Draft",
@@ -350,6 +455,9 @@
       "Pagada": "Paid",
       "PagadaParcial": "Partially paid",
       "Vencida": "Overdue"
+    },
+    "Liquidacion": {
+      "YaEntregada": "{empleado}'s settlement already has its PDF handed over: the amounts cannot change."
     },
     "Obra": {
       "Activa": "Active",
@@ -369,6 +477,13 @@
     "failed": "No connection to the database",
     "initializing": "Starting…",
     "ready": "Ready"
+  },
+  "TipoJornada": {
+    "Completa": "Full day",
+    "Falta": "Absence",
+    "FaltaJustificada": "Excused absence",
+    "Feriado": "Holiday worked",
+    "Media": "Half day"
   },
   "TiposMovimiento": {
     "Descripcion": "Description",
@@ -398,6 +513,11 @@
     "Subtitle": "Jobs contracted inside each site"
   },
   "Validation": {
+    "Asistencia": {
+      "EmpleadoRequired": "Pick an employee.",
+      "ObservacionesMaxLength": "The notes cannot exceed {max} characters.",
+      "RangoInvalid": "The end date cannot precede the start date."
+    },
     "Categoria": {
       "ColorInvalid": "The colour must look like #RRGGBB",
       "DescripcionMaxLength": "The description cannot exceed {max} characters",
@@ -424,6 +544,34 @@
     },
     "Config": {
       "ValorNoPermitido": "The value is not allowed"
+    },
+    "Empleado": {
+      "CargoMaxLength": "The role cannot exceed {max} characters.",
+      "DniFormat": "The ID number only accepts digits.",
+      "DniLength": "The ID number must have between {min} and {max} digits.",
+      "EmailInvalid": "The email is not valid.",
+      "EmailMaxLength": "The email cannot exceed {max} characters.",
+      "FechaEgresoInvalid": "The leaving date cannot precede the joining date.",
+      "MultiplicadorNegative": "The multiplier cannot be negative.",
+      "NombreMaxLength": "The name cannot exceed {max} characters.",
+      "NombreRequired": "The name is required.",
+      "SueldoNegative": "The salary cannot be negative.",
+      "TarifaNegative": "The rate cannot be negative.",
+      "TelefonoMaxLength": "The phone cannot exceed {max} characters."
+    },
+    "Liquidacion": {
+      "AdelantoConceptoMaxLength": "The advance's description cannot exceed {max} characters.",
+      "AdelantoMovimientoRequired": "The advance must reference a movement.",
+      "AdelantosNegative": "The advances total cannot be negative.",
+      "AdelantoYaDescontado": "The advance \"{concepto}\" of {fecha} was already discounted in another settlement.",
+      "BatchEmpty": "There are no settlements to create.",
+      "BrutoNegative": "The gross total cannot be negative.",
+      "DiasTrabajadosRequired": "The worked days must be greater than zero.",
+      "EmpleadoRequired": "Pick an employee.",
+      "FechaInicioInvalid": "The end date cannot precede the start date.",
+      "ObservacionesMaxLength": "The notes cannot exceed {max} characters.",
+      "PeriodoSolapado": "{empleado} already has a settlement overlapping the period {desde} – {hasta}.",
+      "TarifaRequired": "The rate must be greater than zero."
     },
     "Movimiento": {
       "AdelantoLiquidado": "The advance was already discounted in a payroll run",
