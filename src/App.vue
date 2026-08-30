@@ -6,11 +6,13 @@ import { onErrorCaptured, onMounted, onUnmounted, ref } from 'vue'
 
 import AppShell from '@/components/layout/AppShell.vue'
 import { useConfigStore } from '@/stores/useConfigStore'
+import { useDashboardStore, type Cotizacion } from '@/stores/useDashboardStore'
 import { useUiStore } from '@/stores/useUiStore'
 import ErrorView from '@/views/errors/ErrorView.vue'
 
 const ui = useUiStore()
 const config = useConfigStore()
+const dashboard = useDashboardStore()
 
 const unlisteners: Array<() => void> = []
 
@@ -29,7 +31,17 @@ onMounted(async () => {
   unlisteners.push(
     await listen('app://ready', async () => {
       await config.load()
+      ui.privacyMode = config.config?.dashboard.privacyMode ?? false
       ui.markReady()
+      // The status bar shows the rate, so it is loaded once here instead of only by the dashboard.
+      // A failure is expected and ignored: the bar just does not show it (doc 13 §2.4).
+      dashboard.fetchCotizaciones().catch(() => undefined)
+    }),
+  )
+  // The backend refreshes the rate on startup and announces it when it arrives.
+  unlisteners.push(
+    await listen<Cotizacion[]>('cotizaciones:updated', (event) => {
+      dashboard.cotizaciones = event.payload
     }),
   )
   unlisteners.push(

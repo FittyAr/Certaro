@@ -106,8 +106,28 @@
     "Telefono": "Phone"
   },
   "Comercial": {
+    "Antiguedad": {
+      "AlCorte": "as of",
+      "Dias": "{rango} days",
+      "Title": "Debt ageing"
+    },
     "CuentaCorriente": {
-      "Title": "Account statement"
+      "DiasMora": "Days overdue",
+      "Empty": "This customer has no invoices",
+      "IncluirPagadas": "Include settled",
+      "Saldo": "Balance",
+      "SinDeuda": "This customer owes nothing",
+      "Title": "Account statement",
+      "TotalFacturado": "Total invoiced",
+      "TotalPagado": "Total paid"
+    },
+    "Rentabilidad": {
+      "Contexto": "Site",
+      "Gastos": "Expenses",
+      "Ingresos": "Income",
+      "Margen": "Margin",
+      "Resultado": "Result",
+      "Title": "Profitability"
     }
   },
   "CommandPalette": {
@@ -141,6 +161,70 @@
       "NombreDuplicado": "A movement type “{nombre}” already exists",
       "SignoDeSistema": "The sign of a system type cannot be changed"
     }
+  },
+  "Cotizaciones": {
+    "Compra": "Buy",
+    "Desactualizada": "As of",
+    "Title": "Dollar rate",
+    "Venta": "Sell"
+  },
+  "Dashboard": {
+    "Alerta": {
+      "BalanceNegativo": "The balance for the period is negative:",
+      "CaidaIngresos": "Income fell against the previous period",
+      "FacturasVencidas": "{cantidad} overdue invoices",
+      "LiquidacionesPendientes": "{cantidad} employees not settled for the period",
+      "ObrasPausadas": "{cantidad} paused sites"
+    },
+    "Balance": "Balance",
+    "ClientesActivos": "Active customers",
+    "Empty": "There is nothing to show yet",
+    "Estado": {
+      "Error": "With errors",
+      "Saludable": "Healthy"
+    },
+    "EstadoBase": "Status",
+    "EstadoSistema": "System status",
+    "FacturasVencidas": "Overdue invoices",
+    "Gastos": "Expenses",
+    "GastosPorCategoria": "Expenses by category",
+    "Ingresos": "Income",
+    "LiquidacionesPendientes": "Pending settlements",
+    "Megabytes": "{valor} MB",
+    "MejoresObras": "Most profitable sites",
+    "Mes": {
+      "M1": "Jan",
+      "M10": "Oct",
+      "M11": "Nov",
+      "M12": "Dec",
+      "M2": "Feb",
+      "M3": "Mar",
+      "M4": "Apr",
+      "M5": "May",
+      "M6": "Jun",
+      "M7": "Jul",
+      "M8": "Aug",
+      "M9": "Sep"
+    },
+    "Migraciones": "Migrations",
+    "Movimientos": "Movements",
+    "ObrasPausadas": "Paused sites",
+    "PeoresObras": "Least profitable sites",
+    "Period": {
+      "Anual": "Year",
+      "Mensual": "Month",
+      "Total": "All"
+    },
+    "Periodo": "Period",
+    "SerieAnual": "Income and expenses this year",
+    "SinBase": "No basis for comparison",
+    "SinDatos": "No data for the period",
+    "TamanoBase": "Database size",
+    "TopClientes": "Top customers",
+    "TrabajosPendientes": "Pending jobs",
+    "UltimosMovimientos": "Latest movements",
+    "Version": "Version",
+    "VsAnterior": "vs. previous period"
   },
   "Empleados": {
     "Activo": "Active",

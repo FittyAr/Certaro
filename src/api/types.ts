@@ -167,8 +167,11 @@ export interface DashboardConfig {
   casasDolar: string[]
   cotizacionPorDefecto: string
   topClientesCantidad: number
+  topCategoriasCantidad: number
   ultimosMovimientosCantidad: number
   obrasRankingCantidad: number
+  /** Percentage drop in income that raises the alert. */
+  alertaCaidaIngresosPct: Decimal4
 }
 
 export interface ExternalApisConfig {

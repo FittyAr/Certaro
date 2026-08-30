@@ -3,6 +3,7 @@ import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 import CrudDrawer from '@/components/domain/CrudDrawer.vue'
 import DataGrid from '@/components/domain/DataGrid.vue'
@@ -32,7 +33,12 @@ import {
  */
 
 const { confirmDelete } = useConfirmDelete()
+const router = useRouter()
 const store = useClientesStore()
+
+function verCuenta(clienteId: string): void {
+  void router.push({ name: 'cliente-cuenta', params: { clienteId } })
+}
 
 const table = useServerTable<ClienteFiltro, ClienteListItem>({
   key: 'clientes',
@@ -179,6 +185,14 @@ onMounted(() => table.start())
 
       <template #actions="{ data }">
         <div class="flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            :title="$t('Comercial.CuentaCorriente.Title')"
+            @click="verCuenta(data.id)"
+          >
+            <AppIcon name="wallet" :size="14" />
+          </Button>
           <Button variant="ghost" size="sm" @click="drawer.openEdit(data.id)">
             <AppIcon name="pencil" :size="14" />
           </Button>

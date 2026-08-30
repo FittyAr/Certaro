@@ -2,9 +2,11 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+import MoneyText from '@/components/domain/MoneyText.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { useBreadcrumb } from '@/composables/useBreadcrumb'
 import { useConfigStore } from '@/stores/useConfigStore'
+import { useDashboardStore } from '@/stores/useDashboardStore'
 import { useUiStore } from '@/stores/useUiStore'
 
 /** Status bar of `docs/10-navegacion-y-atajos.md` §1 and §6. */
@@ -33,6 +35,17 @@ const shown = computed(() => {
 })
 
 const stateKey = computed(() => `Status.${ui.bootstrapState}`)
+
+/**
+ * The default house's selling rate, which is the number the movement form pre-loads (doc 13 §2.5).
+ * Absent rather than zero when the service is unreachable: the bar simply does not show it.
+ */
+const dashboard = useDashboardStore()
+const cotizacion = computed(() => {
+  const preferida = config.config?.dashboard.cotizacionPorDefecto
+  const casas = dashboard.cotizaciones
+  return casas.find((c) => c.casa === preferida) ?? casas[0] ?? null
+})
 </script>
 
 <template>
@@ -61,6 +74,13 @@ const stateKey = computed(() => `Status.${ui.bootstrapState}`)
         <span v-else class="truncate text-foreground">{{ crumb.label }}</span>
       </template>
     </nav>
+
+    <span v-if="cotizacion" class="flex items-center gap-1" :title="$t('Cotizaciones.Venta')">
+      <AppIcon name="dollar-sign" :size="12" />
+      <span>{{ cotizacion.nombre }}</span>
+      <MoneyText :value="cotizacion.venta" />
+      <AppIcon v-if="cotizacion.desactualizada" name="clock" :size="12" />
+    </span>
 
     <span v-if="config.info">{{ config.info.version }}</span>
   </footer>

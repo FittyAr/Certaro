@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 import type { Money } from '@/api/types'
 import { useMoney } from '@/composables/useMoney'
+import { useUiStore } from '@/stores/useUiStore'
 
 /**
  * Displays an amount. Colour comes from a token chosen by the sign, never from the view.
@@ -22,15 +23,21 @@ const props = withDefaults(
 )
 
 const { format, isNegative, isZero } = useMoney()
+const ui = useUiStore()
 
-const text = computed(() =>
-  props.value === null || props.value === undefined || props.value === ''
-    ? props.placeholder
-    : format(props.value, { showSign: props.showSign, hideSymbol: props.hideSymbol }),
-)
+/** Privacy mode hides the figure itself, and with it the sign: the mask must not leak the sign. */
+const MASK = '•••••'
+
+const text = computed(() => {
+  if (props.value === null || props.value === undefined || props.value === '') {
+    return props.placeholder
+  }
+  if (ui.privacyMode) return MASK
+  return format(props.value, { showSign: props.showSign, hideSymbol: props.hideSymbol })
+})
 
 const colorClass = computed(() => {
-  if (!props.colored) return ''
+  if (!props.colored || ui.privacyMode) return ''
   if (isZero(props.value)) return 'text-money-neutral'
   return isNegative(props.value) ? 'text-money-negative' : 'text-money-positive'
 })

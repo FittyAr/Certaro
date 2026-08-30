@@ -106,8 +106,28 @@
     "Telefono": "Teléfono"
   },
   "Comercial": {
+    "Antiguedad": {
+      "AlCorte": "al",
+      "Dias": "{rango} días",
+      "Title": "Antigüedad de la deuda"
+    },
     "CuentaCorriente": {
-      "Title": "Cuenta corriente"
+      "DiasMora": "Días de mora",
+      "Empty": "El cliente no tiene facturas cargadas",
+      "IncluirPagadas": "Incluir pagadas",
+      "Saldo": "Saldo",
+      "SinDeuda": "El cliente no tiene deuda pendiente",
+      "Title": "Cuenta corriente",
+      "TotalFacturado": "Total facturado",
+      "TotalPagado": "Total pagado"
+    },
+    "Rentabilidad": {
+      "Contexto": "Obra",
+      "Gastos": "Gastos",
+      "Ingresos": "Ingresos",
+      "Margen": "Margen",
+      "Resultado": "Resultado",
+      "Title": "Rentabilidad"
     }
   },
   "CommandPalette": {
@@ -141,6 +161,70 @@
       "NombreDuplicado": "Ya existe un tipo de movimiento «{nombre}»",
       "SignoDeSistema": "No se puede cambiar el signo de un tipo de sistema"
     }
+  },
+  "Cotizaciones": {
+    "Compra": "Compra",
+    "Desactualizada": "Al",
+    "Title": "Cotización del dólar",
+    "Venta": "Venta"
+  },
+  "Dashboard": {
+    "Alerta": {
+      "BalanceNegativo": "El balance del período es negativo:",
+      "CaidaIngresos": "Los ingresos cayeron respecto del período anterior",
+      "FacturasVencidas": "{cantidad} facturas vencidas sin cobrar",
+      "LiquidacionesPendientes": "{cantidad} empleados sin liquidar en el período",
+      "ObrasPausadas": "{cantidad} obras pausadas"
+    },
+    "Balance": "Balance",
+    "ClientesActivos": "Clientes activos",
+    "Empty": "Todavía no hay datos para mostrar",
+    "Estado": {
+      "Error": "Con errores",
+      "Saludable": "Saludable"
+    },
+    "EstadoBase": "Estado",
+    "EstadoSistema": "Estado del sistema",
+    "FacturasVencidas": "Facturas vencidas",
+    "Gastos": "Gastos",
+    "GastosPorCategoria": "Gastos por categoría",
+    "Ingresos": "Ingresos",
+    "LiquidacionesPendientes": "Liquidaciones pendientes",
+    "Megabytes": "{valor} MB",
+    "MejoresObras": "Obras más rentables",
+    "Mes": {
+      "M1": "Ene",
+      "M10": "Oct",
+      "M11": "Nov",
+      "M12": "Dic",
+      "M2": "Feb",
+      "M3": "Mar",
+      "M4": "Abr",
+      "M5": "May",
+      "M6": "Jun",
+      "M7": "Jul",
+      "M8": "Ago",
+      "M9": "Sep"
+    },
+    "Migraciones": "Migraciones",
+    "Movimientos": "Movimientos",
+    "ObrasPausadas": "Obras pausadas",
+    "PeoresObras": "Obras menos rentables",
+    "Period": {
+      "Anual": "Año",
+      "Mensual": "Mes",
+      "Total": "Todo"
+    },
+    "Periodo": "Período",
+    "SerieAnual": "Ingresos y gastos del año",
+    "SinBase": "Sin base de comparación",
+    "SinDatos": "Sin datos en el período",
+    "TamanoBase": "Tamaño de la base",
+    "TopClientes": "Principales clientes",
+    "TrabajosPendientes": "Trabajos pendientes",
+    "UltimosMovimientos": "Últimos movimientos",
+    "Version": "Versión",
+    "VsAnterior": "vs. período anterior"
   },
   "Empleados": {
     "Activo": "Activo",
