@@ -5,6 +5,7 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::decimal4::Decimal4;
 use crate::error::DomainError;
 
 /// `docs/05-dominio-entidades.md` §3.6.
@@ -248,6 +249,129 @@ impl EstadoTrabajo {
     }
 }
 
+/// `docs/05-dominio-entidades.md` §3.7.
+///
+/// The factor is what the payroll multiplies the daily rate by. An absence pays nothing whether it
+/// is justified or not: justification is a human matter, not a monetary one.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub enum TipoJornada {
+    #[default]
+    Completa,
+    Media,
+    Falta,
+    FaltaJustificada,
+    Feriado,
+}
+
+impl TipoJornada {
+    pub const ALL: [Self; 5] = [
+        Self::Completa,
+        Self::Media,
+        Self::Falta,
+        Self::FaltaJustificada,
+        Self::Feriado,
+    ];
+
+    pub const fn as_i32(self) -> i32 {
+        match self {
+            Self::Completa => 0,
+            Self::Media => 1,
+            Self::Falta => 2,
+            Self::FaltaJustificada => 3,
+            Self::Feriado => 4,
+        }
+    }
+
+    pub fn from_i32(value: i32) -> Result<Self, DomainError> {
+        match value {
+            0 => Ok(Self::Completa),
+            1 => Ok(Self::Media),
+            2 => Ok(Self::Falta),
+            3 => Ok(Self::FaltaJustificada),
+            4 => Ok(Self::Feriado),
+            other => Err(DomainError::UnknownEnumValue {
+                enum_name: "TipoJornada",
+                value: other,
+            }),
+        }
+    }
+
+    /// Share of a day worked: `1.0`, `0.5` or nothing.
+    pub const fn factor(self) -> Decimal4 {
+        match self {
+            Self::Completa | Self::Feriado => Decimal4::ONE,
+            Self::Media => Decimal4::HALF,
+            Self::Falta | Self::FaltaJustificada => Decimal4::ZERO,
+        }
+    }
+
+    /// The click cycle of the attendance grid, where `None` means no record at all.
+    /// See `docs/09-modulos-funcionales.md` §3.10: the empty state has to be reachable, otherwise a
+    /// cell clicked by mistake can never be cleared.
+    pub const fn siguiente(actual: Option<Self>) -> Option<Self> {
+        match actual {
+            None => Some(Self::Completa),
+            Some(Self::Completa) => Some(Self::Media),
+            Some(Self::Media) => Some(Self::Falta),
+            Some(Self::Falta) => Some(Self::FaltaJustificada),
+            Some(Self::FaltaJustificada) => Some(Self::Feriado),
+            Some(Self::Feriado) => None,
+        }
+    }
+}
+
+/// `docs/05-dominio-entidades.md` §3.9.
+///
+/// The divisors only turn a salary into a suggested daily rate; the payroll always uses the rate
+/// stored on the employee. `Semanal` divides by six because the working week runs Monday to
+/// Saturday.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub enum FrecuenciaPago {
+    Diario,
+    Semanal,
+    Quincenal,
+    #[default]
+    Mensual,
+}
+
+impl FrecuenciaPago {
+    pub const ALL: [Self; 4] = [Self::Diario, Self::Semanal, Self::Quincenal, Self::Mensual];
+
+    pub const fn as_i32(self) -> i32 {
+        match self {
+            Self::Diario => 0,
+            Self::Semanal => 1,
+            Self::Quincenal => 2,
+            Self::Mensual => 3,
+        }
+    }
+
+    pub fn from_i32(value: i32) -> Result<Self, DomainError> {
+        match value {
+            0 => Ok(Self::Diario),
+            1 => Ok(Self::Semanal),
+            2 => Ok(Self::Quincenal),
+            3 => Ok(Self::Mensual),
+            other => Err(DomainError::UnknownEnumValue {
+                enum_name: "FrecuenciaPago",
+                value: other,
+            }),
+        }
+    }
+
+    /// Default divisors; configuration can override them through `Business.DiasPorFrecuencia.*`.
+    pub const fn dias_por_periodo(self) -> Decimal4 {
+        match self {
+            Self::Diario => Decimal4::ONE,
+            Self::Semanal => Decimal4::from_raw(60_000),
+            Self::Quincenal => Decimal4::from_raw(150_000),
+            Self::Mensual => Decimal4::from_raw(300_000),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -322,5 +446,70 @@ mod tests {
         assert!(EstadoTrabajo::Pausado.esta_abierto());
         assert!(!EstadoTrabajo::Finalizado.esta_abierto());
         assert!(!EstadoTrabajo::Cancelado.esta_abierto());
+    }
+
+    #[test]
+    fn la_jornada_y_la_frecuencia_van_y_vuelven_por_su_entero() {
+        for tipo in TipoJornada::ALL {
+            assert_eq!(TipoJornada::from_i32(tipo.as_i32()).unwrap(), tipo);
+        }
+        for frecuencia in FrecuenciaPago::ALL {
+            assert_eq!(
+                FrecuenciaPago::from_i32(frecuencia.as_i32()).unwrap(),
+                frecuencia
+            );
+        }
+    }
+
+    #[test]
+    fn una_ausencia_no_se_paga_aunque_este_justificada() {
+        assert_eq!(TipoJornada::Falta.factor(), Decimal4::ZERO);
+        assert_eq!(TipoJornada::FaltaJustificada.factor(), Decimal4::ZERO);
+    }
+
+    #[test]
+    fn la_media_jornada_vale_medio_dia() {
+        assert_eq!(TipoJornada::Media.factor(), Decimal4::HALF);
+        assert_eq!(TipoJornada::Completa.factor(), Decimal4::ONE);
+        assert_eq!(TipoJornada::Feriado.factor(), Decimal4::ONE);
+    }
+
+    #[test]
+    fn el_ciclo_de_click_vuelve_al_vacio() {
+        let mut actual = None;
+        let mut recorrido = Vec::new();
+        for _ in 0..6 {
+            actual = TipoJornada::siguiente(actual);
+            recorrido.push(actual);
+        }
+        assert_eq!(
+            recorrido,
+            vec![
+                Some(TipoJornada::Completa),
+                Some(TipoJornada::Media),
+                Some(TipoJornada::Falta),
+                Some(TipoJornada::FaltaJustificada),
+                Some(TipoJornada::Feriado),
+                None,
+            ]
+        );
+    }
+
+    #[test]
+    fn la_semana_laboral_tiene_seis_dias() {
+        // Monday to Saturday: dividing a weekly salary by seven pays less than it should.
+        assert_eq!(
+            FrecuenciaPago::Semanal.dias_por_periodo(),
+            Decimal4::from_units(6).unwrap()
+        );
+        assert_eq!(
+            FrecuenciaPago::Mensual.dias_por_periodo(),
+            Decimal4::from_units(30).unwrap()
+        );
+        assert_eq!(
+            FrecuenciaPago::Quincenal.dias_por_periodo(),
+            Decimal4::from_units(15).unwrap()
+        );
+        assert_eq!(FrecuenciaPago::Diario.dias_por_periodo(), Decimal4::ONE);
     }
 }

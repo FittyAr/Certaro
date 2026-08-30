@@ -1,9 +1,13 @@
 //! SeaORM implementations of the repository ports.
 
+pub mod asistencia;
 pub mod categoria;
 pub mod certificado;
 pub mod cliente;
+pub mod empleado;
 pub mod factura;
+pub mod feriado;
+pub mod liquidacion;
 pub mod movimiento;
 pub mod obra;
 pub mod orden_trabajo;

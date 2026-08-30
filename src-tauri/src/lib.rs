@@ -8,6 +8,7 @@ pub mod error;
 pub mod state;
 
 use eo_application::config::{AppConfig, Environment};
+use eo_infrastructure::external::holidays::HttpHolidayProvider;
 use eo_infrastructure::paths::AppPaths;
 use eo_infrastructure::{config as infra_config, telemetry};
 use state::AppState;
@@ -160,6 +161,28 @@ pub fn run() {
             commands::certificados::certificados_create,
             commands::certificados::certificados_update_observaciones,
             commands::certificados::certificados_delete,
+            commands::empleados::empleados_list,
+            commands::empleados::empleados_get,
+            commands::empleados::empleados_create,
+            commands::empleados::empleados_update,
+            commands::empleados::empleados_delete,
+            commands::empleados::empleados_lookup,
+            commands::empleados::empleados_cargos,
+            commands::asistencias::asistencia_grilla,
+            commands::asistencias::asistencia_upsert,
+            commands::asistencias::asistencia_upsert_rango,
+            commands::asistencias::asistencia_delete,
+            commands::liquidaciones::liquidaciones_list,
+            commands::liquidaciones::liquidaciones_get,
+            commands::liquidaciones::liquidaciones_suggest,
+            commands::liquidaciones::liquidaciones_create,
+            commands::liquidaciones::liquidaciones_create_batch,
+            commands::liquidaciones::liquidaciones_update,
+            commands::liquidaciones::liquidaciones_delete,
+            commands::feriados::feriados_list,
+            commands::feriados::feriados_sync,
+            commands::feriados::feriados_add,
+            commands::feriados::feriados_delete,
         ])
         .run(tauri::generate_context!())
         .unwrap_or_else(|e| {
@@ -172,9 +195,20 @@ pub fn run() {
 async fn bootstrap(handle: &tauri::AppHandle) -> anyhow::Result<()> {
     let state = handle.state::<AppState>();
     let db = eo_infrastructure::persistence::open(&state.paths.database()).await?;
-    state.install_services(Arc::new(
-        eo_infrastructure::persistence::SeaOrmUnitOfWork::new(db),
-    ));
+    let holidays = Arc::new(HttpHolidayProvider::new(&state.config().external_apis)?);
+    state.install_services(
+        Arc::new(eo_infrastructure::persistence::SeaOrmUnitOfWork::new(db)),
+        holidays,
+    );
+
+    // The calendar is synced here and not on demand: a settlement that cannot see the holidays pays
+    // less, so the table is filled before the first wizard runs. A failure only warns.
+    if let Ok(services) = state.services() {
+        if let Err(e) = services.feriados.sync_al_iniciar().await {
+            tracing::warn!(cause = ?e, "the holiday calendar could not be synced at startup");
+        }
+    }
+
     Ok(())
 }
 

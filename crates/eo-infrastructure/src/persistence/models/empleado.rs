@@ -14,9 +14,17 @@ pub struct Model {
     pub pago_frecuencia: i32,
     /// `Money`: the value of one working day, which is what the payroll uses.
     pub tarifa_diaria: i64,
+    /// `Decimal4`, `10000` meaning 1.0. Per employee: a foreman and a helper are not paid the same
+    /// weekend, and configuration only provides the default for a new card.
+    pub multiplicador_sabado: i64,
+    /// `Decimal4`, `10000` meaning 1.0.
+    pub multiplicador_domingo: i64,
+    /// `Decimal4`, `10000` meaning 1.0.
+    pub multiplicador_feriado: i64,
     pub email: Option<String>,
     pub telefono: Option<String>,
     pub fecha_ingreso: String,
+    pub fecha_egreso: Option<String>,
     pub activo: bool,
     pub created_at: String,
     pub updated_at: Option<String>,

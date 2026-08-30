@@ -3,10 +3,14 @@
 //! Everything the database stores as text or as a scaled integer is interpreted exactly here and
 //! nowhere else. A model never leaves this layer.
 
+pub mod asistencia_empleado;
 pub mod categoria;
 pub mod certificado;
 pub mod cliente;
+pub mod empleado;
 pub mod factura;
+pub mod feriado;
+pub mod liquidacion;
 pub mod movimiento;
 pub mod obra;
 pub mod orden_trabajo;

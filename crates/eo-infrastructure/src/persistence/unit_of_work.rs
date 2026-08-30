@@ -7,17 +7,22 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use eo_application::ports::repositories::{
-    CategoriaRepository, CertificadoRepository, ClienteRepository, FacturaRepository,
+    AsistenciaRepository, CategoriaRepository, CertificadoRepository, ClienteRepository,
+    EmpleadoRepository, FacturaRepository, FeriadoRepository, LiquidacionRepository,
     MovimientoRepository, ObraRepository, OrdenTrabajoRepository, TipoMovimientoRepository,
     TrabajoRepository, Transaction, UnitOfWork,
 };
 use eo_application::{AppError, AppResult};
 use sea_orm::{DatabaseConnection, DatabaseTransaction, TransactionTrait};
 
+use crate::persistence::repositories::asistencia::SeaOrmAsistenciaRepository;
 use crate::persistence::repositories::categoria::SeaOrmCategoriaRepository;
 use crate::persistence::repositories::certificado::SeaOrmCertificadoRepository;
 use crate::persistence::repositories::cliente::SeaOrmClienteRepository;
+use crate::persistence::repositories::empleado::SeaOrmEmpleadoRepository;
 use crate::persistence::repositories::factura::SeaOrmFacturaRepository;
+use crate::persistence::repositories::feriado::SeaOrmFeriadoRepository;
+use crate::persistence::repositories::liquidacion::SeaOrmLiquidacionRepository;
 use crate::persistence::repositories::movimiento::SeaOrmMovimientoRepository;
 use crate::persistence::repositories::obra::SeaOrmObraRepository;
 use crate::persistence::repositories::orden_trabajo::SeaOrmOrdenTrabajoRepository;
@@ -57,6 +62,10 @@ pub struct SeaOrmTransaction {
     facturas: SeaOrmFacturaRepository,
     ordenes_trabajo: SeaOrmOrdenTrabajoRepository,
     certificados: SeaOrmCertificadoRepository,
+    empleados: SeaOrmEmpleadoRepository,
+    asistencias: SeaOrmAsistenciaRepository,
+    liquidaciones: SeaOrmLiquidacionRepository,
+    feriados: SeaOrmFeriadoRepository,
 }
 
 impl SeaOrmTransaction {
@@ -71,6 +80,10 @@ impl SeaOrmTransaction {
             facturas: SeaOrmFacturaRepository::new(Arc::clone(&tx)),
             ordenes_trabajo: SeaOrmOrdenTrabajoRepository::new(Arc::clone(&tx)),
             certificados: SeaOrmCertificadoRepository::new(Arc::clone(&tx)),
+            empleados: SeaOrmEmpleadoRepository::new(Arc::clone(&tx)),
+            asistencias: SeaOrmAsistenciaRepository::new(Arc::clone(&tx)),
+            liquidaciones: SeaOrmLiquidacionRepository::new(Arc::clone(&tx)),
+            feriados: SeaOrmFeriadoRepository::new(Arc::clone(&tx)),
             tx,
         }
     }
@@ -90,6 +103,10 @@ impl SeaOrmTransaction {
             facturas,
             ordenes_trabajo,
             certificados,
+            empleados,
+            asistencias,
+            liquidaciones,
+            feriados,
         } = self;
         drop(tipos_movimiento);
         drop(categorias);
@@ -100,6 +117,10 @@ impl SeaOrmTransaction {
         drop(facturas);
         drop(ordenes_trabajo);
         drop(certificados);
+        drop(empleados);
+        drop(asistencias);
+        drop(liquidaciones);
+        drop(feriados);
         Arc::try_unwrap(tx).map_err(|_| {
             AppError::unexpected(anyhow::anyhow!("transaction still borrowed when finishing"))
         })
@@ -142,6 +163,22 @@ impl Transaction for SeaOrmTransaction {
 
     fn certificados(&self) -> &dyn CertificadoRepository {
         &self.certificados
+    }
+
+    fn empleados(&self) -> &dyn EmpleadoRepository {
+        &self.empleados
+    }
+
+    fn asistencias(&self) -> &dyn AsistenciaRepository {
+        &self.asistencias
+    }
+
+    fn liquidaciones(&self) -> &dyn LiquidacionRepository {
+        &self.liquidaciones
+    }
+
+    fn feriados(&self) -> &dyn FeriadoRepository {
+        &self.feriados
     }
 
     async fn commit(self: Box<Self>) -> AppResult<()> {

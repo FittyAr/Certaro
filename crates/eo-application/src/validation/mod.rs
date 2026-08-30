@@ -2,10 +2,13 @@
 //!
 //! Every rule produces a `FieldError` with an i18n key; no rule produces a sentence.
 
+pub mod asistencias;
 pub mod categorias;
 pub mod certificados;
 pub mod clientes;
+pub mod empleados;
 pub mod facturas;
+pub mod liquidaciones;
 pub mod movimientos;
 pub mod obras;
 pub mod ordenes_trabajo;

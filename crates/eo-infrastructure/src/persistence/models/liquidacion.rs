@@ -26,6 +26,8 @@ pub struct Model {
     /// `Money`, frozen. The net total is derived and deliberately not stored.
     pub total_adelantos: i64,
     pub observaciones: Option<String>,
+    /// Set the first time the PDF is handed over; from then on the amounts are read-only.
+    pub pdf_generado_at: Option<String>,
     pub created_at: String,
     pub updated_at: Option<String>,
     pub row_version: Vec<u8>,
@@ -33,7 +35,15 @@ pub struct Model {
     pub deleted_at: Option<String>,
 }
 
+/// Only the employee: the listing always shows their name, and the advances are read on demand.
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::empleado::Entity",
+        from = "Column::EmpleadoId",
+        to = "super::empleado::Column::Id"
+    )]
+    Empleado,
+}
 
 impl ActiveModelBehavior for ActiveModel {}
