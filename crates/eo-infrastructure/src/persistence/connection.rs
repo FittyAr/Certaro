@@ -29,6 +29,24 @@ pub async fn open(path: &Path) -> Result<DatabaseConnection, DbErr> {
     Ok(db)
 }
 
+/// Opens an existing file read-only and **without migrating it**.
+///
+/// Used to inspect a backup: verifying its integrity or reading its schema version must not alter
+/// it, and migrating a backup on the way to restoring it would defeat the compatibility check.
+pub async fn open_readonly(path: &Path) -> Result<DatabaseConnection, DbErr> {
+    let url = format!(
+        "sqlite://{}?mode=ro",
+        path.display().to_string().replace('\\', "/")
+    );
+    let mut options = ConnectOptions::new(url);
+    options
+        .max_connections(1)
+        .min_connections(1)
+        .acquire_timeout(Duration::from_secs(10))
+        .sqlx_logging(false);
+    Database::connect(options).await
+}
+
 /// An in-memory database with the schema applied, for tests.
 pub async fn open_in_memory() -> Result<DatabaseConnection, DbErr> {
     let db = connect("sqlite::memory:").await?;

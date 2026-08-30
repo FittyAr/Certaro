@@ -1,5 +1,6 @@
 //! SeaORM implementations of the repository ports.
 
+pub mod adjunto;
 pub mod asistencia;
 pub mod categoria;
 pub mod certificado;

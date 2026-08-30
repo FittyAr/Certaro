@@ -1,5 +1,6 @@
 //! Business entities: plain structs with no ORM attributes, no `async` and no I/O.
 
+pub mod adjunto;
 pub mod asistencia_empleado;
 pub mod audit;
 pub mod categoria;
@@ -15,6 +16,7 @@ pub mod orden_trabajo;
 pub mod tipo_movimiento;
 pub mod trabajo;
 
+pub use adjunto::{Adjunto, EntidadAdjunto};
 pub use asistencia_empleado::{AsistenciaEmpleado, ResumenAsistencia};
 pub use audit::Audit;
 pub use categoria::Categoria;

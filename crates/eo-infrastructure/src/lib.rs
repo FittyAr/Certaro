@@ -7,8 +7,10 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+pub mod backup;
 pub mod config;
 pub mod external;
+pub mod files;
 pub mod i18n;
 pub mod paths;
 pub mod persistence;

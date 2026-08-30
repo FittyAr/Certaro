@@ -9,9 +9,9 @@
 use async_trait::async_trait;
 use chrono::{DateTime, NaiveDate, Utc};
 use eo_domain::entities::{
-    AsistenciaEmpleado, Categoria, Certificado, CertificadoItem, Cliente, ClienteContacto,
+    Adjunto, AsistenciaEmpleado, Categoria, Certificado, CertificadoItem, Cliente, ClienteContacto,
     Empleado, Factura, Feriado, Liquidacion, LiquidacionAdelanto, Movimiento, Obra, OrdenTrabajo,
-    OrdenTrabajoItem, PagoFactura, TipoMovimiento, Trabajo,
+    EntidadAdjunto, OrdenTrabajoItem, PagoFactura, TipoMovimiento, Trabajo,
 };
 use eo_domain::{Decimal4, EstadoFactura, EstadoObra, EstadoTrabajo, Moneda, Money, RowVersion};
 use uuid::Uuid;
@@ -788,6 +788,31 @@ pub trait LiquidacionRepository: Send + Sync {
 }
 
 #[async_trait]
+pub trait AdjuntoRepository: Send + Sync {
+    /// The live attachments of one record, newest first.
+    async fn de_entidad(
+        &self,
+        entidad_tipo: EntidadAdjunto,
+        entidad_id: Uuid,
+    ) -> AppResult<Vec<Adjunto>>;
+
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<Adjunto>>;
+
+    /// How many attachments each of those records has, for the badge on a listing. Records with
+    /// none are simply absent from the result.
+    async fn count_de(
+        &self,
+        entidad_tipo: EntidadAdjunto,
+        entidad_ids: &[Uuid],
+    ) -> AppResult<Vec<(Uuid, u64)>>;
+
+    async fn insert(&self, entity: &Adjunto) -> AppResult<()>;
+
+    /// Soft delete. The file itself goes to the trash, which is the store's job.
+    async fn soft_delete(&self, id: Uuid, at: DateTime<Utc>) -> AppResult<()>;
+}
+
+#[async_trait]
 pub trait FeriadoRepository: Send + Sync {
     /// The holidays of a closed range of civil dates. The settlement reads the table, never the
     /// network.
@@ -985,6 +1010,7 @@ pub trait Transaction: Send + Sync {
     fn empleados(&self) -> &dyn EmpleadoRepository;
     fn asistencias(&self) -> &dyn AsistenciaRepository;
     fn liquidaciones(&self) -> &dyn LiquidacionRepository;
+    fn adjuntos(&self) -> &dyn AdjuntoRepository;
     fn feriados(&self) -> &dyn FeriadoRepository;
     fn dashboard(&self) -> &dyn DashboardRepository;
     fn metadata(&self) -> &dyn MetadataRepository;

@@ -7,14 +7,16 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use eo_application::ports::repositories::{
-    AsistenciaRepository, CategoriaRepository, CertificadoRepository, ClienteRepository,
+    AdjuntoRepository, AsistenciaRepository, CategoriaRepository, CertificadoRepository, ClienteRepository,
     DashboardRepository, EmpleadoRepository, FacturaRepository, FeriadoRepository,
     LiquidacionRepository, MetadataRepository, MovimientoRepository, ObraRepository,
     OrdenTrabajoRepository, TipoMovimientoRepository, TrabajoRepository, Transaction, UnitOfWork,
 };
 use eo_application::{AppError, AppResult};
-use sea_orm::{DatabaseConnection, DatabaseTransaction, TransactionTrait};
+use sea_orm::{DatabaseTransaction, TransactionTrait};
 
+use crate::persistence::handle::DbHandle;
+use crate::persistence::repositories::adjunto::SeaOrmAdjuntoRepository;
 use crate::persistence::repositories::asistencia::SeaOrmAsistenciaRepository;
 use crate::persistence::repositories::categoria::SeaOrmCategoriaRepository;
 use crate::persistence::repositories::certificado::SeaOrmCertificadoRepository;
@@ -32,11 +34,11 @@ use crate::persistence::repositories::tipo_movimiento::SeaOrmTipoMovimientoRepos
 use crate::persistence::repositories::trabajo::SeaOrmTrabajoRepository;
 
 pub struct SeaOrmUnitOfWork {
-    db: DatabaseConnection,
+    db: DbHandle,
 }
 
 impl SeaOrmUnitOfWork {
-    pub fn new(db: DatabaseConnection) -> Self {
+    pub fn new(db: DbHandle) -> Self {
         Self { db }
     }
 }
@@ -44,7 +46,15 @@ impl SeaOrmUnitOfWork {
 #[async_trait]
 impl UnitOfWork for SeaOrmUnitOfWork {
     async fn begin(&self) -> AppResult<Box<dyn Transaction>> {
-        let tx = Arc::new(self.db.begin().await.map_err(AppError::persistence)?);
+        // The guard is released as soon as the transaction exists: it owns its own connection.
+        let tx = Arc::new(
+            self.db
+                .read()
+                .await
+                .begin()
+                .await
+                .map_err(AppError::persistence)?,
+        );
         Ok(Box::new(SeaOrmTransaction::new(tx)))
     }
 }
@@ -67,6 +77,7 @@ pub struct SeaOrmTransaction {
     empleados: SeaOrmEmpleadoRepository,
     asistencias: SeaOrmAsistenciaRepository,
     liquidaciones: SeaOrmLiquidacionRepository,
+    adjuntos: SeaOrmAdjuntoRepository,
     feriados: SeaOrmFeriadoRepository,
     dashboard: SeaOrmDashboardRepository,
     metadata: SeaOrmMetadataRepository,
@@ -87,6 +98,7 @@ impl SeaOrmTransaction {
             empleados: SeaOrmEmpleadoRepository::new(Arc::clone(&tx)),
             asistencias: SeaOrmAsistenciaRepository::new(Arc::clone(&tx)),
             liquidaciones: SeaOrmLiquidacionRepository::new(Arc::clone(&tx)),
+            adjuntos: SeaOrmAdjuntoRepository::new(Arc::clone(&tx)),
             feriados: SeaOrmFeriadoRepository::new(Arc::clone(&tx)),
             dashboard: SeaOrmDashboardRepository::new(Arc::clone(&tx)),
             metadata: SeaOrmMetadataRepository::new(Arc::clone(&tx)),
@@ -112,6 +124,7 @@ impl SeaOrmTransaction {
             empleados,
             asistencias,
             liquidaciones,
+            adjuntos,
             feriados,
             dashboard,
             metadata,
@@ -128,6 +141,7 @@ impl SeaOrmTransaction {
         drop(empleados);
         drop(asistencias);
         drop(liquidaciones);
+        drop(adjuntos);
         drop(feriados);
         drop(dashboard);
         drop(metadata);
@@ -185,6 +199,10 @@ impl Transaction for SeaOrmTransaction {
 
     fn liquidaciones(&self) -> &dyn LiquidacionRepository {
         &self.liquidaciones
+    }
+
+    fn adjuntos(&self) -> &dyn AdjuntoRepository {
+        &self.adjuntos
     }
 
     fn feriados(&self) -> &dyn FeriadoRepository {
