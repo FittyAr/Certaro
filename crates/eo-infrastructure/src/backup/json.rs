@@ -315,10 +315,10 @@ async fn ejecutar(db: &DatabaseConnection, sql: &str) -> AppResult<()> {
 /// Reads a column as JSON, trying the three types SQLite actually stores.
 fn valor_json(fila: &sea_orm::QueryResult, columna: &str) -> JsonValue {
     if let Ok(v) = fila.try_get::<Option<i64>>("", columna) {
-        return v.map_or(JsonValue::Null, |n| JsonValue::from(n));
+        return v.map_or(JsonValue::Null, JsonValue::from);
     }
     if let Ok(v) = fila.try_get::<Option<f64>>("", columna) {
-        return v.map_or(JsonValue::Null, |n| JsonValue::from(n));
+        return v.map_or(JsonValue::Null, JsonValue::from);
     }
     if let Ok(v) = fila.try_get::<Option<String>>("", columna) {
         return v.map_or(JsonValue::Null, JsonValue::from);

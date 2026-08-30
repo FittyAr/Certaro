@@ -88,7 +88,7 @@ mod tests {
 
     #[test]
     fn fecha_civil_no_cambia_de_dia() {
-        let tz: Tz = "America/Argentina/Buenos_Aires".parse().unwrap();
+        let _tz: Tz = "America/Argentina/Buenos_Aires".parse().unwrap();
         // 22:30 local is 01:30 UTC next day, but civil date keeps the original day.
         let utc = business_civil("2026-03-15 22:30:00").unwrap();
         assert_eq!(utc.format("%Y-%m-%d").to_string(), "2026-03-15");

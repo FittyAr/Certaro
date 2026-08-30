@@ -62,6 +62,7 @@ pub struct Services {
 }
 
 impl Services {
+    #[allow(clippy::too_many_arguments)]
     fn build(
         uow: Arc<dyn UnitOfWork>,
         clock: Arc<dyn Clock>,

@@ -131,7 +131,7 @@ fn write_movimientos(
                     .map(|_| ())
                     .map_err(|e| io_error("export.xlsx.text", e)),
                 Cell::Date(value) => sheet
-                    .write_date_with_format(excel_row, col, &value, &date)
+                    .write_date_with_format(excel_row, col, value, &date)
                     .map(|_| ())
                     .map_err(|e| io_error("export.xlsx.date", e)),
                 Cell::Money(value) => {
@@ -317,9 +317,8 @@ mod tests {
         let estilos =
             crate::reporting::tests_support::zip_entry(&generado.bytes, "xl/styles.xml");
         for formato in [MONEY_FORMAT, QUANTITY_FORMAT, DATE_FORMAT] {
-            let escapado = formato.replace('#', "#");
             assert!(
-                estilos.contains(&escapado),
+                estilos.contains(formato),
                 "falta el formato {formato}: {estilos}"
             );
         }

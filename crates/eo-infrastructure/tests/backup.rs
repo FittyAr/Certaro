@@ -3,11 +3,10 @@
 //! An in-memory database would not exercise the part that matters: closing the connection before
 //! the file is replaced, and the `-wal` sidecar that the legacy restore left behind.
 
-use std::path::Path;
 use std::sync::Arc;
 
 use eo_application::config::AppConfig;
-use eo_application::ports::{AttachmentStore, BackupPort, ClockPort, SettingsStore};
+use eo_application::ports::{BackupPort, ClockPort, SettingsStore};
 use eo_application::{AppError, AppResult};
 use eo_domain::clock::Clock;
 use eo_infrastructure::backup::{nombre_backup, SqliteBackupService};
@@ -47,46 +46,6 @@ impl SettingsStore for SettingsFijo {
     }
     async fn save(&self, _config: AppConfig) -> AppResult<()> {
         Ok(())
-    }
-}
-
-/// A store whose only job here is to satisfy the port; attachments have their own test file.
-struct StoreInerte;
-
-#[async_trait::async_trait]
-impl AttachmentStore for StoreInerte {
-    async fn accept(
-        &self,
-        _origen: &Path,
-        _cupo: u64,
-    ) -> AppResult<eo_application::ports::ArchivoAceptado> {
-        unimplemented!("no se usa en este test")
-    }
-    async fn store(
-        &self,
-        _origen: &Path,
-        _tipo: eo_domain::entities::EntidadAdjunto,
-        _entidad: uuid::Uuid,
-        _id: uuid::Uuid,
-        _archivo: eo_application::ports::ArchivoAceptado,
-    ) -> AppResult<eo_application::ports::ArchivoGuardado> {
-        unimplemented!("no se usa en este test")
-    }
-    async fn trash(&self, _ruta: &str) -> AppResult<()> {
-        Ok(())
-    }
-    fn resolve(&self, _ruta: &str) -> AppResult<std::path::PathBuf> {
-        unimplemented!("no se usa en este test")
-    }
-    async fn usado_por(
-        &self,
-        _tipo: eo_domain::entities::EntidadAdjunto,
-        _entidad: uuid::Uuid,
-    ) -> AppResult<u64> {
-        Ok(0)
-    }
-    async fn purge_trash(&self, _dias: u32) -> AppResult<u32> {
-        Ok(0)
     }
 }
 
@@ -174,11 +133,10 @@ async fn backup_verifica_integridad_y_rechaza_un_archivo_corrupto() {
     std::fs::write(&ruta, bytes).unwrap();
 
     let resultado = entorno.service.verify(&item.nombre).await;
-    match resultado {
-        Ok(verificacion) => assert!(!verificacion.ok),
-        // Refusing to even open it is also a rejection, and the same outcome for the caller.
-        Err(_) => (),
+    if let Ok(verificacion) = resultado {
+        assert!(!verificacion.ok);
     }
+    // Refusing to even open it is also a rejection, and the same outcome for the caller.
 }
 
 #[tokio::test]

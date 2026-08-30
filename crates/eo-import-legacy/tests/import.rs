@@ -1,9 +1,6 @@
 //! Integration tests for eo-import-legacy. See `docs/15-migracion-de-datos.md` §8.
 
-use sea_orm::{ConnectionTrait, DatabaseBackend, DatabaseConnection, Statement};
 use sqlx::sqlite::SqliteConnectOptions;
-use sqlx::Row;
-use std::path::PathBuf;
 
 /// Creates a legacy SQLite database with the C# schema and populates it with test data.
 async fn create_legacy_db(scaled: bool) -> (sqlx::SqlitePool, tempfile::TempDir) {
@@ -218,7 +215,7 @@ async fn count_rows(target: &std::path::Path, table: &str) -> i64 {
 
 #[tokio::test]
 async fn import_base_vacia() {
-    let (legacy, dir) = create_legacy_db(true).await;
+    let (_legacy, dir) = create_legacy_db(true).await;
     // Don't populate: empty database.
     let target = dir.path().join("target.db");
 
@@ -461,7 +458,7 @@ async fn factura_con_pago_parcial_queda_pagada_parcial() {
     populate_legacy(&legacy, true).await;
     let target = dir.path().join("target.db");
 
-    let report = run_import(
+    let _report = run_import(
         &dir.path().join("legacy.db"),
         &target,
         true,

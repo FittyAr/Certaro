@@ -22,7 +22,7 @@ const RESERVADOS: [&str; 22] = [
 pub fn sanitize(nombre: &str) -> String {
     // Only the last segment matters: `../../etc/passwd` is the file `passwd`.
     let base = nombre
-        .rsplit(|c| c == '/' || c == '\\')
+        .rsplit(['/', '\\'])
         .next()
         .unwrap_or(nombre);
 

@@ -529,6 +529,7 @@ async fn transfer_trabajos(
 
 // ── Remaining table implementations ─────────────────────────────────────────
 
+#[allow(unused_variables)]
 async fn transfer_ordenes_trabajo(
     db: &DatabaseTransaction,
     legacy: &SqlitePool,
@@ -591,6 +592,7 @@ async fn transfer_ordenes_trabajo(
     Ok(())
 }
 
+#[allow(unused_variables)]
 async fn transfer_orden_trabajo_items(
     db: &DatabaseTransaction,
     legacy: &SqlitePool,
@@ -668,6 +670,7 @@ async fn transfer_orden_trabajo_items(
     Ok(())
 }
 
+#[allow(unused_variables)]
 async fn transfer_facturas(
     db: &DatabaseTransaction,
     legacy: &SqlitePool,
@@ -742,6 +745,7 @@ async fn transfer_facturas(
     Ok(())
 }
 
+#[allow(unused_variables)]
 async fn transfer_pagos_factura(
     db: &DatabaseTransaction,
     legacy: &SqlitePool,
@@ -816,6 +820,7 @@ async fn transfer_pagos_factura(
     Ok(())
 }
 
+#[allow(unused_variables)]
 async fn transfer_empleados(
     db: &DatabaseTransaction,
     legacy: &SqlitePool,
@@ -884,6 +889,7 @@ async fn transfer_empleados(
     Ok(())
 }
 
+#[allow(unused_variables)]
 async fn transfer_asistencias_empleado(
     db: &DatabaseTransaction,
     legacy: &SqlitePool,
@@ -988,6 +994,7 @@ async fn transfer_asistencias_empleado(
     Ok(())
 }
 
+#[allow(unused_variables)]
 async fn transfer_liquidaciones(
     db: &DatabaseTransaction,
     legacy: &SqlitePool,
@@ -1066,6 +1073,7 @@ async fn transfer_liquidaciones(
     Ok(())
 }
 
+#[allow(unused_variables)]
 async fn transfer_movimientos(
     db: &DatabaseTransaction,
     legacy: &SqlitePool,

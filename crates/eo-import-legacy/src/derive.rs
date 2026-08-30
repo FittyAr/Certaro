@@ -37,6 +37,7 @@ pub async fn derive_all(
 
 /// Derives one certificate per work order that has items with porcentaje_actual > 0.
 /// Returns (certificados, certificado_items).
+#[allow(unused_variables)]
 async fn derive_certificados(
     db: &DatabaseTransaction,
     report: &mut ImportReport,
@@ -248,6 +249,7 @@ async fn derive_liquidacion_adelantos(
 
 /// Derives cliente_contactos from Clientes.Email.
 /// Returns the count of new contacts created.
+#[allow(unused_variables)]
 async fn derive_contactos(
     db: &DatabaseTransaction,
     report: &mut ImportReport,
@@ -346,6 +348,7 @@ async fn derive_contactos(
 /// The old system stored holidays in `appsettings.json` under `Application:Settlement:Holidays`
 /// with two incompatible serializations. We try both.
 /// Returns the count of recovered holidays.
+#[allow(unused_variables)]
 async fn derive_feriados(
     db: &DatabaseTransaction,
     legacy: &SqlitePool,

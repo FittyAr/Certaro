@@ -18,7 +18,7 @@ mod verify;
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use sea_orm::{ConnectionTrait, TransactionTrait};
+use sea_orm::TransactionTrait;
 use sqlx::sqlite::SqliteConnectOptions;
 use std::path::PathBuf;
 use std::process::ExitCode;
@@ -148,7 +148,7 @@ async fn run(cli: Cli) -> Result<ImportReport> {
         );
     }
 
-    let mut report = &mut rpt;
+    let report = &mut rpt;
     // `report` is `&mut ImportReport` from here on. We return `rpt` at the end.
 
     // Phase 3: prepare destination.
@@ -161,19 +161,19 @@ async fn run(cli: Cli) -> Result<ImportReport> {
     tracing::info!("phase 4: transferring data");
     let txn = db.begin().await.context("beginning transaction")?;
 
-    transfer::transfer_all(&txn, &legacy, scale, tz, cli.allow_orphans, &mut report)
+    transfer::transfer_all(&txn, &legacy, scale, tz, cli.allow_orphans, report)
         .await
         .context("phase 4: transfer failed")?;
 
     // Phase 5: derivation (certificates, advances, contacts, holidays, invoice states).
     tracing::info!("phase 5: deriving data");
-    derive::derive_all(&txn, &legacy, &mut report)
+    derive::derive_all(&txn, &legacy, report)
         .await
         .context("phase 5: derivation failed")?;
 
     // Phase 6: verification.
     tracing::info!("phase 6: verifying");
-    let verify_result = verify::verify(&txn, &mut report).await;
+    let verify_result = verify::verify(&txn, report).await;
 
     // Phase 7: commit or rollback.
     report.finish();
@@ -199,9 +199,7 @@ async fn run(cli: Cli) -> Result<ImportReport> {
         .with_context(|| format!("writing report to {}", report_path.display()))?;
     tracing::info!("report written to {}", report_path.display());
 
-    if let Err(e) = verify_result {
-        return Err(e);
-    }
+    verify_result?;
 
     Ok(rpt)
 }

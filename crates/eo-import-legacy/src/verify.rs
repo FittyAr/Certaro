@@ -1,6 +1,6 @@
 //! Phase 6: post-import verification. See `docs/15-migracion-de-datos.md` §7.
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use sea_orm::{ConnectionTrait, DatabaseBackend, DatabaseTransaction, Statement};
 
 use crate::report::ImportReport;

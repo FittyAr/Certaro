@@ -103,7 +103,7 @@ impl BackupPort for SqliteBackupService {
                 bytes,
             });
         }
-        items.sort_by(|a, b| b.creado_en.cmp(&a.creado_en));
+        items.sort_by_key(|a| std::cmp::Reverse(a.creado_en));
         Ok(items)
     }
 
@@ -276,7 +276,7 @@ impl SqliteBackupService {
             .collect();
         Ok(aplicadas
             .last()
-            .is_none_or(|ultima| conocidas.iter().any(|c| c == ultima.name())))
+            .map_or(true, |ultima| conocidas.iter().any(|c| c == ultima.name())))
     }
 }
 

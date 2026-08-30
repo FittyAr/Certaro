@@ -53,7 +53,7 @@ mod tests {
 
     #[test]
     fn los_nombres_ordenan_cronologicamente_como_texto() {
-        let mut nombres = vec![nombre_backup(instante(20)), nombre_backup(instante(8))];
+        let mut nombres = [nombre_backup(instante(20)), nombre_backup(instante(8))];
         nombres.sort();
         assert_eq!(nombres[0], nombre_backup(instante(8)));
     }
