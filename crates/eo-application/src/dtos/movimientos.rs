@@ -11,7 +11,9 @@ use crate::paging::PagedResult;
 use crate::ports::repositories::{MovimientoConRelaciones, MovimientoFiltro, MovimientoResumen};
 use crate::result::AppResult;
 
-#[derive(Debug, Clone, Default, Deserialize)]
+/// Serialisable as well as deserialisable: the JSON export echoes the filter it applied, so the
+/// file says what it is showing (doc 12 §2.5).
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MovimientoFiltroDto {
     pub concepto: Option<String>,
@@ -89,7 +91,11 @@ pub struct MovimientoListItem {
     pub categoria_nombre: Option<String>,
     pub categoria_color: Option<String>,
     pub cliente_id: Option<Uuid>,
+    pub cliente_nombre: Option<String>,
     pub trabajo_id: Option<Uuid>,
+    pub trabajo_descripcion: Option<String>,
+    /// The site of the job, resolved through it: a movement never points at a site directly.
+    pub obra_nombre: Option<String>,
     pub empleado_id: Option<Uuid>,
     pub factura_id: Option<Uuid>,
     pub tipo_concepto_pago_id: Option<Uuid>,
@@ -119,7 +125,10 @@ impl TryFrom<MovimientoConRelaciones> for MovimientoListItem {
             categoria_nombre: row.categoria_nombre,
             categoria_color: row.categoria_color,
             cliente_id: m.cliente_id,
+            cliente_nombre: row.cliente_nombre,
             trabajo_id: m.trabajo_id,
+            trabajo_descripcion: row.trabajo_descripcion,
+            obra_nombre: row.obra_nombre,
             empleado_id: m.empleado_id,
             factura_id: m.factura_id,
             tipo_concepto_pago_id: m.tipo_concepto_pago_id,

@@ -15,6 +15,7 @@ pub mod liquidaciones;
 pub mod movimientos;
 pub mod obras;
 pub mod ordenes_trabajo;
+pub mod reportes;
 pub mod tipos_movimiento;
 pub mod trabajos;
 

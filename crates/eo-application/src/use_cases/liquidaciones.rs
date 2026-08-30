@@ -513,7 +513,7 @@ fn desglose_vacio(reglas: &ReglasLiquidacion) -> LiquidacionDesglose {
     }
 }
 
-async fn load_detalle(repo: &dyn LiquidacionRepository, id: Uuid) -> AppResult<LiquidacionDetalle> {
+pub(crate) async fn load_detalle(repo: &dyn LiquidacionRepository, id: Uuid) -> AppResult<LiquidacionDetalle> {
     let mut row = repo
         .find_detalle(id)
         .await?

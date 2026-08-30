@@ -9,6 +9,8 @@
 
 pub mod config;
 pub mod external;
+pub mod i18n;
 pub mod paths;
 pub mod persistence;
+pub mod reporting;
 pub mod telemetry;

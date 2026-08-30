@@ -67,7 +67,7 @@ reqwest = { version = "0.12", default-features = false, features = ["json", "rus
 
 # Reports
 printpdf = "0.7"
-rust_xlsxwriter = "0.79"
+rust_xlsxwriter = { version = "0.79", features = ["chrono"] }
 docx-rs = "0.4"
 csv = "1"
 
@@ -93,6 +93,10 @@ wiremock = "0.6"
 insta = { version = "1", features = ["json"] }
 tempfile = "3"
 pretty_assertions = "1"
+# Reading back what the generators produced: a PDF is verified by its extracted text and an XLSX
+# by the XML inside its zip (doc 17 §4.4). Comparing bytes would break on every library bump.
+pdf-extract = "0.7"
+zip = { version = "2", default-features = false, features = ["deflate"] }
 
 [profile.release]
 codegen-units = 1

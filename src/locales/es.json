@@ -278,6 +278,13 @@
     "Unexpected": "Ocurrió un error inesperado",
     "Validation": "Revisá los campos marcados"
   },
+  "Export": {
+    "Formato": "Formato",
+    "Generando": "Generando el archivo…",
+    "Listo": "Se generó {archivo}",
+    "OpenFolder": "Abrir carpeta",
+    "ScopeNotice": "Se exportan los {cantidad} registros que cumplen el filtro, no solo la página visible."
+  },
   "Facturas": {
     "BuscarHint": "Número o cliente",
     "Cliente": "Cliente",
@@ -527,6 +534,117 @@
     "UltimoCertificado": "Último certificado",
     "Unidad": "Unidad",
     "VerDetalle": "Ver detalle"
+  },
+  "Report": {
+    "Certificado": {
+      "Act": "ACT",
+      "Actual": "ACTUAL",
+      "Acu": "ACU",
+      "Acumulado": "ACUMULADO",
+      "AjusteUocra": "AJUSTE UOCRA {porcentaje} %:",
+      "Ant": "ANT",
+      "Avance": "AVANCE (%)",
+      "Cant": "CANT",
+      "Cliente": "Cliente:",
+      "Computos": "CÓMPUTOS",
+      "Contratista": "Contratista:",
+      "Fecha": "Fecha:",
+      "Footer": "{empresa} · Página {actual} de {total}",
+      "Importe": "IMPORTE",
+      "ItemDescripcion": "ÍTEM / DESCRIPCIÓN",
+      "Numero": "Certificado N°:",
+      "Obra": "Obra:",
+      "ObraGeneral": "Obra General",
+      "OtrosDescuentos": "OTROS DESCUENTOS:",
+      "PU": "P. UNIT.",
+      "Ref": "Ref.:",
+      "SubTotal": "SUB-TOTAL:",
+      "Title": "Certificado de avance",
+      "TotalAFacturar": "TOTAL A FACTURAR:",
+      "Und": "UND"
+    },
+    "Col": {
+      "Cantidad": "Cantidad",
+      "Categoria": "Categoría",
+      "Cliente": "Cliente",
+      "Concepto": "Concepto",
+      "Dias": "Días",
+      "Fecha": "Fecha",
+      "Moneda": "Moneda",
+      "Monto": "Monto",
+      "Obra": "Obra",
+      "Observaciones": "Observaciones",
+      "Subtotal": "Subtotal",
+      "Tarifa": "Tarifa",
+      "Tipo": "Tipo",
+      "Total": "Total",
+      "Trabajo": "Trabajo",
+      "Unidad": "Unidad"
+    },
+    "DefaultLema": "Cuentas claras",
+    "Filtro": {
+      "Categoria": "categoría: {valor}",
+      "Cliente": "cliente: {valor}",
+      "Desde": "desde {valor}",
+      "Hasta": "hasta {valor}",
+      "Moneda": "moneda: {valor}",
+      "Ninguno": "sin filtros",
+      "Texto": "texto: «{valor}»",
+      "Tipo": "tipo: {valor}",
+      "Trabajo": "trabajo: {valor}"
+    },
+    "Footer": {
+      "Generado": "Generado el {fecha}",
+      "Page": "Página {actual} de {total}"
+    },
+    "Liquidacion": {
+      "Adelantos": "Adelantos",
+      "DiasTrabajados": "Días trabajados en el período",
+      "Empleado": "Empleado:",
+      "FirmaAdministracion": "Generado por Administración",
+      "FirmaRevision": "Firma de Revisión",
+      "Observaciones": "Observaciones:",
+      "Periodo": "Período: {desde} al {hasta}",
+      "Recargos": "Recargos por sábados, domingos y feriados",
+      "SectionAdelantos": "Detalle de adelantos",
+      "SectionResumen": "Resumen de trabajo",
+      "SinAdelantos": "No se registraron adelantos en este período",
+      "Subtotal": "Subtotal",
+      "Title": "Liquidación",
+      "TotalAdelantos": "Total de adelantos:",
+      "TotalAPagar": "Total a pagar"
+    },
+    "Movimientos": {
+      "Registros": "{cantidad} registros",
+      "Title": "Listado de movimientos",
+      "Vacio": "No hay movimientos que cumplan el filtro"
+    },
+    "Sheet": {
+      "Movimientos": "Movimientos",
+      "Resumen": "Resumen"
+    },
+    "Total": {
+      "Balance": "Balance",
+      "Gastos": "Total de gastos",
+      "Ingresos": "Total de ingresos"
+    }
+  },
+  "Reportes": {
+    "Certificado": {
+      "Descripcion": "Planilla de avance con sus nueve columnas.",
+      "Title": "Certificado"
+    },
+    "Elegir": "Elegí un registro",
+    "Liquidacion": {
+      "Descripcion": "Recibo con el desglose de recargos y cada adelanto fechado.",
+      "Title": "Liquidación"
+    },
+    "Movimientos": {
+      "Descripcion": "El listado completo del filtro activo, sin paginar.",
+      "Title": "Movimientos"
+    },
+    "Subtitle": "Cada reporte pide sus parámetros y guarda donde elijas",
+    "Title": "Reportes"
   },
   "State": {
     "Asistencia": {

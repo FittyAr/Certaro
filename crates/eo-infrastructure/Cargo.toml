@@ -37,8 +37,10 @@ uuid = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }
+pdf-extract = { workspace = true }
 pretty_assertions = { workspace = true }
 rstest = { workspace = true }
 tempfile = { workspace = true }
 tokio-test = { workspace = true }
 wiremock = { workspace = true }
+zip = { workspace = true }

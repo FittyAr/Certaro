@@ -165,6 +165,11 @@ pub struct MovimientoConRelaciones {
     pub es_ingreso: bool,
     pub categoria_nombre: Option<String>,
     pub categoria_color: Option<String>,
+    pub cliente_nombre: Option<String>,
+    pub trabajo_descripcion: Option<String>,
+    /// The site the job belongs to. Resolved through the job, which is the only path a movement
+    /// has to a site, and needed by the export columns (doc 12 §2.2).
+    pub obra_nombre: Option<String>,
     /// True when an advance was already consumed by a payroll run and so cannot be edited.
     pub bloqueado_por_liquidacion: bool,
 }

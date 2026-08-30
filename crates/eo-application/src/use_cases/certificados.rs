@@ -417,7 +417,7 @@ async fn acumulados_de(
 
 /// The descriptions the detail shows come from the order, since a frozen typo should still read
 /// corrected; the amounts next to them never do.
-async fn load_detalle(tx: &dyn Transaction, id: Uuid) -> AppResult<CertificadoDetalle> {
+pub(crate) async fn load_detalle(tx: &dyn Transaction, id: Uuid) -> AppResult<CertificadoDetalle> {
     let row = tx
         .certificados()
         .find_detalle(id)

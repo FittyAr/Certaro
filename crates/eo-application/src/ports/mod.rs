@@ -6,13 +6,16 @@ pub mod clock;
 pub mod exchange_rate;
 pub mod holidays;
 pub mod id_generator;
+pub mod reports;
 pub mod repositories;
 pub mod settings;
+pub mod translator;
 
 pub use clock::ClockPort;
 pub use exchange_rate::ExchangeRateProvider;
 pub use holidays::HolidayProvider;
 pub use id_generator::IdGeneratorPort;
+pub use reports::{FileWriterPort, ReportPort};
 pub use repositories::{
     AdelantoCandidato, AsistenciaRepository, CategoriaConUso, CategoriaFiltro, CategoriaRepository,
     CertificadoConRelaciones, CertificadoFiltro, CertificadoRepository, ClienteConResumen,
@@ -26,3 +29,4 @@ pub use repositories::{
     TrabajoConRelaciones, TrabajoFiltro, TrabajoRepository, Transaction, UnitOfWork,
 };
 pub use settings::SettingsStore;
+pub use translator::{MapTranslator, Translator};

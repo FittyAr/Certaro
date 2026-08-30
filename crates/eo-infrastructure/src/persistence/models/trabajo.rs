@@ -20,7 +20,16 @@ pub struct Model {
     pub deleted_at: Option<String>,
 }
 
+/// The site a job hangs off. Declared so a listing can resolve the site's name in the same query:
+/// a movement is charged to a site through its job, never directly (doc 06 §7.1).
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::obra::Entity",
+        from = "Column::ObraId",
+        to = "super::obra::Column::Id"
+    )]
+    Obra,
+}
 
 impl ActiveModelBehavior for ActiveModel {}

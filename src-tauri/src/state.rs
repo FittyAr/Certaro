@@ -24,12 +24,14 @@ use eo_application::use_cases::liquidaciones::LiquidacionesService;
 use eo_application::use_cases::movimientos::MovimientosService;
 use eo_application::use_cases::obras::ObrasService;
 use eo_application::use_cases::ordenes_trabajo::OrdenesTrabajoService;
+use eo_application::use_cases::reportes::ReportesService;
 use eo_application::use_cases::tipos_movimiento::TiposMovimientoService;
 use eo_application::use_cases::trabajos::TrabajosService;
 use eo_application::AppError;
 use eo_domain::clock::{Clock, SystemClock};
 use eo_domain::ids::{IdGenerator, UuidV7Generator};
 use eo_infrastructure::paths::AppPaths;
+use eo_infrastructure::reporting::adapter::{FsFileWriter, ReportGeneratorAdapter};
 
 /// The use cases, available only once the background bootstrap has opened the database.
 pub struct Services {
@@ -49,6 +51,7 @@ pub struct Services {
     pub dashboard: DashboardService,
     pub comercial: ComercialService,
     pub cotizaciones: CotizacionesService,
+    pub reportes: ReportesService,
 }
 
 impl Services {
@@ -128,6 +131,14 @@ impl Services {
                 Arc::clone(&clock),
                 dolar,
                 Arc::clone(&settings),
+            ),
+            reportes: ReportesService::new(
+                Arc::clone(&uow),
+                Arc::new(ReportGeneratorAdapter::new(
+                    Arc::clone(&settings),
+                    Arc::clone(&clock),
+                )),
+                Arc::new(FsFileWriter),
             ),
             movimientos: MovimientosService::new(uow, clock, ids, settings),
         }

@@ -278,6 +278,13 @@
     "Unexpected": "Something went wrong",
     "Validation": "Check the highlighted fields"
   },
+  "Export": {
+    "Formato": "Format",
+    "Generando": "Generating the file…",
+    "Listo": "{archivo} was generated",
+    "OpenFolder": "Open folder",
+    "ScopeNotice": "All {cantidad} records matching the filter are exported, not just the visible page."
+  },
   "Facturas": {
     "BuscarHint": "Number or customer",
     "Cliente": "Customer",
@@ -527,6 +534,117 @@
     "UltimoCertificado": "Last certificate",
     "Unidad": "Unit",
     "VerDetalle": "View detail"
+  },
+  "Report": {
+    "Certificado": {
+      "Act": "CURR",
+      "Actual": "CURRENT",
+      "Acu": "CUM",
+      "Acumulado": "CUMULATIVE",
+      "AjusteUocra": "UOCRA ADJUSTMENT {porcentaje} %:",
+      "Ant": "PREV",
+      "Avance": "PROGRESS (%)",
+      "Cant": "QTY",
+      "Cliente": "Customer:",
+      "Computos": "QUANTITIES",
+      "Contratista": "Contractor:",
+      "Fecha": "Date:",
+      "Footer": "{empresa} · Page {actual} of {total}",
+      "Importe": "AMOUNT",
+      "ItemDescripcion": "ITEM / DESCRIPTION",
+      "Numero": "Certificate no.:",
+      "Obra": "Site:",
+      "ObraGeneral": "General site",
+      "OtrosDescuentos": "OTHER DEDUCTIONS:",
+      "PU": "UNIT PR.",
+      "Ref": "Ref.:",
+      "SubTotal": "SUBTOTAL:",
+      "Title": "Progress certificate",
+      "TotalAFacturar": "TOTAL TO INVOICE:",
+      "Und": "UNIT"
+    },
+    "Col": {
+      "Cantidad": "Quantity",
+      "Categoria": "Category",
+      "Cliente": "Customer",
+      "Concepto": "Description",
+      "Dias": "Days",
+      "Fecha": "Date",
+      "Moneda": "Currency",
+      "Monto": "Amount",
+      "Obra": "Site",
+      "Observaciones": "Notes",
+      "Subtotal": "Subtotal",
+      "Tarifa": "Rate",
+      "Tipo": "Type",
+      "Total": "Total",
+      "Trabajo": "Job",
+      "Unidad": "Unit"
+    },
+    "DefaultLema": "Clear accounts",
+    "Filtro": {
+      "Categoria": "category: {valor}",
+      "Cliente": "customer: {valor}",
+      "Desde": "from {valor}",
+      "Hasta": "to {valor}",
+      "Moneda": "currency: {valor}",
+      "Ninguno": "no filters",
+      "Texto": "text: “{valor}”",
+      "Tipo": "type: {valor}",
+      "Trabajo": "job: {valor}"
+    },
+    "Footer": {
+      "Generado": "Generated on {fecha}",
+      "Page": "Page {actual} of {total}"
+    },
+    "Liquidacion": {
+      "Adelantos": "Advances",
+      "DiasTrabajados": "Days worked in the period",
+      "Empleado": "Employee:",
+      "FirmaAdministracion": "Issued by Administration",
+      "FirmaRevision": "Reviewed by",
+      "Observaciones": "Notes:",
+      "Periodo": "Period: {desde} to {hasta}",
+      "Recargos": "Saturday, Sunday and holiday premiums",
+      "SectionAdelantos": "Advances detail",
+      "SectionResumen": "Work summary",
+      "SinAdelantos": "No advances were recorded in this period",
+      "Subtotal": "Subtotal",
+      "Title": "Payroll settlement",
+      "TotalAdelantos": "Total advances:",
+      "TotalAPagar": "Total payable"
+    },
+    "Movimientos": {
+      "Registros": "{cantidad} records",
+      "Title": "Movements report",
+      "Vacio": "No movements match the filter"
+    },
+    "Sheet": {
+      "Movimientos": "Movements",
+      "Resumen": "Summary"
+    },
+    "Total": {
+      "Balance": "Balance",
+      "Gastos": "Total expenses",
+      "Ingresos": "Total income"
+    }
+  },
+  "Reportes": {
+    "Certificado": {
+      "Descripcion": "Progress sheet with its nine columns.",
+      "Title": "Certificate"
+    },
+    "Elegir": "Pick a record",
+    "Liquidacion": {
+      "Descripcion": "Receipt with the premium breakdown and every advance dated.",
+      "Title": "Settlement"
+    },
+    "Movimientos": {
+      "Descripcion": "The full list of the active filter, unpaginated.",
+      "Title": "Movements"
+    },
+    "Subtitle": "Each report asks for its parameters and saves where you choose",
+    "Title": "Reports"
   },
   "State": {
     "Asistencia": {

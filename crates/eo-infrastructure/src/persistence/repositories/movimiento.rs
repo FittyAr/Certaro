@@ -18,7 +18,7 @@ use uuid::Uuid;
 
 use crate::persistence::mappers::movimiento as mapper;
 use crate::persistence::models::{
-    categoria, cliente, empleado, factura, liquidacion_adelanto, movimiento as model,
+    categoria, cliente, empleado, factura, liquidacion_adelanto, movimiento as model, obra,
     tipo_concepto_pago, tipo_movimiento, trabajo,
 };
 
@@ -66,6 +66,9 @@ struct RowConRelaciones {
     es_ingreso: bool,
     categoria_nombre: Option<String>,
     categoria_color: Option<String>,
+    cliente_nombre: Option<String>,
+    trabajo_descripcion: Option<String>,
+    obra_nombre: Option<String>,
     adelantos_count: i64,
 }
 
@@ -100,6 +103,9 @@ impl TryFrom<RowConRelaciones> for MovimientoConRelaciones {
             es_ingreso: row.es_ingreso,
             categoria_nombre: row.categoria_nombre,
             categoria_color: row.categoria_color,
+            cliente_nombre: row.cliente_nombre,
+            trabajo_descripcion: row.trabajo_descripcion,
+            obra_nombre: row.obra_nombre,
             bloqueado_por_liquidacion: row.adelantos_count > 0,
         })
     }
@@ -188,12 +194,26 @@ fn adelantos_count_expr() -> SimpleExpr {
     )
 }
 
-/// The listing query with its two joins and its three derived columns, shared by `search` and
-/// `find_detalle` so a field can never appear in one and not the other.
+/// The listing query with its joins and its derived columns, shared by `search` and `find_detalle`
+/// so a field can never appear in one and not the other.
+///
+/// The site is reached through the job, which is the only way a movement is charged to one.
 fn base_query() -> sea_orm::Select<Entity> {
     Entity::find()
         .join(JoinType::InnerJoin, model::Relation::TipoMovimiento.def())
         .join(JoinType::LeftJoin, model::Relation::Categoria.def())
+        .join(JoinType::LeftJoin, model::Relation::Cliente.def())
+        .join(JoinType::LeftJoin, model::Relation::Trabajo.def())
+        .join(JoinType::LeftJoin, trabajo::Relation::Obra.def())
+        .column_as(
+            Expr::col((cliente::Entity, cliente::Column::Nombre)),
+            "cliente_nombre",
+        )
+        .column_as(
+            Expr::col((trabajo::Entity, trabajo::Column::Descripcion)),
+            "trabajo_descripcion",
+        )
+        .column_as(Expr::col((obra::Entity, obra::Column::Nombre)), "obra_nombre")
         .column_as(
             Expr::col((tipo_movimiento::Entity, tipo_movimiento::Column::Nombre)),
             "tipo_movimiento_nombre",
