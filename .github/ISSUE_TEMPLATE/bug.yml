@@ -1,0 +1,50 @@
+name: Bug Report
+description: Report a bug in ElectroObra
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The version of ElectroObra (shown in Settings > System)
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? What did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce the issue?
+      placeholder: |
+        1. Go to...
+        2. Click on...
+        3. See error...
+    validations:
+      required: true
+
+  - type: input
+    id: trace-id
+    attributes:
+      label: Trace ID
+      description: The trace ID from the error message (if available)
+      placeholder: "abc123-def456"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Any relevant log entries from `%LOCALAPPDATA%/ElectroObra/Logs/`
+      render: shell
+    validations:
+      required: false
