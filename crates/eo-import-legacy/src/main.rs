@@ -6,6 +6,7 @@
 #![allow(dead_code)] // Many functions are used only when all 21 tables are implemented.
 
 mod dates;
+mod derive;
 mod inspect;
 mod money;
 mod prepare;
@@ -13,6 +14,7 @@ mod report;
 mod scale;
 mod text;
 mod transfer;
+mod verify;
 
 use anyhow::{Context, Result};
 use clap::Parser;
@@ -152,10 +154,16 @@ async fn run(cli: Cli) -> Result<ImportReport> {
         .context("phase 4: transfer failed")?;
 
     // Phase 5: derivation (certificates, advances, contacts, holidays, invoice states).
-    // TODO: implement derive_all
+    tracing::info!("phase 5: deriving data");
+    derive::derive_all(&txn, &mut report)
+        .await
+        .context("phase 5: derivation failed")?;
 
     // Phase 6: verification.
-    // TODO: implement verify
+    tracing::info!("phase 6: verifying");
+    verify::verify(&txn, &mut report)
+        .await
+        .context("phase 6: verification failed")?;
 
     // Phase 7: commit or rollback.
     report.finish();
