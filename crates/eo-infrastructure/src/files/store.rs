@@ -233,7 +233,8 @@ impl AttachmentStore for FsAttachmentStore {
             let nombre = entrada.file_name();
             let Some(nombre) = nombre.to_str() else { continue };
             let Some(marca) = marca_de(nombre) else { continue };
-            if marca < limite && tokio::fs::remove_file(entrada.path()).await.is_ok() {
+            // Inclusive, so a retention of zero days means «empty it now» rather than «almost».
+            if marca <= limite && tokio::fs::remove_file(entrada.path()).await.is_ok() {
                 borrados += 1;
             }
         }

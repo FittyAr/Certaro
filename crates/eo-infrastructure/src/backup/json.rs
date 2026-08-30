@@ -28,19 +28,19 @@ pub const TABLAS: [&str; 20] = [
     "categorias",
     "tipos_concepto_pago",
     "clientes",
-    "clientes_contactos",
+    "cliente_contactos",
     "obras",
     "trabajos",
     "facturas",
     "pagos_factura",
     "ordenes_trabajo",
-    "ordenes_trabajo_items",
+    "orden_trabajo_items",
     "certificados",
-    "certificados_items",
+    "certificado_items",
     "empleados",
     "asistencias_empleado",
     "liquidaciones",
-    "liquidaciones_adelantos",
+    "liquidacion_adelantos",
     "movimientos",
     "adjuntos",
     "feriados",
@@ -395,7 +395,7 @@ mod tests {
         assert!(posicion("facturas") < posicion("pagos_factura"));
         assert!(posicion("ordenes_trabajo") < posicion("certificados"));
         assert!(posicion("empleados") < posicion("liquidaciones"));
-        assert!(posicion("liquidaciones") < posicion("liquidaciones_adelantos"));
+        assert!(posicion("liquidaciones") < posicion("liquidacion_adelantos"));
         assert!(posicion("tipos_movimiento") < posicion("movimientos"));
     }
 
