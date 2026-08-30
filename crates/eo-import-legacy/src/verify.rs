@@ -17,16 +17,32 @@ pub async fn verify(db: &DatabaseTransaction, report: &mut ImportReport) -> Resu
     Ok(())
 }
 
+/// Tables that have seed rows inserted by migrations.
+const SEEDED_TABLES: &[&str] = &[
+    "tipos_movimiento",
+    "tipos_concepto_pago",
+    "app_metadata",
+];
+
 /// Verifies row counts match expectations.
 async fn verify_row_counts(db: &DatabaseTransaction, report: &mut ImportReport) -> Result<()> {
     let tables: Vec<(String, u64)> = report.tables.iter().map(|t| (t.target.clone(), t.target_rows)).collect();
     for (target, expected) in &tables {
         let actual = query_count(db, &format!("SELECT COUNT(*) as cnt FROM {target}")).await?;
 
-        if actual != *expected as i64 {
-            report.block(format!(
-                "row count mismatch for {target}: expected {expected}, got {actual}"
-            ));
+        if SEEDED_TABLES.contains(&target.as_str()) {
+            // Seeded tables: actual should be >= expected (seed rows + imported rows).
+            if actual < *expected as i64 {
+                report.block(format!(
+                    "row count mismatch for {target}: expected at least {expected}, got {actual}"
+                ));
+            }
+        } else {
+            if actual != *expected as i64 {
+                report.block(format!(
+                    "row count mismatch for {target}: expected {expected}, got {actual}"
+                ));
+            }
         }
     }
 

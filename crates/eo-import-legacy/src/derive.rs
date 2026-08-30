@@ -5,19 +5,21 @@
 //! reclassification).
 
 use anyhow::{Context, Result};
-use sea_orm::{ConnectionTrait, DatabaseBackend, DatabaseTransaction, Statement, QueryResult};
+use sea_orm::{ConnectionTrait, DatabaseBackend, DatabaseTransaction, Statement};
+use sqlx::sqlite::SqlitePool;
 
 use crate::report::{DerivedReport, FacturasReclasificadas, ImportReport, WarningCode};
 
 /// Runs all derivations.
 pub async fn derive_all(
     db: &DatabaseTransaction,
+    legacy: &SqlitePool,
     report: &mut ImportReport,
 ) -> Result<()> {
     let cert_count = derive_certificados(db, report).await?;
     let adelantos_count = derive_liquidacion_adelantos(db, report).await?;
     let contactos_count = derive_contactos(db, report).await?;
-    let feriados_count = derive_feriados(db, report).await?;
+    let feriados_count = derive_feriados(db, legacy, report).await?;
     let reclasificadas = reclassify_facturas(db).await?;
 
     report.derived = DerivedReport {
@@ -79,46 +81,26 @@ async fn derive_certificados(
             .await
             .context("getting order items for certificate")?;
 
+        // First pass: calculate totals.
         let mut total_certificado = 0i64;
-
+        let mut item_data = Vec::new();
         for item in &items {
             let cantidad: i64 = item.try_get("", "cantidad").unwrap_or(0);
             let precio_unitario: i64 = item.try_get("", "precio_unitario").unwrap_or(0);
             let porcentaje_anterior: i64 = item.try_get("", "porcentaje_anterior").unwrap_or(0);
             let porcentaje_actual: i64 = item.try_get("", "porcentaje_actual").unwrap_or(0);
-
-            // subtotal_actual = cantidad × precio_unitario × (porcentaje_actual / 100)
-            // Using integer arithmetic with 4 decimal places.
-            let subtotal_actual = cantidad * precio_unitario * porcentaje_actual / 10_000_000;
-            let subtotal_acumulado = cantidad * precio_unitario * (porcentaje_anterior + porcentaje_actual) / 10_000_000;
-
+            // Avoid overflow: divide early. All values are scaled ×10_000.
+            // subtotal = cantidad × precio_unitario × porcentaje / 10_000_000
+            // = (cantidad / 10_000) × precio_unitario × (porcentaje / 10_000) / 100
+            // But simpler: use i128 for the intermediate product.
+            let subtotal_actual = (cantidad as i128 * precio_unitario as i128 * porcentaje_actual as i128 / 10_000_000) as i64;
+            let subtotal_acumulado = (cantidad as i128 * precio_unitario as i128 * (porcentaje_anterior + porcentaje_actual) as i128 / 10_000_000) as i64;
             total_certificado += subtotal_actual;
-
-            let item_id = uuid::Uuid::now_v7().to_string();
-            let sql = format!(
-                "INSERT INTO certificado_items (id, certificado_id, orden_trabajo_item_id, \
-                 cantidad, precio_unitario, porcentaje_anterior, porcentaje_actual, \
-                 subtotal_actual, subtotal_acumulado, created_at) \
-                 VALUES ('{}', '{}', '{}', {}, {}, {}, {}, {}, {}, '{}')",
-                item_id,
-                cert_id,
-                item.try_get::<String>("", "id").unwrap_or_default(),
-                cantidad,
-                precio_unitario,
-                porcentaje_anterior,
-                porcentaje_actual,
-                subtotal_actual,
-                subtotal_acumulado,
-                chrono::Utc::now().to_rfc3339(),
-            );
-            db.execute(Statement::from_string(DatabaseBackend::Sqlite, sql))
-                .await
-                .context("inserting certificado_item")?;
-            item_count += 1;
+            item_data.push((item.try_get::<String>("", "id").unwrap_or_default(), cantidad, precio_unitario, porcentaje_anterior, porcentaje_actual, subtotal_actual, subtotal_acumulado));
         }
 
-        // Calculate totals.
-        let ajuste_uocra_monto = total_certificado * ajuste_uocra / 10_000_000;
+        // Insert the certificate FIRST (FK target for items).
+        let ajuste_uocra_monto = (total_certificado as i128 * ajuste_uocra as i128 / 10_000_000) as i64;
         let total_neto = total_certificado - ajuste_uocra_monto - otros_descuentos;
 
         let sql = format!(
@@ -139,6 +121,31 @@ async fn derive_certificados(
             .await
             .context("inserting certificado")?;
         cert_count += 1;
+
+        // Second pass: insert items (FK to certificado now exists).
+        for (item_id_orig, cantidad, precio_unitario, porcentaje_anterior, porcentaje_actual, subtotal_actual, subtotal_acumulado) in &item_data {
+            let item_id = uuid::Uuid::now_v7().to_string();
+            let sql = format!(
+                "INSERT INTO certificado_items (id, certificado_id, orden_trabajo_item_id, \
+                 cantidad, precio_unitario, porcentaje_anterior, porcentaje_actual, \
+                 subtotal_actual, subtotal_acumulado, created_at) \
+                 VALUES ('{}', '{}', '{}', {}, {}, {}, {}, {}, {}, '{}')",
+                item_id,
+                cert_id,
+                item_id_orig,
+                cantidad,
+                precio_unitario,
+                porcentaje_anterior,
+                porcentaje_actual,
+                subtotal_actual,
+                subtotal_acumulado,
+                chrono::Utc::now().to_rfc3339(),
+            );
+            db.execute(Statement::from_string(DatabaseBackend::Sqlite, sql))
+                .await
+                .context("inserting certificado_item")?;
+            item_count += 1;
+        }
     }
 
     Ok((cert_count, item_count))
@@ -335,14 +342,87 @@ async fn derive_contactos(
 }
 
 /// Derives feriados from the legacy config file.
+///
+/// The old system stored holidays in `appsettings.json` under `Application:Settlement:Holidays`
+/// with two incompatible serializations. We try both.
 /// Returns the count of recovered holidays.
 async fn derive_feriados(
-    _db: &DatabaseTransaction,
-    _report: &mut ImportReport,
+    db: &DatabaseTransaction,
+    legacy: &SqlitePool,
+    report: &mut ImportReport,
 ) -> Result<u64> {
-    // TODO: read legacy appsettings.json and parse holidays.
-    // For now, return 0. The API will recover them on first sync.
-    Ok(0)
+    // Read the legacy config from AppMetadata if available.
+    let config_json: Option<String> = db
+        .query_one(Statement::from_string(
+            DatabaseBackend::Sqlite,
+            "SELECT value FROM app_metadata WHERE key = 'config.json'".to_owned(),
+        ))
+        .await?
+        .and_then(|r| r.try_get::<String>("", "value").ok());
+
+    let Some(json_str) = config_json else {
+        return Ok(0);
+    };
+
+    let parsed: serde_json::Value = match serde_json::from_str(&json_str) {
+        Ok(v) => v,
+        Err(_) => return Ok(0),
+    };
+
+    // Navigate to Application.Settlement.Holidays.
+    let holidays = parsed
+        .get("Application")
+        .and_then(|a| a.get("Settlement"))
+        .and_then(|s| s.get("Holidays"));
+
+    let Some(holidays) = holidays else {
+        return Ok(0);
+    };
+
+    let mut count = 0u64;
+
+    // Try format 1: [{"Date": "...", "Name": "..."}]
+    if let Some(arr) = holidays.as_array() {
+        for item in arr {
+            let fecha = if let Some(date) = item.get("Date").and_then(|d| d.as_str()) {
+                date.to_owned()
+            } else if let Some(date) = item.as_str() {
+                // Format 2: ["2026-01-01T00:00:00"]
+                date.split('T').next().unwrap_or(date).to_owned()
+            } else {
+                report.warn(
+                    WarningCode::FeriadoNoParseable,
+                    "Feriados",
+                    None,
+                    serde_json::json!({ "raw": item }),
+                );
+                continue;
+            };
+
+            let nombre = item
+                .get("Name")
+                .and_then(|n| n.as_str())
+                .unwrap_or("Feriado")
+                .to_owned();
+
+            // Normalize date to YYYY-MM-DD.
+            let fecha_normalized = fecha.split('T').next().unwrap_or(&fecha);
+
+            let sql = format!(
+                "INSERT OR IGNORE INTO feriados (fecha, nombre, tipo, origen, created_at) \
+                 VALUES ('{}', '{}', NULL, 'Manual', '{}')",
+                fecha_normalized.replace('\'', "''"),
+                nombre.replace('\'', "''"),
+                chrono::Utc::now().to_rfc3339(),
+            );
+            db.execute(Statement::from_string(DatabaseBackend::Sqlite, sql))
+                .await
+                .context("inserting derived feriado")?;
+            count += 1;
+        }
+    }
+
+    Ok(count)
 }
 
 /// Reclassifies invoice states based on payments.
@@ -371,14 +451,14 @@ async fn reclassify_facturas(db: &DatabaseTransaction) -> Result<FacturasReclasi
             .query_one(Statement::from_string(
                 DatabaseBackend::Sqlite,
                 format!(
-                    "SELECT COALESCE(SUM(monto), 0) FROM pagos_factura \
+                    "SELECT COALESCE(SUM(monto), 0) as total_pagado FROM pagos_factura \
                      WHERE factura_id = '{}' AND is_deleted = 0",
                     id.replace('\'', "''")
                 ),
             ))
             .await
             .context("summing payments")?
-            .map(|r| r.try_get("", "coalesce(sum(monto),0)").unwrap_or(0))
+            .map(|r| r.try_get::<i64>("", "total_pagado").unwrap_or(0))
             .unwrap_or(0);
 
         let new_estado = if total_pagado >= total {

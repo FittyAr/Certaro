@@ -134,10 +134,22 @@ async fn run(cli: Cli) -> Result<ImportReport> {
     source_info.scale_state = scale;
     tracing::info!("scale state: {:?}", scale);
 
-    let target_info = report::TargetInfo {
+    let target_info = crate::report::TargetInfo {
         path: cli.target.display().to_string(),
     };
-    let mut report = ImportReport::new(source_info, target_info, cli.dry_run);
+    let mut rpt = ImportReport::new(source_info, target_info, cli.dry_run);
+
+    if scale == crate::report::ScaleState::UnscaledIntegers {
+        rpt.warn(
+            crate::report::WarningCode::EscalaSinDecimales,
+            "*",
+            None,
+            serde_json::json!({ "detail": "monetary values were stored as integers without decimals; precision is lost" }),
+        );
+    }
+
+    let mut report = &mut rpt;
+    // `report` is `&mut ImportReport` from here on. We return `rpt` at the end.
 
     // Phase 3: prepare destination.
     tracing::info!("phase 3: preparing destination database");
@@ -155,20 +167,18 @@ async fn run(cli: Cli) -> Result<ImportReport> {
 
     // Phase 5: derivation (certificates, advances, contacts, holidays, invoice states).
     tracing::info!("phase 5: deriving data");
-    derive::derive_all(&txn, &mut report)
+    derive::derive_all(&txn, &legacy, &mut report)
         .await
         .context("phase 5: derivation failed")?;
 
     // Phase 6: verification.
     tracing::info!("phase 6: verifying");
-    verify::verify(&txn, &mut report)
-        .await
-        .context("phase 6: verification failed")?;
+    let verify_result = verify::verify(&txn, &mut report).await;
 
     // Phase 7: commit or rollback.
     report.finish();
 
-    if report.has_blocking_issues() {
+    if report.has_blocking_issues() || verify_result.is_err() {
         tracing::error!("rolling back due to blocking issues");
         txn.rollback().await.context("rollback")?;
         report.outcome = Outcome::Rollback;
@@ -180,7 +190,7 @@ async fn run(cli: Cli) -> Result<ImportReport> {
         txn.commit().await.context("commit")?;
     }
 
-    // Write report.
+    // Always write the report, even on failure.
     let report_path = cli
         .report
         .unwrap_or_else(|| cli.target.parent().unwrap_or(&cli.target).join("import_report.json"));
@@ -189,5 +199,9 @@ async fn run(cli: Cli) -> Result<ImportReport> {
         .with_context(|| format!("writing report to {}", report_path.display()))?;
     tracing::info!("report written to {}", report_path.display());
 
-    Ok(report)
+    if let Err(e) = verify_result {
+        return Err(e);
+    }
+
+    Ok(rpt)
 }

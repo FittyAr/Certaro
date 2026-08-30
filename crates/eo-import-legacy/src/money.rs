@@ -24,10 +24,10 @@ pub fn scale_pago(raw: i64, invoice_total: i64, state: ScaleState) -> (i64, bool
         return (raw * 10_000, false);
     }
     // AlreadyScaled: check if this specific row is actually scaled.
-    // A scaled payment is within two orders of magnitude of the invoice total.
+    // A scaled payment is within one order of magnitude of the invoice total.
     // An unscaled payment is ~10_000× smaller, so after scaling it should be comparable.
-    if raw >= invoice_total / 100 {
-        // Already scaled: the payment is within 2 orders of the invoice total.
+    if raw >= invoice_total / 10 {
+        // Already scaled: the payment is within 1 order of the invoice total.
         (raw, false)
     } else if raw * 10_000 <= invoice_total * 100 {
         // The payment is ~10_000× smaller: unscaled.
