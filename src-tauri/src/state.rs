@@ -6,6 +6,7 @@
 use std::sync::{Arc, OnceLock};
 
 use eo_application::config::AppConfig;
+use eo_application::ports::exchange_rate::ExchangeRateProvider;
 use eo_application::ports::holidays::HolidayProvider;
 use eo_application::ports::repositories::UnitOfWork;
 use eo_application::ports::settings::SettingsStore;
@@ -13,6 +14,9 @@ use eo_application::use_cases::asistencias::AsistenciasService;
 use eo_application::use_cases::categorias::CategoriasService;
 use eo_application::use_cases::certificados::CertificadosService;
 use eo_application::use_cases::clientes::ClientesService;
+use eo_application::use_cases::comercial::ComercialService;
+use eo_application::use_cases::cotizaciones::CotizacionesService;
+use eo_application::use_cases::dashboard::DashboardService;
 use eo_application::use_cases::empleados::EmpleadosService;
 use eo_application::use_cases::facturas::FacturasService;
 use eo_application::use_cases::feriados::FeriadosService;
@@ -42,6 +46,9 @@ pub struct Services {
     pub asistencias: AsistenciasService,
     pub liquidaciones: LiquidacionesService,
     pub feriados: FeriadosService,
+    pub dashboard: DashboardService,
+    pub comercial: ComercialService,
+    pub cotizaciones: CotizacionesService,
 }
 
 impl Services {
@@ -51,6 +58,7 @@ impl Services {
         ids: Arc<dyn IdGenerator>,
         settings: Arc<dyn SettingsStore>,
         holidays: Arc<dyn HolidayProvider>,
+        dolar: Arc<dyn ExchangeRateProvider>,
     ) -> Self {
         Self {
             tipos_movimiento: TiposMovimientoService::new(
@@ -105,6 +113,22 @@ impl Services {
                 holidays,
                 Arc::clone(&settings),
             ),
+            dashboard: DashboardService::new(
+                Arc::clone(&uow),
+                Arc::clone(&clock),
+                Arc::clone(&settings),
+            ),
+            comercial: ComercialService::new(
+                Arc::clone(&uow),
+                Arc::clone(&clock),
+                Arc::clone(&settings),
+            ),
+            cotizaciones: CotizacionesService::new(
+                Arc::clone(&uow),
+                Arc::clone(&clock),
+                dolar,
+                Arc::clone(&settings),
+            ),
             movimientos: MovimientosService::new(uow, clock, ids, settings),
         }
     }
@@ -137,13 +161,19 @@ impl AppState {
 
     /// Publishes the use cases. Called exactly once; a second call is ignored, which can only
     /// happen if bootstrap were ever run twice.
-    pub fn install_services(&self, uow: Arc<dyn UnitOfWork>, holidays: Arc<dyn HolidayProvider>) {
+    pub fn install_services(
+        &self,
+        uow: Arc<dyn UnitOfWork>,
+        holidays: Arc<dyn HolidayProvider>,
+        dolar: Arc<dyn ExchangeRateProvider>,
+    ) {
         let services = Services::build(
             uow,
             Arc::clone(&self.clock),
             Arc::clone(&self.ids),
             Arc::clone(&self.settings),
             holidays,
+            dolar,
         );
         let _ = self.services.set(services);
     }

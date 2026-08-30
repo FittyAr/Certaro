@@ -8,6 +8,7 @@ pub mod error;
 pub mod state;
 
 use eo_application::config::{AppConfig, Environment};
+use eo_infrastructure::external::dolar::HttpExchangeRateProvider;
 use eo_infrastructure::external::holidays::HttpHolidayProvider;
 use eo_infrastructure::paths::AppPaths;
 use eo_infrastructure::{config as infra_config, telemetry};
@@ -20,6 +21,9 @@ use tauri::{Emitter, Manager};
 pub const EVENT_READY: &str = "app://ready";
 /// Emitted when bootstrap failed. Carries the i18n key, never a raw message.
 pub const EVENT_FATAL: &str = "app://fatal";
+/// Emitted when the dollar quotes were refreshed in the background, so the status bar updates
+/// without polling. See `docs/11-contratos-tauri.md` §6.
+pub const EVENT_COTIZACIONES: &str = "cotizaciones:updated";
 
 pub fn run() {
     // Configuration and logging come up before the window, so a failure in either is on disk.
@@ -183,6 +187,14 @@ pub fn run() {
             commands::feriados::feriados_sync,
             commands::feriados::feriados_add,
             commands::feriados::feriados_delete,
+            commands::dashboard::dashboard_stats,
+            commands::dashboard::dashboard_alertas,
+            commands::dashboard::cotizaciones_get,
+            commands::dashboard::cotizaciones_refresh,
+            commands::comercial::clientes_cuenta_corriente,
+            commands::comercial::clientes_antiguedad_deuda,
+            commands::comercial::obras_rentabilidad,
+            commands::comercial::trabajos_rentabilidad,
         ])
         .run(tauri::generate_context!())
         .unwrap_or_else(|e| {
@@ -195,10 +207,13 @@ pub fn run() {
 async fn bootstrap(handle: &tauri::AppHandle) -> anyhow::Result<()> {
     let state = handle.state::<AppState>();
     let db = eo_infrastructure::persistence::open(&state.paths.database()).await?;
-    let holidays = Arc::new(HttpHolidayProvider::new(&state.config().external_apis)?);
+    let config = state.config();
+    let holidays = Arc::new(HttpHolidayProvider::new(&config.external_apis)?);
+    let dolar = Arc::new(HttpExchangeRateProvider::new(&config.external_apis)?);
     state.install_services(
         Arc::new(eo_infrastructure::persistence::SeaOrmUnitOfWork::new(db)),
         holidays,
+        dolar,
     );
 
     // The calendar is synced here and not on demand: a settlement that cannot see the holidays pays
@@ -206,6 +221,18 @@ async fn bootstrap(handle: &tauri::AppHandle) -> anyhow::Result<()> {
     if let Ok(services) = state.services() {
         if let Err(e) = services.feriados.sync_al_iniciar().await {
             tracing::warn!(cause = ?e, "the holiday calendar could not be synced at startup");
+        }
+
+        // The quotes are warmed here so the status bar has a number to show on the first paint.
+        // The service degrades to the cache on its own, so nothing here can fail the bootstrap.
+        if config.external_apis.dollar_auto_update {
+            match services.cotizaciones.list().await {
+                Ok(cotizaciones) if !cotizaciones.is_empty() => {
+                    let _ = handle.emit(EVENT_COTIZACIONES, cotizaciones);
+                }
+                Ok(_) => tracing::info!("no dollar quotes available at startup"),
+                Err(e) => tracing::warn!(cause = ?e, "the dollar quotes could not be read"),
+            }
         }
     }
 

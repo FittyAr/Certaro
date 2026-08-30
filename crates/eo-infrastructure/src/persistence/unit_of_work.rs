@@ -8,9 +8,9 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use eo_application::ports::repositories::{
     AsistenciaRepository, CategoriaRepository, CertificadoRepository, ClienteRepository,
-    EmpleadoRepository, FacturaRepository, FeriadoRepository, LiquidacionRepository,
-    MovimientoRepository, ObraRepository, OrdenTrabajoRepository, TipoMovimientoRepository,
-    TrabajoRepository, Transaction, UnitOfWork,
+    DashboardRepository, EmpleadoRepository, FacturaRepository, FeriadoRepository,
+    LiquidacionRepository, MetadataRepository, MovimientoRepository, ObraRepository,
+    OrdenTrabajoRepository, TipoMovimientoRepository, TrabajoRepository, Transaction, UnitOfWork,
 };
 use eo_application::{AppError, AppResult};
 use sea_orm::{DatabaseConnection, DatabaseTransaction, TransactionTrait};
@@ -19,10 +19,12 @@ use crate::persistence::repositories::asistencia::SeaOrmAsistenciaRepository;
 use crate::persistence::repositories::categoria::SeaOrmCategoriaRepository;
 use crate::persistence::repositories::certificado::SeaOrmCertificadoRepository;
 use crate::persistence::repositories::cliente::SeaOrmClienteRepository;
+use crate::persistence::repositories::dashboard::SeaOrmDashboardRepository;
 use crate::persistence::repositories::empleado::SeaOrmEmpleadoRepository;
 use crate::persistence::repositories::factura::SeaOrmFacturaRepository;
 use crate::persistence::repositories::feriado::SeaOrmFeriadoRepository;
 use crate::persistence::repositories::liquidacion::SeaOrmLiquidacionRepository;
+use crate::persistence::repositories::metadata::SeaOrmMetadataRepository;
 use crate::persistence::repositories::movimiento::SeaOrmMovimientoRepository;
 use crate::persistence::repositories::obra::SeaOrmObraRepository;
 use crate::persistence::repositories::orden_trabajo::SeaOrmOrdenTrabajoRepository;
@@ -66,6 +68,8 @@ pub struct SeaOrmTransaction {
     asistencias: SeaOrmAsistenciaRepository,
     liquidaciones: SeaOrmLiquidacionRepository,
     feriados: SeaOrmFeriadoRepository,
+    dashboard: SeaOrmDashboardRepository,
+    metadata: SeaOrmMetadataRepository,
 }
 
 impl SeaOrmTransaction {
@@ -84,6 +88,8 @@ impl SeaOrmTransaction {
             asistencias: SeaOrmAsistenciaRepository::new(Arc::clone(&tx)),
             liquidaciones: SeaOrmLiquidacionRepository::new(Arc::clone(&tx)),
             feriados: SeaOrmFeriadoRepository::new(Arc::clone(&tx)),
+            dashboard: SeaOrmDashboardRepository::new(Arc::clone(&tx)),
+            metadata: SeaOrmMetadataRepository::new(Arc::clone(&tx)),
             tx,
         }
     }
@@ -107,6 +113,8 @@ impl SeaOrmTransaction {
             asistencias,
             liquidaciones,
             feriados,
+            dashboard,
+            metadata,
         } = self;
         drop(tipos_movimiento);
         drop(categorias);
@@ -121,6 +129,8 @@ impl SeaOrmTransaction {
         drop(asistencias);
         drop(liquidaciones);
         drop(feriados);
+        drop(dashboard);
+        drop(metadata);
         Arc::try_unwrap(tx).map_err(|_| {
             AppError::unexpected(anyhow::anyhow!("transaction still borrowed when finishing"))
         })
@@ -179,6 +189,14 @@ impl Transaction for SeaOrmTransaction {
 
     fn feriados(&self) -> &dyn FeriadoRepository {
         &self.feriados
+    }
+
+    fn dashboard(&self) -> &dyn DashboardRepository {
+        &self.dashboard
+    }
+
+    fn metadata(&self) -> &dyn MetadataRepository {
+        &self.metadata
     }
 
     async fn commit(self: Box<Self>) -> AppResult<()> {

@@ -5,6 +5,8 @@ pub mod asistencias;
 pub mod categorias;
 pub mod certificados;
 pub mod clientes;
+pub mod comercial;
+pub mod dashboard;
 pub mod empleados;
 pub mod facturas;
 pub mod feriados;

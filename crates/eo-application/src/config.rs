@@ -258,6 +258,9 @@ pub struct DashboardConfig {
     pub top_clientes_cantidad: u8,
     pub ultimos_movimientos_cantidad: u8,
     pub obras_ranking_cantidad: u8,
+    pub top_categorias_cantidad: u8,
+    /// A drop steeper than this, in percent, raises the falling-income alert (doc 06 §9.11).
+    pub alerta_caida_ingresos_pct: Decimal4,
 }
 
 impl Default for DashboardConfig {
@@ -270,6 +273,8 @@ impl Default for DashboardConfig {
             top_clientes_cantidad: 5,
             ultimos_movimientos_cantidad: 10,
             obras_ranking_cantidad: 5,
+            top_categorias_cantidad: 5,
+            alerta_caida_ingresos_pct: Decimal4::from_raw(200_000),
         }
     }
 }
