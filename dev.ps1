@@ -3,7 +3,7 @@
 #
 # Uso:
 #   .\dev.ps1 setup          # Instala dependencias y configura el entorno
-#   .\dev.ps1 dev            # Arranca la app en modo desarrollo (hot reload)
+#   .\dev.ps1 dev / run      # Arranca la app en modo desarrollo (hot reload)
 #   .\dev.ps1 build          # Build de release
 #   .\dev.ps1 test           # Todos los tests (Rust + frontend)
 #   .\dev.ps1 test-rust      # Solo tests de Rust
@@ -24,7 +24,7 @@
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("setup", "dev", "build", "test", "test-rust", "test-fe", "lint", "lint-fix",
+    [ValidateSet("setup", "dev", "run", "build", "test", "test-rust", "test-fe", "lint", "lint-fix",
                  "format", "check", "clean", "clean-all", "i18n", "i18n-fix", "version",
                  "version-sync", "installer", "import", "help")]
     [string]$Command = "help",
@@ -66,7 +66,7 @@ switch ($Command) {
         Write-Host ""
         Write-Host "Comandos:" -ForegroundColor White
         Write-Host "  setup          Instala dependencias y configura el entorno" -ForegroundColor Gray
-        Write-Host "  dev            Arranca la app en modo desarrollo (hot reload)" -ForegroundColor Gray
+        Write-Host "  dev, run       Arranca la app en modo desarrollo (hot reload)" -ForegroundColor Gray
         Write-Host "  build          Build de release" -ForegroundColor Gray
         Write-Host "  test           Todos los tests (Rust + frontend)" -ForegroundColor Gray
         Write-Host "  test-rust      Solo tests de Rust" -ForegroundColor Gray
@@ -102,10 +102,10 @@ switch ($Command) {
         Invoke-OrFail "pnpm i18n:check"
 
         Write-Host ""
-        Write-Ok "Entorno configurado. Ejecuta '.\dev.ps1 dev' para arrancar."
+        Write-Ok "Entorno configurado. Ejecuta '.\dev.ps1 dev' o '.\dev.ps1 run' para arrancar."
     }
 
-    "dev" {
+    { $_ -in @("dev", "run") } {
         Write-Step "Arrancando en modo desarrollo"
         Write-Host "    La app abre en http://localhost:1420 con hot reload." -ForegroundColor Gray
         Write-Host "    Presiona Ctrl+C para detener." -ForegroundColor Gray
