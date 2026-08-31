@@ -94,14 +94,28 @@ async fn derive_certificados(
             // subtotal = cantidad × precio_unitario × porcentaje / 10_000_000
             // = (cantidad / 10_000) × precio_unitario × (porcentaje / 10_000) / 100
             // But simpler: use i128 for the intermediate product.
-            let subtotal_actual = (cantidad as i128 * precio_unitario as i128 * porcentaje_actual as i128 / 10_000_000) as i64;
-            let subtotal_acumulado = (cantidad as i128 * precio_unitario as i128 * (porcentaje_anterior + porcentaje_actual) as i128 / 10_000_000) as i64;
+            let subtotal_actual =
+                (cantidad as i128 * precio_unitario as i128 * porcentaje_actual as i128
+                    / 10_000_000) as i64;
+            let subtotal_acumulado = (cantidad as i128
+                * precio_unitario as i128
+                * (porcentaje_anterior + porcentaje_actual) as i128
+                / 10_000_000) as i64;
             total_certificado += subtotal_actual;
-            item_data.push((item.try_get::<String>("", "id").unwrap_or_default(), cantidad, precio_unitario, porcentaje_anterior, porcentaje_actual, subtotal_actual, subtotal_acumulado));
+            item_data.push((
+                item.try_get::<String>("", "id").unwrap_or_default(),
+                cantidad,
+                precio_unitario,
+                porcentaje_anterior,
+                porcentaje_actual,
+                subtotal_actual,
+                subtotal_acumulado,
+            ));
         }
 
         // Insert the certificate FIRST (FK target for items).
-        let ajuste_uocra_monto = (total_certificado as i128 * ajuste_uocra as i128 / 10_000_000) as i64;
+        let ajuste_uocra_monto =
+            (total_certificado as i128 * ajuste_uocra as i128 / 10_000_000) as i64;
         let total_neto = total_certificado - ajuste_uocra_monto - otros_descuentos;
 
         let sql = format!(
@@ -124,7 +138,16 @@ async fn derive_certificados(
         cert_count += 1;
 
         // Second pass: insert items (FK to certificado now exists).
-        for (item_id_orig, cantidad, precio_unitario, porcentaje_anterior, porcentaje_actual, subtotal_actual, subtotal_acumulado) in &item_data {
+        for (
+            item_id_orig,
+            cantidad,
+            precio_unitario,
+            porcentaje_anterior,
+            porcentaje_actual,
+            subtotal_actual,
+            subtotal_acumulado,
+        ) in &item_data
+        {
             let item_id = uuid::Uuid::now_v7().to_string();
             let sql = format!(
                 "INSERT INTO certificado_items (id, certificado_id, orden_trabajo_item_id, \
@@ -250,10 +273,7 @@ async fn derive_liquidacion_adelantos(
 /// Derives cliente_contactos from Clientes.Email.
 /// Returns the count of new contacts created.
 #[allow(unused_variables)]
-async fn derive_contactos(
-    db: &DatabaseTransaction,
-    report: &mut ImportReport,
-) -> Result<u64> {
+async fn derive_contactos(db: &DatabaseTransaction, report: &mut ImportReport) -> Result<u64> {
     // Find clients with an email that doesn't already have a matching contact.
     let clientes = db
         .query_all(Statement::from_string(
@@ -448,7 +468,8 @@ async fn reclassify_facturas(db: &DatabaseTransaction) -> Result<FacturasReclasi
         let id: String = factura.try_get("", "id").unwrap_or_default();
         let estado: i64 = factura.try_get("", "estado").unwrap_or(0);
         let total: i64 = factura.try_get("", "total").unwrap_or(0);
-        let fecha_vencimiento: String = factura.try_get("", "fecha_vencimiento").unwrap_or_default();
+        let fecha_vencimiento: String =
+            factura.try_get("", "fecha_vencimiento").unwrap_or_default();
 
         let total_pagado: i64 = db
             .query_one(Statement::from_string(

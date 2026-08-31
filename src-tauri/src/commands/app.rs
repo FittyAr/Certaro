@@ -40,3 +40,8 @@ pub fn app_info(state: State<'_, AppState>) -> ApiResult<AppInfo> {
 pub fn app_config(state: State<'_, AppState>) -> ApiResult<AppConfig> {
     handle("app_config", Ok(state.config()))
 }
+
+#[tauri::command]
+pub fn app_is_ready(state: State<'_, AppState>) -> bool {
+    state.services().is_ok()
+}

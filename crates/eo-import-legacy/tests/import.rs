@@ -12,7 +12,10 @@ async fn create_legacy_db(scaled: bool) -> (sqlx::SqlitePool, tempfile::TempDir)
     let pool = sqlx::SqlitePool::connect_with(options).await.unwrap();
 
     // Create the legacy schema (PascalCase).
-    sqlx::query(CREATE_LEGACY_SCHEMA).execute(&pool).await.unwrap();
+    sqlx::query(CREATE_LEGACY_SCHEMA)
+        .execute(&pool)
+        .await
+        .unwrap();
 
     // Create migration history.
     sqlx::query("CREATE TABLE IF NOT EXISTS __EFMigrationsHistory (MigrationId TEXT PRIMARY KEY)")
@@ -180,7 +183,8 @@ fn run_import(
     if allow_orphans {
         cmd.arg("--allow-orphans");
     }
-    cmd.arg("--report").arg(target.parent().unwrap().join("import_report.json"));
+    cmd.arg("--report")
+        .arg(target.parent().unwrap().join("import_report.json"));
 
     let output = cmd.output().expect("failed to run eo-import-legacy");
     let report_path = target.parent().unwrap().join("import_report.json");
@@ -195,8 +199,14 @@ fn run_import(
     let report: serde_json::Value = serde_json::from_str(&report_json).unwrap();
     if report["outcome"] == "Rollback" || report["outcome"] == "Aborted" {
         eprintln!("import failed with outcome: {}", report["outcome"]);
-        eprintln!("blocking issues: {}", serde_json::to_string_pretty(&report["blockingIssues"]).unwrap());
-        eprintln!("warnings: {}", serde_json::to_string_pretty(&report["warnings"]).unwrap());
+        eprintln!(
+            "blocking issues: {}",
+            serde_json::to_string_pretty(&report["blockingIssues"]).unwrap()
+        );
+        eprintln!(
+            "warnings: {}",
+            serde_json::to_string_pretty(&report["warnings"]).unwrap()
+        );
     }
     report
 }
@@ -219,13 +229,7 @@ async fn import_base_vacia() {
     // Don't populate: empty database.
     let target = dir.path().join("target.db");
 
-    let report = run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    let report = run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     assert_eq!(report["outcome"], "Success");
     // Only seed rows should exist.
@@ -239,13 +243,7 @@ async fn import_base_escalada() {
     populate_legacy(&legacy, true).await;
     let target = dir.path().join("target.db");
 
-    let report = run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    let report = run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     assert_eq!(report["outcome"], "SuccessWithWarnings");
     // Verify movimientos count.
@@ -259,13 +257,7 @@ async fn import_base_sin_escalar() {
     populate_legacy(&legacy, false).await;
     let target = dir.path().join("target.db");
 
-    let report = run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        false,
-        false,
-        false,
-    );
+    let report = run_import(&dir.path().join("legacy.db"), &target, false, false, false);
 
     assert_eq!(report["outcome"], "SuccessWithWarnings");
     // Check that ESCALA_SIN_DECIMALES warning exists.
@@ -285,16 +277,12 @@ async fn pago_escala_mixta() {
     ).execute(&legacy).await.unwrap();
 
     let target = dir.path().join("target.db");
-    let report = run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    let report = run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     let warnings = report["warnings"].as_array().unwrap();
-    assert!(warnings.iter().any(|w| w["code"] == "PAGO_ESCALA_HEURISTICA"));
+    assert!(warnings
+        .iter()
+        .any(|w| w["code"] == "PAGO_ESCALA_HEURISTICA"));
 }
 
 #[tokio::test]
@@ -309,16 +297,12 @@ async fn cotizacion_cero_se_importa_null() {
     ).execute(&legacy).await.unwrap();
 
     let target = dir.path().join("target.db");
-    let report = run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    let report = run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     let warnings = report["warnings"].as_array().unwrap();
-    assert!(warnings.iter().any(|w| w["code"] == "COTIZACION_CERO_DESCARTADA"));
+    assert!(warnings
+        .iter()
+        .any(|w| w["code"] == "COTIZACION_CERO_DESCARTADA"));
 }
 
 #[tokio::test]
@@ -327,22 +311,21 @@ async fn fecha_civil_no_cambia_de_dia() {
     populate_legacy(&legacy, true).await;
     let target = dir.path().join("target.db");
 
-    run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     // The asistencia was at 22:30 local. It should be midnight UTC of the same civil day.
     let options = SqliteConnectOptions::new().filename(&target);
     let pool = sqlx::SqlitePool::connect_with(options).await.unwrap();
-    let fecha: String = sqlx::query_scalar("SELECT fecha FROM asistencias_empleado WHERE id = '71000000-0000-0000-0000-000000000001'")
-        .fetch_one(&pool)
-        .await
-        .unwrap();
-    assert!(fecha.starts_with("2026-03-01"), "expected 2026-03-01, got {fecha}");
+    let fecha: String = sqlx::query_scalar(
+        "SELECT fecha FROM asistencias_empleado WHERE id = '71000000-0000-0000-0000-000000000001'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(
+        fecha.starts_with("2026-03-01"),
+        "expected 2026-03-01, got {fecha}"
+    );
     assert!(fecha.contains("00:00:00"), "expected midnight, got {fecha}");
 }
 
@@ -352,21 +335,17 @@ async fn fecha_negocio_con_hora_se_convierte() {
     populate_legacy(&legacy, true).await;
     let target = dir.path().join("target.db");
 
-    run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     // The movimiento was at 10:00 local (UTC-3) = 13:00 UTC.
     let options = SqliteConnectOptions::new().filename(&target);
     let pool = sqlx::SqlitePool::connect_with(options).await.unwrap();
-    let fecha: String = sqlx::query_scalar("SELECT fecha FROM movimientos WHERE id = '91000000-0000-0000-0000-000000000001'")
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+    let fecha: String = sqlx::query_scalar(
+        "SELECT fecha FROM movimientos WHERE id = '91000000-0000-0000-0000-000000000001'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
     assert!(fecha.contains("13:00"), "expected 13:00 UTC, got {fecha}");
 }
 
@@ -376,22 +355,21 @@ async fn auditoria_no_se_desplaza() {
     populate_legacy(&legacy, true).await;
     let target = dir.path().join("target.db");
 
-    run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     // CreatedAt should be preserved as-is (it was already UTC).
     let options = SqliteConnectOptions::new().filename(&target);
     let pool = sqlx::SqlitePool::connect_with(options).await.unwrap();
-    let created: String = sqlx::query_scalar("SELECT created_at FROM movimientos WHERE id = '91000000-0000-0000-0000-000000000001'")
-        .fetch_one(&pool)
-        .await
-        .unwrap();
-    assert!(created.contains("10:00"), "expected 10:00 UTC, got {created}");
+    let created: String = sqlx::query_scalar(
+        "SELECT created_at FROM movimientos WHERE id = '91000000-0000-0000-0000-000000000001'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(
+        created.contains("10:00"),
+        "expected 10:00 UTC, got {created}"
+    );
 }
 
 #[tokio::test]
@@ -406,20 +384,16 @@ async fn cantidad_cero_se_vuelve_uno() {
     ).execute(&legacy).await.unwrap();
 
     let target = dir.path().join("target.db");
-    run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     let options = SqliteConnectOptions::new().filename(&target);
     let pool = sqlx::SqlitePool::connect_with(options).await.unwrap();
-    let cantidad: i64 = sqlx::query_scalar("SELECT cantidad FROM movimientos WHERE id = '91000000-0000-0000-0000-000000000004'")
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+    let cantidad: i64 = sqlx::query_scalar(
+        "SELECT cantidad FROM movimientos WHERE id = '91000000-0000-0000-0000-000000000004'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
     assert_eq!(cantidad, 10_000, "expected 10000 (=1.0), got {cantidad}");
 }
 
@@ -435,13 +409,7 @@ async fn multiplicador_cero_se_vuelve_uno() {
     ).execute(&legacy).await.unwrap();
 
     let target = dir.path().join("target.db");
-    run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     let options = SqliteConnectOptions::new().filename(&target);
     let pool = sqlx::SqlitePool::connect_with(options).await.unwrap();
@@ -458,22 +426,18 @@ async fn factura_con_pago_parcial_queda_pagada_parcial() {
     populate_legacy(&legacy, true).await;
     let target = dir.path().join("target.db");
 
-    let _report = run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    let _report = run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     // The invoice had estado=1 (Emitida), total=121000, payment=50000.
     // After reclassification: PagadaParcial (5).
     let options = SqliteConnectOptions::new().filename(&target);
     let pool = sqlx::SqlitePool::connect_with(options).await.unwrap();
-    let estado: i64 = sqlx::query_scalar("SELECT estado FROM facturas WHERE id = '41000000-0000-0000-0000-000000000001'")
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+    let estado: i64 = sqlx::query_scalar(
+        "SELECT estado FROM facturas WHERE id = '41000000-0000-0000-0000-000000000001'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
     assert_eq!(estado, 5, "expected PagadaParcial (5), got {estado}");
 }
 
@@ -483,13 +447,7 @@ async fn email_cliente_se_vuelve_contacto_principal() {
     populate_legacy(&legacy, true).await;
     let target = dir.path().join("target.db");
 
-    run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     let options = SqliteConnectOptions::new().filename(&target);
     let pool = sqlx::SqlitePool::connect_with(options).await.unwrap();
@@ -497,7 +455,10 @@ async fn email_cliente_se_vuelve_contacto_principal() {
     let count: i64 = sqlx::query_scalar(
         "SELECT COUNT(*) FROM cliente_contactos WHERE cliente_id = 'd0000000-0000-0000-0000-000000000001' AND es_principal = 1"
     ).fetch_one(&pool).await.unwrap();
-    assert!(count >= 1, "expected at least 1 principal contact, got {count}");
+    assert!(
+        count >= 1,
+        "expected at least 1 principal contact, got {count}"
+    );
 }
 
 #[tokio::test]
@@ -530,20 +491,15 @@ async fn reejecucion_sobre_destino_con_datos_aborta() {
     let target = dir.path().join("target.db");
 
     // First import.
-    run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     // Second import should fail because target has data.
     let mut cmd = std::process::Command::new(env!("CARGO_BIN_EXE_eo-import-legacy"));
     cmd.arg("--source").arg(dir.path().join("legacy.db"));
     cmd.arg("--target").arg(&target);
     cmd.arg("--assume-scaled");
-    cmd.arg("--report").arg(target.parent().unwrap().join("import_report2.json"));
+    cmd.arg("--report")
+        .arg(target.parent().unwrap().join("import_report2.json"));
 
     let output = cmd.output().unwrap();
     assert!(!output.status.success(), "second import should fail");
@@ -555,20 +511,17 @@ async fn tipo_de_sistema_no_se_duplica() {
     populate_legacy(&legacy, true).await;
     let target = dir.path().join("target.db");
 
-    run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     // System tipos should not be duplicated.
     let options = SqliteConnectOptions::new().filename(&target);
     let pool = sqlx::SqlitePool::connect_with(options).await.unwrap();
     let count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM tipos_movimiento WHERE id = '00000000-0000-0000-0000-000000000001'"
-    ).fetch_one(&pool).await.unwrap();
+        "SELECT COUNT(*) FROM tipos_movimiento WHERE id = '00000000-0000-0000-0000-000000000001'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
     assert_eq!(count, 1, "system tipo should exist exactly once");
 }
 
@@ -578,20 +531,16 @@ async fn cuit_se_normaliza() {
     populate_legacy(&legacy, true).await;
     let target = dir.path().join("target.db");
 
-    run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     let options = SqliteConnectOptions::new().filename(&target);
     let pool = sqlx::SqlitePool::connect_with(options).await.unwrap();
-    let cuit: String = sqlx::query_scalar("SELECT cuit FROM clientes WHERE id = 'd0000000-0000-0000-0000-000000000001'")
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+    let cuit: String = sqlx::query_scalar(
+        "SELECT cuit FROM clientes WHERE id = 'd0000000-0000-0000-0000-000000000001'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
     assert_eq!(cuit, "20123456789", "CUIT should be normalized");
 }
 
@@ -607,13 +556,7 @@ async fn color_hex_invalido_se_marca() {
     ).execute(&legacy).await.unwrap();
 
     let target = dir.path().join("target.db");
-    let report = run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    let report = run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     let warnings = report["warnings"].as_array().unwrap();
     assert!(warnings.iter().any(|w| w["code"] == "COLOR_HEX_INVALIDO"));
@@ -625,13 +568,7 @@ async fn reporte_tiene_estructura_correcta() {
     populate_legacy(&legacy, true).await;
     let target = dir.path().join("target.db");
 
-    let report = run_import(
-        &dir.path().join("legacy.db"),
-        &target,
-        true,
-        false,
-        false,
-    );
+    let report = run_import(&dir.path().join("legacy.db"), &target, true, false, false);
 
     // Verify report structure.
     assert!(report["toolVersion"].is_string());

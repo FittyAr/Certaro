@@ -19,3 +19,7 @@ export function getAppInfo(): Promise<AppInfo> {
 export function getAppConfig(): Promise<AppConfig> {
   return callCommand<AppConfig>('app_config')
 }
+
+export function appIsReady(): Promise<boolean> {
+  return callCommand<boolean>('app_is_ready')
+}

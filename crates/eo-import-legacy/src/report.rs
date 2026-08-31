@@ -149,7 +149,13 @@ impl ImportReport {
         }
     }
 
-    pub fn warn(&mut self, code: WarningCode, table: &str, row_id: Option<Uuid>, detail: serde_json::Value) {
+    pub fn warn(
+        &mut self,
+        code: WarningCode,
+        table: &str,
+        row_id: Option<Uuid>,
+        detail: serde_json::Value,
+    ) {
         self.warnings.push(Warning {
             code,
             table: table.to_owned(),

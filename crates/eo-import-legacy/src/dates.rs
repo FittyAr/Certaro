@@ -13,7 +13,9 @@ pub fn parse_legacy_text(raw: &str) -> Result<NaiveDateTime> {
         return Ok(dt);
     }
     // ISO format with Z suffix.
-    if let Ok(dt) = NaiveDateTime::parse_from_str(trimmed.trim_end_matches('Z'), "%Y-%m-%dT%H:%M:%S%.f") {
+    if let Ok(dt) =
+        NaiveDateTime::parse_from_str(trimmed.trim_end_matches('Z'), "%Y-%m-%dT%H:%M:%S%.f")
+    {
         return Ok(dt);
     }
     // Without fractional seconds.
@@ -29,16 +31,14 @@ pub fn parse_legacy_text(raw: &str) -> Result<NaiveDateTime> {
 
 /// Audit dates: the text already represents UTC (`DateTime.UtcNow` in the old system).
 pub fn audit(raw: &str) -> Result<DateTime<Utc>> {
-    let naive = parse_legacy_text(raw)
-        .with_context(|| format!("audit date: {raw:?}"))?;
+    let naive = parse_legacy_text(raw).with_context(|| format!("audit date: {raw:?}"))?;
     Ok(Utc.from_utc_datetime(&naive))
 }
 
 /// Business instant: the text represents local time in the configured timezone.
 /// `Movimientos.Fecha` is the only column that keeps the time component.
 pub fn business_instant(raw: &str, tz: Tz) -> Result<DateTime<Utc>> {
-    let naive = parse_legacy_text(raw)
-        .with_context(|| format!("business instant: {raw:?}"))?;
+    let naive = parse_legacy_text(raw).with_context(|| format!("business instant: {raw:?}"))?;
     match tz.from_local_datetime(&naive) {
         chrono::LocalResult::Single(dt) => Ok(dt.with_timezone(&Utc)),
         chrono::LocalResult::Ambiguous(a, _) => Ok(a.with_timezone(&Utc)),
@@ -53,8 +53,7 @@ pub fn business_instant(raw: &str, tz: Tz) -> Result<DateTime<Utc>> {
 /// Civil date: only the day matters. The time is discarded and replaced with midnight UTC.
 /// This is what prevents an asistencia at 22:30 local from becoming the next day.
 pub fn business_civil(raw: &str) -> Result<DateTime<Utc>> {
-    let naive = parse_legacy_text(raw)
-        .with_context(|| format!("civil date: {raw:?}"))?;
+    let naive = parse_legacy_text(raw).with_context(|| format!("civil date: {raw:?}"))?;
     Ok(civil_to_utc(naive.date()))
 }
 
@@ -70,20 +69,29 @@ mod tests {
     #[test]
     fn parse_acepta_formato_sin_fraccion() {
         let dt = parse_legacy_text("2026-03-15 22:30:00").unwrap();
-        assert_eq!(dt.format("%Y-%m-%d %H:%M:%S").to_string(), "2026-03-15 22:30:00");
+        assert_eq!(
+            dt.format("%Y-%m-%d %H:%M:%S").to_string(),
+            "2026-03-15 22:30:00"
+        );
     }
 
     #[test]
     fn parse_acepta_formato_con_fraccion() {
         let dt = parse_legacy_text("2026-03-15 22:30:00.1234567").unwrap();
         // The fractional part is preserved.
-        assert!(dt.format("%Y-%m-%d %H:%M:%S%.f").to_string().contains("22:30:00.1234567"));
+        assert!(dt
+            .format("%Y-%m-%d %H:%M:%S%.f")
+            .to_string()
+            .contains("22:30:00.1234567"));
     }
 
     #[test]
     fn parse_acepta_iso_con_z() {
         let dt = parse_legacy_text("2026-03-15T22:30:00.123Z").unwrap();
-        assert!(dt.format("%Y-%m-%d %H:%M:%S%.f").to_string().contains("22:30:00.123"));
+        assert!(dt
+            .format("%Y-%m-%d %H:%M:%S%.f")
+            .to_string()
+            .contains("22:30:00.123"));
     }
 
     #[test]
@@ -106,6 +114,9 @@ mod tests {
     #[test]
     fn auditoria_no_se_desplaza() {
         let utc = audit("2026-03-15 22:30:00").unwrap();
-        assert_eq!(utc.format("%Y-%m-%d %H:%M:%S").to_string(), "2026-03-15 22:30:00");
+        assert_eq!(
+            utc.format("%Y-%m-%d %H:%M:%S").to_string(),
+            "2026-03-15 22:30:00"
+        );
     }
 }

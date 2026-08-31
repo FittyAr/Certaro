@@ -27,10 +27,7 @@ const EXPECTED_TABLES: &[&str] = &[
 ];
 
 /// Tables that exist in the legacy schema but are not imported.
-const EXCLUDED_TABLES: &[&str] = &[
-    "__EFMigrationsHistory",
-    "SchemaVersions",
-];
+const EXCLUDED_TABLES: &[&str] = &["__EFMigrationsHistory", "SchemaVersions"];
 
 /// Row counts per table, in the same order as `EXPECTED_TABLES`.
 pub type Inventory = Vec<(String, u64)>;
@@ -47,12 +44,11 @@ pub async fn inspect_source(pool: &SqlitePool) -> Result<(Inventory, SourceInfo)
     }
 
     // List all tables.
-    let all_tables: Vec<String> = sqlx::query_scalar(
-        "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
-    )
-    .fetch_all(pool)
-    .await
-    .context("listing tables")?;
+    let all_tables: Vec<String> =
+        sqlx::query_scalar("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+            .fetch_all(pool)
+            .await
+            .context("listing tables")?;
 
     // Verify expected tables exist.
     for table in EXPECTED_TABLES {

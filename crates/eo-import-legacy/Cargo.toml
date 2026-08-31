@@ -8,6 +8,10 @@ authors.workspace = true
 repository.workspace = true
 description = "One-shot importer from the legacy C# SQLite database. Reads the source read-only."
 
+[lib]
+name = "eo_import_legacy"
+path = "src/lib.rs"
+
 [[bin]]
 name = "eo-import-legacy"
 path = "src/main.rs"

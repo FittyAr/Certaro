@@ -64,7 +64,11 @@ pub fn scale_cotizacion(raw: Option<i64>, state: ScaleState) -> (Option<i64>, bo
 /// treated as `1.0` (i.e., `10_000` in scaled representation).
 #[must_use]
 pub fn default_zero_to_one(raw: i64) -> i64 {
-    if raw == 0 { 10_000 } else { raw }
+    if raw == 0 {
+        10_000
+    } else {
+        raw
+    }
 }
 
 #[cfg(test)]

@@ -21,9 +21,12 @@ const SYSTEM_TIPO_IDS: &[&str] = &[
 
 /// Helper: execute a raw SQL statement with no results.
 async fn exec(db: &DatabaseTransaction, sql: &str) -> Result<()> {
-    db.execute(Statement::from_string(DatabaseBackend::Sqlite, sql.to_owned()))
-        .await
-        .map_err(|e| anyhow::anyhow!("{e}"))?;
+    db.execute(Statement::from_string(
+        DatabaseBackend::Sqlite,
+        sql.to_owned(),
+    ))
+    .await
+    .map_err(|e| anyhow::anyhow!("{e}"))?;
     Ok(())
 }
 
@@ -473,10 +476,15 @@ async fn transfer_trabajos(
         let id: String = row.try_get("Id").unwrap_or_default();
         let obra_id: String = row.try_get("ObraId").unwrap_or_default();
         let descripcion: String = row.try_get("Descripcion").unwrap_or_default();
-        let presupuesto = money::scale_value(row.try_get::<i64, _>("Presupuesto").unwrap_or(0), scale);
-        let fecha_inicio = dates::business_civil(&row.try_get::<String, _>("FechaInicio").unwrap_or_default())?;
+        let presupuesto =
+            money::scale_value(row.try_get::<i64, _>("Presupuesto").unwrap_or(0), scale);
+        let fecha_inicio =
+            dates::business_civil(&row.try_get::<String, _>("FechaInicio").unwrap_or_default())?;
         let fecha_fin_raw: Option<String> = row.try_get("FechaFin").ok().flatten();
-        let fecha_fin = fecha_fin_raw.as_deref().map(dates::business_civil).transpose()?;
+        let fecha_fin = fecha_fin_raw
+            .as_deref()
+            .map(dates::business_civil)
+            .transpose()?;
         let estado: i64 = row.try_get("Estado").unwrap_or(0);
         let created_at = dates::audit(&row.try_get::<String, _>("CreatedAt").unwrap_or_default())?;
         let updated_at = dates::audit(&row.try_get::<String, _>("UpdatedAt").unwrap_or_default())?;
@@ -550,8 +558,12 @@ async fn transfer_ordenes_trabajo(
         let titulo: String = row.try_get("Titulo").unwrap_or_default();
         let fecha = dates::business_civil(&row.try_get::<String, _>("Fecha").unwrap_or_default())?;
         let numero_certificado: Option<String> = row.try_get("NumeroCertificado").ok().flatten();
-        let ajuste_uocra = money::scale_value(row.try_get::<i64, _>("AjusteUocraPorcentaje").unwrap_or(0), scale);
-        let otros_descuentos = money::scale_value(row.try_get::<i64, _>("OtrosDescuentos").unwrap_or(0), scale);
+        let ajuste_uocra = money::scale_value(
+            row.try_get::<i64, _>("AjusteUocraPorcentaje").unwrap_or(0),
+            scale,
+        );
+        let otros_descuentos =
+            money::scale_value(row.try_get::<i64, _>("OtrosDescuentos").unwrap_or(0), scale);
         let observaciones: Option<String> = row.try_get("Observaciones").ok().flatten();
         let created_at = dates::audit(&row.try_get::<String, _>("CreatedAt").unwrap_or_default())?;
         let updated_at = dates::audit(&row.try_get::<String, _>("UpdatedAt").unwrap_or_default())?;
@@ -578,7 +590,9 @@ async fn transfer_ordenes_trabajo(
             hex::encode(row_version.as_deref().unwrap_or(&[0, 0, 0, 0, 0, 0, 0, 1])),
             is_deleted,
         );
-        exec(db, &sql).await.with_context(|| format!("inserting orden_trabajo {id}"))?;
+        exec(db, &sql)
+            .await
+            .with_context(|| format!("inserting orden_trabajo {id}"))?;
     }
 
     report.tables.push(TableReport {
@@ -612,9 +626,16 @@ async fn transfer_orden_trabajo_items(
         let descripcion: String = row.try_get("Descripcion").unwrap_or_default();
         let unidad: String = row.try_get("Unidad").unwrap_or_default();
         let cantidad = money::scale_value(row.try_get::<i64, _>("Cantidad").unwrap_or(0), scale);
-        let precio_unitario = money::scale_value(row.try_get::<i64, _>("PrecioUnitario").unwrap_or(0), scale);
-        let porcentaje_anterior = money::scale_value(row.try_get::<i64, _>("PorcentajeAnterior").unwrap_or(0), scale);
-        let porcentaje_actual = money::scale_value(row.try_get::<i64, _>("PorcentajeActual").unwrap_or(0), scale);
+        let precio_unitario =
+            money::scale_value(row.try_get::<i64, _>("PrecioUnitario").unwrap_or(0), scale);
+        let porcentaje_anterior = money::scale_value(
+            row.try_get::<i64, _>("PorcentajeAnterior").unwrap_or(0),
+            scale,
+        );
+        let porcentaje_actual = money::scale_value(
+            row.try_get::<i64, _>("PorcentajeActual").unwrap_or(0),
+            scale,
+        );
         let ejecutado: i64 = row.try_get("Ejecutado").unwrap_or(0);
         let nota: Option<String> = row.try_get("Nota").ok().flatten();
         let created_at = dates::audit(&row.try_get::<String, _>("CreatedAt").unwrap_or_default())?;
@@ -625,7 +646,8 @@ async fn transfer_orden_trabajo_items(
 
         // Warn if accumulated percentage exceeds 100%.
         let total_pct = porcentaje_anterior + porcentaje_actual;
-        if total_pct > 1_000_000 { // 100.0000 in scaled representation
+        if total_pct > 1_000_000 {
+            // 100.0000 in scaled representation
             report.warn(
                 WarningCode::PorcentajeExcede100,
                 "OrdenTrabajoItems",
@@ -656,7 +678,9 @@ async fn transfer_orden_trabajo_items(
             hex::encode(row_version.as_deref().unwrap_or(&[0, 0, 0, 0, 0, 0, 0, 1])),
             is_deleted,
         );
-        exec(db, &sql).await.with_context(|| format!("inserting orden_trabajo_item {id}"))?;
+        exec(db, &sql)
+            .await
+            .with_context(|| format!("inserting orden_trabajo_item {id}"))?;
     }
 
     report.tables.push(TableReport {
@@ -724,7 +748,9 @@ async fn transfer_facturas(
             hex::encode(row_version.as_deref().unwrap_or(&[0, 0, 0, 0, 0, 0, 0, 1])),
             is_deleted,
         );
-        exec(db, &sql).await.with_context(|| format!("inserting factura {id}"))?;
+        exec(db, &sql)
+            .await
+            .with_context(|| format!("inserting factura {id}"))?;
 
         report.warn(
             WarningCode::VencimientoEstimado,
@@ -773,13 +799,11 @@ async fn transfer_pagos_factura(
         let is_deleted: i64 = row.try_get("IsDeleted").unwrap_or(0);
 
         // Get invoice total for heuristic scaling.
-        let invoice_total: i64 = sqlx::query_scalar(
-            "SELECT Total FROM Facturas WHERE Id = ?1"
-        )
-        .bind(&factura_id)
-        .fetch_one(legacy)
-        .await
-        .unwrap_or(0);
+        let invoice_total: i64 = sqlx::query_scalar("SELECT Total FROM Facturas WHERE Id = ?1")
+            .bind(&factura_id)
+            .fetch_one(legacy)
+            .await
+            .unwrap_or(0);
 
         let (monto, was_heuristic) = money::scale_pago(raw_monto, invoice_total, scale);
         if was_heuristic {
@@ -806,7 +830,9 @@ async fn transfer_pagos_factura(
             hex::encode(row_version.as_deref().unwrap_or(&[0, 0, 0, 0, 0, 0, 0, 1])),
             is_deleted,
         );
-        exec(db, &sql).await.with_context(|| format!("inserting pago_factura {id}"))?;
+        exec(db, &sql)
+            .await
+            .with_context(|| format!("inserting pago_factura {id}"))?;
     }
 
     report.tables.push(TableReport {
@@ -842,9 +868,12 @@ async fn transfer_empleados(
         let telefono: Option<String> = row.try_get("Telefono").ok().flatten();
         let email: Option<String> = row.try_get("Email").ok().flatten();
         let cargo: Option<String> = row.try_get("Cargo").ok().flatten();
-        let fecha_ingreso = dates::business_civil(&row.try_get::<String, _>("FechaIngreso").unwrap_or_default())?;
-        let sueldo_base = money::scale_value(row.try_get::<i64, _>("SueldoBase").unwrap_or(0), scale);
-        let tarifa_diaria = money::scale_value(row.try_get::<i64, _>("TarifaDiaria").unwrap_or(0), scale);
+        let fecha_ingreso =
+            dates::business_civil(&row.try_get::<String, _>("FechaIngreso").unwrap_or_default())?;
+        let sueldo_base =
+            money::scale_value(row.try_get::<i64, _>("SueldoBase").unwrap_or(0), scale);
+        let tarifa_diaria =
+            money::scale_value(row.try_get::<i64, _>("TarifaDiaria").unwrap_or(0), scale);
         let pago_frecuencia: i64 = row.try_get("PagoFrecuencia").unwrap_or(0);
         let activo: i64 = row.try_get("Activo").unwrap_or(1);
         let created_at = dates::audit(&row.try_get::<String, _>("CreatedAt").unwrap_or_default())?;
@@ -875,7 +904,9 @@ async fn transfer_empleados(
             hex::encode(row_version.as_deref().unwrap_or(&[0, 0, 0, 0, 0, 0, 0, 1])),
             is_deleted,
         );
-        exec(db, &sql).await.with_context(|| format!("inserting empleado {id}"))?;
+        exec(db, &sql)
+            .await
+            .with_context(|| format!("inserting empleado {id}"))?;
     }
 
     report.tables.push(TableReport {
@@ -910,8 +941,13 @@ async fn transfer_asistencias_empleado(
     for row in &rows {
         let empleado_id: String = row.try_get("EmpleadoId").unwrap_or_default();
         let fecha_raw: String = row.try_get("Fecha").unwrap_or_default();
-        let fecha_civil = dates::business_civil(&fecha_raw)?.format("%Y-%m-%d").to_string();
-        groups.entry((empleado_id, fecha_civil)).or_default().push(row);
+        let fecha_civil = dates::business_civil(&fecha_raw)?
+            .format("%Y-%m-%d")
+            .to_string();
+        groups
+            .entry((empleado_id, fecha_civil))
+            .or_default()
+            .push(row);
     }
 
     for ((_empleado_id, _fecha), group) in &groups {
@@ -935,8 +971,10 @@ async fn transfer_asistencias_empleado(
             let fecha = dates::business_civil(&fecha_raw)?;
             let tipo_jornada: i64 = row.try_get("TipoJornada").unwrap_or(0);
             let observaciones: Option<String> = row.try_get("Observaciones").ok().flatten();
-            let created_at = dates::audit(&row.try_get::<String, _>("CreatedAt").unwrap_or_default())?;
-            let updated_at = dates::audit(&row.try_get::<String, _>("UpdatedAt").unwrap_or_default())?;
+            let created_at =
+                dates::audit(&row.try_get::<String, _>("CreatedAt").unwrap_or_default())?;
+            let updated_at =
+                dates::audit(&row.try_get::<String, _>("UpdatedAt").unwrap_or_default())?;
             let deleted_at: Option<String> = row.try_get("DeletedAt").ok().flatten();
             let row_version: Option<Vec<u8>> = row.try_get("RowVersion").ok();
 
@@ -944,7 +982,10 @@ async fn transfer_asistencias_empleado(
             let effective_deleted_at = if i > 0 {
                 Some(created_at.to_rfc3339())
             } else {
-                deleted_at.as_deref().map(|d| dates::audit(d).map(|dt| dt.to_rfc3339())).transpose()?
+                deleted_at
+                    .as_deref()
+                    .map(|d| dates::audit(d).map(|dt| dt.to_rfc3339()))
+                    .transpose()?
             };
 
             if i > 0 {
@@ -979,7 +1020,9 @@ async fn transfer_asistencias_empleado(
                 hex::encode(row_version.as_deref().unwrap_or(&[0, 0, 0, 0, 0, 0, 0, 1])),
                 is_deleted,
             );
-            exec(db, &sql).await.with_context(|| format!("inserting asistencia {id}"))?;
+            exec(db, &sql)
+                .await
+                .with_context(|| format!("inserting asistencia {id}"))?;
         }
     }
 
@@ -1012,18 +1055,33 @@ async fn transfer_liquidaciones(
     for row in &rows {
         let id: String = row.try_get("Id").unwrap_or_default();
         let empleado_id: String = row.try_get("EmpleadoId").unwrap_or_default();
-        let fecha_inicio = dates::business_civil(&row.try_get::<String, _>("FechaInicio").unwrap_or_default())?;
-        let fecha_fin = dates::business_civil(&row.try_get::<String, _>("FechaFin").unwrap_or_default())?;
-        let dias_trabajados = money::scale_value(row.try_get::<i64, _>("DiasTrabajados").unwrap_or(0), scale);
-        let tarifa_aplicada = money::scale_value(row.try_get::<i64, _>("TarifaAplicada").unwrap_or(0), scale);
+        let fecha_inicio =
+            dates::business_civil(&row.try_get::<String, _>("FechaInicio").unwrap_or_default())?;
+        let fecha_fin =
+            dates::business_civil(&row.try_get::<String, _>("FechaFin").unwrap_or_default())?;
+        let dias_trabajados =
+            money::scale_value(row.try_get::<i64, _>("DiasTrabajados").unwrap_or(0), scale);
+        let tarifa_aplicada =
+            money::scale_value(row.try_get::<i64, _>("TarifaAplicada").unwrap_or(0), scale);
         let incluir_sabados: i64 = row.try_get("IncluirSabados").unwrap_or(0);
         let incluir_domingos: i64 = row.try_get("IncluirDomingos").unwrap_or(0);
         let incluir_feriados: i64 = row.try_get("IncluirFeriados").unwrap_or(0);
-        let multiplicador_sabado = money::default_zero_to_one(money::scale_value(row.try_get::<i64, _>("MultiplicadorSabado").unwrap_or(0), scale));
-        let multiplicador_domingo = money::default_zero_to_one(money::scale_value(row.try_get::<i64, _>("MultiplicadorDomingo").unwrap_or(0), scale));
-        let multiplicador_feriado = money::default_zero_to_one(money::scale_value(row.try_get::<i64, _>("MultiplicadorFeriado").unwrap_or(0), scale));
-        let total_bruto = money::scale_value(row.try_get::<i64, _>("TotalBruto").unwrap_or(0), scale);
-        let total_adelantos = money::scale_value(row.try_get::<i64, _>("TotalAdelantos").unwrap_or(0), scale);
+        let multiplicador_sabado = money::default_zero_to_one(money::scale_value(
+            row.try_get::<i64, _>("MultiplicadorSabado").unwrap_or(0),
+            scale,
+        ));
+        let multiplicador_domingo = money::default_zero_to_one(money::scale_value(
+            row.try_get::<i64, _>("MultiplicadorDomingo").unwrap_or(0),
+            scale,
+        ));
+        let multiplicador_feriado = money::default_zero_to_one(money::scale_value(
+            row.try_get::<i64, _>("MultiplicadorFeriado").unwrap_or(0),
+            scale,
+        ));
+        let total_bruto =
+            money::scale_value(row.try_get::<i64, _>("TotalBruto").unwrap_or(0), scale);
+        let total_adelantos =
+            money::scale_value(row.try_get::<i64, _>("TotalAdelantos").unwrap_or(0), scale);
         let observaciones: Option<String> = row.try_get("Observaciones").ok().flatten();
         let created_at = dates::audit(&row.try_get::<String, _>("CreatedAt").unwrap_or_default())?;
         let updated_at = dates::audit(&row.try_get::<String, _>("UpdatedAt").unwrap_or_default())?;
@@ -1059,7 +1117,9 @@ async fn transfer_liquidaciones(
             hex::encode(row_version.as_deref().unwrap_or(&[0, 0, 0, 0, 0, 0, 0, 1])),
             is_deleted,
         );
-        exec(db, &sql).await.with_context(|| format!("inserting liquidacion {id}"))?;
+        exec(db, &sql)
+            .await
+            .with_context(|| format!("inserting liquidacion {id}"))?;
     }
 
     report.tables.push(TableReport {
@@ -1095,7 +1155,10 @@ async fn transfer_movimientos(
         let fecha = dates::business_instant(&fecha_raw, tz)?;
         let concepto: String = row.try_get("Concepto").unwrap_or_default();
         let monto = money::scale_value(row.try_get::<i64, _>("Monto").unwrap_or(0), scale);
-        let cantidad = money::default_zero_to_one(money::scale_value(row.try_get::<i64, _>("Cantidad").unwrap_or(0), scale));
+        let cantidad = money::default_zero_to_one(money::scale_value(
+            row.try_get::<i64, _>("Cantidad").unwrap_or(0),
+            scale,
+        ));
         let moneda: i64 = row.try_get("Moneda").unwrap_or(0);
         let raw_cotizacion: Option<i64> = row.try_get("CotizacionAplicada").ok().flatten();
         let (cotizacion, was_heuristic, is_zero) = money::scale_cotizacion(raw_cotizacion, scale);
@@ -1116,7 +1179,8 @@ async fn transfer_movimientos(
             );
         }
         let tipo_movimiento_id: String = row.try_get("TipoMovimientoId").unwrap_or_default();
-        let tipo_concepto_pago_id: Option<String> = row.try_get("TipoConceptoPagoId").ok().flatten();
+        let tipo_concepto_pago_id: Option<String> =
+            row.try_get("TipoConceptoPagoId").ok().flatten();
         let categoria_id: Option<String> = row.try_get("CategoriaId").ok().flatten();
         let cliente_id: Option<String> = row.try_get("ClienteId").ok().flatten();
         let empleado_id: Option<String> = row.try_get("EmpleadoId").ok().flatten();
@@ -1153,7 +1217,9 @@ async fn transfer_movimientos(
             hex::encode(row_version.as_deref().unwrap_or(&[0, 0, 0, 0, 0, 0, 0, 1])),
             is_deleted,
         );
-        exec(db, &sql).await.with_context(|| format!("inserting movimiento {id}"))?;
+        exec(db, &sql)
+            .await
+            .with_context(|| format!("inserting movimiento {id}"))?;
     }
 
     report.tables.push(TableReport {
@@ -1210,7 +1276,9 @@ async fn transfer_adjuntos(
             hex::encode(row_version.as_deref().unwrap_or(&[0, 0, 0, 0, 0, 0, 0, 1])),
             is_deleted,
         );
-        exec(db, &sql).await.with_context(|| format!("inserting adjunto {id}"))?;
+        exec(db, &sql)
+            .await
+            .with_context(|| format!("inserting adjunto {id}"))?;
     }
 
     report.tables.push(TableReport {
@@ -1247,7 +1315,9 @@ async fn transfer_app_metadata(
             opt_sql_string(&value),
             updated_at.to_rfc3339(),
         );
-        exec(db, &sql).await.with_context(|| format!("inserting app_metadata {key}"))?;
+        exec(db, &sql)
+            .await
+            .with_context(|| format!("inserting app_metadata {key}"))?;
     }
 
     report.tables.push(TableReport {
