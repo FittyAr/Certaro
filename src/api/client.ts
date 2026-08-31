@@ -642,7 +642,7 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         estadoSistema: {
           version: '0.1.0',
           baseSaludable: true,
-          estado: 'Dashboard.EstadoOk',
+          estado: 'Dashboard.Estado.Saludable',
           migraciones: 2,
           tamanoBytes: 524288,
         },
@@ -965,6 +965,8 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         updatedAt: null,
       }) as T
     }
+    case 'obras_siguiente_numero':
+      return (mockDb.obras.length + 1) as T
     case 'obras_create':
     case 'obra_create': {
       const dto = (args?.dto ?? {}) as Record<string, unknown>

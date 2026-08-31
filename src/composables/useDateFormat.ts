@@ -45,6 +45,9 @@ export function useDateFormat() {
   /** Formats `YYYY-MM-DD` with no timezone conversion at all. */
   function formatCivil(value: CivilDate | null | undefined): string {
     if (!value) return ''
+    if (value.includes('T') || value.includes('Z')) {
+      return formatInstant(value, false)
+    }
     const [year, month, day] = value.split('-')
     if (!year || !month || !day) return value
     return applyPattern(locale.value?.formatoFecha ?? 'dd/MM/yyyy', {

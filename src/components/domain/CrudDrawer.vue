@@ -29,6 +29,7 @@ const title = computed(() =>
     position="right"
     :close-on-escape="false"
     :dismissable="false"
+    :auto-focus="false"
     class="w-full md:!w-[480px]"
     @update:visible="(value: boolean) => !value && drawer.close()"
   >
