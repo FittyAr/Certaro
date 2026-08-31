@@ -22,17 +22,15 @@ pub fn generate(data: &ReporteMovimientos, ctx: &ReportContext) -> AppResult<Gen
 
     let cols = columns(Layout::Narrow);
     let mut table = Table::new(
-        cols.iter().map(|c| Width::Relative(f32::from(c.width))).collect(),
+        cols.iter()
+            .map(|c| Width::Relative(f32::from(c.width)))
+            .collect(),
         size::BODY,
     );
     table.zebra = Some(theme::ZEBRA);
     table.header = vec![Row::new(
         cols.iter()
-            .map(|c| {
-                Cell::new(ctx.t(c.key))
-                    .bold()
-                    .align(align_of(c.align))
-            })
+            .map(|c| Cell::new(ctx.t(c.key)).bold().align(align_of(c.align)))
             .collect(),
     )
     .border_bottom(Border::new(theme::BLACK, 1.0))];
@@ -48,8 +46,7 @@ pub fn generate(data: &ReporteMovimientos, ctx: &ReportContext) -> AppResult<Gen
                     .zip(&cols)
                     .enumerate()
                     .map(|(index, (cell, column))| {
-                        let mut c =
-                            Cell::new(cell_text(cell, ctx)).align(align_of(column.align));
+                        let mut c = Cell::new(cell_text(cell, ctx)).align(align_of(column.align));
                         // The total is the number the reader is looking for, so it carries weight.
                         if index + 1 == cols.len() {
                             c = c.bold();
@@ -102,7 +99,9 @@ fn encabezado(canvas: &mut Canvas, data: &ReporteMovimientos, ctx: &ReportContex
         ctx.empresa.nombre
     );
     canvas.text_in(
-        &TextSpec::new(titulo, size::TITLE).bold().color(theme::PRIMARY),
+        &TextSpec::new(titulo, size::TITLE)
+            .bold()
+            .color(theme::PRIMARY),
         left,
         width,
         canvas.cursor(),
@@ -110,8 +109,11 @@ fn encabezado(canvas: &mut Canvas, data: &ReporteMovimientos, ctx: &ReportContex
     canvas.advance(Canvas::line_height(size::TITLE) + 2.0);
 
     canvas.text_in(
-        &TextSpec::new(filtros_prosa(&data.filtros_descripcion, ctx), size::SUBTITLE)
-            .color(theme::MUTED),
+        &TextSpec::new(
+            filtros_prosa(&data.filtros_descripcion, ctx),
+            size::SUBTITLE,
+        )
+        .color(theme::MUTED),
         left,
         width,
         canvas.cursor(),
@@ -187,8 +189,8 @@ fn align_of(align: crate::reporting::movimientos::Align) -> Align {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::reporting::tests_support::{contexto, filas, movimiento, reporte};
     use crate::reporting::tests_support::pdf_text;
+    use crate::reporting::tests_support::{contexto, filas, movimiento, reporte};
 
     #[test]
     fn pdf_movimientos_no_falla_con_cero_filas() {
@@ -211,7 +213,10 @@ mod tests {
         .unwrap();
         let texto = pdf_text(&generado.bytes);
         assert!(texto.contains("Cable 2.5"), "{texto}");
-        assert!(texto.contains("3.001,00"), "falta el total de la fila: {texto}");
+        assert!(
+            texto.contains("3.001,00"),
+            "falta el total de la fila: {texto}"
+        );
         assert!(texto.contains("Total de gastos"), "{texto}");
     }
 

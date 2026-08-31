@@ -124,7 +124,10 @@ mod tests {
 
     #[test]
     fn una_barra_en_el_nombre_del_cliente_no_llega_al_path() {
-        let nombre = liquidacion("Juan / Pérez", NaiveDate::from_ymd_opt(2026, 8, 31).unwrap());
+        let nombre = liquidacion(
+            "Juan / Pérez",
+            NaiveDate::from_ymd_opt(2026, 8, 31).unwrap(),
+        );
         assert_eq!(nombre, "Liquidacion_Juan_Pérez_20260831.pdf");
         assert!(!nombre.contains('/'));
     }
@@ -149,7 +152,11 @@ mod tests {
     #[test]
     fn el_certificado_lleva_obra_numero_y_fecha() {
         assert_eq!(
-            certificado("Edificio Sur", 7, NaiveDate::from_ymd_opt(2026, 3, 1).unwrap()),
+            certificado(
+                "Edificio Sur",
+                7,
+                NaiveDate::from_ymd_opt(2026, 3, 1).unwrap()
+            ),
             "Certificado_Edificio_Sur_7_20260301.pdf"
         );
     }

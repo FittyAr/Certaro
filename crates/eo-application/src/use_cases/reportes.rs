@@ -149,7 +149,6 @@ impl ReportesService {
             resumen,
         })
     }
-
 }
 
 /// The filters in prose, as label keys with their values.

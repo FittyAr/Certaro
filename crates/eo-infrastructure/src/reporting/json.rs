@@ -81,8 +81,8 @@ impl From<&MovimientoListItem> for Item {
 }
 
 pub fn movimientos(data: &ReporteMovimientos, ctx: &ReportContext) -> AppResult<GeneratedReport> {
-    let filtro = serde_json::to_value(&data.filtro)
-        .map_err(|e| io_error("export.json.filtro", e))?;
+    let filtro =
+        serde_json::to_value(&data.filtro).map_err(|e| io_error("export.json.filtro", e))?;
 
     let documento = Documento {
         version: VERSION,
@@ -100,8 +100,8 @@ pub fn movimientos(data: &ReporteMovimientos, ctx: &ReportContext) -> AppResult<
         items: data.items.iter().map(Item::from).collect(),
     };
 
-    let bytes = serde_json::to_vec_pretty(&documento)
-        .map_err(|e| io_error("export.json.serialize", e))?;
+    let bytes =
+        serde_json::to_vec_pretty(&documento).map_err(|e| io_error("export.json.serialize", e))?;
 
     Ok(GeneratedReport {
         bytes,

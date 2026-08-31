@@ -23,6 +23,7 @@ eo-domain = { path = "crates/eo-domain" }
 eo-application = { path = "crates/eo-application" }
 eo-infrastructure = { path = "crates/eo-infrastructure" }
 eo-migration = { path = "crates/eo-migration" }
+eo-import-legacy = { path = "crates/eo-import-legacy" }
 
 # Async runtime
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs", "time", "sync"] }

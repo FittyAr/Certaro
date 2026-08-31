@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Checkbox from 'primevue/checkbox'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
@@ -386,7 +386,7 @@ onMounted(() => {
             </div>
           </div>
 
-          <div v-if="s.adelantos.length > 0" class="space-y-1">
+          <div v-if="(s.adelantos?.length ?? 0) > 0" class="space-y-1">
             <span class="text-xs font-medium">{{ $t('Liquidaciones.Adelantos') }}</span>
             <label
               v-for="adelanto in s.adelantos"
@@ -428,7 +428,7 @@ onMounted(() => {
       <!-- Step 3: confirmation -->
       <div v-else class="space-y-3">
         <p class="text-sm">
-          {{ $t('Liquidaciones.ConfirmarTexto', { cantidad: store.sugerencias.length }) }}
+          {{ $t('Liquidaciones.ConfirmarTexto', { cantidad: store.sugerencias?.length ?? 0 }) }}
         </p>
         <ul class="divide-y divide-border text-sm">
           <li
@@ -458,7 +458,7 @@ onMounted(() => {
 
         <Button
           v-if="paso === 1"
-          :disabled="seleccion.length === 0 || cargandoSugerencias"
+          :disabled="(seleccion?.length ?? 0) === 0 || cargandoSugerencias"
           @click="calcular()"
         >
           {{ $t('Liquidaciones.Calcular') }}

@@ -441,8 +441,10 @@ mod tests {
         )
         .unwrap();
         let mut t = tabla(vec![Width::Relative(1.0), Width::Relative(1.0)]);
-        t.header = vec![Row::new(vec![Cell::new("Fecha").bold(), Cell::new("Total").bold()])
-            .border_bottom(Border::hairline())];
+        t.header = vec![
+            Row::new(vec![Cell::new("Fecha").bold(), Cell::new("Total").bold()])
+                .border_bottom(Border::hairline()),
+        ];
         t.rows = (0..120)
             .map(|i| Row::new(vec![Cell::new(format!("fila {i}")), Cell::new("100,00")]))
             .collect();

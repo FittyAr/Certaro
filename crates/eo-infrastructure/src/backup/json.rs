@@ -9,8 +9,8 @@ use eo_application::ports::ImportResumen;
 use eo_application::result::AppResult;
 use eo_application::AppError;
 use sea_orm::{
-    ConnectionTrait, DatabaseBackend, DatabaseConnection, DatabaseTransaction, JsonValue, Statement,
-    TransactionTrait, Value,
+    ConnectionTrait, DatabaseBackend, DatabaseConnection, DatabaseTransaction, JsonValue,
+    Statement, TransactionTrait, Value,
 };
 use serde::{Deserialize, Serialize};
 use tracing::info;
@@ -96,7 +96,10 @@ pub async fn columnas_de<C: ConnectionTrait>(conn: &C, tabla: &str) -> AppResult
 
     filas
         .iter()
-        .map(|fila| fila.try_get::<String>("", "name").map_err(AppError::persistence))
+        .map(|fila| {
+            fila.try_get::<String>("", "name")
+                .map_err(AppError::persistence)
+        })
         .collect()
 }
 
@@ -355,9 +358,10 @@ fn valor_sql(valor: &JsonValue) -> Value {
 }
 
 fn rechazo(clave: &str, valor: &str) -> AppError {
-    AppError::Validation(vec![
-        eo_application::error::FieldError::new("archivo", clave).with_param("valor", valor),
-    ])
+    AppError::Validation(vec![eo_application::error::FieldError::new(
+        "archivo", clave,
+    )
+    .with_param("valor", valor)])
 }
 
 #[cfg(test)]
@@ -407,7 +411,10 @@ mod tests {
         ));
         assert!(matches!(valor_sql(&JsonValue::Null), Value::String(None)));
         assert!(matches!(
-            valor_sql(&JsonValue::from(vec![JsonValue::from(1), JsonValue::from(2)])),
+            valor_sql(&JsonValue::from(vec![
+                JsonValue::from(1),
+                JsonValue::from(2)
+            ])),
             Value::Bytes(_)
         ));
     }

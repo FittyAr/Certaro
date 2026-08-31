@@ -213,7 +213,10 @@ fn base_query() -> sea_orm::Select<Entity> {
             Expr::col((trabajo::Entity, trabajo::Column::Descripcion)),
             "trabajo_descripcion",
         )
-        .column_as(Expr::col((obra::Entity, obra::Column::Nombre)), "obra_nombre")
+        .column_as(
+            Expr::col((obra::Entity, obra::Column::Nombre)),
+            "obra_nombre",
+        )
         .column_as(
             Expr::col((tipo_movimiento::Entity, tipo_movimiento::Column::Nombre)),
             "tipo_movimiento_nombre",

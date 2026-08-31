@@ -75,7 +75,10 @@ pub fn aplicar(base: &AppConfig, cambios: &Cambios) -> AppResult<AppConfig> {
 
     for (clave, texto) in cambios {
         let Some(actual) = leer(&documento, clave) else {
-            errores.push(FieldError::new(clave.clone(), "Validation.Config.ClaveDesconocida"));
+            errores.push(FieldError::new(
+                clave.clone(),
+                "Validation.Config.ClaveDesconocida",
+            ));
             continue;
         };
         match convertir(actual, texto) {
@@ -144,12 +147,16 @@ fn convertir(actual: &Value, texto: &str) -> Option<Value> {
             "false" => Some(Value::Bool(false)),
             _ => None,
         },
-        Value::Number(numero) if numero.is_f64() => {
-            texto.parse::<f64>().ok().and_then(serde_json::Number::from_f64).map(Value::Number)
-        }
+        Value::Number(numero) if numero.is_f64() => texto
+            .parse::<f64>()
+            .ok()
+            .and_then(serde_json::Number::from_f64)
+            .map(Value::Number),
         Value::Number(_) => texto.parse::<i64>().ok().map(Value::from),
         // A list arrives as JSON, which is unambiguous about quoting and about an empty list.
-        Value::Array(_) => serde_json::from_str::<Vec<Value>>(texto).ok().map(Value::Array),
+        Value::Array(_) => serde_json::from_str::<Vec<Value>>(texto)
+            .ok()
+            .map(Value::Array),
         Value::Null => Some(Value::String(texto.to_owned())),
         Value::Object(_) => None,
     }
@@ -203,7 +210,11 @@ mod tests {
 
     #[test]
     fn una_clave_booleana_solo_acepta_true_o_false() {
-        assert!(aplicar(&AppConfig::default(), &cambios(&[("backup.enabled", "false")])).is_ok());
+        assert!(aplicar(
+            &AppConfig::default(),
+            &cambios(&[("backup.enabled", "false")])
+        )
+        .is_ok());
         let error =
             aplicar(&AppConfig::default(), &cambios(&[("backup.enabled", "no")])).unwrap_err();
         assert!(matches!(error, AppError::Validation(_)));

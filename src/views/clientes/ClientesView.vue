@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import ToggleSwitch from 'primevue/toggleswitch'
@@ -267,12 +267,12 @@ onMounted(() => table.start())
           </Button>
         </div>
 
-        <p v-if="drawer.model.value.contactos.length === 0" class="text-xs text-muted-foreground">
+        <p v-if="!drawer.model.value.contactos?.length" class="text-xs text-muted-foreground">
           {{ $t('Clientes.SinContactos') }}
         </p>
 
         <div
-          v-for="(contacto, indice) in drawer.model.value.contactos"
+          v-for="(contacto, indice) in (drawer.model.value.contactos ?? [])"
           :key="contacto.id ?? indice"
           class="flex flex-col gap-2 rounded-md border border-border p-3"
         >

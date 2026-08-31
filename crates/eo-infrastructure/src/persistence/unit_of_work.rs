@@ -7,10 +7,11 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use eo_application::ports::repositories::{
-    AdjuntoRepository, AsistenciaRepository, CategoriaRepository, CertificadoRepository, ClienteRepository,
-    DashboardRepository, EmpleadoRepository, FacturaRepository, FeriadoRepository,
-    LiquidacionRepository, MetadataRepository, MovimientoRepository, ObraRepository,
-    OrdenTrabajoRepository, TipoMovimientoRepository, TrabajoRepository, Transaction, UnitOfWork,
+    AdjuntoRepository, AsistenciaRepository, CategoriaRepository, CertificadoRepository,
+    ClienteRepository, DashboardRepository, EmpleadoRepository, FacturaRepository,
+    FeriadoRepository, LiquidacionRepository, MetadataRepository, MovimientoRepository,
+    ObraRepository, OrdenTrabajoRepository, TipoMovimientoRepository, TrabajoRepository,
+    Transaction, UnitOfWork,
 };
 use eo_application::{AppError, AppResult};
 use sea_orm::{DatabaseTransaction, TransactionTrait};

@@ -72,7 +72,12 @@ impl AdjuntoRepository for SeaOrmAdjuntoRepository {
             .filter(Column::IsDeleted.eq(false))
             .filter(Column::EntidadTipo.eq(entidad_tipo.as_str()))
             .filter(
-                Column::EntidadId.is_in(entidad_ids.iter().map(ToString::to_string).collect::<Vec<_>>()),
+                Column::EntidadId.is_in(
+                    entidad_ids
+                        .iter()
+                        .map(ToString::to_string)
+                        .collect::<Vec<_>>(),
+                ),
             )
             .all(self.conn())
             .await

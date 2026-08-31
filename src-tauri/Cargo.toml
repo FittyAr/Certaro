@@ -19,6 +19,7 @@ tauri-build = { workspace = true }
 eo-application = { workspace = true }
 eo-infrastructure = { workspace = true }
 eo-domain = { workspace = true }
+eo-import-legacy = { workspace = true }
 
 anyhow = { workspace = true }
 chrono = { workspace = true }

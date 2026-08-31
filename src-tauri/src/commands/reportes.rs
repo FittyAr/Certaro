@@ -40,7 +40,11 @@ pub async fn liquidacion_export(
         Ok(services) => {
             services
                 .reportes
-                .generar(ReporteRequest::Liquidacion { id }, FormatoExport::Pdf, destino)
+                .generar(
+                    ReporteRequest::Liquidacion { id },
+                    FormatoExport::Pdf,
+                    destino,
+                )
                 .await
         }
         Err(e) => Err(e),
@@ -58,7 +62,11 @@ pub async fn certificado_export(
         Ok(services) => {
             services
                 .reportes
-                .generar(ReporteRequest::Certificado { id }, FormatoExport::Pdf, destino)
+                .generar(
+                    ReporteRequest::Certificado { id },
+                    FormatoExport::Pdf,
+                    destino,
+                )
                 .await
         }
         Err(e) => Err(e),

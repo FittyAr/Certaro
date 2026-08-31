@@ -567,7 +567,7 @@ impl DashboardRepository for SeaOrmDashboardRepository {
         // file is readable, which is what "healthy" means to the user.
         let tamano = TamanoRow::find_by_statement(Statement::from_string(
             DbBackend::Sqlite,
-            "SELECT (SELECT * FROM pragma_page_count) * (SELECT * FROM pragma_page_size) AS bytes",
+            "SELECT (SELECT page_count FROM pragma_page_count()) * (SELECT page_size FROM pragma_page_size()) AS bytes",
         ))
         .one(self.conn())
         .await;

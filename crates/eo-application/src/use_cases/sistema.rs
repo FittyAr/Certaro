@@ -149,7 +149,9 @@ impl SistemaService {
     async fn backup_por_antiguedad(&self, max_age_days: u32) -> AppResult<bool> {
         let items = self.backup.list().await?;
         let limite = self.clock.now_utc() - chrono::Duration::days(i64::from(max_age_days));
-        let al_dia = items.first().is_some_and(|ultimo| ultimo.creado_en >= limite);
+        let al_dia = items
+            .first()
+            .is_some_and(|ultimo| ultimo.creado_en >= limite);
         if al_dia {
             return Ok(false);
         }
@@ -162,14 +164,20 @@ impl SistemaService {
 fn validar_destino(destino: &Path) -> AppResult<()> {
     let directorio = destino.parent().unwrap_or(Path::new(""));
     if !directorio.as_os_str().is_empty() && !directorio.is_dir() {
-        return Err(validacion("destino", "Validation.Export.DirectorioNoExiste"));
+        return Err(validacion(
+            "destino",
+            "Validation.Export.DirectorioNoExiste",
+        ));
     }
     let extension = destino
         .extension()
         .and_then(|e| e.to_str())
         .map(str::to_lowercase);
     if extension.as_deref() != Some("json") {
-        return Err(validacion("destino", "Validation.Export.ExtensionNoCoincide"));
+        return Err(validacion(
+            "destino",
+            "Validation.Export.ExtensionNoCoincide",
+        ));
     }
     Ok(())
 }

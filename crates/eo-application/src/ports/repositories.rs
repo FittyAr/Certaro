@@ -10,8 +10,8 @@ use async_trait::async_trait;
 use chrono::{DateTime, NaiveDate, Utc};
 use eo_domain::entities::{
     Adjunto, AsistenciaEmpleado, Categoria, Certificado, CertificadoItem, Cliente, ClienteContacto,
-    Empleado, Factura, Feriado, Liquidacion, LiquidacionAdelanto, Movimiento, Obra, OrdenTrabajo,
-    EntidadAdjunto, OrdenTrabajoItem, PagoFactura, TipoMovimiento, Trabajo,
+    Empleado, EntidadAdjunto, Factura, Feriado, Liquidacion, LiquidacionAdelanto, Movimiento, Obra,
+    OrdenTrabajo, OrdenTrabajoItem, PagoFactura, TipoMovimiento, Trabajo,
 };
 use eo_domain::{Decimal4, EstadoFactura, EstadoObra, EstadoTrabajo, Moneda, Money, RowVersion};
 use uuid::Uuid;

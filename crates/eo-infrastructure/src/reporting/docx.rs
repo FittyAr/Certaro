@@ -47,18 +47,16 @@ pub fn movimientos(data: &ReporteMovimientos, ctx: &ReportContext) -> AppResult<
                 .right(MARGIN as i32),
         )
         .add_paragraph(
-            Paragraph::new()
-                .align(AlignmentType::Center)
-                .add_run(
-                    Run::new()
-                        .add_text(format!(
-                            "{} · {}",
-                            ctx.t("Report.Movimientos.Title"),
-                            ctx.empresa.nombre
-                        ))
-                        .bold()
-                        .size(half_points(20)),
-                ),
+            Paragraph::new().align(AlignmentType::Center).add_run(
+                Run::new()
+                    .add_text(format!(
+                        "{} · {}",
+                        ctx.t("Report.Movimientos.Title"),
+                        ctx.empresa.nombre
+                    ))
+                    .bold()
+                    .size(half_points(20)),
+            ),
         )
         .add_paragraph(
             Paragraph::new().align(AlignmentType::Center).add_run(
@@ -182,13 +180,7 @@ fn encabezado(
     TableRow::new(celdas).cant_split()
 }
 
-fn celda(
-    texto: String,
-    width: usize,
-    align: Align,
-    bold: bool,
-    fill: Option<Rgb>,
-) -> TableCell {
+fn celda(texto: String, width: usize, align: Align, bold: bool, fill: Option<Rgb>) -> TableCell {
     let mut run = Run::new().add_text(texto).size(half_points(10));
     if bold {
         run = run.bold();
@@ -231,10 +223,21 @@ mod tests {
         let generado =
             movimientos(&reporte(vec![movimiento("Cable", "10", "1")]), &contexto()).unwrap();
         let texto = docx_text(&generado.bytes);
-        for rotulo in ["Fecha", "Concepto", "Tipo", "Categoría", "Monto", "Cantidad", "Total"] {
+        for rotulo in [
+            "Fecha",
+            "Concepto",
+            "Tipo",
+            "Categoría",
+            "Monto",
+            "Cantidad",
+            "Total",
+        ] {
             assert!(texto.contains(rotulo), "falta el rótulo {rotulo}");
         }
-        assert!(!texto.contains("Cliente"), "el layout angosto no lleva Cliente");
+        assert!(
+            !texto.contains("Cliente"),
+            "el layout angosto no lleva Cliente"
+        );
     }
 
     #[test]

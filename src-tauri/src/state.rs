@@ -10,13 +10,14 @@ use eo_application::ports::exchange_rate::ExchangeRateProvider;
 use eo_application::ports::holidays::HolidayProvider;
 use eo_application::ports::repositories::UnitOfWork;
 use eo_application::ports::settings::SettingsStore;
+use eo_application::ports::{AttachmentStore, BackupPort, OpenerPort};
 use eo_application::use_cases::adjuntos::AdjuntosService;
 use eo_application::use_cases::asistencias::AsistenciasService;
 use eo_application::use_cases::categorias::CategoriasService;
 use eo_application::use_cases::certificados::CertificadosService;
 use eo_application::use_cases::clientes::ClientesService;
-use eo_application::use_cases::configuracion::ConfiguracionService;
 use eo_application::use_cases::comercial::ComercialService;
+use eo_application::use_cases::configuracion::ConfiguracionService;
 use eo_application::use_cases::cotizaciones::CotizacionesService;
 use eo_application::use_cases::dashboard::DashboardService;
 use eo_application::use_cases::empleados::EmpleadosService;
@@ -33,7 +34,6 @@ use eo_application::use_cases::trabajos::TrabajosService;
 use eo_application::AppError;
 use eo_domain::clock::{Clock, SystemClock};
 use eo_domain::ids::{IdGenerator, UuidV7Generator};
-use eo_application::ports::{AttachmentStore, BackupPort, OpenerPort};
 use eo_infrastructure::paths::AppPaths;
 use eo_infrastructure::reporting::adapter::{FsFileWriter, ReportGeneratorAdapter};
 
@@ -177,6 +177,8 @@ pub struct AppState {
     pub settings: Arc<dyn SettingsStore>,
     pub clock: Arc<dyn Clock>,
     pub ids: Arc<dyn IdGenerator>,
+    /// The database connection handle, allowing connection replacement on restore or legacy import.
+    db: OnceLock<eo_infrastructure::persistence::DbHandle>,
     /// Written once by `bootstrap`. A command that arrives before the window received
     /// `app://ready` gets a clean error instead of a panic on an empty database handle.
     services: OnceLock<Services>,
@@ -189,6 +191,7 @@ impl AppState {
             settings,
             clock: Arc::new(SystemClock),
             ids: Arc::new(UuidV7Generator),
+            db: OnceLock::new(),
             services: OnceLock::new(),
         }
     }
@@ -197,10 +200,16 @@ impl AppState {
         self.settings.snapshot()
     }
 
+    pub fn db(&self) -> Option<&eo_infrastructure::persistence::DbHandle> {
+        self.db.get()
+    }
+
     /// Publishes the use cases. Called exactly once; a second call is ignored, which can only
     /// happen if bootstrap were ever run twice.
+    #[allow(clippy::too_many_arguments)]
     pub fn install_services(
         &self,
+        db: eo_infrastructure::persistence::DbHandle,
         uow: Arc<dyn UnitOfWork>,
         holidays: Arc<dyn HolidayProvider>,
         dolar: Arc<dyn ExchangeRateProvider>,
@@ -208,6 +217,7 @@ impl AppState {
         opener: Arc<dyn OpenerPort>,
         backup: Arc<dyn BackupPort>,
     ) {
+        let _ = self.db.set(db);
         let services = Services::build(
             uow,
             Arc::clone(&self.clock),

@@ -21,16 +21,17 @@ pub use holidays::HolidayProvider;
 pub use id_generator::IdGeneratorPort;
 pub use reports::{FileWriterPort, ReportPort};
 pub use repositories::{
-    AdelantoCandidato, AdjuntoRepository, AsistenciaRepository, CategoriaConUso, CategoriaFiltro, CategoriaRepository,
-    CertificadoConRelaciones, CertificadoFiltro, CertificadoRepository, ClienteConResumen,
-    ClienteFiltro, ClienteRepository, DashboardRepository, EmpleadoFiltro, EmpleadoRepository,
-    EstadoBase, FacturaConResumen, FacturaFiltro, FacturaPendiente, FacturaRepository,
-    FeriadoRepository, LiquidacionConRelaciones, LiquidacionFiltro, LiquidacionRepository,
-    MetadataRepository, MovimientoConRelaciones, MovimientoFiltro, MovimientoRepository,
-    MovimientoResumen, ObraConResumen, ObraFiltro, ObraRepository, OrdenTrabajoConRelaciones,
-    OrdenTrabajoRepository, ReferenciaTabla, RentabilidadFila, SortDir, TipoMovimientoConUso,
-    TipoMovimientoFiltro, TipoMovimientoRepository, TotalMensual, TotalPorNombre,
-    TrabajoConRelaciones, TrabajoFiltro, TrabajoRepository, Transaction, UnitOfWork,
+    AdelantoCandidato, AdjuntoRepository, AsistenciaRepository, CategoriaConUso, CategoriaFiltro,
+    CategoriaRepository, CertificadoConRelaciones, CertificadoFiltro, CertificadoRepository,
+    ClienteConResumen, ClienteFiltro, ClienteRepository, DashboardRepository, EmpleadoFiltro,
+    EmpleadoRepository, EstadoBase, FacturaConResumen, FacturaFiltro, FacturaPendiente,
+    FacturaRepository, FeriadoRepository, LiquidacionConRelaciones, LiquidacionFiltro,
+    LiquidacionRepository, MetadataRepository, MovimientoConRelaciones, MovimientoFiltro,
+    MovimientoRepository, MovimientoResumen, ObraConResumen, ObraFiltro, ObraRepository,
+    OrdenTrabajoConRelaciones, OrdenTrabajoRepository, ReferenciaTabla, RentabilidadFila, SortDir,
+    TipoMovimientoConUso, TipoMovimientoFiltro, TipoMovimientoRepository, TotalMensual,
+    TotalPorNombre, TrabajoConRelaciones, TrabajoFiltro, TrabajoRepository, Transaction,
+    UnitOfWork,
 };
 pub use settings::SettingsStore;
 pub use translator::{MapTranslator, Translator};

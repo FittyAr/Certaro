@@ -62,7 +62,8 @@ mod tests {
 
     #[test]
     fn csv_tiene_bom_y_crlf() {
-        let generado = movimientos(&reporte(vec![movimiento("Cable", "10", "1")]), &contexto()).unwrap();
+        let generado =
+            movimientos(&reporte(vec![movimiento("Cable", "10", "1")]), &contexto()).unwrap();
         assert_eq!(&generado.bytes[..3], BOM);
         let cuerpo = String::from_utf8(generado.bytes[3..].to_vec()).unwrap();
         assert!(cuerpo.contains("\r\n"), "no hay CRLF");

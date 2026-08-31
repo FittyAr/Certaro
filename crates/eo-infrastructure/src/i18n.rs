@@ -137,6 +137,9 @@ mod tests {
         let t = JsonTranslator::new("es");
         let texto = t.format("Report.Footer.Page", &[("actual", "3"), ("total", "9")]);
         assert!(texto.contains('3') && texto.contains('9'), "{texto}");
-        assert!(!texto.contains('{'), "quedó un placeholder sin sustituir: {texto}");
+        assert!(
+            !texto.contains('{'),
+            "quedó un placeholder sin sustituir: {texto}"
+        );
     }
 }

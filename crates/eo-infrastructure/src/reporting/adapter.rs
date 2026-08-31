@@ -7,9 +7,9 @@ use eo_application::config::AppConfig;
 use eo_application::dtos::certificados::CertificadoDetalle;
 use eo_application::dtos::liquidaciones::LiquidacionDetalle;
 use eo_application::dtos::reportes::{FormatoExport, GeneratedReport, ReporteMovimientos};
+use eo_application::error::FieldError;
 use eo_application::ports::{ClockPort, FileWriterPort, ReportPort, SettingsStore};
 use eo_application::result::AppResult;
-use eo_application::error::FieldError;
 use eo_application::AppError;
 
 use super::pdf;
@@ -76,7 +76,11 @@ impl ReportPort for ReportGeneratorAdapter {
                 "{}_{}.{}",
                 filename::sanitize(otro, "Reporte"),
                 match detalle {
-                    Some(d) => format!("{}_{}", filename::sanitize(d, "detalle"), filename::day(now.date_naive())),
+                    Some(d) => format!(
+                        "{}_{}",
+                        filename::sanitize(d, "detalle"),
+                        filename::day(now.date_naive())
+                    ),
                     None => filename::stamp(now),
                 },
                 interno.extension()
@@ -106,10 +110,7 @@ impl FileWriterPort for FsFileWriter {
     fn write(&self, destino: &Path, bytes: &[u8], formato: FormatoExport) -> AppResult<u64> {
         validate(destino, formato)?;
         std::fs::write(destino, bytes).map_err(|e| {
-            AppError::io(anyhow::anyhow!(
-                "export.write {}: {e}",
-                destino.display()
-            ))
+            AppError::io(anyhow::anyhow!("export.write {}: {e}", destino.display()))
         })?;
         Ok(bytes.len() as u64)
     }
@@ -119,17 +120,26 @@ impl FileWriterPort for FsFileWriter {
 /// exist and the extension has to match the format asked for (doc 11 §5.11).
 fn validate(destino: &Path, formato: FormatoExport) -> AppResult<()> {
     let Some(directorio) = destino.parent() else {
-        return Err(AppError::Validation(vec![FieldError::new("destino", "Validation.Export.DestinoInvalido")]));
+        return Err(AppError::Validation(vec![FieldError::new(
+            "destino",
+            "Validation.Export.DestinoInvalido",
+        )]));
     };
     if !directorio.as_os_str().is_empty() && !directorio.is_dir() {
-        return Err(AppError::Validation(vec![FieldError::new("destino", "Validation.Export.DirectorioNoExiste")]));
+        return Err(AppError::Validation(vec![FieldError::new(
+            "destino",
+            "Validation.Export.DirectorioNoExiste",
+        )]));
     }
     let extension = destino
         .extension()
         .and_then(|e| e.to_str())
         .map(str::to_lowercase);
     if extension.as_deref() != Some(formato.extension()) {
-        return Err(AppError::Validation(vec![FieldError::new("destino", "Validation.Export.ExtensionNoCoincide")]));
+        return Err(AppError::Validation(vec![FieldError::new(
+            "destino",
+            "Validation.Export.ExtensionNoCoincide",
+        )]));
     }
     Ok(())
 }

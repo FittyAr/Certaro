@@ -124,12 +124,8 @@ pub struct Canvas {
 impl Canvas {
     /// A document of one page. Sizes in points; `A4` lives in [`theme::page`].
     pub fn new(title: &str, width: f32, height: f32, margin: f32) -> AppResult<Self> {
-        let (doc, page, layer) = PdfDocument::new(
-            title,
-            Mm::from(Pt(width)),
-            Mm::from(Pt(height)),
-            "capa",
-        );
+        let (doc, page, layer) =
+            PdfDocument::new(title, Mm::from(Pt(width)), Mm::from(Pt(height)), "capa");
         let fonts = Fonts {
             regular: doc
                 .add_builtin_font(BuiltinFont::Helvetica)
@@ -188,11 +184,9 @@ impl Canvas {
     }
 
     pub fn new_page(&mut self) {
-        let (page, layer) = self.doc.add_page(
-            Mm::from(Pt(self.width)),
-            Mm::from(Pt(self.height)),
-            "capa",
-        );
+        let (page, layer) =
+            self.doc
+                .add_page(Mm::from(Pt(self.width)), Mm::from(Pt(self.height)), "capa");
         self.pages.push((page, layer));
         self.cursor = self.margin;
     }
@@ -420,14 +414,22 @@ mod tests {
 
     #[test]
     fn el_texto_que_no_cabe_se_recorta_con_puntos_suspensivos() {
-        let recortado = Canvas::fit("Un concepto larguísimo que no entra", 10.0, FontStyle::Regular, 40.0);
+        let recortado = Canvas::fit(
+            "Un concepto larguísimo que no entra",
+            10.0,
+            FontStyle::Regular,
+            40.0,
+        );
         assert!(recortado.ends_with('…'), "{recortado}");
         assert!(recortado.chars().count() < 12, "{recortado}");
     }
 
     #[test]
     fn el_texto_que_cabe_no_se_toca() {
-        assert_eq!(Canvas::fit("Cable", 10.0, FontStyle::Regular, 200.0), "Cable");
+        assert_eq!(
+            Canvas::fit("Cable", 10.0, FontStyle::Regular, 200.0),
+            "Cable"
+        );
     }
 
     #[test]

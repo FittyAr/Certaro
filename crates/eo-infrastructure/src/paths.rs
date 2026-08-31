@@ -102,6 +102,92 @@ impl AppPaths {
         }
         Ok(())
     }
+
+    /// Scans for potential legacy C# ElectroObraApp databases in standard platform locations.
+    #[must_use]
+    pub fn find_legacy_database(&self) -> Option<LegacyDbCandidate> {
+        let mut candidates = Vec::new();
+
+        #[cfg(target_os = "windows")]
+        {
+            if let Some(local_app_data) = std::env::var_os("LOCALAPPDATA").map(PathBuf::from) {
+                candidates.push(local_app_data.join("ElectroObraApp").join("electroobra.db"));
+                candidates.push(local_app_data.join("ElectroObraApp").join("ElectroObra.db"));
+                candidates.push(local_app_data.join("ElectroObra").join("electroobra.db"));
+            }
+            if let Some(app_data) = std::env::var_os("APPDATA").map(PathBuf::from) {
+                candidates.push(app_data.join("ElectroObraApp").join("electroobra.db"));
+                candidates.push(app_data.join("ElectroObra").join("electroobra.db"));
+            }
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            if let Some(home) = std::env::var_os("HOME").map(PathBuf::from) {
+                candidates.push(
+                    home.join(".local")
+                        .join("share")
+                        .join("ElectroObraApp")
+                        .join("electroobra.db"),
+                );
+                candidates.push(
+                    home.join(".local")
+                        .join("share")
+                        .join("ElectroObra")
+                        .join("electroobra.db"),
+                );
+                candidates.push(
+                    home.join("Library")
+                        .join("Application Support")
+                        .join("ElectroObraApp")
+                        .join("electroobra.db"),
+                );
+            }
+        }
+
+        candidates.push(PathBuf::from("legacy").join("electroobra.db"));
+        candidates.push(PathBuf::from("legacy.db"));
+
+        for candidate in candidates {
+            if candidate.is_file() {
+                if let (Ok(can_canon), Ok(db_canon)) =
+                    (candidate.canonicalize(), self.database().canonicalize())
+                {
+                    if can_canon == db_canon {
+                        continue;
+                    }
+                }
+                if let Ok(metadata) = std::fs::metadata(&candidate) {
+                    let size_bytes = metadata.len();
+                    if size_bytes > 0 {
+                        let modified_at = metadata.modified().ok().map(|st| {
+                            let dt: chrono::DateTime<chrono::Utc> = st.into();
+                            dt.to_rfc3339()
+                        });
+                        let filename = candidate
+                            .file_name()
+                            .map(|n| n.to_string_lossy().to_string())
+                            .unwrap_or_else(|| "electroobra.db".to_string());
+
+                        return Some(LegacyDbCandidate {
+                            path: candidate.to_string_lossy().to_string(),
+                            filename,
+                            size_bytes,
+                            modified_at,
+                        });
+                    }
+                }
+            }
+        }
+        None
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct LegacyDbCandidate {
+    pub path: String,
+    pub filename: String,
+    pub size_bytes: u64,
+    pub modified_at: Option<String>,
 }
 
 #[cfg(target_os = "windows")]

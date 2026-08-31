@@ -6,7 +6,7 @@ use chrono::{TimeZone, Utc};
 use eo_application::config::AppConfig;
 use eo_application::dtos::movimientos::{MovimientoListItem, MovimientoResumenDto};
 use eo_application::dtos::reportes::ReporteMovimientos;
-use eo_domain::{Decimal4, Money, Moneda};
+use eo_domain::{Decimal4, Moneda, Money};
 use uuid::Uuid;
 
 use super::ReportContext;
@@ -235,7 +235,9 @@ pub fn docx_text(bytes: &[u8]) -> String {
     while let Some(inicio) = resto.find("<w:t") {
         resto = &resto[inicio..];
         let Some(abre) = resto.find('>') else { break };
-        let Some(cierra) = resto.find("</w:t>") else { break };
+        let Some(cierra) = resto.find("</w:t>") else {
+            break;
+        };
         out.push_str(&resto[abre + 1..cierra]);
         out.push('\n');
         resto = &resto[cierra + 6..];

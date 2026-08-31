@@ -83,7 +83,11 @@ fn write_movimientos(
                 0,
                 0,
                 last_col,
-                &format!("{} · {}", ctx.t("Report.Movimientos.Title"), ctx.empresa.nombre),
+                &format!(
+                    "{} · {}",
+                    ctx.t("Report.Movimientos.Title"),
+                    ctx.empresa.nombre
+                ),
                 &titulo,
             )
             .map_err(|e| io_error("export.xlsx.title", e))?;
@@ -171,12 +175,7 @@ fn write_movimientos(
                 total_row
             );
             sheet
-                .write_formula_with_format(
-                    total_row,
-                    col,
-                    formula.as_str(),
-                    &money_bold,
-                )
+                .write_formula_with_format(total_row, col, formula.as_str(), &money_bold)
                 .map_err(|e| io_error("export.xlsx.total", e))?;
         }
     }
@@ -299,10 +298,8 @@ mod tests {
     fn xlsx_congela_en_a5_y_tiene_autofiltro() {
         let generado =
             movimientos(&reporte(vec![movimiento("Cable", "10", "2")]), &contexto()).unwrap();
-        let hoja = crate::reporting::tests_support::zip_entry(
-            &generado.bytes,
-            "xl/worksheets/sheet1.xml",
-        );
+        let hoja =
+            crate::reporting::tests_support::zip_entry(&generado.bytes, "xl/worksheets/sheet1.xml");
         assert!(
             hoja.contains("ySplit=\"4\"") && hoja.contains("topLeftCell=\"A5\""),
             "no congeló en A5: {hoja}"
@@ -314,8 +311,7 @@ mod tests {
     fn xlsx_formatos_numericos_por_columna() {
         let generado =
             movimientos(&reporte(vec![movimiento("Cable", "10", "2")]), &contexto()).unwrap();
-        let estilos =
-            crate::reporting::tests_support::zip_entry(&generado.bytes, "xl/styles.xml");
+        let estilos = crate::reporting::tests_support::zip_entry(&generado.bytes, "xl/styles.xml");
         for formato in [MONEY_FORMAT, QUANTITY_FORMAT, DATE_FORMAT] {
             assert!(
                 estilos.contains(formato),
@@ -328,10 +324,8 @@ mod tests {
     fn xlsx_totaliza_con_subtotal_para_que_responda_al_autofiltro() {
         let generado =
             movimientos(&reporte(vec![movimiento("Cable", "10", "2")]), &contexto()).unwrap();
-        let hoja = crate::reporting::tests_support::zip_entry(
-            &generado.bytes,
-            "xl/worksheets/sheet1.xml",
-        );
+        let hoja =
+            crate::reporting::tests_support::zip_entry(&generado.bytes, "xl/worksheets/sheet1.xml");
         assert!(hoja.contains("SUBTOTAL(109"), "no usa SUBTOTAL: {hoja}");
     }
 

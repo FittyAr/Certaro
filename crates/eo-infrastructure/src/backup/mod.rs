@@ -29,7 +29,9 @@ mod tests {
     use chrono::TimeZone;
 
     fn instante(hora: u32) -> chrono::DateTime<chrono::Utc> {
-        chrono::Utc.with_ymd_and_hms(2026, 8, 29, hora, 30, 12).unwrap()
+        chrono::Utc
+            .with_ymd_and_hms(2026, 8, 29, hora, 30, 12)
+            .unwrap()
     }
 
     #[test]

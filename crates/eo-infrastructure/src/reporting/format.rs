@@ -16,7 +16,10 @@ use eo_domain::{Decimal4, Money};
 #[must_use]
 pub fn format_money(value: Money, locale: &LocaleConfig) -> String {
     let magnitude = format_money_plain(value.abs(), locale);
-    let signo = if value.round_to(u32::from(locale.decimales_moneda)).is_negative() {
+    let signo = if value
+        .round_to(u32::from(locale.decimales_moneda))
+        .is_negative()
+    {
         "-"
     } else {
         ""
@@ -218,11 +221,23 @@ mod tests {
     #[test]
     fn formato_moneda_es_estable() {
         let l = locale();
-        assert_eq!(format_money(Money::from_raw(12_345_678_900), &l), "$ 1.234.567,89");
-        assert_eq!(format_money(Money::parse("1500.5").unwrap(), &l), "$ 1.500,50");
+        assert_eq!(
+            format_money(Money::from_raw(12_345_678_900), &l),
+            "$ 1.234.567,89"
+        );
+        assert_eq!(
+            format_money(Money::parse("1500.5").unwrap(), &l),
+            "$ 1.500,50"
+        );
         assert_eq!(format_money(Money::ZERO, &l), "$ 0,00");
-        assert_eq!(format_money(Money::parse("-240.75").unwrap(), &l), "-$ 240,75");
-        assert_eq!(format_money(Money::parse("999.999").unwrap(), &l), "$ 1.000,00");
+        assert_eq!(
+            format_money(Money::parse("-240.75").unwrap(), &l),
+            "-$ 240,75"
+        );
+        assert_eq!(
+            format_money(Money::parse("999.999").unwrap(), &l),
+            "$ 1.000,00"
+        );
     }
 
     #[test]
@@ -239,12 +254,18 @@ mod tests {
             decimales_moneda: 4,
             ..locale()
         };
-        assert_eq!(format_money(Money::parse("1.2345").unwrap(), &cuatro), "$ 1,2345");
+        assert_eq!(
+            format_money(Money::parse("1.2345").unwrap(), &cuatro),
+            "$ 1,2345"
+        );
         let cero = LocaleConfig {
             decimales_moneda: 0,
             ..locale()
         };
-        assert_eq!(format_money(Money::parse("1500.6").unwrap(), &cero), "$ 1.501");
+        assert_eq!(
+            format_money(Money::parse("1500.6").unwrap(), &cero),
+            "$ 1.501"
+        );
     }
 
     #[test]
@@ -270,20 +291,35 @@ mod tests {
         let l = locale();
         assert_eq!(format_number(Decimal4::parse("2").unwrap(), &l, 0), "2");
         assert_eq!(format_number(Decimal4::parse("2.5").unwrap(), &l, 0), "2,5");
-        assert_eq!(format_number(Decimal4::parse("2.5").unwrap(), &l, 2), "2,50");
-        assert_eq!(format_number(Decimal4::parse("100.1234").unwrap(), &l, 0), "100,1234");
+        assert_eq!(
+            format_number(Decimal4::parse("2.5").unwrap(), &l, 2),
+            "2,50"
+        );
+        assert_eq!(
+            format_number(Decimal4::parse("100.1234").unwrap(), &l, 0),
+            "100,1234"
+        );
     }
 
     #[test]
     fn el_porcentaje_usa_los_decimales_que_se_le_piden() {
         let l = locale();
-        assert_eq!(format_percent(Decimal4::parse("33.333").unwrap(), &l, 1), "33,3 %");
-        assert_eq!(format_percent(Decimal4::parse("-12.5").unwrap(), &l, 1), "-12,5 %");
+        assert_eq!(
+            format_percent(Decimal4::parse("33.333").unwrap(), &l, 1),
+            "33,3 %"
+        );
+        assert_eq!(
+            format_percent(Decimal4::parse("-12.5").unwrap(), &l, 1),
+            "-12,5 %"
+        );
         assert_eq!(format_percent(Decimal4::parse("8").unwrap(), &l, 0), "8 %");
     }
 
     #[test]
     fn un_importe_negativo_chico_conserva_el_signo() {
-        assert_eq!(format_money(Money::parse("-0.01").unwrap(), &locale()), "-$ 0,01");
+        assert_eq!(
+            format_money(Money::parse("-0.01").unwrap(), &locale()),
+            "-$ 0,01"
+        );
     }
 }

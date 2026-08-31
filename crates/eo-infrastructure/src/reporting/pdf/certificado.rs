@@ -220,11 +220,19 @@ fn tabla(canvas: &mut Canvas, data: &CertificadoDetalle, ctx: &ReportContext) {
                 Cell::new(format_number(item.cantidad, &ctx.locale, 0)).align(Align::Center),
                 Cell::new(format_money_plain(item.precio_unitario, &ctx.locale))
                     .align(Align::Right),
-                Cell::new(format_percent(item.porcentaje_anterior, &ctx.locale, PCT_DECIMALS))
-                    .align(Align::Center),
-                Cell::new(format_percent(item.porcentaje_actual, &ctx.locale, PCT_DECIMALS))
-                    .align(Align::Center)
-                    .bold(),
+                Cell::new(format_percent(
+                    item.porcentaje_anterior,
+                    &ctx.locale,
+                    PCT_DECIMALS,
+                ))
+                .align(Align::Center),
+                Cell::new(format_percent(
+                    item.porcentaje_actual,
+                    &ctx.locale,
+                    PCT_DECIMALS,
+                ))
+                .align(Align::Center)
+                .bold(),
                 Cell::new(format_percent(
                     item.porcentaje_acumulado,
                     &ctx.locale,
@@ -250,15 +258,10 @@ fn tabla(canvas: &mut Canvas, data: &CertificadoDetalle, ctx: &ReportContext) {
 /// Column 9 stays empty on all of them on purpose: the historical cumulative total is not adjusted
 /// nor discounted, only the certificate in progress is.
 fn pie_de_tabla(data: &CertificadoDetalle, ctx: &ReportContext, grid: Border) -> Vec<Row> {
-    let acumulado_total = Money::try_sum(data.items.iter().map(|i| i.subtotal_acumulado))
-        .unwrap_or(Money::ZERO);
+    let acumulado_total =
+        Money::try_sum(data.items.iter().map(|i| i.subtotal_acumulado)).unwrap_or(Money::ZERO);
 
-    let etiqueta = |texto: String| {
-        Cell::new(texto)
-            .colspan(7)
-            .align(Align::Right)
-            .bold()
-    };
+    let etiqueta = |texto: String| Cell::new(texto).colspan(7).align(Align::Right).bold();
 
     let mut filas = vec![Row::new(vec![
         etiqueta(ctx.t("Report.Certificado.SubTotal")),
@@ -351,7 +354,11 @@ mod tests {
 
     #[test]
     fn pdf_certificado_tiene_las_nueve_columnas() {
-        let texto = pdf_text(&generate(&certificado(2, "8", "0"), &contexto()).unwrap().bytes);
+        let texto = pdf_text(
+            &generate(&certificado(2, "8", "0"), &contexto())
+                .unwrap()
+                .bytes,
+        );
         for clave in [
             "ÍTEM / DESCRIPCIÓN",
             "UND",
@@ -368,7 +375,9 @@ mod tests {
 
     #[test]
     fn pdf_certificado_es_landscape() {
-        let bytes = generate(&certificado(1, "0", "0"), &contexto()).unwrap().bytes;
+        let bytes = generate(&certificado(1, "0", "0"), &contexto())
+            .unwrap()
+            .bytes;
         // The page box is written in the PDF; landscape means the width exceeds the height.
         let (ancho, alto) = crate::reporting::tests_support::pdf_page_size(&bytes);
         assert!(ancho > alto, "no es landscape: {ancho} x {alto}");
@@ -397,7 +406,11 @@ mod tests {
 
     #[test]
     fn pdf_certificado_sin_ajuste_ni_descuentos_no_muestra_esas_filas() {
-        let texto = pdf_text(&generate(&certificado(1, "0", "0"), &contexto()).unwrap().bytes);
+        let texto = pdf_text(
+            &generate(&certificado(1, "0", "0"), &contexto())
+                .unwrap()
+                .bytes,
+        );
         assert!(!texto.contains("AJUSTE UOCRA"), "{texto}");
         assert!(!texto.contains("OTROS DESCUENTOS"), "{texto}");
         assert!(texto.contains("TOTAL A FACTURAR"), "{texto}");
@@ -405,9 +418,16 @@ mod tests {
 
     #[test]
     fn pdf_usa_el_contratista_de_configuracion() {
-        let texto = pdf_text(&generate(&certificado(1, "0", "0"), &contexto()).unwrap().bytes);
+        let texto = pdf_text(
+            &generate(&certificado(1, "0", "0"), &contexto())
+                .unwrap()
+                .bytes,
+        );
         assert!(texto.contains("Pablo Báez"), "{texto}");
-        assert!(!texto.contains("PABLO BAEZ"), "quedó el literal legacy: {texto}");
+        assert!(
+            !texto.contains("PABLO BAEZ"),
+            "quedó el literal legacy: {texto}"
+        );
     }
 
     #[test]
@@ -421,7 +441,11 @@ mod tests {
 
     #[test]
     fn pdf_certificado_repite_encabezado() {
-        let texto = pdf_text(&generate(&certificado(60, "0", "0"), &contexto()).unwrap().bytes);
+        let texto = pdf_text(
+            &generate(&certificado(60, "0", "0"), &contexto())
+                .unwrap()
+                .bytes,
+        );
         let veces = texto.matches("ACUMULADO").count();
         assert!(veces > 1, "el encabezado no se repitió: {veces}");
     }
@@ -430,7 +454,10 @@ mod tests {
     fn el_porcentaje_del_ajuste_se_deriva_de_los_totales() {
         let total = Money::parse("1000000").unwrap();
         let ajuste = Money::parse("80000").unwrap();
-        assert_eq!(porcentaje_ajuste(total, ajuste), Decimal4::parse("8").unwrap());
+        assert_eq!(
+            porcentaje_ajuste(total, ajuste),
+            Decimal4::parse("8").unwrap()
+        );
         assert_eq!(porcentaje_ajuste(Money::ZERO, ajuste), Decimal4::ZERO);
     }
 }

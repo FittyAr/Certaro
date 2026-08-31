@@ -195,7 +195,9 @@ fn resumen(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) 
     );
     table.header = vec![Row::new(vec![
         Cell::new(ctx.t("Report.Col.Concepto")).bold(),
-        Cell::new(ctx.t("Report.Col.Dias")).bold().align(Align::Right),
+        Cell::new(ctx.t("Report.Col.Dias"))
+            .bold()
+            .align(Align::Right),
         Cell::new(ctx.t("Report.Col.Tarifa"))
             .bold()
             .align(Align::Right),
@@ -218,10 +220,7 @@ fn resumen(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) 
         .border_bottom(Border::thin()),
     );
 
-    let recargos = data
-        .total_bruto
-        .checked_sub(base)
-        .unwrap_or(Money::ZERO);
+    let recargos = data.total_bruto.checked_sub(base).unwrap_or(Money::ZERO);
     if !recargos.is_zero() {
         table.rows.push(
             Row::new(vec![
@@ -331,22 +330,23 @@ fn totales(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) 
 
     canvas.ensure_space(alto + 20.0);
     let top = canvas.cursor();
-    canvas.rect(
-        x,
-        top,
-        TOTALES_WIDTH,
-        alto,
-        Some(theme::TOTAL_FILL),
-        None,
-    );
+    canvas.rect(x, top, TOTALES_WIDTH, alto, Some(theme::TOTAL_FILL), None);
 
     let inner_x = x + padding;
     let inner_w = TOTALES_WIDTH - 2.0 * padding;
     let mut y = top + padding;
 
-    let fila = |canvas: &Canvas, y: f32, etiqueta: String, valor: String, tamano: f32, color: theme::Rgb, bold: bool| {
+    let fila = |canvas: &Canvas,
+                y: f32,
+                etiqueta: String,
+                valor: String,
+                tamano: f32,
+                color: theme::Rgb,
+                bold: bool| {
         let mut izq = TextSpec::new(etiqueta, tamano);
-        let mut der = TextSpec::new(valor, tamano).align(Align::Right).color(color);
+        let mut der = TextSpec::new(valor, tamano)
+            .align(Align::Right)
+            .color(color);
         if bold {
             izq = izq.bold();
             der = der.bold();
@@ -401,7 +401,11 @@ fn totales(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) 
 }
 
 fn observaciones(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) {
-    let Some(texto) = data.observaciones.as_deref().filter(|t| !t.trim().is_empty()) else {
+    let Some(texto) = data
+        .observaciones
+        .as_deref()
+        .filter(|t| !t.trim().is_empty())
+    else {
         return;
     };
     canvas.advance(20.0);
@@ -493,7 +497,10 @@ mod tests {
         let data = liquidacion(2, "300000", "0");
         let texto = pdf_text(&generate(&data, &contexto()).unwrap().bytes);
         let neto = format_money(data.total_neto, &contexto().locale);
-        assert!(texto.contains(&neto), "el neto {neto} no está en el PDF: {texto}");
+        assert!(
+            texto.contains(&neto),
+            "el neto {neto} no está en el PDF: {texto}"
+        );
     }
 
     #[test]
@@ -523,7 +530,10 @@ mod tests {
                 .bytes,
         );
         assert!(texto.contains("Energía controlada"), "{texto}");
-        assert!(!texto.contains("Cuentas Claras"), "quedó el literal legacy: {texto}");
+        assert!(
+            !texto.contains("Cuentas Claras"),
+            "quedó el literal legacy: {texto}"
+        );
     }
 
     #[test]

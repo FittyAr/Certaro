@@ -31,7 +31,11 @@ pub struct FsAttachmentStore {
 
 impl FsAttachmentStore {
     #[must_use]
-    pub fn new(paths: AppPaths, settings: Arc<dyn SettingsStore>, clock: Arc<dyn ClockPort>) -> Self {
+    pub fn new(
+        paths: AppPaths,
+        settings: Arc<dyn SettingsStore>,
+        clock: Arc<dyn ClockPort>,
+    ) -> Self {
         Self {
             paths,
             settings,
@@ -53,9 +57,9 @@ impl AttachmentStore for FsAttachmentStore {
     async fn accept(&self, origen: &Path, cupo_restante: u64) -> AppResult<ArchivoAceptado> {
         let config = self.settings.snapshot().attachments;
 
-        let metadata = tokio::fs::symlink_metadata(origen)
-            .await
-            .map_err(|e| AppError::io(anyhow::anyhow!("attachment.stat {}: {e}", origen.display())))?;
+        let metadata = tokio::fs::symlink_metadata(origen).await.map_err(|e| {
+            AppError::io(anyhow::anyhow!("attachment.stat {}: {e}", origen.display()))
+        })?;
         if !metadata.is_file() {
             // A directory or a symlink: neither is a file to copy, and following the link would
             // read something the user did not pick.
@@ -70,11 +74,10 @@ impl AttachmentStore for FsAttachmentStore {
         );
         let extension = name::extension_de(&nombre);
         let Some(mime) = mime::de_extension(&extension) else {
-            return Err(validacion(
-                "rutaOrigen",
-                "Validation.Adjunto.ExtensionNoPermitida",
-            )
-            .con("extension", &extension));
+            return Err(
+                validacion("rutaOrigen", "Validation.Adjunto.ExtensionNoPermitida")
+                    .con("extension", &extension),
+            );
         };
 
         let tamano = metadata.len();
@@ -93,11 +96,10 @@ impl AttachmentStore for FsAttachmentStore {
 
         let cabecera = leer_cabecera(origen).await?;
         if !mime::contenido_coincide(&extension, &cabecera) {
-            return Err(validacion(
-                "rutaOrigen",
-                "Validation.Adjunto.ContenidoNoCoincide",
-            )
-            .con("extension", &extension));
+            return Err(
+                validacion("rutaOrigen", "Validation.Adjunto.ContenidoNoCoincide")
+                    .con("extension", &extension),
+            );
         }
 
         Ok(ArchivoAceptado {
@@ -125,9 +127,12 @@ impl AttachmentStore for FsAttachmentStore {
                 ))
             })?;
         }
-        tokio::fs::copy(origen, &destino)
-            .await
-            .map_err(|e| AppError::io(anyhow::anyhow!("attachment.copy {}: {e}", destino.display())))?;
+        tokio::fs::copy(origen, &destino).await.map_err(|e| {
+            AppError::io(anyhow::anyhow!(
+                "attachment.copy {}: {e}",
+                destino.display()
+            ))
+        })?;
 
         info!(
             entidad = entidad_tipo.as_str(),
@@ -173,7 +178,10 @@ impl AttachmentStore for FsAttachmentStore {
         if tokio::fs::rename(&origen, &destino).await.is_err() {
             // Across volumes rename fails; copy and remove is the fallback.
             tokio::fs::copy(&origen, &destino).await.map_err(|e| {
-                AppError::io(anyhow::anyhow!("attachment.trash {}: {e}", origen.display()))
+                AppError::io(anyhow::anyhow!(
+                    "attachment.trash {}: {e}",
+                    origen.display()
+                ))
             })?;
             tokio::fs::remove_file(&origen).await.map_err(|e| {
                 AppError::io(anyhow::anyhow!(
@@ -192,10 +200,8 @@ impl AttachmentStore for FsAttachmentStore {
         if ruta.is_file() {
             Ok(ruta)
         } else {
-            Err(
-                validacion("id", "Validation.Adjunto.ArchivoNoEncontrado")
-                    .con("ruta", ruta_relativa),
-            )
+            Err(validacion("id", "Validation.Adjunto.ArchivoNoEncontrado")
+                .con("ruta", ruta_relativa))
         }
     }
 
@@ -231,8 +237,12 @@ impl AttachmentStore for FsAttachmentStore {
         };
         while let Ok(Some(entrada)) = entradas.next_entry().await {
             let nombre = entrada.file_name();
-            let Some(nombre) = nombre.to_str() else { continue };
-            let Some(marca) = marca_de(nombre) else { continue };
+            let Some(nombre) = nombre.to_str() else {
+                continue;
+            };
+            let Some(marca) = marca_de(nombre) else {
+                continue;
+            };
             // Inclusive, so a retention of zero days means «empty it now» rather than «almost».
             if marca <= limite && tokio::fs::remove_file(entrada.path()).await.is_ok() {
                 borrados += 1;

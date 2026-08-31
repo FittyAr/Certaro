@@ -129,7 +129,7 @@ const chartOptions = computed(() => ({
 
 /** Size of the database, in megabytes with one decimal. Not money: plain locale-free arithmetic. */
 const tamanoMb = computed(() => {
-  const bytes = stats.value?.estadoSistema.tamanoBytes ?? 0
+  const bytes = stats.value?.estadoSistema?.tamanoBytes ?? 0
   return (bytes / (1024 * 1024)).toFixed(1)
 })
 
@@ -187,12 +187,11 @@ onMounted(() => {
       :is-empty="!stats"
       :is-filtered="false"
       empty-key="Dashboard.Empty"
-      class="flex-1"
       @retry="cargar()"
     >
       <div v-if="stats" class="space-y-6">
         <!-- Quotes. Absent, not failed, when the service is unreachable. -->
-        <div v-if="store.cotizaciones.length" class="flex flex-wrap gap-3">
+        <div v-if="store.cotizaciones?.length" class="flex flex-wrap gap-3">
           <article
             v-for="cotizacion in store.cotizaciones"
             :key="cotizacion.casa"
@@ -215,7 +214,7 @@ onMounted(() => {
         </div>
 
         <!-- Alerts. Each one navigates to its module with the filter already applied. -->
-        <div v-if="store.alertas.length" class="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        <div v-if="store.alertas?.length" class="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
           <button
             v-for="alerta in store.alertas"
             :key="alerta.tipo"
@@ -276,7 +275,7 @@ onMounted(() => {
         <div class="grid gap-3 lg:grid-cols-2">
           <section class="rounded-lg border border-border bg-surface-card p-4">
             <h3 class="mb-3 text-sm font-semibold">{{ $t('Dashboard.TopClientes') }}</h3>
-            <p v-if="!stats.topClientes.length" class="text-xs text-muted-foreground">
+            <p v-if="!stats.topClientes?.length" class="text-xs text-muted-foreground">
               {{ $t('Dashboard.SinDatos') }}
             </p>
             <ul v-else class="divide-y divide-border text-sm">
@@ -294,7 +293,7 @@ onMounted(() => {
 
           <section class="rounded-lg border border-border bg-surface-card p-4">
             <h3 class="mb-3 text-sm font-semibold">{{ $t('Dashboard.GastosPorCategoria') }}</h3>
-            <p v-if="!stats.gastosPorCategoria.length" class="text-xs text-muted-foreground">
+            <p v-if="!stats.gastosPorCategoria?.length" class="text-xs text-muted-foreground">
               {{ $t('Dashboard.SinDatos') }}
             </p>
             <ul v-else class="divide-y divide-border text-sm">
@@ -313,7 +312,7 @@ onMounted(() => {
         <div class="grid gap-3 lg:grid-cols-2">
           <section class="rounded-lg border border-border bg-surface-card p-4">
             <h3 class="mb-3 text-sm font-semibold">{{ $t('Dashboard.MejoresObras') }}</h3>
-            <p v-if="!stats.mejoresObras.length" class="text-xs text-muted-foreground">
+            <p v-if="!stats.mejoresObras?.length" class="text-xs text-muted-foreground">
               {{ $t('Dashboard.SinDatos') }}
             </p>
             <ul v-else class="space-y-2 text-sm">
@@ -329,7 +328,7 @@ onMounted(() => {
 
           <section class="rounded-lg border border-border bg-surface-card p-4">
             <h3 class="mb-3 text-sm font-semibold">{{ $t('Dashboard.PeoresObras') }}</h3>
-            <p v-if="!stats.peoresObras.length" class="text-xs text-muted-foreground">
+            <p v-if="!stats.peoresObras?.length" class="text-xs text-muted-foreground">
               {{ $t('Dashboard.SinDatos') }}
             </p>
             <ul v-else class="space-y-2 text-sm">
@@ -346,7 +345,7 @@ onMounted(() => {
 
         <section class="rounded-lg border border-border bg-surface-card p-4">
           <h3 class="mb-3 text-sm font-semibold">{{ $t('Dashboard.UltimosMovimientos') }}</h3>
-          <p v-if="!stats.ultimosMovimientos.length" class="text-xs text-muted-foreground">
+          <p v-if="!stats.ultimosMovimientos?.length" class="text-xs text-muted-foreground">
             {{ $t('Dashboard.SinDatos') }}
           </p>
           <ul v-else class="divide-y divide-border text-sm">
@@ -367,17 +366,17 @@ onMounted(() => {
           <dl class="grid grid-cols-2 gap-3 md:grid-cols-4">
             <div>
               <dt class="text-xs text-muted-foreground">{{ $t('Dashboard.Version') }}</dt>
-              <dd class="tabular-nums">{{ stats.estadoSistema.version }}</dd>
+              <dd class="tabular-nums">{{ stats.estadoSistema?.version ?? '-' }}</dd>
             </div>
             <div>
               <dt class="text-xs text-muted-foreground">{{ $t('Dashboard.EstadoBase') }}</dt>
-              <dd :class="stats.estadoSistema.baseSaludable ? 'text-success' : 'text-destructive'">
-                {{ $t(stats.estadoSistema.estado) }}
+              <dd :class="stats.estadoSistema?.baseSaludable ? 'text-success' : 'text-destructive'">
+                {{ $t(stats.estadoSistema?.estado ?? 'Dashboard.Estado.Saludable') }}
               </dd>
             </div>
             <div>
               <dt class="text-xs text-muted-foreground">{{ $t('Dashboard.Migraciones') }}</dt>
-              <dd class="tabular-nums">{{ stats.estadoSistema.migraciones }}</dd>
+              <dd class="tabular-nums">{{ stats.estadoSistema?.migraciones ?? 0 }}</dd>
             </div>
             <div>
               <dt class="text-xs text-muted-foreground">{{ $t('Dashboard.TamanoBase') }}</dt>

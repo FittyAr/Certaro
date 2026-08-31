@@ -63,19 +63,15 @@ impl AdjuntosService {
 
     pub async fn add(&self, input: AdjuntoInput) -> AppResult<AdjuntoItem> {
         let origen = Path::new(&input.ruta_origen);
-        let cupo = self.cupo_restante(input.entidad_tipo, input.entidad_id).await?;
+        let cupo = self
+            .cupo_restante(input.entidad_tipo, input.entidad_id)
+            .await?;
         let aceptado = self.store.accept(origen, cupo).await?;
 
         let id = self.ids.new_id();
         let guardado = self
             .store
-            .store(
-                origen,
-                input.entidad_tipo,
-                input.entidad_id,
-                id,
-                aceptado,
-            )
+            .store(origen, input.entidad_tipo, input.entidad_id, id, aceptado)
             .await?;
 
         let entity = Adjunto {

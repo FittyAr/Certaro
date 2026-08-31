@@ -21,10 +21,7 @@ const RESERVADOS: [&str; 22] = [
 #[must_use]
 pub fn sanitize(nombre: &str) -> String {
     // Only the last segment matters: `../../etc/passwd` is the file `passwd`.
-    let base = nombre
-        .rsplit(['/', '\\'])
-        .next()
-        .unwrap_or(nombre);
+    let base = nombre.rsplit(['/', '\\']).next().unwrap_or(nombre);
 
     let limpio: String = base
         .chars()
@@ -39,7 +36,10 @@ pub fn sanitize(nombre: &str) -> String {
 
     let colapsado = colapsar_espacios(limpio.trim());
     // Leading dots would make the file hidden and `..` would still read as traversal.
-    let sin_puntos = colapsado.trim_start_matches('.').trim_end_matches('.').trim();
+    let sin_puntos = colapsado
+        .trim_start_matches('.')
+        .trim_end_matches('.')
+        .trim();
 
     let (raiz, extension) = partir(sin_puntos);
     let raiz = if es_reservado(&raiz) {
@@ -111,7 +111,10 @@ mod tests {
     #[test]
     fn un_nombre_normal_no_se_toca() {
         assert_eq!(sanitize("factura_luz.pdf"), "factura_luz.pdf");
-        assert_eq!(sanitize("Presupuesto Obra Sur.xlsx"), "Presupuesto Obra Sur.xlsx");
+        assert_eq!(
+            sanitize("Presupuesto Obra Sur.xlsx"),
+            "Presupuesto Obra Sur.xlsx"
+        );
     }
 
     #[test]
@@ -144,7 +147,10 @@ mod tests {
 
     #[test]
     fn los_espacios_repetidos_se_colapsan() {
-        assert_eq!(sanitize("  factura    de   luz.pdf  "), "factura de luz.pdf");
+        assert_eq!(
+            sanitize("  factura    de   luz.pdf  "),
+            "factura de luz.pdf"
+        );
     }
 
     #[test]

@@ -1394,6 +1394,7 @@ dependencies = [
  "chrono",
  "eo-application",
  "eo-domain",
+ "eo-import-legacy",
  "eo-infrastructure",
  "serde",
  "serde_json",

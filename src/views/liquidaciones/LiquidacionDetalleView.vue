@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Textarea from 'primevue/textarea'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -177,12 +177,12 @@ onMounted(cargar)
 
         <div class="rounded-md border border-border p-3 text-sm">
           <h4 class="mb-2 font-semibold">{{ $t('Liquidaciones.Adelantos') }}</h4>
-          <p v-if="liquidacion.adelantos.length === 0" class="text-xs text-muted-foreground">
+          <p v-if="!liquidacion.adelantos?.length" class="text-xs text-muted-foreground">
             {{ $t('Liquidaciones.SinAdelantos') }}
           </p>
           <ul v-else class="divide-y divide-border">
             <li
-              v-for="adelanto in liquidacion.adelantos"
+              v-for="adelanto in (liquidacion.adelantos ?? [])"
               :key="adelanto.id"
               class="flex items-center gap-3 py-2"
             >

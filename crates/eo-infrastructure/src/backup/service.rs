@@ -168,17 +168,17 @@ impl BackupPort for SqliteBackupService {
         // A backup written by a newer version of the application carries a schema this one does not
         // know how to read, and migrations only go forward.
         if !self.esquema_compatible(&origen).await? {
-            return Err(validacion("nombre", "Validation.Backup.VersionIncompatible"));
+            return Err(validacion(
+                "nombre",
+                "Validation.Backup.VersionIncompatible",
+            ));
         }
 
         // Undo for the restore itself.
         let previo = self.create().await?;
 
         let destino = self.paths.database();
-        self.db
-            .disconnect()
-            .await
-            .map_err(AppError::persistence)?;
+        self.db.disconnect().await.map_err(AppError::persistence)?;
 
         let resultado = reemplazar_archivo(&origen, &destino).await;
 
@@ -233,20 +233,25 @@ impl BackupPort for SqliteBackupService {
 
         let bytes = serde_json::to_vec_pretty(&documento)
             .map_err(|e| AppError::io(anyhow::anyhow!("export.json serialize: {e}")))?;
-        tokio::fs::write(destino, bytes)
-            .await
-            .map_err(|e| AppError::io(anyhow::anyhow!("export.json write {}: {e}", destino.display())))?;
+        tokio::fs::write(destino, bytes).await.map_err(|e| {
+            AppError::io(anyhow::anyhow!(
+                "export.json write {}: {e}",
+                destino.display()
+            ))
+        })?;
 
         Ok(resumen)
     }
 
     async fn import_json(&self, origen: &Path) -> AppResult<ImportResumen> {
-        let bytes = tokio::fs::read(origen)
-            .await
-            .map_err(|e| AppError::io(anyhow::anyhow!("import.json read {}: {e}", origen.display())))?;
-        let documento: json::Documento = serde_json::from_slice(&bytes).map_err(|_| {
-            validacion("archivo", "Validation.Import.ArchivoInvalido")
+        let bytes = tokio::fs::read(origen).await.map_err(|e| {
+            AppError::io(anyhow::anyhow!(
+                "import.json read {}: {e}",
+                origen.display()
+            ))
         })?;
+        let documento: json::Documento = serde_json::from_slice(&bytes)
+            .map_err(|_| validacion("archivo", "Validation.Import.ArchivoInvalido"))?;
 
         // Before touching anything: the import replaces every table.
         self.create().await?;
