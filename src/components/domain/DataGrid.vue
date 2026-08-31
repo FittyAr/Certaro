@@ -33,6 +33,8 @@ const rowsPerPage = computed(() =>
 
 const pageSizeOptions = PAGE_SIZES.filter((size) => size !== 0)
 
+defineOptions({ inheritAttrs: false })
+
 function onSort(event: DataTableSortEvent): void {
   table.value.onSort({
     sortField: typeof event.sortField === 'string' ? event.sortField : null,
@@ -46,50 +48,52 @@ function onPage(event: PageState): void {
 </script>
 
 <template>
-  <ListState
-    :loading="table.loading.value"
-    :first-load="table.firstLoad.value"
-    :error="table.error.value"
-    :is-empty="table.isEmpty.value"
-    :is-filtered="table.isFiltered.value"
-    :empty-key="props.emptyKey"
-    @retry="table.reload()"
-    @clear-filters="table.resetFilter()"
-  >
-    <template #empty-action><slot name="empty-action" /></template>
+  <div :class="['flex w-full flex-col', ($attrs.class as string) || '']">
+    <ListState
+      :loading="table.loading.value"
+      :first-load="table.firstLoad.value"
+      :error="table.error.value"
+      :is-empty="table.isEmpty.value"
+      :is-filtered="table.isFiltered.value"
+      :empty-key="props.emptyKey"
+      @retry="table.reload()"
+      @clear-filters="table.resetFilter()"
+    >
+      <template #empty-action><slot name="empty-action" /></template>
 
-    <!-- A reload dims the previous rows instead of replacing them, so the screen does not jump. -->
-    <div :class="table.loading.value ? 'opacity-60 transition-opacity' : ''">
-      <DataTable
-        :value="table.rows.value"
-        :data-key="props.dataKey ?? 'id'"
-        :sort-field="table.sort.value?.field ?? undefined"
-        :sort-order="table.sort.value?.dir === 'Desc' ? -1 : 1"
-        removable-sort
-        scrollable
-        scroll-height="flex"
-        size="small"
-        class="text-sm"
-        @sort="onSort"
-        @row-dblclick="emit('rowEdit', $event.data as TRow)"
-      >
-        <slot />
-        <Column v-if="$slots.actions" :header="$t('General.Actions')" :style="{ width: '6rem' }">
-          <template #body="slotProps">
-            <slot name="actions" v-bind="slotProps" />
-          </template>
-        </Column>
-      </DataTable>
+      <!-- A reload dims the previous rows instead of replacing them, so the screen does not jump. -->
+      <div :class="table.loading.value ? 'opacity-60 transition-opacity' : ''">
+        <DataTable
+          :value="table.rows.value"
+          :data-key="props.dataKey ?? 'id'"
+          :sort-field="table.sort.value?.field ?? undefined"
+          :sort-order="table.sort.value?.dir === 'Desc' ? -1 : 1"
+          removable-sort
+          scrollable
+          scroll-height="flex"
+          size="small"
+          class="text-sm"
+          @sort="onSort"
+          @row-dblclick="emit('rowEdit', $event.data as TRow)"
+        >
+          <slot />
+          <Column v-if="$slots.actions" :header="$t('General.Actions')" :style="{ width: '6rem' }">
+            <template #body="slotProps">
+              <slot name="actions" v-bind="slotProps" />
+            </template>
+          </Column>
+        </DataTable>
 
-      <Paginator
-        :first="(table.page.value - 1) * rowsPerPage"
-        :rows="rowsPerPage"
-        :total-records="table.total.value"
-        :rows-per-page-options="pageSizeOptions"
-        template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-        :current-page-report-template="$t('General.PageReport')"
-        @page="onPage"
-      />
-    </div>
-  </ListState>
+        <Paginator
+          :first="(table.page.value - 1) * rowsPerPage"
+          :rows="rowsPerPage"
+          :total-records="table.total.value"
+          :rows-per-page-options="pageSizeOptions"
+          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+          :current-page-report-template="$t('General.PageReport')"
+          @page="onPage"
+        />
+      </div>
+    </ListState>
+  </div>
 </template>

@@ -5,7 +5,7 @@ import type { AppConfig } from './types'
  * The only module that talks to Tauri. See `docs/11-contratos-tauri.md` §4.1.
  *
  * In web preview mode (outside Tauri runtime), provides a rich in-memory mock database
- * that responds reactively to all entity lists, lookups, and dev seeding.
+ * that responds reactively to all entity CRUD, lists, lookups, and dev seeding.
  */
 
 export interface ApiFieldError {
@@ -323,6 +323,8 @@ interface MockMovimiento {
   tipoConceptoPagoId: string | null
   bloqueadoPorLiquidacion: boolean
   rowVersion: string
+  createdAt?: string
+  updatedAt?: string | null
 }
 
 interface MockLiquidacion {
@@ -417,15 +419,15 @@ function createSeedMockDb(): MockDb {
   const fact3 = { id: '90000000-0000-0000-0000-000000000003', numero: '0001-00000103', fecha: '2025-02-15', fechaVencimiento: '2025-03-15', clienteId: cli2.id, clienteNombre: cli2.nombre, estado: 'Borrador', subtotal: '620000.0000', iva: '130200.0000', total: '750200.0000', saldoPendiente: '750200.0000', rowVersion: 'v1' }
   const facturas: MockFactura[] = [fact1, fact2, fact3]
 
-  const mov1 = { id: 'a0000000-0000-0000-0000-000000000001', fecha: '2025-02-18T14:30:00Z', concepto: 'Cobro Certificado N.º 1 Torre Alvear', monto: '1452000.0000', cantidad: '1.0000', total: '1452000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoIngreso.id, tipoMovimientoNombre: tipoIngreso.nombre, esIngreso: true, categoriaId: cat4.id, categoriaNombre: cat4.nombre, categoriaColor: cat4.colorHex, clienteId: cli3.id, trabajoId: trab1.id, empleadoId: null, facturaId: fact2.id, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
-  const mov2 = { id: 'a0000000-0000-0000-0000-000000000002', fecha: '2025-02-17T11:00:00Z', concepto: 'Anticipo Obra Planta del Plata', monto: '500000.0000', cantidad: '1.0000', total: '500000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoIngreso.id, tipoMovimientoNombre: tipoIngreso.nombre, esIngreso: true, categoriaId: cat4.id, categoriaNombre: cat4.nombre, categoriaColor: cat4.colorHex, clienteId: cli1.id, trabajoId: trab3.id, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
-  const mov3 = { id: 'a0000000-0000-0000-0000-000000000003', fecha: '2025-02-16T16:00:00Z', concepto: 'Venta de cables sobrantes de cobre', monto: '85000.0000', cantidad: '1.0000', total: '85000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoChatarra.id, tipoMovimientoNombre: tipoChatarra.nombre, esIngreso: true, categoriaId: cat1.id, categoriaNombre: cat1.nombre, categoriaColor: cat1.colorHex, clienteId: null, trabajoId: null, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
-  const mov4 = { id: 'a0000000-0000-0000-0000-000000000004', fecha: '2025-02-15T10:00:00Z', concepto: 'Compra de cables sintetizados y termomagnéticas', monto: '340000.0000', cantidad: '1.0000', total: '340000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat2.id, categoriaNombre: cat2.nombre, categoriaColor: cat2.colorHex, clienteId: null, trabajoId: trab1.id, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
-  const mov5 = { id: 'a0000000-0000-0000-0000-000000000005', fecha: '2025-02-14T09:30:00Z', concepto: 'Adquisición de pinza amperimétrica True RMS', monto: '125000.0000', cantidad: '1.0000', total: '125000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat3.id, categoriaNombre: cat3.nombre, categoriaColor: cat3.colorHex, clienteId: null, trabajoId: null, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
-  const mov6 = { id: 'a0000000-0000-0000-0000-000000000006', fecha: '2025-02-13T12:00:00Z', concepto: 'Combustible y peajes traslados a Tigre', monto: '45000.0000', cantidad: '1.0000', total: '45000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat6.id, categoriaNombre: cat6.nombre, categoriaColor: cat6.colorHex, clienteId: null, trabajoId: trab3.id, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
-  const mov7 = { id: 'a0000000-0000-0000-0000-000000000007', fecha: '2025-02-12T15:00:00Z', concepto: 'Pago de Monotributo / IIBB mensual', monto: '62000.0000', cantidad: '1.0000', total: '62000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat5.id, categoriaNombre: cat5.nombre, categoriaColor: cat5.colorHex, clienteId: null, trabajoId: null, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
-  const mov8 = { id: 'a0000000-0000-0000-0000-000000000008', fecha: '2025-02-10T17:00:00Z', concepto: 'Adelanto quincenal Ricardo Darín', monto: '50000.0000', cantidad: '1.0000', total: '50000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoAdelanto.id, tipoMovimientoNombre: tipoAdelanto.nombre, esIngreso: false, categoriaId: null, categoriaNombre: null, categoriaColor: null, clienteId: null, trabajoId: null, empleadoId: emp1.id, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: true, rowVersion: 'v1' }
-  const mov9 = { id: 'a0000000-0000-0000-0000-000000000009', fecha: '2025-02-10T17:15:00Z', concepto: 'Adelanto quincenal Natalia Oreiro', monto: '40000.0000', cantidad: '1.0000', total: '40000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoAdelanto.id, tipoMovimientoNombre: tipoAdelanto.nombre, esIngreso: false, categoriaId: null, categoriaNombre: null, categoriaColor: null, clienteId: null, trabajoId: null, empleadoId: emp3.id, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
+  const mov1: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000001', fecha: '2025-02-18T14:30:00Z', concepto: 'Cobro Certificado N.º 1 Torre Alvear', monto: '1452000.0000', cantidad: '1.0000', total: '1452000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoIngreso.id, tipoMovimientoNombre: tipoIngreso.nombre, esIngreso: true, categoriaId: cat4.id, categoriaNombre: cat4.nombre, categoriaColor: cat4.colorHex, clienteId: cli3.id, trabajoId: trab1.id, empleadoId: null, facturaId: fact2.id, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-18T14:30:00Z', updatedAt: null }
+  const mov2: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000002', fecha: '2025-02-17T11:00:00Z', concepto: 'Anticipo Obra Planta del Plata', monto: '500000.0000', cantidad: '1.0000', total: '500000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoIngreso.id, tipoMovimientoNombre: tipoIngreso.nombre, esIngreso: true, categoriaId: cat4.id, categoriaNombre: cat4.nombre, categoriaColor: cat4.colorHex, clienteId: cli1.id, trabajoId: trab3.id, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-17T11:00:00Z', updatedAt: null }
+  const mov3: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000003', fecha: '2025-02-16T16:00:00Z', concepto: 'Venta de cables sobrantes de cobre', monto: '85000.0000', cantidad: '1.0000', total: '85000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoChatarra.id, tipoMovimientoNombre: tipoChatarra.nombre, esIngreso: true, categoriaId: cat1.id, categoriaNombre: cat1.nombre, categoriaColor: cat1.colorHex, clienteId: null, trabajoId: null, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-16T16:00:00Z', updatedAt: null }
+  const mov4: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000004', fecha: '2025-02-15T10:00:00Z', concepto: 'Compra de cables sintetizados y termomagnéticas', monto: '340000.0000', cantidad: '1.0000', total: '340000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat2.id, categoriaNombre: cat2.nombre, categoriaColor: cat2.colorHex, clienteId: null, trabajoId: trab1.id, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-15T10:00:00Z', updatedAt: null }
+  const mov5: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000005', fecha: '2025-02-14T09:30:00Z', concepto: 'Adquisición de pinza amperimétrica True RMS', monto: '125000.0000', cantidad: '1.0000', total: '125000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat3.id, categoriaNombre: cat3.nombre, categoriaColor: cat3.colorHex, clienteId: null, trabajoId: null, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-14T09:30:00Z', updatedAt: null }
+  const mov6: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000006', fecha: '2025-02-13T12:00:00Z', concepto: 'Combustible y peajes traslados a Tigre', monto: '45000.0000', cantidad: '1.0000', total: '45000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat6.id, categoriaNombre: cat6.nombre, categoriaColor: cat6.colorHex, clienteId: null, trabajoId: trab3.id, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-13T12:00:00Z', updatedAt: null }
+  const mov7: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000007', fecha: '2025-02-12T15:00:00Z', concepto: 'Pago de Monotributo / IIBB mensual', monto: '62000.0000', cantidad: '1.0000', total: '62000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat5.id, categoriaNombre: cat5.nombre, categoriaColor: cat5.colorHex, clienteId: null, trabajoId: null, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-12T15:00:00Z', updatedAt: null }
+  const mov8: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000008', fecha: '2025-02-10T17:00:00Z', concepto: 'Adelanto quincenal Ricardo Darín', monto: '50000.0000', cantidad: '1.0000', total: '50000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoAdelanto.id, tipoMovimientoNombre: tipoAdelanto.nombre, esIngreso: false, categoriaId: null, categoriaNombre: null, categoriaColor: null, clienteId: null, trabajoId: null, empleadoId: emp1.id, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: true, rowVersion: 'v1', createdAt: '2025-02-10T17:00:00Z', updatedAt: null }
+  const mov9: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000009', fecha: '2025-02-10T17:15:00Z', concepto: 'Adelanto quincenal Natalia Oreiro', monto: '40000.0000', cantidad: '1.0000', total: '40000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoAdelanto.id, tipoMovimientoNombre: tipoAdelanto.nombre, esIngreso: false, categoriaId: null, categoriaNombre: null, categoriaColor: null, clienteId: null, trabajoId: null, empleadoId: emp3.id, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-10T17:15:00Z', updatedAt: null }
   const movimientos: MockMovimiento[] = [mov1, mov2, mov3, mov4, mov5, mov6, mov7, mov8, mov9]
 
   const liq1 = { id: 'b0000000-0000-0000-0000-000000000001', empleadoId: emp1.id, empleadoNombre: emp1.nombre, empleadoCargo: emp1.cargo, fechaInicio: '2025-02-01', fechaFin: '2025-02-15', diasTrabajados: '11.0000', tarifaAplicada: '45000.0000', totalBruto: '495000.0000', totalAdelantos: '50000.0000', totalNeto: '445000.0000', tienePdf: false, rowVersion: 'v1' }
@@ -632,54 +634,771 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       return mockDb.feriados as T
     case 'feriados_sync':
       return { agregados: 0, total: mockDb.feriados.length, aniosConError: 0 } as T
-    case 'tipos_movimiento_list':
-      return { items: mockDb.tiposMovimiento, totalCount: mockDb.tiposMovimiento.length, page: 1, size: 30 } as T
-    case 'categorias_list':
-      return { items: mockDb.categorias, totalCount: mockDb.categorias.length, page: 1, size: 30 } as T
+
+    // ==========================================
+    // MOVIMIENTOS
+    // ==========================================
     case 'movimientos_list': {
+      let totalIngresosNum = 0
+      let totalGastosNum = 0
+      for (const m of mockDb.movimientos) {
+        const val = parseFloat(m.total) || 0
+        if (m.esIngreso) totalIngresosNum += val
+        else totalGastosNum += val
+      }
       const resumen = {
-        totalIngresos: '2037000.0000',
-        totalGastos: '662000.0000',
-        balance: '1375000.0000',
+        totalIngresos: totalIngresosNum.toFixed(4),
+        totalGastos: totalGastosNum.toFixed(4),
+        balance: (totalIngresosNum - totalGastosNum).toFixed(4),
         cantidad: mockDb.movimientos.length,
       }
       return { items: mockDb.movimientos, totalCount: mockDb.movimientos.length, page: 1, size: 30, resumen } as T
     }
-    case 'movimiento_resumen':
+    case 'movimientos_resumen':
+    case 'movimiento_resumen': {
+      let totalIngresosNum = 0
+      let totalGastosNum = 0
+      for (const m of mockDb.movimientos) {
+        const val = parseFloat(m.total) || 0
+        if (m.esIngreso) totalIngresosNum += val
+        else totalGastosNum += val
+      }
       return {
-        totalIngresos: '2037000.0000',
-        totalGastos: '662000.0000',
-        balance: '1375000.0000',
+        totalIngresos: totalIngresosNum.toFixed(4),
+        totalGastos: totalGastosNum.toFixed(4),
+        balance: (totalIngresosNum - totalGastosNum).toFixed(4),
         cantidad: mockDb.movimientos.length,
       } as T
+    }
+    case 'movimientos_get':
+    case 'movimiento_get': {
+      const id = String(args?.id ?? '')
+      const found = mockDb.movimientos.find(m => m.id === id) || mockDb.movimientos[0]
+      return {
+        ...found,
+        createdAt: found?.createdAt ?? new Date().toISOString(),
+        updatedAt: found?.updatedAt ?? null,
+      } as T
+    }
+    case 'movimientos_create':
+    case 'movimiento_create': {
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const tipo = mockDb.tiposMovimiento.find(t => t.id === dto.tipoMovimientoId)
+      const cat = mockDb.categorias.find(c => c.id === dto.categoriaId)
+      const montoNum = parseFloat(String(dto.monto || '0'))
+      const cantNum = parseFloat(String(dto.cantidad || '1'))
+      const total = (montoNum * cantNum).toFixed(4)
+      const newMov: MockMovimiento = {
+        id: crypto.randomUUID(),
+        fecha: String(dto.fecha || new Date().toISOString()),
+        concepto: String(dto.concepto || ''),
+        monto: String(dto.monto || '0.0000'),
+        cantidad: String(dto.cantidad || '1.0000'),
+        total,
+        moneda: String(dto.moneda || 'Ars'),
+        cotizacionAplicada: (dto.cotizacionAplicada as string | null) ?? null,
+        tipoMovimientoId: String(dto.tipoMovimientoId || ''),
+        tipoMovimientoNombre: tipo?.nombre ?? 'General',
+        esIngreso: tipo?.esIngreso ?? true,
+        categoriaId: (dto.categoriaId as string | null) ?? null,
+        categoriaNombre: cat?.nombre ?? null,
+        categoriaColor: cat?.colorHex ?? null,
+        clienteId: (dto.clienteId as string | null) ?? null,
+        trabajoId: (dto.trabajoId as string | null) ?? null,
+        empleadoId: (dto.empleadoId as string | null) ?? null,
+        facturaId: (dto.facturaId as string | null) ?? null,
+        tipoConceptoPagoId: (dto.tipoConceptoPagoId as string | null) ?? null,
+        bloqueadoPorLiquidacion: false,
+        rowVersion: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+        updatedAt: null,
+      }
+      mockDb.movimientos.unshift(newMov)
+      return newMov as T
+    }
+    case 'movimientos_update':
+    case 'movimiento_update': {
+      const id = String(args?.id ?? '')
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const idx = mockDb.movimientos.findIndex(m => m.id === id)
+      if (idx >= 0) {
+        const tipo = mockDb.tiposMovimiento.find(t => t.id === dto.tipoMovimientoId)
+        const cat = mockDb.categorias.find(c => c.id === dto.categoriaId)
+        const montoNum = parseFloat(String(dto.monto || '0'))
+        const cantNum = parseFloat(String(dto.cantidad || '1'))
+        const total = (montoNum * cantNum).toFixed(4)
+        mockDb.movimientos[idx] = {
+          ...mockDb.movimientos[idx]!,
+          fecha: String(dto.fecha || mockDb.movimientos[idx]!.fecha),
+          concepto: String(dto.concepto || mockDb.movimientos[idx]!.concepto),
+          monto: String(dto.monto || mockDb.movimientos[idx]!.monto),
+          cantidad: String(dto.cantidad || mockDb.movimientos[idx]!.cantidad),
+          total,
+          moneda: String(dto.moneda || mockDb.movimientos[idx]!.moneda),
+          cotizacionAplicada: (dto.cotizacionAplicada as string | null) ?? null,
+          tipoMovimientoId: String(dto.tipoMovimientoId || mockDb.movimientos[idx]!.tipoMovimientoId),
+          tipoMovimientoNombre: tipo?.nombre ?? mockDb.movimientos[idx]!.tipoMovimientoNombre,
+          esIngreso: tipo?.esIngreso ?? mockDb.movimientos[idx]!.esIngreso,
+          categoriaId: (dto.categoriaId as string | null) ?? null,
+          categoriaNombre: cat?.nombre ?? null,
+          categoriaColor: cat?.colorHex ?? null,
+          clienteId: (dto.clienteId as string | null) ?? null,
+          trabajoId: (dto.trabajoId as string | null) ?? null,
+          empleadoId: (dto.empleadoId as string | null) ?? null,
+          facturaId: (dto.facturaId as string | null) ?? null,
+          tipoConceptoPagoId: (dto.tipoConceptoPagoId as string | null) ?? null,
+          rowVersion: crypto.randomUUID(),
+          updatedAt: new Date().toISOString(),
+        }
+        return mockDb.movimientos[idx] as T
+      }
+      return mockDb.movimientos[0] as T
+    }
+    case 'movimientos_delete':
+    case 'movimiento_delete': {
+      const id = String(args?.id ?? '')
+      mockDb.movimientos = mockDb.movimientos.filter(m => m.id !== id)
+      return null as T
+    }
+
+    // ==========================================
+    // CLIENTES
+    // ==========================================
     case 'clientes_list':
       return { items: mockDb.clientes, totalCount: mockDb.clientes.length, page: 1, size: 30 } as T
-    case 'obras_list':
-      return { items: mockDb.obras, totalCount: mockDb.obras.length, page: 1, size: 30 } as T
-    case 'trabajos_list':
-      return { items: mockDb.trabajos, totalCount: mockDb.trabajos.length, page: 1, size: 30 } as T
-    case 'ordenes_list':
-      return { items: mockDb.ordenes, totalCount: mockDb.ordenes.length, page: 1, size: 30 } as T
-    case 'facturas_list':
-      return { items: mockDb.facturas, totalCount: mockDb.facturas.length, page: 1, size: 30 } as T
-    case 'empleados_list':
-      return { items: mockDb.empleados, totalCount: mockDb.empleados.length, page: 1, size: 30 } as T
-    case 'liquidaciones_list':
-      return { items: mockDb.liquidaciones, totalCount: mockDb.liquidaciones.length, page: 1, size: 30 } as T
-    case 'certificados_list':
-      return { items: mockDb.certificados, totalCount: mockDb.certificados.length, page: 1, size: 30 } as T
-    case 'tipos_movimiento_lookup':
-      return mockDb.tiposMovimiento.map(t => ({ id: t.id, label: t.nombre })) as T
-    case 'categorias_lookup':
-      return mockDb.categorias.map(c => ({ id: c.id, label: c.nombre })) as T
     case 'clientes_lookup':
       return mockDb.clientes.map(c => ({ id: c.id, label: c.nombre })) as T
+    case 'clientes_get':
+    case 'cliente_get': {
+      const id = String(args?.id ?? '')
+      const cli = mockDb.clientes.find(c => c.id === id) || mockDb.clientes[0]!
+      return {
+        ...cli,
+        contactos: [
+          { id: crypto.randomUUID(), etiqueta: 'Administración', email: cli.email ?? '', nombre: cli.nombre, telefono: cli.telefono, esPrincipal: true },
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: null,
+      } as T
+    }
+    case 'clientes_create':
+    case 'cliente_create': {
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const newCli: MockCliente = {
+        id: crypto.randomUUID(),
+        nombre: String(dto.nombre || ''),
+        cuit: (dto.cuit as string | null) ?? null,
+        direccion: (dto.direccion as string | null) ?? null,
+        telefono: (dto.telefono as string | null) ?? null,
+        email: (dto.email as string | null) ?? null,
+        condicionIva: (dto.condicionIva as string | null) ?? 'Responsable Inscripto',
+        obrasCount: 0,
+        facturasCount: 0,
+        deuda: '0.0000',
+        puedeEliminarse: true,
+        rowVersion: crypto.randomUUID(),
+      }
+      mockDb.clientes.unshift(newCli)
+      return newCli as T
+    }
+    case 'clientes_update':
+    case 'cliente_update': {
+      const id = String(args?.id ?? '')
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const idx = mockDb.clientes.findIndex(c => c.id === id)
+      if (idx >= 0) {
+        mockDb.clientes[idx] = {
+          ...mockDb.clientes[idx]!,
+          nombre: String(dto.nombre || mockDb.clientes[idx]!.nombre),
+          cuit: (dto.cuit as string | null) ?? mockDb.clientes[idx]!.cuit,
+          direccion: (dto.direccion as string | null) ?? mockDb.clientes[idx]!.direccion,
+          telefono: (dto.telefono as string | null) ?? mockDb.clientes[idx]!.telefono,
+          email: (dto.email as string | null) ?? mockDb.clientes[idx]!.email,
+          condicionIva: (dto.condicionIva as string | null) ?? mockDb.clientes[idx]!.condicionIva,
+          rowVersion: crypto.randomUUID(),
+        }
+        return mockDb.clientes[idx] as T
+      }
+      return mockDb.clientes[0] as T
+    }
+    case 'clientes_delete':
+    case 'cliente_delete': {
+      const id = String(args?.id ?? '')
+      mockDb.clientes = mockDb.clientes.filter(c => c.id !== id)
+      return null as T
+    }
+    case 'clientes_cuenta_corriente':
+      return {
+        clienteId: args?.id,
+        saldo: '0.0000',
+        movimientos: [],
+        facturas: [],
+      } as T
+
+    // ==========================================
+    // OBRAS
+    // ==========================================
+    case 'obras_list':
+      return { items: mockDb.obras, totalCount: mockDb.obras.length, page: 1, size: 30 } as T
     case 'obras_lookup':
       return mockDb.obras.map(o => ({ id: o.id, label: `${o.numero}. ${o.nombre}` })) as T
+    case 'obras_get':
+    case 'obra_get': {
+      const id = String(args?.id ?? '')
+      const ob = mockDb.obras.find(o => o.id === id) || mockDb.obras[0]!
+      return {
+        ...ob,
+        createdAt: new Date().toISOString(),
+        updatedAt: null,
+      } as T
+    }
+    case 'obras_create':
+    case 'obra_create': {
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const cli = mockDb.clientes.find(c => c.id === dto.clienteId)
+      const newOb: MockObra = {
+        id: crypto.randomUUID(),
+        numero: mockDb.obras.length + 1,
+        nombre: String(dto.nombre || ''),
+        direccion: (dto.direccion as string | null) ?? null,
+        localidad: (dto.localidad as string | null) ?? null,
+        clienteId: String(dto.clienteId || ''),
+        clienteNombre: cli?.nombre ?? '',
+        estado: 'Activa',
+        trabajosCount: 0,
+        rentabilidad: '0.0000',
+        puedeEliminarse: true,
+        rowVersion: crypto.randomUUID(),
+      }
+      mockDb.obras.unshift(newOb)
+      return newOb as T
+    }
+    case 'obras_update':
+    case 'obra_update': {
+      const id = String(args?.id ?? '')
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const idx = mockDb.obras.findIndex(o => o.id === id)
+      if (idx >= 0) {
+        const cli = mockDb.clientes.find(c => c.id === dto.clienteId)
+        mockDb.obras[idx] = {
+          ...mockDb.obras[idx]!,
+          nombre: String(dto.nombre || mockDb.obras[idx]!.nombre),
+          direccion: (dto.direccion as string | null) ?? mockDb.obras[idx]!.direccion,
+          localidad: (dto.localidad as string | null) ?? mockDb.obras[idx]!.localidad,
+          clienteId: String(dto.clienteId || mockDb.obras[idx]!.clienteId),
+          clienteNombre: cli?.nombre ?? mockDb.obras[idx]!.clienteNombre,
+          rowVersion: crypto.randomUUID(),
+        }
+        return mockDb.obras[idx] as T
+      }
+      return mockDb.obras[0] as T
+    }
+    case 'obras_transition': {
+      const id = String(args?.id ?? '')
+      const nuevoEstado = String(args?.nuevoEstado ?? 'Activa')
+      const idx = mockDb.obras.findIndex(o => o.id === id)
+      if (idx >= 0) {
+        mockDb.obras[idx]!.estado = nuevoEstado
+        return mockDb.obras[idx] as T
+      }
+      return mockDb.obras[0] as T
+    }
+    case 'obras_delete':
+    case 'obra_delete': {
+      const id = String(args?.id ?? '')
+      mockDb.obras = mockDb.obras.filter(o => o.id !== id)
+      return null as T
+    }
+    case 'obras_next_numero':
+      return (mockDb.obras.length + 1) as T
+
+    // ==========================================
+    // TRABAJOS
+    // ==========================================
+    case 'trabajos_list':
+      return { items: mockDb.trabajos, totalCount: mockDb.trabajos.length, page: 1, size: 30 } as T
     case 'trabajos_lookup':
       return mockDb.trabajos.map(t => ({ id: t.id, label: t.descripcion })) as T
+    case 'trabajos_get':
+    case 'trabajo_get': {
+      const id = String(args?.id ?? '')
+      const trab = mockDb.trabajos.find(t => t.id === id) || mockDb.trabajos[0]!
+      return {
+        ...trab,
+        createdAt: new Date().toISOString(),
+        updatedAt: null,
+      } as T
+    }
+    case 'trabajos_create':
+    case 'trabajo_create': {
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const ob = mockDb.obras.find(o => o.id === dto.obraId)
+      const newTrab: MockTrabajo = {
+        id: crypto.randomUUID(),
+        obraId: String(dto.obraId || ''),
+        obraNumero: ob?.numero ?? 1,
+        obraNombre: ob?.nombre ?? '',
+        clienteId: ob?.clienteId ?? '',
+        clienteNombre: ob?.clienteNombre ?? '',
+        descripcion: String(dto.descripcion || ''),
+        fechaInicio: String(dto.fechaInicio || new Date().toISOString().split('T')[0]),
+        fechaFin: (dto.fechaFin as string | null) ?? null,
+        presupuesto: String(dto.presupuesto || '0.0000'),
+        estado: 'EnProceso',
+        rowVersion: crypto.randomUUID(),
+      }
+      mockDb.trabajos.unshift(newTrab)
+      return newTrab as T
+    }
+    case 'trabajos_update':
+    case 'trabajo_update': {
+      const id = String(args?.id ?? '')
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const idx = mockDb.trabajos.findIndex(t => t.id === id)
+      if (idx >= 0) {
+        mockDb.trabajos[idx] = {
+          ...mockDb.trabajos[idx]!,
+          descripcion: String(dto.descripcion || mockDb.trabajos[idx]!.descripcion),
+          fechaInicio: String(dto.fechaInicio || mockDb.trabajos[idx]!.fechaInicio),
+          fechaFin: (dto.fechaFin as string | null) ?? mockDb.trabajos[idx]!.fechaFin,
+          presupuesto: String(dto.presupuesto || mockDb.trabajos[idx]!.presupuesto),
+          rowVersion: crypto.randomUUID(),
+        }
+        return mockDb.trabajos[idx] as T
+      }
+      return mockDb.trabajos[0] as T
+    }
+    case 'trabajos_transition': {
+      const id = String(args?.id ?? '')
+      const nuevoEstado = String(args?.nuevoEstado ?? 'EnProceso')
+      const idx = mockDb.trabajos.findIndex(t => t.id === id)
+      if (idx >= 0) {
+        mockDb.trabajos[idx]!.estado = nuevoEstado
+        return mockDb.trabajos[idx] as T
+      }
+      return mockDb.trabajos[0] as T
+    }
+    case 'trabajos_delete':
+    case 'trabajo_delete': {
+      const id = String(args?.id ?? '')
+      mockDb.trabajos = mockDb.trabajos.filter(t => t.id !== id)
+      return null as T
+    }
+
+    // ==========================================
+    // EMPLEADOS
+    // ==========================================
+    case 'empleados_list':
+      return { items: mockDb.empleados, totalCount: mockDb.empleados.length, page: 1, size: 30 } as T
     case 'empleados_lookup':
       return mockDb.empleados.map(e => ({ id: e.id, label: `${e.nombre} (${e.cargo ?? ''})` })) as T
+    case 'empleados_cargos':
+      return Array.from(new Set(mockDb.empleados.map(e => e.cargo).filter(Boolean))) as T
+    case 'empleados_get':
+    case 'empleado_get': {
+      const id = String(args?.id ?? '')
+      const emp = mockDb.empleados.find(e => e.id === id) || mockDb.empleados[0]!
+      return {
+        ...emp,
+        multiplicadorSabado: '1.5000',
+        multiplicadorDomingo: '2.0000',
+        multiplicadorFeriado: '2.0000',
+        createdAt: new Date().toISOString(),
+        updatedAt: null,
+      } as T
+    }
+    case 'empleados_create':
+    case 'empleado_create': {
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const newEmp: MockEmpleado = {
+        id: crypto.randomUUID(),
+        nombre: String(dto.nombre || ''),
+        dni: (dto.dni as string | null) ?? null,
+        cargo: (dto.cargo as string | null) ?? null,
+        tarifaDiaria: String(dto.tarifaDiaria || '0.0000'),
+        sueldoBase: String(dto.sueldoBase || '0.0000'),
+        pagoFrecuencia: String(dto.pagoFrecuencia || 'Quincenal'),
+        email: (dto.email as string | null) ?? null,
+        telefono: (dto.telefono as string | null) ?? null,
+        fechaIngreso: String(dto.fechaIngreso || new Date().toISOString().split('T')[0]),
+        fechaEgreso: (dto.fechaEgreso as string | null) ?? null,
+        activo: Boolean(dto.activo ?? true),
+        rowVersion: crypto.randomUUID(),
+      }
+      mockDb.empleados.unshift(newEmp)
+      return newEmp as T
+    }
+    case 'empleados_update':
+    case 'empleado_update': {
+      const id = String(args?.id ?? '')
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const idx = mockDb.empleados.findIndex(e => e.id === id)
+      if (idx >= 0) {
+        mockDb.empleados[idx] = {
+          ...mockDb.empleados[idx]!,
+          nombre: String(dto.nombre || mockDb.empleados[idx]!.nombre),
+          dni: (dto.dni as string | null) ?? mockDb.empleados[idx]!.dni,
+          cargo: (dto.cargo as string | null) ?? mockDb.empleados[idx]!.cargo,
+          tarifaDiaria: String(dto.tarifaDiaria || mockDb.empleados[idx]!.tarifaDiaria),
+          sueldoBase: String(dto.sueldoBase || mockDb.empleados[idx]!.sueldoBase),
+          pagoFrecuencia: String(dto.pagoFrecuencia || mockDb.empleados[idx]!.pagoFrecuencia),
+          email: (dto.email as string | null) ?? mockDb.empleados[idx]!.email,
+          telefono: (dto.telefono as string | null) ?? mockDb.empleados[idx]!.telefono,
+          fechaIngreso: String(dto.fechaIngreso || mockDb.empleados[idx]!.fechaIngreso),
+          fechaEgreso: (dto.fechaEgreso as string | null) ?? mockDb.empleados[idx]!.fechaEgreso,
+          activo: Boolean(dto.activo ?? mockDb.empleados[idx]!.activo),
+          rowVersion: crypto.randomUUID(),
+        }
+        return mockDb.empleados[idx] as T
+      }
+      return mockDb.empleados[0] as T
+    }
+    case 'empleados_delete':
+    case 'empleado_delete': {
+      const id = String(args?.id ?? '')
+      mockDb.empleados = mockDb.empleados.filter(e => e.id !== id)
+      return null as T
+    }
+    case 'asistencias_mes':
+      return { asistencias: [], totalDiasTrabajados: '11.0000' } as T
+    case 'asistencias_upsert':
+    case 'asistencias_bulk':
+      return { creadas: 10 } as T
+
+    // ==========================================
+    // FACTURAS
+    // ==========================================
+    case 'facturas_list':
+      return { items: mockDb.facturas, totalCount: mockDb.facturas.length, page: 1, size: 30 } as T
+    case 'facturas_get':
+    case 'factura_get': {
+      const id = String(args?.id ?? '')
+      const fact = mockDb.facturas.find(f => f.id === id) || mockDb.facturas[0]!
+      return {
+        ...fact,
+        observaciones: 'Facturación de obra',
+        items: [],
+        pagos: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: null,
+      } as T
+    }
+    case 'facturas_create':
+    case 'factura_create': {
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const cli = mockDb.clientes.find(c => c.id === dto.clienteId)
+      const subNum = parseFloat(String(dto.subtotal || '0'))
+      const ivaNum = parseFloat(String(dto.iva || '0'))
+      const totNum = subNum + ivaNum
+      const newFact: MockFactura = {
+        id: crypto.randomUUID(),
+        numero: String(dto.numero || `0001-0000010${mockDb.facturas.length + 1}`),
+        fecha: String(dto.fecha || new Date().toISOString().split('T')[0]),
+        fechaVencimiento: (dto.fechaVencimiento as string | null) ?? null,
+        clienteId: String(dto.clienteId || ''),
+        clienteNombre: cli?.nombre ?? '',
+        estado: 'Borrador',
+        subtotal: subNum.toFixed(4),
+        iva: ivaNum.toFixed(4),
+        total: totNum.toFixed(4),
+        saldoPendiente: totNum.toFixed(4),
+        rowVersion: crypto.randomUUID(),
+      }
+      mockDb.facturas.unshift(newFact)
+      return newFact as T
+    }
+    case 'facturas_update':
+    case 'factura_update': {
+      const id = String(args?.id ?? '')
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const idx = mockDb.facturas.findIndex(f => f.id === id)
+      if (idx >= 0) {
+        const subNum = parseFloat(String(dto.subtotal || mockDb.facturas[idx]!.subtotal))
+        const ivaNum = parseFloat(String(dto.iva || mockDb.facturas[idx]!.iva))
+        const totNum = subNum + ivaNum
+        mockDb.facturas[idx] = {
+          ...mockDb.facturas[idx]!,
+          numero: String(dto.numero || mockDb.facturas[idx]!.numero),
+          fecha: String(dto.fecha || mockDb.facturas[idx]!.fecha),
+          fechaVencimiento: (dto.fechaVencimiento as string | null) ?? mockDb.facturas[idx]!.fechaVencimiento,
+          subtotal: subNum.toFixed(4),
+          iva: ivaNum.toFixed(4),
+          total: totNum.toFixed(4),
+          rowVersion: crypto.randomUUID(),
+        }
+        return mockDb.facturas[idx] as T
+      }
+      return mockDb.facturas[0] as T
+    }
+    case 'facturas_transition': {
+      const id = String(args?.id ?? '')
+      const nuevoEstado = String(args?.nuevoEstado ?? 'Emitida')
+      const idx = mockDb.facturas.findIndex(f => f.id === id)
+      if (idx >= 0) {
+        mockDb.facturas[idx]!.estado = nuevoEstado
+        return mockDb.facturas[idx] as T
+      }
+      return mockDb.facturas[0] as T
+    }
+    case 'facturas_delete':
+    case 'factura_delete': {
+      const id = String(args?.id ?? '')
+      mockDb.facturas = mockDb.facturas.filter(f => f.id !== id)
+      return null as T
+    }
+    case 'pagos_factura_registrar': {
+      const id = String(args?.facturaId ?? '')
+      const idx = mockDb.facturas.findIndex(f => f.id === id)
+      if (idx >= 0) {
+        mockDb.facturas[idx]!.estado = 'Pagada'
+        mockDb.facturas[idx]!.saldoPendiente = '0.0000'
+      }
+      return { id: crypto.randomUUID(), facturaId: id, monto: '1000.0000', fecha: new Date().toISOString().split('T')[0], medioPago: 'Transferencia', rowVersion: 'v1' } as T
+    }
+    case 'pagos_factura_eliminar':
+      return null as T
+
+    // ==========================================
+    // CERTIFICADOS
+    // ==========================================
+    case 'certificados_list':
+      return { items: mockDb.certificados, totalCount: mockDb.certificados.length, page: 1, size: 30 } as T
+    case 'certificados_get':
+    case 'certificado_get': {
+      const id = String(args?.id ?? '')
+      const cert = mockDb.certificados.find(c => c.id === id) || mockDb.certificados[0]!
+      return {
+        ...cert,
+        ajusteUocra: '148000.0000',
+        otrosDescuentos: '0.0000',
+        observaciones: 'Certificado aprobado',
+        items: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: null,
+      } as T
+    }
+    case 'certificados_borrador':
+      return {
+        ordenTrabajoId: mockDb.ordenes[0]?.id ?? '',
+        ordenTitulo: mockDb.ordenes[0]?.titulo ?? '',
+        numeroSugerido: 1,
+        trabajoDescripcion: mockDb.trabajos[0]?.descripcion ?? '',
+        obraNombre: mockDb.obras[0]?.nombre ?? '',
+        clienteNombre: mockDb.clientes[2]?.nombre ?? '',
+        ajusteUocraPorcentaje: '8.0000',
+        otrosDescuentos: '0.0000',
+        items: [],
+      } as T
+    case 'certificados_emitir': {
+      const newCert: MockCertificado = {
+        id: crypto.randomUUID(),
+        ordenTrabajoId: mockDb.ordenes[0]?.id ?? '',
+        ordenTitulo: mockDb.ordenes[0]?.titulo ?? '',
+        numero: mockDb.certificados.length + 1,
+        fecha: new Date().toISOString().split('T')[0] ?? '',
+        totalCertificado: '1500000.0000',
+        totalNeto: '1620000.0000',
+        rowVersion: crypto.randomUUID(),
+      }
+      mockDb.certificados.unshift(newCert)
+      return newCert as T
+    }
+    case 'certificados_anular': {
+      const id = String(args?.id ?? '')
+      mockDb.certificados = mockDb.certificados.filter(c => c.id !== id)
+      return null as T
+    }
+
+    // ==========================================
+    // LIQUIDACIONES
+    // ==========================================
+    case 'liquidaciones_list':
+      return { items: mockDb.liquidaciones, totalCount: mockDb.liquidaciones.length, page: 1, size: 30 } as T
+    case 'liquidaciones_get':
+    case 'liquidacion_get': {
+      const id = String(args?.id ?? '')
+      const liq = mockDb.liquidaciones.find(l => l.id === id) || mockDb.liquidaciones[0]!
+      return {
+        ...liq,
+        incluirSabados: true,
+        incluirDomingos: false,
+        incluirFeriados: false,
+        multiplicadorSabado: '1.5000',
+        multiplicadorDomingo: '2.0000',
+        multiplicadorFeriado: '2.0000',
+        observaciones: 'Liquidación quincenal',
+        desglose: {
+          jornadasCompletas: '11.0000',
+          jornadasMedias: '0.0000',
+          faltas: 0,
+          faltasJustificadas: 0,
+          diasSabado: '1.0000',
+          diasDomingo: '0.0000',
+          diasFeriado: '0.0000',
+          multiplicadorSabado: '1.5000',
+          multiplicadorDomingo: '2.0000',
+          multiplicadorFeriado: '2.0000',
+          recargos: '22500.0000',
+        },
+        adelantos: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: null,
+      } as T
+    }
+    case 'liquidaciones_sugerir':
+      return [
+        {
+          empleadoId: mockDb.empleados[0]?.id ?? '',
+          empleadoNombre: mockDb.empleados[0]?.nombre ?? '',
+          cargo: mockDb.empleados[0]?.cargo ?? '',
+          tarifaDiaria: mockDb.empleados[0]?.tarifaDiaria ?? '45000.0000',
+          diasSugeridos: '11.0000',
+          origen: 'Asistencia',
+          desglose: {
+            jornadasCompletas: '11.0000',
+            jornadasMedias: '0.0000',
+            faltas: 0,
+            faltasJustificadas: 0,
+            diasSabado: '1.0000',
+            diasDomingo: '0.0000',
+            diasFeriado: '0.0000',
+            multiplicadorSabado: '1.5000',
+            multiplicadorDomingo: '2.0000',
+            multiplicadorFeriado: '2.0000',
+            recargos: '22500.0000',
+          },
+          adelantos: [],
+          totalBruto: '495000.0000',
+          totalAdelantos: '0.0000',
+          totalNeto: '495000.0000',
+        },
+      ] as T
+    case 'liquidaciones_emitir': {
+      const newLiq: MockLiquidacion = {
+        id: crypto.randomUUID(),
+        empleadoId: mockDb.empleados[0]?.id ?? '',
+        empleadoNombre: mockDb.empleados[0]?.nombre ?? '',
+        empleadoCargo: mockDb.empleados[0]?.cargo ?? '',
+        fechaInicio: new Date().toISOString().split('T')[0] ?? '',
+        fechaFin: new Date().toISOString().split('T')[0] ?? '',
+        diasTrabajados: '11.0000',
+        tarifaAplicada: '45000.0000',
+        totalBruto: '495000.0000',
+        totalAdelantos: '0.0000',
+        totalNeto: '495000.0000',
+        tienePdf: false,
+        rowVersion: crypto.randomUUID(),
+      }
+      mockDb.liquidaciones.unshift(newLiq)
+      return [newLiq] as T
+    }
+    case 'liquidaciones_delete':
+    case 'liquidacion_delete': {
+      const id = String(args?.id ?? '')
+      mockDb.liquidaciones = mockDb.liquidaciones.filter(l => l.id !== id)
+      return null as T
+    }
+
+    // ==========================================
+    // CATEGORIAS & TIPOS
+    // ==========================================
+    case 'categorias_list':
+      return { items: mockDb.categorias, totalCount: mockDb.categorias.length, page: 1, size: 30 } as T
+    case 'categorias_lookup':
+      return mockDb.categorias.map(c => ({ id: c.id, label: c.nombre })) as T
+    case 'categorias_get': {
+      const id = String(args?.id ?? '')
+      const cat = mockDb.categorias.find(c => c.id === id) || mockDb.categorias[0]!
+      return { ...cat, createdAt: new Date().toISOString(), updatedAt: null } as T
+    }
+    case 'categorias_create': {
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const newCat: MockCategory = {
+        id: crypto.randomUUID(),
+        nombre: String(dto.nombre || ''),
+        descripcion: (dto.descripcion as string | null) ?? null,
+        colorHex: (dto.colorHex as string | null) ?? '#3B82F6',
+        icono: (dto.icono as string | null) ?? 'package',
+        categoriaPadreId: (dto.categoriaPadreId as string | null) ?? null,
+        categoriaPadreNombre: null,
+        nivel: 0,
+        movimientosCount: 0,
+        subcategoriasCount: 0,
+        puedeEliminarse: true,
+        rowVersion: crypto.randomUUID(),
+      }
+      mockDb.categorias.unshift(newCat)
+      return newCat as T
+    }
+    case 'categorias_update': {
+      const id = String(args?.id ?? '')
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const idx = mockDb.categorias.findIndex(c => c.id === id)
+      if (idx >= 0) {
+        mockDb.categorias[idx] = {
+          ...mockDb.categorias[idx]!,
+          nombre: String(dto.nombre || mockDb.categorias[idx]!.nombre),
+          descripcion: (dto.descripcion as string | null) ?? mockDb.categorias[idx]!.descripcion,
+          colorHex: (dto.colorHex as string | null) ?? mockDb.categorias[idx]!.colorHex,
+          icono: (dto.icono as string | null) ?? mockDb.categorias[idx]!.icono,
+          categoriaPadreId: (dto.categoriaPadreId as string | null) ?? mockDb.categorias[idx]!.categoriaPadreId,
+          rowVersion: crypto.randomUUID(),
+        }
+        return mockDb.categorias[idx] as T
+      }
+      return mockDb.categorias[0] as T
+    }
+    case 'categorias_delete': {
+      const id = String(args?.id ?? '')
+      mockDb.categorias = mockDb.categorias.filter(c => c.id !== id)
+      return null as T
+    }
+
+    case 'tipos_movimiento_list':
+      return { items: mockDb.tiposMovimiento, totalCount: mockDb.tiposMovimiento.length, page: 1, size: 30 } as T
+    case 'tipos_movimiento_lookup':
+      return mockDb.tiposMovimiento.map(t => ({ id: t.id, label: t.nombre })) as T
+    case 'tipos_movimiento_get': {
+      const id = String(args?.id ?? '')
+      const tipo = mockDb.tiposMovimiento.find(t => t.id === id) || mockDb.tiposMovimiento[0]!
+      return { ...tipo, createdAt: new Date().toISOString(), updatedAt: null } as T
+    }
+    case 'tipos_movimiento_create': {
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const newTipo: MockTipoMovimiento = {
+        id: crypto.randomUUID(),
+        nombre: String(dto.nombre || ''),
+        descripcion: (dto.descripcion as string | null) ?? null,
+        esIngreso: Boolean(dto.esIngreso ?? true),
+        esSistema: false,
+        movimientosCount: 0,
+        puedeEliminarse: true,
+        rowVersion: crypto.randomUUID(),
+      }
+      mockDb.tiposMovimiento.unshift(newTipo)
+      return newTipo as T
+    }
+    case 'tipos_movimiento_update': {
+      const id = String(args?.id ?? '')
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const idx = mockDb.tiposMovimiento.findIndex(t => t.id === id)
+      if (idx >= 0) {
+        mockDb.tiposMovimiento[idx] = {
+          ...mockDb.tiposMovimiento[idx]!,
+          nombre: String(dto.nombre || mockDb.tiposMovimiento[idx]!.nombre),
+          descripcion: (dto.descripcion as string | null) ?? mockDb.tiposMovimiento[idx]!.descripcion,
+          rowVersion: crypto.randomUUID(),
+        }
+        return mockDb.tiposMovimiento[idx] as T
+      }
+      return mockDb.tiposMovimiento[0] as T
+    }
+    case 'tipos_movimiento_delete': {
+      const id = String(args?.id ?? '')
+      mockDb.tiposMovimiento = mockDb.tiposMovimiento.filter(t => t.id !== id)
+      return null as T
+    }
+
     default:
       return null as unknown as T
   }
