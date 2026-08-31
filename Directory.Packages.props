@@ -18,7 +18,7 @@
     <PackageVersion Include="Material.Icons.Avalonia" Version="3.0.2" />
     <PackageVersion Include="LiveChartsCore" Version="2.1.0-dev-365" />
     <PackageVersion Include="LiveChartsCore.SkiaSharpView" Version="2.1.0-dev-365" />
-    <PackageVersion Include="LiveChartsCore.SkiaSharpView.Avalonia" Version="2.1.0-dev-365" />
+    <PackageVersion Include="LiveChartsCore.SkiaSharpView.Avalonia" Version="2.1.0-dev-798" />
     <PackageVersion Include="Avalonia.Labs.Notifications" Version="12.0.2" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="4.151.1" />
