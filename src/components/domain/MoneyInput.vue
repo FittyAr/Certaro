@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import InputGroup from 'primevue/inputgroup'
+import InputGroupAddon from 'primevue/inputgroupaddon'
 import InputNumber from 'primevue/inputnumber'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import type { Money } from '@/api/types'
 import { useMoney } from '@/composables/useMoney'
@@ -46,28 +48,64 @@ const decimals = computed(() => locale.value?.decimalesMoneda ?? 2)
  */
 const intlTag = computed(() => (locale.value?.separadorDecimal === '.' ? 'en-US' : 'es-AR'))
 
-const inner = computed({
-  get: () => toInputValue(model.value),
-  set: (n: number | null) => {
-    model.value = fromInputValue(n ?? 0)
+const currentNumber = ref<number | null>(model.value ? toInputValue(model.value) : null)
+
+watch(
+  () => model.value,
+  (newVal) => {
+    const parsed = newVal ? toInputValue(newVal) : null
+    if (parsed !== currentNumber.value) {
+      currentNumber.value = parsed
+    }
   },
-})
+  { immediate: true },
+)
+
+function onUpdate(val: number | null | undefined): void {
+  currentNumber.value = val ?? null
+  model.value = val === null || val === undefined ? '0.0000' : fromInputValue(val)
+}
 </script>
 
 <template>
+  <InputGroup v-if="!props.hideSymbol" class="w-full">
+    <InputGroupAddon
+      class="!bg-muted !text-muted-foreground !border-border !px-2.5 font-medium select-none"
+    >
+      {{ locale?.simboloMoneda ?? '$' }}
+    </InputGroupAddon>
+    <InputNumber
+      :model-value="currentNumber"
+      :input-id="props.inputId"
+      :disabled="props.disabled"
+      :invalid="props.invalid"
+      :min="props.min"
+      :max="props.max"
+      :locale="intlTag"
+      :min-fraction-digits="decimals"
+      :max-fraction-digits="decimals"
+      :allow-empty="true"
+      highlight-on-focus
+      fluid
+      input-class="tabular-nums text-right"
+      @update:model-value="onUpdate"
+    />
+  </InputGroup>
   <InputNumber
-    v-model="inner"
+    v-else
+    :model-value="currentNumber"
     :input-id="props.inputId"
     :disabled="props.disabled"
     :invalid="props.invalid"
     :min="props.min"
     :max="props.max"
     :locale="intlTag"
-    :prefix="props.hideSymbol ? undefined : `${locale?.simboloMoneda ?? '$'} `"
     :min-fraction-digits="decimals"
     :max-fraction-digits="decimals"
-    :allow-empty="false"
+    :allow-empty="true"
+    highlight-on-focus
     fluid
     input-class="tabular-nums text-right"
+    @update:model-value="onUpdate"
   />
 </template>

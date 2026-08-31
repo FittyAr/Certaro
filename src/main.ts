@@ -180,4 +180,9 @@ app.use(PrimeVue, {
 app.use(ToastService)
 app.use(ConfirmationService)
 
+if (import.meta.env.DEV) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(window as any).__router = router
+}
+
 app.mount('#app')

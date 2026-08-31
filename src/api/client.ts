@@ -5,7 +5,7 @@ import type { AppConfig } from './types'
  * The only module that talks to Tauri. See `docs/11-contratos-tauri.md` §4.1.
  *
  * In web preview mode (outside Tauri runtime), provides a rich in-memory mock database
- * that responds reactively to all entity CRUD, lists, lookups, and dev seeding.
+ * that persists in localStorage and responds reactively to all entity CRUD, lists, lookups, and dev seeding.
  */
 
 export interface ApiFieldError {
@@ -174,7 +174,32 @@ const DEFAULT_CONFIG: AppConfig = {
   },
 }
 
-let mockConfig = structuredClone(DEFAULT_CONFIG)
+const CONFIG_STORAGE_KEY = 'electroobra_mock_config_v1'
+const DB_STORAGE_KEY = 'electroobra_mock_db_v1'
+
+function loadMockConfig(): AppConfig {
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(CONFIG_STORAGE_KEY)
+      if (stored) return JSON.parse(stored)
+    } catch {
+      // Storage unavailable or parsing error; fallback to default config.
+    }
+  }
+  return structuredClone(DEFAULT_CONFIG)
+}
+
+function saveMockConfig(cfg: AppConfig): void {
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(cfg))
+    } catch {
+      // Storage unavailable or quota exceeded; ignore.
+    }
+  }
+}
+
+let mockConfig = loadMockConfig()
 
 // In-Memory Mock Database
 interface MockCategory {
@@ -365,6 +390,17 @@ interface MockDb {
   feriados: MockFeriado[]
 }
 
+function generateUuid(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return generateUuid()
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
+
 function createSeedMockDb(): MockDb {
   const cat1 = { id: '10000000-0000-0000-0000-000000000001', nombre: 'Materiales Eléctricos', descripcion: 'Insumos eléctricos', colorHex: '#3B82F6', icono: 'package', categoriaPadreId: null, categoriaPadreNombre: null, nivel: 0, movimientosCount: 3, subcategoriasCount: 2, puedeEliminarse: false, rowVersion: 'v1' }
   const cat2 = { id: '10000000-0000-0000-0000-000000000002', nombre: 'Cables y Conductores', descripcion: 'Cables sintetizados y unipolar', colorHex: '#3B82F6', icono: 'layers', categoriaPadreId: cat1.id, categoriaPadreNombre: cat1.nombre, nivel: 1, movimientosCount: 1, subcategoriasCount: 0, puedeEliminarse: false, rowVersion: 'v1' }
@@ -462,7 +498,31 @@ function createSeedMockDb(): MockDb {
   }
 }
 
-let mockDb: MockDb = createSeedMockDb()
+function loadMockDb(): MockDb {
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(DB_STORAGE_KEY)
+      if (stored) return JSON.parse(stored)
+    } catch {
+      // Storage unavailable or parsing error; fallback to fresh seeded mock db.
+    }
+  }
+  const initial = createSeedMockDb()
+  saveMockDb(initial)
+  return initial
+}
+
+function saveMockDb(db: MockDb): void {
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(db))
+    } catch {
+      // Storage unavailable or quota exceeded; ignore.
+    }
+  }
+}
+
+let mockDb: MockDb = loadMockDb()
 
 function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>): T {
   switch (command) {
@@ -504,10 +564,12 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
           }
         }
       }
+      saveMockConfig(mockConfig)
       return structuredClone(mockConfig) as T
     }
     case 'config_reset':
       mockConfig = structuredClone(DEFAULT_CONFIG)
+      saveMockConfig(mockConfig)
       return structuredClone(mockConfig) as T
     case 'sistema_detect_legacy_db':
       return null as T
@@ -521,6 +583,7 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       } as unknown as T
     case 'dev_seed_database':
       mockDb = createSeedMockDb()
+      saveMockDb(mockDb)
       return {
         categorias: mockDb.categorias.length,
         tiposMovimiento: mockDb.tiposMovimiento.length,
@@ -537,7 +600,7 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       return [] as T
     case 'dashboard_stats':
     case 'dashboard_kpis':
-      return {
+      return structuredClone({
         periodo: (args?.periodo as string) ?? 'Mensual',
         desde: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
         hasta: new Date().toISOString(),
@@ -583,31 +646,31 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
           migraciones: 2,
           tamanoBytes: 524288,
         },
-      } as unknown as T
+      }) as unknown as T
     case 'dashboard_serie_mensual':
-      return Array.from({ length: 12 }, (_, i) => ({
+      return structuredClone(Array.from({ length: 12 }, (_, i) => ({
         mes: i + 1,
         ingresos: i === new Date().getMonth() ? '2037000.0000' : '1500000.0000',
         gastos: i === new Date().getMonth() ? '662000.0000' : '450000.0000',
-      })) as T
+      }))) as T
     case 'dashboard_top_clientes':
-      return [
+      return structuredClone([
         { id: mockDb.clientes[2]?.id ?? '', nombre: mockDb.clientes[2]?.nombre ?? '', total: '1452000.0000' },
         { id: mockDb.clientes[0]?.id ?? '', nombre: mockDb.clientes[0]?.nombre ?? '', total: '500000.0000' },
         { id: mockDb.clientes[1]?.id ?? '', nombre: mockDb.clientes[1]?.nombre ?? '', total: '85000.0000' },
-      ] as T
+      ]) as T
     case 'dashboard_gastos_categorias':
-      return [
+      return structuredClone([
         { id: mockDb.categorias[1]?.id ?? '', nombre: mockDb.categorias[1]?.nombre ?? '', colorHex: mockDb.categorias[1]?.colorHex ?? '#3B82F6', total: '340000.0000', porcentaje: '51.3600' },
         { id: mockDb.categorias[2]?.id ?? '', nombre: mockDb.categorias[2]?.nombre ?? '', colorHex: mockDb.categorias[2]?.colorHex ?? '#F59E0B', total: '125000.0000', porcentaje: '18.8800' },
         { id: mockDb.categorias[4]?.id ?? '', nombre: mockDb.categorias[4]?.nombre ?? '', colorHex: mockDb.categorias[4]?.colorHex ?? '#EF4444', total: '62000.0000', porcentaje: '9.3600' },
-      ] as T
+      ]) as T
     case 'dashboard_rentabilidad_obras':
-      return [
+      return structuredClone([
         { id: mockDb.obras[0]?.id ?? '', numero: 1, nombre: mockDb.obras[0]?.nombre ?? '', rentabilidad: '1112000.0000', margen: '76.5800' },
-      ] as T
+      ]) as T
     case 'dashboard_ultimos_movimientos':
-      return mockDb.movimientos.slice(0, 10) as T
+      return structuredClone(mockDb.movimientos.slice(0, 10)) as T
     case 'dashboard_alertas':
       return [] as T
     case 'cotizaciones_list':
@@ -631,7 +694,7 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         },
       ] as T
     case 'feriados_list':
-      return mockDb.feriados as T
+      return structuredClone(mockDb.feriados) as T
     case 'feriados_sync':
       return { agregados: 0, total: mockDb.feriados.length, aniosConError: 0 } as T
 
@@ -639,9 +702,28 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
     // MOVIMIENTOS
     // ==========================================
     case 'movimientos_list': {
+      const query = (args?.query ?? {}) as Record<string, unknown>
+      const filtro = (args?.filtro ?? query?.filtro ?? {}) as Record<string, unknown>
+      let filtered = [...mockDb.movimientos]
+      if (filtro.concepto && typeof filtro.concepto === 'string' && filtro.concepto.trim() !== '') {
+        const needle = filtro.concepto.trim().toLowerCase()
+        filtered = filtered.filter(m => m.concepto.toLowerCase().includes(needle))
+      }
+      if (filtro.tipoMovimientoId) {
+        filtered = filtered.filter(m => m.tipoMovimientoId === filtro.tipoMovimientoId)
+      }
+      if (filtro.categoriaId) {
+        filtered = filtered.filter(m => m.categoriaId === filtro.categoriaId)
+      }
+      if (filtro.fechaDesde) {
+        filtered = filtered.filter(m => m.fecha >= String(filtro.fechaDesde))
+      }
+      if (filtro.fechaHasta) {
+        filtered = filtered.filter(m => m.fecha <= String(filtro.fechaHasta))
+      }
       let totalIngresosNum = 0
       let totalGastosNum = 0
-      for (const m of mockDb.movimientos) {
+      for (const m of filtered) {
         const val = parseFloat(m.total) || 0
         if (m.esIngreso) totalIngresosNum += val
         else totalGastosNum += val
@@ -650,9 +732,15 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         totalIngresos: totalIngresosNum.toFixed(4),
         totalGastos: totalGastosNum.toFixed(4),
         balance: (totalIngresosNum - totalGastosNum).toFixed(4),
-        cantidad: mockDb.movimientos.length,
+        cantidad: filtered.length,
       }
-      return { items: mockDb.movimientos, totalCount: mockDb.movimientos.length, page: 1, size: 30, resumen } as T
+      return structuredClone({
+        items: filtered,
+        totalCount: filtered.length,
+        page: 1,
+        size: 30,
+        resumen,
+      }) as T
     }
     case 'movimientos_resumen':
     case 'movimiento_resumen': {
@@ -663,22 +751,22 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         if (m.esIngreso) totalIngresosNum += val
         else totalGastosNum += val
       }
-      return {
+      return structuredClone({
         totalIngresos: totalIngresosNum.toFixed(4),
         totalGastos: totalGastosNum.toFixed(4),
         balance: (totalIngresosNum - totalGastosNum).toFixed(4),
         cantidad: mockDb.movimientos.length,
-      } as T
+      }) as T
     }
     case 'movimientos_get':
     case 'movimiento_get': {
       const id = String(args?.id ?? '')
       const found = mockDb.movimientos.find(m => m.id === id) || mockDb.movimientos[0]
-      return {
+      return structuredClone({
         ...found,
         createdAt: found?.createdAt ?? new Date().toISOString(),
         updatedAt: found?.updatedAt ?? null,
-      } as T
+      }) as T
     }
     case 'movimientos_create':
     case 'movimiento_create': {
@@ -689,11 +777,11 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       const cantNum = parseFloat(String(dto.cantidad || '1'))
       const total = (montoNum * cantNum).toFixed(4)
       const newMov: MockMovimiento = {
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         fecha: String(dto.fecha || new Date().toISOString()),
         concepto: String(dto.concepto || ''),
-        monto: String(dto.monto || '0.0000'),
-        cantidad: String(dto.cantidad || '1.0000'),
+        monto: String(dto.monto !== undefined ? dto.monto : '0.0000'),
+        cantidad: String(dto.cantidad !== undefined ? dto.cantidad : '1.0000'),
         total,
         moneda: String(dto.moneda || 'Ars'),
         cotizacionAplicada: (dto.cotizacionAplicada as string | null) ?? null,
@@ -709,12 +797,13 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         facturaId: (dto.facturaId as string | null) ?? null,
         tipoConceptoPagoId: (dto.tipoConceptoPagoId as string | null) ?? null,
         bloqueadoPorLiquidacion: false,
-        rowVersion: crypto.randomUUID(),
+        rowVersion: generateUuid(),
         createdAt: new Date().toISOString(),
         updatedAt: null,
       }
       mockDb.movimientos.unshift(newMov)
-      return newMov as T
+      saveMockDb(mockDb)
+      return structuredClone(newMov) as T
     }
     case 'movimientos_update':
     case 'movimiento_update': {
@@ -724,15 +813,15 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       if (idx >= 0) {
         const tipo = mockDb.tiposMovimiento.find(t => t.id === dto.tipoMovimientoId)
         const cat = mockDb.categorias.find(c => c.id === dto.categoriaId)
-        const montoNum = parseFloat(String(dto.monto || '0'))
-        const cantNum = parseFloat(String(dto.cantidad || '1'))
+        const montoNum = parseFloat(String(dto.monto !== undefined ? dto.monto : mockDb.movimientos[idx]!.monto))
+        const cantNum = parseFloat(String(dto.cantidad !== undefined ? dto.cantidad : mockDb.movimientos[idx]!.cantidad))
         const total = (montoNum * cantNum).toFixed(4)
         mockDb.movimientos[idx] = {
           ...mockDb.movimientos[idx]!,
           fecha: String(dto.fecha || mockDb.movimientos[idx]!.fecha),
           concepto: String(dto.concepto || mockDb.movimientos[idx]!.concepto),
-          monto: String(dto.monto || mockDb.movimientos[idx]!.monto),
-          cantidad: String(dto.cantidad || mockDb.movimientos[idx]!.cantidad),
+          monto: String(dto.monto !== undefined ? dto.monto : mockDb.movimientos[idx]!.monto),
+          cantidad: String(dto.cantidad !== undefined ? dto.cantidad : mockDb.movimientos[idx]!.cantidad),
           total,
           moneda: String(dto.moneda || mockDb.movimientos[idx]!.moneda),
           cotizacionAplicada: (dto.cotizacionAplicada as string | null) ?? null,
@@ -747,45 +836,55 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
           empleadoId: (dto.empleadoId as string | null) ?? null,
           facturaId: (dto.facturaId as string | null) ?? null,
           tipoConceptoPagoId: (dto.tipoConceptoPagoId as string | null) ?? null,
-          rowVersion: crypto.randomUUID(),
+          rowVersion: generateUuid(),
           updatedAt: new Date().toISOString(),
         }
-        return mockDb.movimientos[idx] as T
+        saveMockDb(mockDb)
+        return structuredClone(mockDb.movimientos[idx]) as T
       }
-      return mockDb.movimientos[0] as T
+      return structuredClone(mockDb.movimientos[0]) as T
     }
     case 'movimientos_delete':
     case 'movimiento_delete': {
       const id = String(args?.id ?? '')
       mockDb.movimientos = mockDb.movimientos.filter(m => m.id !== id)
+      saveMockDb(mockDb)
       return null as T
     }
 
     // ==========================================
     // CLIENTES
     // ==========================================
-    case 'clientes_list':
-      return { items: mockDb.clientes, totalCount: mockDb.clientes.length, page: 1, size: 30 } as T
+    case 'clientes_list': {
+      const query = (args?.query ?? {}) as Record<string, unknown>
+      const filtro = (args?.filtro ?? query?.filtro ?? {}) as Record<string, unknown>
+      let filtered = [...mockDb.clientes]
+      if (filtro.nombre && typeof filtro.nombre === 'string' && filtro.nombre.trim() !== '') {
+        const needle = filtro.nombre.trim().toLowerCase()
+        filtered = filtered.filter(c => c.nombre.toLowerCase().includes(needle) || (c.cuit && c.cuit.includes(needle)))
+      }
+      return structuredClone({ items: filtered, totalCount: filtered.length, page: 1, size: 30 }) as T
+    }
     case 'clientes_lookup':
-      return mockDb.clientes.map(c => ({ id: c.id, label: c.nombre })) as T
+      return structuredClone(mockDb.clientes.map(c => ({ id: c.id, label: c.nombre }))) as T
     case 'clientes_get':
     case 'cliente_get': {
       const id = String(args?.id ?? '')
       const cli = mockDb.clientes.find(c => c.id === id) || mockDb.clientes[0]!
-      return {
+      return structuredClone({
         ...cli,
         contactos: [
-          { id: crypto.randomUUID(), etiqueta: 'Administración', email: cli.email ?? '', nombre: cli.nombre, telefono: cli.telefono, esPrincipal: true },
+          { id: generateUuid(), etiqueta: 'Administración', email: cli.email ?? '', nombre: cli.nombre, telefono: cli.telefono, esPrincipal: true },
         ],
         createdAt: new Date().toISOString(),
         updatedAt: null,
-      } as T
+      }) as T
     }
     case 'clientes_create':
     case 'cliente_create': {
       const dto = (args?.dto ?? {}) as Record<string, unknown>
       const newCli: MockCliente = {
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         nombre: String(dto.nombre || ''),
         cuit: (dto.cuit as string | null) ?? null,
         direccion: (dto.direccion as string | null) ?? null,
@@ -796,10 +895,11 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         facturasCount: 0,
         deuda: '0.0000',
         puedeEliminarse: true,
-        rowVersion: crypto.randomUUID(),
+        rowVersion: generateUuid(),
       }
       mockDb.clientes.unshift(newCli)
-      return newCli as T
+      saveMockDb(mockDb)
+      return structuredClone(newCli) as T
     }
     case 'clientes_update':
     case 'cliente_update': {
@@ -815,16 +915,18 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
           telefono: (dto.telefono as string | null) ?? mockDb.clientes[idx]!.telefono,
           email: (dto.email as string | null) ?? mockDb.clientes[idx]!.email,
           condicionIva: (dto.condicionIva as string | null) ?? mockDb.clientes[idx]!.condicionIva,
-          rowVersion: crypto.randomUUID(),
+          rowVersion: generateUuid(),
         }
-        return mockDb.clientes[idx] as T
+        saveMockDb(mockDb)
+        return structuredClone(mockDb.clientes[idx]) as T
       }
-      return mockDb.clientes[0] as T
+      return structuredClone(mockDb.clientes[0]) as T
     }
     case 'clientes_delete':
     case 'cliente_delete': {
       const id = String(args?.id ?? '')
       mockDb.clientes = mockDb.clientes.filter(c => c.id !== id)
+      saveMockDb(mockDb)
       return null as T
     }
     case 'clientes_cuenta_corriente':
@@ -838,26 +940,37 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
     // ==========================================
     // OBRAS
     // ==========================================
-    case 'obras_list':
-      return { items: mockDb.obras, totalCount: mockDb.obras.length, page: 1, size: 30 } as T
+    case 'obras_list': {
+      const query = (args?.query ?? {}) as Record<string, unknown>
+      const filtro = (args?.filtro ?? query?.filtro ?? {}) as Record<string, unknown>
+      let filtered = [...mockDb.obras]
+      if (filtro.nombre && typeof filtro.nombre === 'string' && filtro.nombre.trim() !== '') {
+        const needle = filtro.nombre.trim().toLowerCase()
+        filtered = filtered.filter(o => o.nombre.toLowerCase().includes(needle) || o.clienteNombre.toLowerCase().includes(needle))
+      }
+      if (filtro.estado) {
+        filtered = filtered.filter(o => o.estado === filtro.estado)
+      }
+      return structuredClone({ items: filtered, totalCount: filtered.length, page: 1, size: 30 }) as T
+    }
     case 'obras_lookup':
-      return mockDb.obras.map(o => ({ id: o.id, label: `${o.numero}. ${o.nombre}` })) as T
+      return structuredClone(mockDb.obras.map(o => ({ id: o.id, label: `${o.numero}. ${o.nombre}` }))) as T
     case 'obras_get':
     case 'obra_get': {
       const id = String(args?.id ?? '')
       const ob = mockDb.obras.find(o => o.id === id) || mockDb.obras[0]!
-      return {
+      return structuredClone({
         ...ob,
         createdAt: new Date().toISOString(),
         updatedAt: null,
-      } as T
+      }) as T
     }
     case 'obras_create':
     case 'obra_create': {
       const dto = (args?.dto ?? {}) as Record<string, unknown>
       const cli = mockDb.clientes.find(c => c.id === dto.clienteId)
       const newOb: MockObra = {
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         numero: mockDb.obras.length + 1,
         nombre: String(dto.nombre || ''),
         direccion: (dto.direccion as string | null) ?? null,
@@ -868,10 +981,11 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         trabajosCount: 0,
         rentabilidad: '0.0000',
         puedeEliminarse: true,
-        rowVersion: crypto.randomUUID(),
+        rowVersion: generateUuid(),
       }
       mockDb.obras.unshift(newOb)
-      return newOb as T
+      saveMockDb(mockDb)
+      return structuredClone(newOb) as T
     }
     case 'obras_update':
     case 'obra_update': {
@@ -887,11 +1001,12 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
           localidad: (dto.localidad as string | null) ?? mockDb.obras[idx]!.localidad,
           clienteId: String(dto.clienteId || mockDb.obras[idx]!.clienteId),
           clienteNombre: cli?.nombre ?? mockDb.obras[idx]!.clienteNombre,
-          rowVersion: crypto.randomUUID(),
+          rowVersion: generateUuid(),
         }
-        return mockDb.obras[idx] as T
+        saveMockDb(mockDb)
+        return structuredClone(mockDb.obras[idx]) as T
       }
-      return mockDb.obras[0] as T
+      return structuredClone(mockDb.obras[0]) as T
     }
     case 'obras_transition': {
       const id = String(args?.id ?? '')
@@ -899,14 +1014,16 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       const idx = mockDb.obras.findIndex(o => o.id === id)
       if (idx >= 0) {
         mockDb.obras[idx]!.estado = nuevoEstado
-        return mockDb.obras[idx] as T
+        saveMockDb(mockDb)
+        return structuredClone(mockDb.obras[idx]) as T
       }
-      return mockDb.obras[0] as T
+      return structuredClone(mockDb.obras[0]) as T
     }
     case 'obras_delete':
     case 'obra_delete': {
       const id = String(args?.id ?? '')
       mockDb.obras = mockDb.obras.filter(o => o.id !== id)
+      saveMockDb(mockDb)
       return null as T
     }
     case 'obras_next_numero':
@@ -915,26 +1032,37 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
     // ==========================================
     // TRABAJOS
     // ==========================================
-    case 'trabajos_list':
-      return { items: mockDb.trabajos, totalCount: mockDb.trabajos.length, page: 1, size: 30 } as T
+    case 'trabajos_list': {
+      const query = (args?.query ?? {}) as Record<string, unknown>
+      const filtro = (args?.filtro ?? query?.filtro ?? {}) as Record<string, unknown>
+      let filtered = [...mockDb.trabajos]
+      if (filtro.descripcion && typeof filtro.descripcion === 'string' && filtro.descripcion.trim() !== '') {
+        const needle = filtro.descripcion.trim().toLowerCase()
+        filtered = filtered.filter(t => t.descripcion.toLowerCase().includes(needle) || t.obraNombre.toLowerCase().includes(needle))
+      }
+      if (filtro.estado) {
+        filtered = filtered.filter(t => t.estado === filtro.estado)
+      }
+      return structuredClone({ items: filtered, totalCount: filtered.length, page: 1, size: 30 }) as T
+    }
     case 'trabajos_lookup':
-      return mockDb.trabajos.map(t => ({ id: t.id, label: t.descripcion })) as T
+      return structuredClone(mockDb.trabajos.map(t => ({ id: t.id, label: t.descripcion }))) as T
     case 'trabajos_get':
     case 'trabajo_get': {
       const id = String(args?.id ?? '')
       const trab = mockDb.trabajos.find(t => t.id === id) || mockDb.trabajos[0]!
-      return {
+      return structuredClone({
         ...trab,
         createdAt: new Date().toISOString(),
         updatedAt: null,
-      } as T
+      }) as T
     }
     case 'trabajos_create':
     case 'trabajo_create': {
       const dto = (args?.dto ?? {}) as Record<string, unknown>
       const ob = mockDb.obras.find(o => o.id === dto.obraId)
       const newTrab: MockTrabajo = {
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         obraId: String(dto.obraId || ''),
         obraNumero: ob?.numero ?? 1,
         obraNombre: ob?.nombre ?? '',
@@ -945,10 +1073,11 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         fechaFin: (dto.fechaFin as string | null) ?? null,
         presupuesto: String(dto.presupuesto || '0.0000'),
         estado: 'EnProceso',
-        rowVersion: crypto.randomUUID(),
+        rowVersion: generateUuid(),
       }
       mockDb.trabajos.unshift(newTrab)
-      return newTrab as T
+      saveMockDb(mockDb)
+      return structuredClone(newTrab) as T
     }
     case 'trabajos_update':
     case 'trabajo_update': {
@@ -962,11 +1091,12 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
           fechaInicio: String(dto.fechaInicio || mockDb.trabajos[idx]!.fechaInicio),
           fechaFin: (dto.fechaFin as string | null) ?? mockDb.trabajos[idx]!.fechaFin,
           presupuesto: String(dto.presupuesto || mockDb.trabajos[idx]!.presupuesto),
-          rowVersion: crypto.randomUUID(),
+          rowVersion: generateUuid(),
         }
-        return mockDb.trabajos[idx] as T
+        saveMockDb(mockDb)
+        return structuredClone(mockDb.trabajos[idx]) as T
       }
-      return mockDb.trabajos[0] as T
+      return structuredClone(mockDb.trabajos[0]) as T
     }
     case 'trabajos_transition': {
       const id = String(args?.id ?? '')
@@ -974,44 +1104,54 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       const idx = mockDb.trabajos.findIndex(t => t.id === id)
       if (idx >= 0) {
         mockDb.trabajos[idx]!.estado = nuevoEstado
-        return mockDb.trabajos[idx] as T
+        saveMockDb(mockDb)
+        return structuredClone(mockDb.trabajos[idx]) as T
       }
-      return mockDb.trabajos[0] as T
+      return structuredClone(mockDb.trabajos[0]) as T
     }
     case 'trabajos_delete':
     case 'trabajo_delete': {
       const id = String(args?.id ?? '')
       mockDb.trabajos = mockDb.trabajos.filter(t => t.id !== id)
+      saveMockDb(mockDb)
       return null as T
     }
 
     // ==========================================
     // EMPLEADOS
     // ==========================================
-    case 'empleados_list':
-      return { items: mockDb.empleados, totalCount: mockDb.empleados.length, page: 1, size: 30 } as T
+    case 'empleados_list': {
+      const query = (args?.query ?? {}) as Record<string, unknown>
+      const filtro = (args?.filtro ?? query?.filtro ?? {}) as Record<string, unknown>
+      let filtered = [...mockDb.empleados]
+      if (filtro.nombre && typeof filtro.nombre === 'string' && filtro.nombre.trim() !== '') {
+        const needle = filtro.nombre.trim().toLowerCase()
+        filtered = filtered.filter(e => e.nombre.toLowerCase().includes(needle) || (e.dni && e.dni.includes(needle)))
+      }
+      return structuredClone({ items: filtered, totalCount: filtered.length, page: 1, size: 30 }) as T
+    }
     case 'empleados_lookup':
-      return mockDb.empleados.map(e => ({ id: e.id, label: `${e.nombre} (${e.cargo ?? ''})` })) as T
+      return structuredClone(mockDb.empleados.map(e => ({ id: e.id, label: `${e.nombre} (${e.cargo ?? ''})` }))) as T
     case 'empleados_cargos':
-      return Array.from(new Set(mockDb.empleados.map(e => e.cargo).filter(Boolean))) as T
+      return structuredClone(Array.from(new Set(mockDb.empleados.map(e => e.cargo).filter(Boolean)))) as T
     case 'empleados_get':
     case 'empleado_get': {
       const id = String(args?.id ?? '')
       const emp = mockDb.empleados.find(e => e.id === id) || mockDb.empleados[0]!
-      return {
+      return structuredClone({
         ...emp,
         multiplicadorSabado: '1.5000',
         multiplicadorDomingo: '2.0000',
         multiplicadorFeriado: '2.0000',
         createdAt: new Date().toISOString(),
         updatedAt: null,
-      } as T
+      }) as T
     }
     case 'empleados_create':
     case 'empleado_create': {
       const dto = (args?.dto ?? {}) as Record<string, unknown>
       const newEmp: MockEmpleado = {
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         nombre: String(dto.nombre || ''),
         dni: (dto.dni as string | null) ?? null,
         cargo: (dto.cargo as string | null) ?? null,
@@ -1023,10 +1163,11 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         fechaIngreso: String(dto.fechaIngreso || new Date().toISOString().split('T')[0]),
         fechaEgreso: (dto.fechaEgreso as string | null) ?? null,
         activo: Boolean(dto.activo ?? true),
-        rowVersion: crypto.randomUUID(),
+        rowVersion: generateUuid(),
       }
       mockDb.empleados.unshift(newEmp)
-      return newEmp as T
+      saveMockDb(mockDb)
+      return structuredClone(newEmp) as T
     }
     case 'empleados_update':
     case 'empleado_update': {
@@ -1047,16 +1188,18 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
           fechaIngreso: String(dto.fechaIngreso || mockDb.empleados[idx]!.fechaIngreso),
           fechaEgreso: (dto.fechaEgreso as string | null) ?? mockDb.empleados[idx]!.fechaEgreso,
           activo: Boolean(dto.activo ?? mockDb.empleados[idx]!.activo),
-          rowVersion: crypto.randomUUID(),
+          rowVersion: generateUuid(),
         }
-        return mockDb.empleados[idx] as T
+        saveMockDb(mockDb)
+        return structuredClone(mockDb.empleados[idx]) as T
       }
-      return mockDb.empleados[0] as T
+      return structuredClone(mockDb.empleados[0]) as T
     }
     case 'empleados_delete':
     case 'empleado_delete': {
       const id = String(args?.id ?? '')
       mockDb.empleados = mockDb.empleados.filter(e => e.id !== id)
+      saveMockDb(mockDb)
       return null as T
     }
     case 'asistencias_mes':
@@ -1068,20 +1211,31 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
     // ==========================================
     // FACTURAS
     // ==========================================
-    case 'facturas_list':
-      return { items: mockDb.facturas, totalCount: mockDb.facturas.length, page: 1, size: 30 } as T
+    case 'facturas_list': {
+      const query = (args?.query ?? {}) as Record<string, unknown>
+      const filtro = (args?.filtro ?? query?.filtro ?? {}) as Record<string, unknown>
+      let filtered = [...mockDb.facturas]
+      if (filtro.numero && typeof filtro.numero === 'string' && filtro.numero.trim() !== '') {
+        const needle = filtro.numero.trim().toLowerCase()
+        filtered = filtered.filter(f => f.numero.toLowerCase().includes(needle) || f.clienteNombre.toLowerCase().includes(needle))
+      }
+      if (filtro.estado) {
+        filtered = filtered.filter(f => f.estado === filtro.estado)
+      }
+      return structuredClone({ items: filtered, totalCount: filtered.length, page: 1, size: 30 }) as T
+    }
     case 'facturas_get':
     case 'factura_get': {
       const id = String(args?.id ?? '')
       const fact = mockDb.facturas.find(f => f.id === id) || mockDb.facturas[0]!
-      return {
+      return structuredClone({
         ...fact,
         observaciones: 'Facturación de obra',
         items: [],
         pagos: [],
         createdAt: new Date().toISOString(),
         updatedAt: null,
-      } as T
+      }) as T
     }
     case 'facturas_create':
     case 'factura_create': {
@@ -1091,7 +1245,7 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       const ivaNum = parseFloat(String(dto.iva || '0'))
       const totNum = subNum + ivaNum
       const newFact: MockFactura = {
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         numero: String(dto.numero || `0001-0000010${mockDb.facturas.length + 1}`),
         fecha: String(dto.fecha || new Date().toISOString().split('T')[0]),
         fechaVencimiento: (dto.fechaVencimiento as string | null) ?? null,
@@ -1102,10 +1256,11 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         iva: ivaNum.toFixed(4),
         total: totNum.toFixed(4),
         saldoPendiente: totNum.toFixed(4),
-        rowVersion: crypto.randomUUID(),
+        rowVersion: generateUuid(),
       }
       mockDb.facturas.unshift(newFact)
-      return newFact as T
+      saveMockDb(mockDb)
+      return structuredClone(newFact) as T
     }
     case 'facturas_update':
     case 'factura_update': {
@@ -1113,8 +1268,8 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       const dto = (args?.dto ?? {}) as Record<string, unknown>
       const idx = mockDb.facturas.findIndex(f => f.id === id)
       if (idx >= 0) {
-        const subNum = parseFloat(String(dto.subtotal || mockDb.facturas[idx]!.subtotal))
-        const ivaNum = parseFloat(String(dto.iva || mockDb.facturas[idx]!.iva))
+        const subNum = parseFloat(String(dto.subtotal !== undefined ? dto.subtotal : mockDb.facturas[idx]!.subtotal))
+        const ivaNum = parseFloat(String(dto.iva !== undefined ? dto.iva : mockDb.facturas[idx]!.iva))
         const totNum = subNum + ivaNum
         mockDb.facturas[idx] = {
           ...mockDb.facturas[idx]!,
@@ -1124,11 +1279,12 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
           subtotal: subNum.toFixed(4),
           iva: ivaNum.toFixed(4),
           total: totNum.toFixed(4),
-          rowVersion: crypto.randomUUID(),
+          rowVersion: generateUuid(),
         }
-        return mockDb.facturas[idx] as T
+        saveMockDb(mockDb)
+        return structuredClone(mockDb.facturas[idx]) as T
       }
-      return mockDb.facturas[0] as T
+      return structuredClone(mockDb.facturas[0]) as T
     }
     case 'facturas_transition': {
       const id = String(args?.id ?? '')
@@ -1136,14 +1292,16 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       const idx = mockDb.facturas.findIndex(f => f.id === id)
       if (idx >= 0) {
         mockDb.facturas[idx]!.estado = nuevoEstado
-        return mockDb.facturas[idx] as T
+        saveMockDb(mockDb)
+        return structuredClone(mockDb.facturas[idx]) as T
       }
-      return mockDb.facturas[0] as T
+      return structuredClone(mockDb.facturas[0]) as T
     }
     case 'facturas_delete':
     case 'factura_delete': {
       const id = String(args?.id ?? '')
       mockDb.facturas = mockDb.facturas.filter(f => f.id !== id)
+      saveMockDb(mockDb)
       return null as T
     }
     case 'pagos_factura_registrar': {
@@ -1152,8 +1310,9 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       if (idx >= 0) {
         mockDb.facturas[idx]!.estado = 'Pagada'
         mockDb.facturas[idx]!.saldoPendiente = '0.0000'
+        saveMockDb(mockDb)
       }
-      return { id: crypto.randomUUID(), facturaId: id, monto: '1000.0000', fecha: new Date().toISOString().split('T')[0], medioPago: 'Transferencia', rowVersion: 'v1' } as T
+      return { id: generateUuid(), facturaId: id, monto: '1000.0000', fecha: new Date().toISOString().split('T')[0], medioPago: 'Transferencia', rowVersion: 'v1' } as T
     }
     case 'pagos_factura_eliminar':
       return null as T
@@ -1161,13 +1320,14 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
     // ==========================================
     // CERTIFICADOS
     // ==========================================
-    case 'certificados_list':
-      return { items: mockDb.certificados, totalCount: mockDb.certificados.length, page: 1, size: 30 } as T
+    case 'certificados_list': {
+      return structuredClone({ items: mockDb.certificados, totalCount: mockDb.certificados.length, page: 1, size: 30 }) as T
+    }
     case 'certificados_get':
     case 'certificado_get': {
       const id = String(args?.id ?? '')
       const cert = mockDb.certificados.find(c => c.id === id) || mockDb.certificados[0]!
-      return {
+      return structuredClone({
         ...cert,
         ajusteUocra: '148000.0000',
         otrosDescuentos: '0.0000',
@@ -1175,10 +1335,10 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         items: [],
         createdAt: new Date().toISOString(),
         updatedAt: null,
-      } as T
+      }) as T
     }
     case 'certificados_borrador':
-      return {
+      return structuredClone({
         ordenTrabajoId: mockDb.ordenes[0]?.id ?? '',
         ordenTitulo: mockDb.ordenes[0]?.titulo ?? '',
         numeroSugerido: 1,
@@ -1188,37 +1348,40 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         ajusteUocraPorcentaje: '8.0000',
         otrosDescuentos: '0.0000',
         items: [],
-      } as T
+      }) as T
     case 'certificados_emitir': {
       const newCert: MockCertificado = {
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         ordenTrabajoId: mockDb.ordenes[0]?.id ?? '',
         ordenTitulo: mockDb.ordenes[0]?.titulo ?? '',
         numero: mockDb.certificados.length + 1,
         fecha: new Date().toISOString().split('T')[0] ?? '',
         totalCertificado: '1500000.0000',
         totalNeto: '1620000.0000',
-        rowVersion: crypto.randomUUID(),
+        rowVersion: generateUuid(),
       }
       mockDb.certificados.unshift(newCert)
-      return newCert as T
+      saveMockDb(mockDb)
+      return structuredClone(newCert) as T
     }
     case 'certificados_anular': {
       const id = String(args?.id ?? '')
       mockDb.certificados = mockDb.certificados.filter(c => c.id !== id)
+      saveMockDb(mockDb)
       return null as T
     }
 
     // ==========================================
     // LIQUIDACIONES
     // ==========================================
-    case 'liquidaciones_list':
-      return { items: mockDb.liquidaciones, totalCount: mockDb.liquidaciones.length, page: 1, size: 30 } as T
+    case 'liquidaciones_list': {
+      return structuredClone({ items: mockDb.liquidaciones, totalCount: mockDb.liquidaciones.length, page: 1, size: 30 }) as T
+    }
     case 'liquidaciones_get':
     case 'liquidacion_get': {
       const id = String(args?.id ?? '')
       const liq = mockDb.liquidaciones.find(l => l.id === id) || mockDb.liquidaciones[0]!
-      return {
+      return structuredClone({
         ...liq,
         incluirSabados: true,
         incluirDomingos: false,
@@ -1243,10 +1406,10 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         adelantos: [],
         createdAt: new Date().toISOString(),
         updatedAt: null,
-      } as T
+      }) as T
     }
     case 'liquidaciones_sugerir':
-      return [
+      return structuredClone([
         {
           empleadoId: mockDb.empleados[0]?.id ?? '',
           empleadoNombre: mockDb.empleados[0]?.nombre ?? '',
@@ -1272,10 +1435,10 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
           totalAdelantos: '0.0000',
           totalNeto: '495000.0000',
         },
-      ] as T
+      ]) as T
     case 'liquidaciones_emitir': {
       const newLiq: MockLiquidacion = {
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         empleadoId: mockDb.empleados[0]?.id ?? '',
         empleadoNombre: mockDb.empleados[0]?.nombre ?? '',
         empleadoCargo: mockDb.empleados[0]?.cargo ?? '',
@@ -1287,34 +1450,37 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         totalAdelantos: '0.0000',
         totalNeto: '495000.0000',
         tienePdf: false,
-        rowVersion: crypto.randomUUID(),
+        rowVersion: generateUuid(),
       }
       mockDb.liquidaciones.unshift(newLiq)
-      return [newLiq] as T
+      saveMockDb(mockDb)
+      return structuredClone([newLiq]) as T
     }
     case 'liquidaciones_delete':
     case 'liquidacion_delete': {
       const id = String(args?.id ?? '')
       mockDb.liquidaciones = mockDb.liquidaciones.filter(l => l.id !== id)
+      saveMockDb(mockDb)
       return null as T
     }
 
     // ==========================================
     // CATEGORIAS & TIPOS
     // ==========================================
-    case 'categorias_list':
-      return { items: mockDb.categorias, totalCount: mockDb.categorias.length, page: 1, size: 30 } as T
+    case 'categorias_list': {
+      return structuredClone({ items: mockDb.categorias, totalCount: mockDb.categorias.length, page: 1, size: 30 }) as T
+    }
     case 'categorias_lookup':
-      return mockDb.categorias.map(c => ({ id: c.id, label: c.nombre })) as T
+      return structuredClone(mockDb.categorias.map(c => ({ id: c.id, label: c.nombre }))) as T
     case 'categorias_get': {
       const id = String(args?.id ?? '')
       const cat = mockDb.categorias.find(c => c.id === id) || mockDb.categorias[0]!
-      return { ...cat, createdAt: new Date().toISOString(), updatedAt: null } as T
+      return structuredClone({ ...cat, createdAt: new Date().toISOString(), updatedAt: null }) as T
     }
     case 'categorias_create': {
       const dto = (args?.dto ?? {}) as Record<string, unknown>
       const newCat: MockCategory = {
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         nombre: String(dto.nombre || ''),
         descripcion: (dto.descripcion as string | null) ?? null,
         colorHex: (dto.colorHex as string | null) ?? '#3B82F6',
@@ -1325,10 +1491,11 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         movimientosCount: 0,
         subcategoriasCount: 0,
         puedeEliminarse: true,
-        rowVersion: crypto.randomUUID(),
+        rowVersion: generateUuid(),
       }
       mockDb.categorias.unshift(newCat)
-      return newCat as T
+      saveMockDb(mockDb)
+      return structuredClone(newCat) as T
     }
     case 'categorias_update': {
       const id = String(args?.id ?? '')
@@ -1342,41 +1509,45 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
           colorHex: (dto.colorHex as string | null) ?? mockDb.categorias[idx]!.colorHex,
           icono: (dto.icono as string | null) ?? mockDb.categorias[idx]!.icono,
           categoriaPadreId: (dto.categoriaPadreId as string | null) ?? mockDb.categorias[idx]!.categoriaPadreId,
-          rowVersion: crypto.randomUUID(),
+          rowVersion: generateUuid(),
         }
-        return mockDb.categorias[idx] as T
+        saveMockDb(mockDb)
+        return structuredClone(mockDb.categorias[idx]) as T
       }
-      return mockDb.categorias[0] as T
+      return structuredClone(mockDb.categorias[0]) as T
     }
     case 'categorias_delete': {
       const id = String(args?.id ?? '')
       mockDb.categorias = mockDb.categorias.filter(c => c.id !== id)
+      saveMockDb(mockDb)
       return null as T
     }
 
-    case 'tipos_movimiento_list':
-      return { items: mockDb.tiposMovimiento, totalCount: mockDb.tiposMovimiento.length, page: 1, size: 30 } as T
+    case 'tipos_movimiento_list': {
+      return structuredClone({ items: mockDb.tiposMovimiento, totalCount: mockDb.tiposMovimiento.length, page: 1, size: 30 }) as T
+    }
     case 'tipos_movimiento_lookup':
-      return mockDb.tiposMovimiento.map(t => ({ id: t.id, label: t.nombre })) as T
+      return structuredClone(mockDb.tiposMovimiento.map(t => ({ id: t.id, label: t.nombre }))) as T
     case 'tipos_movimiento_get': {
       const id = String(args?.id ?? '')
       const tipo = mockDb.tiposMovimiento.find(t => t.id === id) || mockDb.tiposMovimiento[0]!
-      return { ...tipo, createdAt: new Date().toISOString(), updatedAt: null } as T
+      return structuredClone({ ...tipo, createdAt: new Date().toISOString(), updatedAt: null }) as T
     }
     case 'tipos_movimiento_create': {
       const dto = (args?.dto ?? {}) as Record<string, unknown>
       const newTipo: MockTipoMovimiento = {
-        id: crypto.randomUUID(),
+        id: generateUuid(),
         nombre: String(dto.nombre || ''),
         descripcion: (dto.descripcion as string | null) ?? null,
         esIngreso: Boolean(dto.esIngreso ?? true),
         esSistema: false,
         movimientosCount: 0,
         puedeEliminarse: true,
-        rowVersion: crypto.randomUUID(),
+        rowVersion: generateUuid(),
       }
       mockDb.tiposMovimiento.unshift(newTipo)
-      return newTipo as T
+      saveMockDb(mockDb)
+      return structuredClone(newTipo) as T
     }
     case 'tipos_movimiento_update': {
       const id = String(args?.id ?? '')
@@ -1387,15 +1558,17 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
           ...mockDb.tiposMovimiento[idx]!,
           nombre: String(dto.nombre || mockDb.tiposMovimiento[idx]!.nombre),
           descripcion: (dto.descripcion as string | null) ?? mockDb.tiposMovimiento[idx]!.descripcion,
-          rowVersion: crypto.randomUUID(),
+          rowVersion: generateUuid(),
         }
-        return mockDb.tiposMovimiento[idx] as T
+        saveMockDb(mockDb)
+        return structuredClone(mockDb.tiposMovimiento[idx]) as T
       }
-      return mockDb.tiposMovimiento[0] as T
+      return structuredClone(mockDb.tiposMovimiento[0]) as T
     }
     case 'tipos_movimiento_delete': {
       const id = String(args?.id ?? '')
       mockDb.tiposMovimiento = mockDb.tiposMovimiento.filter(t => t.id !== id)
+      saveMockDb(mockDb)
       return null as T
     }
 
