@@ -103,7 +103,7 @@ está en [`docs/15-migracion-de-datos.md`](./docs/15-migracion-de-datos.md).
 4. **Cada caso de uso y cada fórmula tiene test unitario.**
 5. **Los mensajes de commit van en inglés.**
 
-Ver [AGENTS.md](./AGENTS.md) para el reglamento completo aplicado a contribuciones asistidas
+Ver [AGENTS.md](./.agents/AGENTS.md) para el reglamento completo aplicado a contribuciones asistidas
 por IA y [CONTRIBUTING.md](./CONTRIBUTING.md) para el flujo de trabajo.
 
 ## Licencia

@@ -1,16 +1,20 @@
 # AGENTS.md — Rules for the implementing agent
 
 You are implementing **ElectroObra** from scratch on Rust + Tauri 2 + Vue 3. The full
-specification lives in [`docs/`](./docs) and is **normative**: if the code and the docs
+specification lives in [`docs/`](../docs) and is **normative**: if the code and the docs
 disagree, the docs win. If the docs are silent or contradictory, stop and ask — do not invent
 business rules.
 
 ## 0. Before you write a single line
 
-1. Read [`docs/00-INDICE.md`](./docs/00-INDICE.md) to find which document covers your task.
+1. Read [`docs/00-INDICE.md`](../docs/00-INDICE.md) to find which document covers your task.
 2. Read that document **completely**. Each document is self-contained on purpose.
-3. Check [`docs/19-roadmap.md`](./docs/19-roadmap.md): phases are ordered by dependency.
+3. Check [`docs/19-roadmap.md`](../docs/19-roadmap.md): phases are ordered by dependency.
    Do not start phase *N+1* until phase *N* meets its "done" criteria.
+4. Consult and apply the specialized skills available in `.agents/skills/`:
+   - **`rust-skills`** (`.agents/skills/rust-skills/`): Comprehensive Rust coding guidelines across 26 categories (ownership, error handling, async, numeric safety, conversions, testing, API design).
+   - **`tauri-v2`** (`.agents/skills/tauri-v2/`): Tauri v2 configuration, IPC (commands/events), capabilities, permissions, and desktop integration.
+   - **`vue-best-practices`** (`.agents/skills/vue-best-practices/`): Vue 3 + TypeScript standards, Composition API with `<script setup>`, Pinia stores, Vue Router, and component structure.
 
 ## 1. Zero hardcoding — absolute
 
@@ -18,7 +22,7 @@ business rules.
 | --- | --- |
 | User-facing text | i18n catalogs (`src/locales/*.json`), key referenced via `t('...')` |
 | Colours, spacing, radii, shadows | Tailwind theme tokens / CSS variables |
-| Connection strings, paths, directories | configuration (`docs/14-configuracion-e-i18n.md`) |
+| Connection strings, paths, directories | configuration (`../docs/14-configuracion-e-i18n.md`) |
 | Company name, contractor name, logo | configuration — the legacy app hardcoded these |
 | Tax rates, thresholds, page sizes, timeouts | configuration or a `constants` module |
 | Fixed GUIDs of system rows | `eo-domain` constants module, single definition |
@@ -32,7 +36,7 @@ A literal string in a `.vue` template or a colour like `#252525` anywhere is a d
 - Percentages, multipliers and worked-day counts use `Decimal4(i64)` with the same scale.
 - Every instant is `DateTime<Utc>`. Storage is UTC ISO-8601. Local time appears **only** in
   the presentation layer.
-- See [`docs/04-dinero-fechas-y-tipos.md`](./docs/04-dinero-fechas-y-tipos.md).
+- See [`docs/04-dinero-fechas-y-tipos.md`](../docs/04-dinero-fechas-y-tipos.md).
 
 ## 3. Architecture boundaries
 
@@ -60,29 +64,33 @@ eo-domain  ←  eo-application  ←  eo-infrastructure
 
 ## 5. Tests are part of the definition of done
 
-- Every formula in [`docs/06-casos-de-uso-y-formulas.md`](./docs/06-casos-de-uso-y-formulas.md)
+- Every formula in [`docs/06-casos-de-uso-y-formulas.md`](../docs/06-casos-de-uso-y-formulas.md)
   gets at least one unit test with the exact expected value, including boundary cases.
-- Every validation rule in [`docs/07-validaciones.md`](./docs/07-validaciones.md) gets a passing
+- Every validation rule in [`docs/07-validaciones.md`](../docs/07-validaciones.md) gets a passing
   and a failing case, asserting the **i18n key** returned.
 - Repositories are tested against an in-memory SQLite database with migrations applied.
 - HTTP adapters are tested against `wiremock`, including the timeout and degradation paths.
 - Vue components and stores are tested with Vitest.
-- The architecture tests of [`docs/16-frontend.md`](./docs/16-frontend.md) §8 must keep passing.
+- The architecture tests of [`docs/16-frontend.md`](../docs/16-frontend.md) §8 must keep passing.
   They are what prevent literal colours, untranslated text and money arithmetic from creeping
   back into the frontend.
-- The mandatory test list of [`docs/17-testing.md`](./docs/17-testing.md) §3.4 outranks the
+- The mandatory test list of [`docs/17-testing.md`](../docs/17-testing.md) §3.4 outranks the
   coverage percentage. Hitting the threshold without those tests is not done.
 - A pull request that adds a use case without tests is incomplete.
 
 ## 6. Style and tooling
 
+- Follow the guidelines provided by the installed skills in `.agents/skills/`:
+  - `rust-skills` for all Rust crates (`eo-domain`, `eo-application`, `eo-infrastructure`, `src-tauri`).
+  - `tauri-v2` for Tauri configuration, capability files, and backend commands.
+  - `vue-best-practices` for the frontend Vue 3 application (`src/`).
 - `cargo fmt --all` and `cargo clippy --workspace --all-targets -- -D warnings` must pass.
 - `pnpm lint`, `pnpm typecheck` and `pnpm test` must pass.
 - Vue components use `<script setup lang="ts">`. Props and emits are typed.
 - Naming: Rust `snake_case` / `PascalCase` as idiomatic; TypeScript `camelCase`;
   Vue components `PascalCase.vue`; i18n keys `dot.case` in Spanish domain wording.
 - Database identifiers are `snake_case` exactly as written in
-  [`docs/03-modelo-de-datos.md`](./docs/03-modelo-de-datos.md). Do not rename columns.
+  [`docs/03-modelo-de-datos.md`](../docs/03-modelo-de-datos.md). Do not rename columns.
 
 ## 7. Comments and documentation
 
@@ -105,7 +113,7 @@ eo-domain  ←  eo-application  ←  eo-infrastructure
 
 - All SQL goes through SeaORM query builders or parameterized statements. String interpolation
   of user input into SQL is forbidden. Dynamic identifiers must be validated against an
-  allowlist derived from the model (see `docs/13-servicios-externos-y-archivos.md`).
+  allowlist derived from the model (see `../docs/13-servicios-externos-y-archivos.md`).
 - Attachment uploads validate extension, MIME type and size against the configured allowlist.
   Filenames are sanitized; path traversal is rejected.
 - The Tauri capability set is minimal: only the commands and plugins actually used.

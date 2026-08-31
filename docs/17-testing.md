@@ -6,7 +6,7 @@ documento define la suite del sistema nuevo: qué se testea en cada capa, con qu
 cuáles son los tests que **no pueden faltar**.
 
 Regla de arranque: un módulo sin tests no está terminado. Ver
-[`AGENTS.md`](../AGENTS.md) y el criterio de terminado de cada fase en
+[`AGENTS.md`](../.agents/AGENTS.md) y el criterio de terminado de cada fase en
 [`19-roadmap.md`](./19-roadmap.md).
 
 ---

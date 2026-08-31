@@ -1,7 +1,7 @@
 # Contributing
 
 Thanks for working on ElectroObra. This document describes the workflow; the coding rules live
-in [AGENTS.md](./AGENTS.md) and the functional specification in [`docs/`](./docs).
+in [AGENTS.md](./.agents/AGENTS.md) and the functional specification in [`docs/`](./docs).
 
 ## Prerequisites
 

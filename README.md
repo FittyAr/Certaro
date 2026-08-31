@@ -108,7 +108,7 @@ including the mandatory dry run and post-import verification, is in
 4. **Every use case and every formula has a unit test.**
 5. **Commit messages are in English.**
 
-See [AGENTS.md](./AGENTS.md) for the full ruleset applied to AI-assisted contributions and
+See [AGENTS.md](./.agents/AGENTS.md) for the full ruleset applied to AI-assisted contributions and
 [CONTRIBUTING.md](./CONTRIBUTING.md) for the workflow.
 
 ## License
