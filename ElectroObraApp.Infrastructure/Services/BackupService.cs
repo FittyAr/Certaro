@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -152,16 +153,24 @@ public sealed class BackupService : IBackupService
 
             await _context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = OFF;", cancellationToken);
 
+            var tableAllowlist = BuildTableAllowlist();
+
             foreach (var (table, rows) in export.Tables)
             {
-                await _context.Database.ExecuteSqlRawAsync($"DELETE FROM \"{table}\";", cancellationToken);
+                if (!tableAllowlist.TryGetValue(table, out var allowedColumns))
+                {
+                    throw new InvalidOperationException($"Tabla no permitida en importación: {table}");
+                }
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    BuildDeleteTableSql(table),
+                    cancellationToken);
+
                 foreach (var row in rows)
                 {
-                    var columns = string.Join(", ", row.Keys.Select(k => $"\"{k}\""));
-                    var parameters = string.Join(", ", row.Keys.Select((k, i) => $"@p{i}"));
-                    var sql = $"INSERT INTO \"{table}\" ({columns}) VALUES ({parameters});";
-
-                    var dbParams = row.Values.Select((v, i) => new SqliteParameter($"@p{i}", v ?? DBNull.Value)).ToArray();
+                    ValidateRowColumns(row.Keys, allowedColumns);
+                    var sql = BuildInsertSql(table, row.Keys);
+                    var dbParams = row.Values.Select((v, i) => new SqliteParameter("@p" + i, v ?? DBNull.Value)).ToArray();
                     await _context.Database.ExecuteSqlRawAsync(sql, dbParams, cancellationToken);
                 }
             }
@@ -173,6 +182,70 @@ public sealed class BackupService : IBackupService
         {
             _logger.LogError(ex, "Error al importar base de datos desde JSON");
             return new DatabaseExportResult { Success = false, ErrorMessage = ex.Message };
+        }
+    }
+
+    private Dictionary<string, HashSet<string>> BuildTableAllowlist()
+    {
+        var allowlist = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var entityType in _context.Model.GetEntityTypes())
+        {
+            var tableName = entityType.GetTableName();
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                continue;
+            }
+
+            var columns = entityType.GetProperties()
+                .Select(p => p.GetColumnName())
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Select(name => name!)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            allowlist[tableName] = columns;
+        }
+
+        return allowlist;
+    }
+
+    private static void ValidateRowColumns(IEnumerable<string> columns, HashSet<string> allowedColumns)
+    {
+        foreach (var column in columns)
+        {
+            if (!allowedColumns.Contains(column))
+            {
+                throw new InvalidOperationException($"Columna no permitida en importación: {column}");
+            }
+        }
+    }
+
+    private static string BuildDeleteTableSql(string tableName)
+    {
+        ValidateSqlIdentifier(tableName);
+        return "DELETE FROM \"" + tableName + "\";";
+    }
+
+    private static string BuildInsertSql(string tableName, IEnumerable<string> columnNames)
+    {
+        ValidateSqlIdentifier(tableName);
+
+        var columns = columnNames.ToList();
+        foreach (var column in columns)
+        {
+            ValidateSqlIdentifier(column);
+        }
+
+        var quotedColumns = string.Join(", ", columns.Select(c => "\"" + c + "\""));
+        var parameters = string.Join(", ", columns.Select((_, i) => "@p" + i));
+        return "INSERT INTO \"" + tableName + "\" (" + quotedColumns + ") VALUES (" + parameters + ");";
+    }
+
+    private static void ValidateSqlIdentifier(string identifier)
+    {
+        if (!Regex.IsMatch(identifier, "^[A-Za-z_][A-Za-z0-9_]*$"))
+        {
+            throw new InvalidOperationException($"Identificador SQL no válido: {identifier}");
         }
     }
 

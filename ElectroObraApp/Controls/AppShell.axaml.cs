@@ -4,7 +4,7 @@ namespace ElectroObraApp.Controls;
 
 public partial class AppShell : UserControl
 {
-    private const double CompactBreakpoint = 640;
+    private const double OverlayBreakpoint = 768;
 
     public AppShell()
     {
@@ -25,15 +25,15 @@ public partial class AppShell : UserControl
             return;
         }
 
-        if (width < CompactBreakpoint)
+        NavigationSplitView.OpenPaneLength = 260;
+
+        if (width < OverlayBreakpoint)
         {
             NavigationSplitView.DisplayMode = SplitViewDisplayMode.Overlay;
-            NavigationSplitView.OpenPaneLength = 240;
         }
         else
         {
             NavigationSplitView.DisplayMode = SplitViewDisplayMode.CompactInline;
-            NavigationSplitView.OpenPaneLength = 240;
         }
     }
 }

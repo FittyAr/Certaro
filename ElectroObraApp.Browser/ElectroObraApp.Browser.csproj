@@ -4,10 +4,12 @@
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <WasmBuildNative>true</WasmBuildNative>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Browser" />
+    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,5 +22,16 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <!-- Browser uses EF InMemory; exclude SQLite native to avoid WASM0001 varargs warnings. -->
+  <Target Name="ExcludeSqliteFromWasmNativeLink" BeforeTargets="_PrepareForBrowserWasmBuildNative">
+    <ItemGroup>
+      <NativeFileReference Remove="@(NativeFileReference)" Condition="$([System.String]::Copy('%(Identity)').Contains('e_sqlite3'))" />
+      <NativeFileReference Update="@(NativeFileReference)" Condition="$([System.String]::Copy('%(Filename)').Contains('e_sqlite3'))">
+        <ScanForPInvokes>false</ScanForPInvokes>
+      </NativeFileReference>
+      <_WasmNativeFileForLinking Remove="@(_WasmNativeFileForLinking)" Condition="$([System.String]::Copy('%(Identity)').Contains('e_sqlite3'))" />
+    </ItemGroup>
+  </Target>
 </Project>
 

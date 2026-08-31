@@ -34,7 +34,9 @@
                        Text="{Binding RouteText}"
                        VerticalAlignment="Center"
                        FontSize="12"
-                       Foreground="{DynamicResource TextTertiary}" />
+                       Foreground="{DynamicResource TextTertiary}"
+                       TextTrimming="CharacterEllipsis"
+                       MaxWidth="420" />
         </Grid>
     </Border>
 </UserControl>

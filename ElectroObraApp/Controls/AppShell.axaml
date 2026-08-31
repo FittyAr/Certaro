@@ -74,7 +74,7 @@
                 BorderBrush="{DynamicResource BorderSubtle}"
                 BorderThickness="0,0,0,1"
                 Padding="16,10">
-            <Grid ColumnDefinitions="Auto, Auto, *, Auto, Auto" ColumnSpacing="12">
+            <Grid ColumnDefinitions="Auto, Auto, *" ColumnSpacing="12">
                 <Button Grid.Column="0"
                         Classes="eo-secondary"
                         Padding="8"
@@ -97,8 +97,8 @@
                 <Button Grid.Column="2"
                         Classes="eo-secondary"
                         HorizontalAlignment="Stretch"
-                        MaxWidth="480"
-                        Margin="8,0"
+                        MaxWidth="560"
+                        Margin="8,0,0,0"
                         Command="{Binding OpenCommandPaletteCommand}"
                         automation:AutomationProperties.Name="{loc:Translate Key=Navigation.Search}">
                     <Grid ColumnDefinitions="Auto, *, Auto">
@@ -118,19 +118,6 @@
                                    Foreground="{DynamicResource TextDisabled}" />
                     </Grid>
                 </Button>
-
-                <StackPanel Grid.Column="3"
-                            Orientation="Horizontal"
-                            Spacing="6"
-                            VerticalAlignment="Center">
-                    <materialIcons:MaterialIcon Kind="ChevronRight" Width="14" Height="14"
-                                                Foreground="{DynamicResource TextTertiary}" />
-                    <TextBlock Text="{Binding BreadcrumbText}"
-                               FontSize="13"
-                               FontWeight="Medium"
-                               Foreground="{DynamicResource TextSecondary}"
-                               VerticalAlignment="Center" />
-                </StackPanel>
             </Grid>
         </Border>
 
@@ -139,7 +126,7 @@
                    x:Name="NavigationSplitView"
                    IsPaneOpen="{Binding IsSidebarOpen, Mode=TwoWay}"
                    DisplayMode="CompactInline"
-                   CompactPaneLength="52"
+                   CompactPaneLength="56"
                    OpenPaneLength="260"
                    PaneBackground="{DynamicResource MainBackgroundBrush}">
             <SplitView.Pane>
@@ -147,14 +134,14 @@
                     <StackPanel Margin="4,8,4,12" Spacing="2">
 
                         <!-- Operación -->
-                        <TextBlock Classes="groupHeader" Text="{loc:Translate Key=Menu.Group.Operacion}" />
+                        <TextBlock Classes="groupHeader" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Group.Operacion}" />
                         <Button Classes="menuItem"
                                 Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=dashboard}"
                                 Command="{Binding NavigateToCommand}" CommandParameter="dashboard"
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.Dashboard}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="ViewDashboard" Width="18" Height="18" />
-                                <TextBlock Text="{loc:Translate Key=Menu.Dashboard}" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Dashboard}" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Button>
                         <Button Classes="menuItem"
@@ -163,19 +150,19 @@
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.Movimientos}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="SwapHorizontal" Width="18" Height="18" />
-                                <TextBlock Text="{loc:Translate Key=Menu.Movimientos}" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Movimientos}" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Button>
 
                         <!-- Comercial -->
-                        <TextBlock Classes="groupHeader" Text="{loc:Translate Key=Menu.Group.Comercial}" />
+                        <TextBlock Classes="groupHeader" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Group.Comercial}" />
                         <Button Classes="menuItem"
                                 Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=clientes}"
                                 Command="{Binding NavigateToCommand}" CommandParameter="clientes"
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.Clientes}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="AccountGroup" Width="18" Height="18" />
-                                <TextBlock Text="{loc:Translate Key=Menu.Clientes}" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Clientes}" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Button>
                         <Button Classes="menuItem"
@@ -184,7 +171,7 @@
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.Obras}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="Domain" Width="18" Height="18" />
-                                <TextBlock Text="{loc:Translate Key=Menu.Obras}" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Obras}" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Button>
                         <Button Classes="menuItem"
@@ -193,7 +180,7 @@
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.Certificados}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="Certificate" Width="18" Height="18" />
-                                <TextBlock Text="{loc:Translate Key=Menu.Certificados}" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Certificados}" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Button>
                         <Button Classes="menuItem"
@@ -202,19 +189,19 @@
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.Facturas}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="Receipt" Width="18" Height="18" />
-                                <TextBlock Text="{loc:Translate Key=Menu.Facturas}" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Facturas}" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Button>
 
                         <!-- Personal -->
-                        <TextBlock Classes="groupHeader" Text="{loc:Translate Key=Menu.Group.Personal}" />
+                        <TextBlock Classes="groupHeader" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Group.Personal}" />
                         <Button Classes="menuItem"
                                 Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=empleados}"
                                 Command="{Binding NavigateToCommand}" CommandParameter="empleados"
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.Empleados}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="BadgeAccount" Width="18" Height="18" />
-                                <TextBlock Text="{loc:Translate Key=Menu.Empleados}" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Empleados}" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Button>
                         <Button Classes="menuItem"
@@ -223,7 +210,7 @@
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.Asistencia}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="CalendarCheck" Width="18" Height="18" />
-                                <TextBlock Text="{loc:Translate Key=Menu.Asistencia}" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Asistencia}" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Button>
                         <Button Classes="menuItem"
@@ -232,19 +219,19 @@
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.Liquidaciones}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="CashMultiple" Width="18" Height="18" />
-                                <TextBlock Text="{loc:Translate Key=Menu.Liquidaciones}" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Liquidaciones}" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Button>
 
                         <!-- Sistema -->
-                        <TextBlock Classes="groupHeader" Text="{loc:Translate Key=Menu.Group.Sistema}" />
+                        <TextBlock Classes="groupHeader" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Group.Sistema}" />
                         <Button Classes="menuItem"
                                 Classes.active="{Binding CurrentRoute, Converter={StaticResource StringEqualsConverter}, ConverterParameter=reportes}"
                                 Command="{Binding NavigateToCommand}" CommandParameter="reportes"
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.Reports}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="FileChart" Width="18" Height="18" />
-                                <TextBlock Text="{loc:Translate Key=Menu.Reports}" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Reports}" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Button>
                         <Button Classes="menuItem"
@@ -253,7 +240,7 @@
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.Categories}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="TagMultiple" Width="18" Height="18" />
-                                <TextBlock Text="{loc:Translate Key=Menu.Categories}" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Categories}" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Button>
                         <Button Classes="menuItem"
@@ -262,7 +249,7 @@
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.MovementTypes}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="FormatListBulletedType" Width="18" Height="18" />
-                                <TextBlock Text="{loc:Translate Key=Menu.MovementTypes}" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.MovementTypes}" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Button>
                         <Button Classes="menuItem"
@@ -271,7 +258,7 @@
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.Settings}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="Cog" Width="18" Height="18" />
-                                <TextBlock Text="{loc:Translate Key=Menu.Settings}" Foreground="{DynamicResource MainForegroundBrush}" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Settings}" Foreground="{DynamicResource MainForegroundBrush}" />
                             </StackPanel>
                         </Button>
                         <Button Classes="menuItem"
@@ -281,7 +268,7 @@
                                 automation:AutomationProperties.Name="{loc:Translate Key=Menu.Seed}">
                             <StackPanel Orientation="Horizontal" Spacing="10">
                                 <materialIcons:MaterialIcon Kind="Database" Width="18" Height="18" Foreground="Orange" />
-                                <TextBlock Text="{loc:Translate Key=Menu.Seed}" Foreground="Orange" />
+                                <TextBlock Classes="menuLabel" IsVisible="{Binding IsSidebarOpen}" Text="{loc:Translate Key=Menu.Seed}" Foreground="Orange" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -296,7 +283,7 @@
         <!-- Status bar -->
         <controls:AppStatusBar Grid.Row="2"
                                  StatusText="{Binding Greeting}"
-                                 RouteText="{Binding CurrentSection}"
+                                 RouteText="{Binding BreadcrumbText}"
                                  GoBackCommand="{Binding GoBackCommand}"
                                  CanGoBack="{Binding CanGoBack}" />
     </Grid>

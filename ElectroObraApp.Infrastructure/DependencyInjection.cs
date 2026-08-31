@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,9 +17,19 @@ public static class DependencyInjection
     {
         var connectionString = ElectroObraApp.Core.Helpers.PathHelper.GetSqliteConnectionString();
         var httpTimeoutSeconds = configuration.GetValue("Application:HttpTimeoutSeconds", 30);
+        var isBrowser = RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"));
 
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite(connectionString));
+        {
+            if (isBrowser)
+            {
+                options.UseInMemoryDatabase("ElectroObra");
+            }
+            else
+            {
+                options.UseSqlite(connectionString);
+            }
+        });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddSingleton<ILocalizationService, LocalizationService>();

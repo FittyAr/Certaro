@@ -1,16 +1,17 @@
 <Solution>
+  <!-- Mobile paused: uncomment to restore Android / iOS
   <Project Path="ElectroObraApp.Android/ElectroObraApp.Android.csproj">
     <Deploy />
   </Project>
+  <Project Path="ElectroObraApp.iOS/ElectroObraApp.iOS.csproj">
+    <Deploy />
+  </Project>
+  -->
   <Project Path="ElectroObraApp.Application/ElectroObraApp.Application.csproj" />
   <Project Path="ElectroObraApp.Browser/ElectroObraApp.Browser.csproj" />
   <Project Path="ElectroObraApp.Core/ElectroObraApp.Core.csproj" />
   <Project Path="ElectroObraApp.Desktop/ElectroObraApp.Desktop.csproj" />
   <Project Path="ElectroObraApp.Infrastructure/ElectroObraApp.Infrastructure.csproj" />
-  <Project Path="ElectroObraApp.iOS/ElectroObraApp.iOS.csproj">
-    <Deploy />
-  </Project>
   <Project Path="ElectroObraApp.Tests/ElectroObraApp.Tests.csproj" />
   <Project Path="ElectroObraApp/ElectroObraApp.csproj" />
 </Solution>
-

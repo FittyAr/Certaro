@@ -128,8 +128,10 @@ dotnet workload install wasm-tools
 Restaura los paquetes NuGet y compila la solución:
 ```bash
 dotnet restore
-dotnet build ElectroObraApp.Desktop/ElectroObraApp.Desktop.csproj
+dotnet build ElectroObraApp.slnx
 ```
+
+> **Nota:** Los proyectos Android e iOS están comentados en `ElectroObraApp.slnx` para evitar errores de build mientras se estabilizan. Para reactivarlos, descomenta el bloque `Mobile paused` al inicio del archivo `.slnx`.
 
 ### Ejecutar la Aplicación (Escritorio)
 Para iniciar la aplicación de escritorio:

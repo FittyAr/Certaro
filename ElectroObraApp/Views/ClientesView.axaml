@@ -9,7 +9,8 @@
              mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="500"
              x:Class="ElectroObraApp.Views.ClientesView"
              x:DataType="vm:ClientesViewModel">
-    <Grid ColumnDefinitions="*, 400" ColumnSpacing="16">
+    <controls:MasterDetailLayout>
+        <controls:MasterDetailLayout.Master>
         <TabControl SelectedIndex="{Binding SelectedTabIndex}">
             <TabItem Header="{loc:Translate Key=Clients.ListTab}">
                 <DockPanel>
@@ -23,8 +24,7 @@
                     </controls:PageHeader>
 
                     <controls:FilterBar DockPanel.Dock="Top"
-                                        Header="{loc:Translate Key=Clients.SearchFilters}"
-                                        Margin="0,0,0,16">
+                                        Header="{loc:Translate Key=Clients.SearchFilters}">
                         <controls:FilterBar.FilterContent>
                             <StackPanel Spacing="10">
                                 <Button HorizontalAlignment="Right"
@@ -95,9 +95,10 @@
                 <views:CuentaCorrienteView DataContext="{Binding CuentaCorrienteViewModel}" />
             </TabItem>
         </TabControl>
+        </controls:MasterDetailLayout.Master>
 
-        <Border Grid.Column="1"
-                Background="{DynamicResource SurfaceRaised}"
+        <controls:MasterDetailLayout.Detail>
+        <Border Background="{DynamicResource SurfaceRaised}"
                 BorderBrush="{DynamicResource BorderSubtle}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource Radius12}"
@@ -117,5 +118,6 @@
                                      HorizontalAlignment="Stretch" />
             </Grid>
         </Border>
-    </Grid>
+        </controls:MasterDetailLayout.Detail>
+    </controls:MasterDetailLayout>
 </UserControl>

@@ -21,11 +21,13 @@
     <PackageVersion Include="LiveChartsCore.SkiaSharpView.Avalonia" Version="2.1.0-dev-365" />
     <PackageVersion Include="Avalonia.Labs.Notifications" Version="12.0.2" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="4.151.1" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.3" />
     <PackageVersion Include="SkiaSharp" Version="4.151.1" />
     <PackageVersion Include="Tmds.DBus.Protocol" Version="0.92.0" />
     <!-- EF Core -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.11" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.11" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.11" />
     <!-- Validation & Mapping -->

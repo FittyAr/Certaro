@@ -18,6 +18,7 @@ using ElectroObraApp.Views;
 using ElectroObraApp.Core.Helpers;
 using Serilog;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace ElectroObraApp;
 
@@ -33,86 +34,113 @@ public partial class App : Avalonia.Application
 
     public override async void OnFrameworkInitializationCompleted()
     {
-        // 1. Configuración
-        var appDataPath = PathHelper.GetAppDataPath();
-        var settingsPath = PathHelper.GetSettingsPath();
-
-        if (!File.Exists(settingsPath))
+        try
         {
-            var baseSettings = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
-            if (File.Exists(baseSettings))
+            var isBrowser = RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"));
+
+            // 1. Configuración
+            var appDataPath = PathHelper.GetAppDataPath();
+            var settingsPath = PathHelper.GetSettingsPath();
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var baseSettings = Path.Combine(baseDirectory, "appsettings.json");
+
+            if (!File.Exists(settingsPath) && File.Exists(baseSettings))
             {
-                File.Copy(baseSettings, settingsPath);
+                try
+                {
+                    File.Copy(baseSettings, settingsPath);
+                }
+                catch
+                {
+                    // En browser el FS virtual puede no permitir copia; se usa fallback embebido.
+                }
             }
-        }
 
-        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
-            ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
-            ?? "Production";
+            var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+                ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+                ?? "Production";
 
-        var builder = new ConfigurationBuilder()
-            .SetBasePath(appDataPath)
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            var builder = new ConfigurationBuilder();
 
-        var environmentSettingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"appsettings.{environment}.json");
-        if (File.Exists(environmentSettingsPath))
-        {
-            builder.AddJsonFile(environmentSettingsPath, optional: true, reloadOnChange: true);
-        }
-
-        Configuration = builder.Build();
-
-        // 2. Logging
-        var logDirectory = Path.Combine(appDataPath, "logs");
-        SerilogConfiguration.Configure(Configuration, logDirectory);
-
-        // 3. DI Container
-        var serviceCollection = new ServiceCollection();
-        ConfigureServices(serviceCollection);
-        Services = serviceCollection.BuildServiceProvider();
-
-        // 4. Inicialización de Base de Datos
-        await InitializeDatabaseAsync();
-
-        // Global Exception Handling
-        AppDomain.CurrentDomain.UnhandledException += (sender, e) => 
-        {
-            Log.Fatal(e.ExceptionObject as Exception, "Error no controlado (AppDomain)");
-        };
-
-        TaskScheduler.UnobservedTaskException += (sender, e) =>
-        {
-            Log.Error(e.Exception, "Error en tarea asíncrona no observada");
-            e.SetObserved();
-        };
-
-        // 5. Inicialización de UI
-        var mainViewModel = Services.GetRequiredService<MainViewModel>();
-        
-        // Cargar Tema e idioma
-        var settings = Services.GetRequiredService<IUserSettingsService>();
-        SetTheme(settings.GetTheme());
-
-        var localization = Services.GetRequiredService<ILocalizationService>();
-        localization.SetLanguage(settings.GetLanguage());
-        localization.LanguageChanged += (_, _) => Markup.LocalizationBindingSource.Instance.Refresh();
-
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            desktop.MainWindow = new MainWindow
+            if (File.Exists(settingsPath))
             {
-                DataContext = mainViewModel
-            };
-        }
-        else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
-        {
-            singleViewPlatform.MainView = new MainView
+                builder.SetBasePath(appDataPath)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: !isBrowser);
+            }
+            else if (File.Exists(baseSettings))
             {
-                DataContext = mainViewModel
-            };
-        }
+                builder.SetBasePath(baseDirectory)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: !isBrowser);
+            }
+            else
+            {
+                throw new FileNotFoundException("No se encontró appsettings.json en AppData ni en el directorio base.");
+            }
 
-        base.OnFrameworkInitializationCompleted();
+            var environmentSettingsPath = Path.Combine(baseDirectory, $"appsettings.{environment}.json");
+            if (File.Exists(environmentSettingsPath))
+            {
+                builder.AddJsonFile(environmentSettingsPath, optional: true, reloadOnChange: !isBrowser);
+            }
+
+            Configuration = builder.Build();
+
+            // 2. Logging
+            var logDirectory = Path.Combine(appDataPath, "logs");
+            SerilogConfiguration.Configure(Configuration, logDirectory);
+
+            // 3. DI Container
+            var serviceCollection = new ServiceCollection();
+            ConfigureServices(serviceCollection);
+            Services = serviceCollection.BuildServiceProvider();
+
+            // Global Exception Handling
+            AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+            {
+                Log.Fatal(e.ExceptionObject as Exception, "Error no controlado (AppDomain)");
+            };
+
+            TaskScheduler.UnobservedTaskException += (_, e) =>
+            {
+                Log.Error(e.Exception, "Error en tarea asíncrona no observada");
+                e.SetObserved();
+            };
+
+            // 4. Inicialización de UI (antes de BD para no bloquear el arranque web)
+            var mainViewModel = Services.GetRequiredService<MainViewModel>();
+
+            var settings = Services.GetRequiredService<IUserSettingsService>();
+            SetTheme(settings.GetTheme());
+
+            var localization = Services.GetRequiredService<ILocalizationService>();
+            localization.SetLanguage(settings.GetLanguage());
+            localization.LanguageChanged += (_, _) => Markup.LocalizationBindingSource.Instance.Refresh();
+
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                desktop.MainWindow = new MainWindow
+                {
+                    DataContext = mainViewModel
+                };
+            }
+            else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
+            {
+                singleViewPlatform.MainView = new MainView
+                {
+                    DataContext = mainViewModel
+                };
+            }
+
+            base.OnFrameworkInitializationCompleted();
+
+            // 5. Base de datos en segundo plano
+            await InitializeDatabaseAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Error fatal durante el arranque de la aplicación");
+            throw;
+        }
     }
 
     private void ConfigureServices(IServiceCollection services)
@@ -132,9 +160,26 @@ public partial class App : Avalonia.Application
         using var scope = Services!.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<App>>();
+        var isBrowser = RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"));
 
         try
         {
+            if (isBrowser)
+            {
+                logger.LogInformation("Inicializando base de datos en memoria (browser)...");
+                await context.Database.EnsureCreatedAsync();
+
+                var seedService = scope.ServiceProvider.GetRequiredService<IDatabaseSeedService>();
+                if (seedService.IsSeedEnabled() && !await context.Movimientos.AnyAsync())
+                {
+                    logger.LogInformation("Base de datos en memoria vacía. Sembrando datos iniciales...");
+                    await seedService.SeedAsync();
+                }
+
+                logger.LogInformation("Base de datos en memoria inicializada correctamente.");
+                return;
+            }
+
             logger.LogInformation("Verificando y aplicando migraciones de base de datos...");
             var migrationRunner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
             var migrationResult = await migrationRunner.RunPendingMigrationsAsync();
@@ -152,13 +197,13 @@ public partial class App : Avalonia.Application
                     migrationResult.BackupPath ?? "N/A");
             }
 
-            var seedService = scope.ServiceProvider.GetRequiredService<IDatabaseSeedService>();
-            if (seedService.IsSeedEnabled())
+            var desktopSeedService = scope.ServiceProvider.GetRequiredService<IDatabaseSeedService>();
+            if (desktopSeedService.IsSeedEnabled())
             {
                 if (!await context.Movimientos.AnyAsync())
                 {
                     logger.LogInformation("Base de datos vacía detectada. Sembrando datos iniciales...");
-                    await seedService.SeedAsync();
+                    await desktopSeedService.SeedAsync();
                 }
             }
             logger.LogInformation("Base de datos inicializada correctamente.");

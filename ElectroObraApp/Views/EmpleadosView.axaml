@@ -9,8 +9,9 @@
              mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="500"
              x:Class="ElectroObraApp.Views.EmpleadosView"
              x:DataType="vm:EmpleadosViewModel">
-    <Grid ColumnDefinitions="*, 400" ColumnSpacing="16">
-        <DockPanel Grid.Column="0">
+    <controls:MasterDetailLayout>
+        <controls:MasterDetailLayout.Master>
+        <DockPanel>
             <controls:PageHeader DockPanel.Dock="Top" Title="{loc:Translate Key=Employees.Title}">
                 <controls:PageHeader.Actions>
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -21,8 +22,7 @@
             </controls:PageHeader>
 
             <controls:FilterBar DockPanel.Dock="Top"
-                                Header="{loc:Translate Key=Employees.SearchFilters}"
-                                Margin="0,0,0,16">
+                                Header="{loc:Translate Key=Employees.SearchFilters}">
                 <controls:FilterBar.FilterContent>
                     <StackPanel Spacing="10">
                         <Button HorizontalAlignment="Right"
@@ -102,9 +102,10 @@
                                            RetryCommand="{Binding LoadEmpleadosCommand}" />
             </Grid>
         </DockPanel>
+        </controls:MasterDetailLayout.Master>
 
-        <Border Grid.Column="1"
-                Background="{DynamicResource SurfaceRaised}"
+        <controls:MasterDetailLayout.Detail>
+        <Border Background="{DynamicResource SurfaceRaised}"
                 BorderBrush="{DynamicResource BorderSubtle}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource Radius12}"
@@ -119,5 +120,6 @@
                                      ActionCommand="{Binding AddCommand}" />
             </Grid>
         </Border>
-    </Grid>
+        </controls:MasterDetailLayout.Detail>
+    </controls:MasterDetailLayout>
 </UserControl>

@@ -18,12 +18,11 @@
         <conv:BoolToObjectConverter x:Key="BoolToColorConverter" TrueValue="{DynamicResource Error}" FalseValue="{DynamicResource Success}" />
         <conv:BoolToObjectConverter x:Key="AlertBackgroundConverter" TrueValue="{DynamicResource WarningSubtle}" FalseValue="{DynamicResource SuccessSubtle}" />
         <conv:BoolToObjectConverter x:Key="AlertBorderConverter" TrueValue="{DynamicResource Warning}" FalseValue="{DynamicResource Success}" />
-        <conv:BoolToObjectConverter x:Key="AlertIconConverter" TrueValue="⚠️" FalseValue="✅" />
     </UserControl.Resources>
 
     <Grid>
     <ScrollViewer IsVisible="{Binding !IsLoading}">
-        <Grid RowDefinitions="Auto, Auto, Auto, Auto, *, *, *" Margin="0">
+        <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto" Margin="0">
             <!-- Header & Controls -->
             <Grid Grid.Row="0" ColumnDefinitions="*, Auto, Auto" Margin="0,0,0,16">
                 <StackPanel Grid.Column="0" Spacing="4">
@@ -52,8 +51,8 @@
             <Border Grid.Row="1" IsVisible="{Binding ShowDollarRates}" 
                     Background="{DynamicResource SidebarBackgroundBrush}" 
                     CornerRadius="15" Margin="0,0,0,20" Padding="15,10">
-                <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
+                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,20,8">
                         <materialIcons:MaterialIcon Kind="CurrencyUsd" Foreground="{DynamicResource Warning}" Width="20" Height="20"/>
                         <TextBlock Text="{loc:Translate Key=Dashboard.DollarRate}" FontWeight="Bold" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
                     </StackPanel>
@@ -61,12 +60,12 @@
                     <ItemsControl ItemsSource="{Binding DollarRates}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="25"/>
+                                <WrapPanel Orientation="Horizontal" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="dto:DollarDto">
-                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,25,8">
                                     <TextBlock Text="{Binding Nombre}" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
                                     <StackPanel Orientation="Horizontal" Spacing="5">
                                         <TextBlock Text="{loc:Translate Key=Dashboard.Buy}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryForegroundBrush}"/>
@@ -80,7 +79,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </StackPanel>
+                </WrapPanel>
             </Border>
 
             <!-- Hero balance -->
@@ -257,7 +256,7 @@
                     </StackPanel>
                     <Border Background="{DynamicResource InfoSubtle}" Padding="12" CornerRadius="{StaticResource Radius8}" BorderBrush="{DynamicResource Info}" BorderThickness="1">
                         <StackPanel Orientation="Horizontal" Spacing="10">
-                            <TextBlock Text="ℹ️" VerticalAlignment="Center"/>
+                            <materialIcons:MaterialIcon Kind="InformationOutline" Width="16" Height="16" VerticalAlignment="Center" Foreground="{DynamicResource Info}" />
                             <TextBlock Text="{Binding DatabaseStatus}" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource MainForegroundBrush}"/>
                         </StackPanel>
                     </Border>

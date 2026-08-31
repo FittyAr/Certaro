@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ElectroObraApp.Controls"
+             x:Class="ElectroObraApp.Controls.MasterDetailLayout"
+             x:Name="Root">
+    <Grid x:Name="LayoutGrid" ColumnDefinitions="*, Auto" ColumnSpacing="16">
+        <ContentPresenter x:Name="MasterHost"
+                          Grid.Column="0"
+                          Content="{Binding Master, ElementName=Root}"
+                          MinWidth="280" />
+        <ContentPresenter x:Name="DetailHost"
+                          Grid.Column="1"
+                          Content="{Binding Detail, ElementName=Root}"
+                          MinWidth="320"
+                          MaxWidth="400" />
+    </Grid>
+</UserControl>

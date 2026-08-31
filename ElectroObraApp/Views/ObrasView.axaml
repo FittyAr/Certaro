@@ -1,225 +1,123 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-
              xmlns:vm="clr-namespace:ElectroObraApp.ViewModels"
-
              xmlns:dto="clr-namespace:ElectroObraApp.Application.DTOs;assembly=ElectroObraApp.Application"
-
              xmlns:controls="clr-namespace:ElectroObraApp.Controls"
-
              xmlns:loc="using:ElectroObraApp.Markup"
-
              mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="500"
-
              x:Class="ElectroObraApp.Views.ObrasView"
-
              x:DataType="vm:ObrasViewModel">
-
-    <Grid ColumnDefinitions="*, 400" ColumnSpacing="16">
-
-        <DockPanel Grid.Column="0">
-
-            <controls:PageHeader DockPanel.Dock="Top" Title="{loc:Translate Key=Obras.Title}">
-
-                <controls:PageHeader.Actions>
-
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-
-                        <Button Content="{loc:Translate Key=General.Add}" Classes="eo-primary" Command="{Binding AddCommand}" />
-
-                        <Button Content="{loc:Translate Key=General.Refresh}" Classes="eo-secondary" Command="{Binding LoadObrasCommand}" />
-
-                    </StackPanel>
-
-                </controls:PageHeader.Actions>
-
-            </controls:PageHeader>
-
-
-
-            <controls:FilterBar DockPanel.Dock="Top"
-
-                                Header="{loc:Translate Key=Obras.SearchFilters}"
-
-                                Margin="0,0,0,16">
-
-                <controls:FilterBar.FilterContent>
-
-                    <StackPanel Spacing="10">
-
-                        <Button HorizontalAlignment="Right"
-
-                                Content="{loc:Translate Key=General.ClearFilters}"
-
-                                Classes="link"
-
-                                Command="{Binding LimpiarFiltrosCommand}" />
-
-                        <WrapPanel Orientation="Horizontal" Margin="-5">
-
-                            <StackPanel Margin="5">
-
-                                <TextBlock Text="{loc:Translate Key=Obras.NameSearch}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
-
-                                <TextBox Width="200" Text="{Binding FiltroNombre}" PlaceholderText="{loc:Translate Key=General.Search}" />
-
-                            </StackPanel>
-
-                            <StackPanel Margin="5">
-
-                                <TextBlock Text="{loc:Translate Key=Obras.Client}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
-
-                                <ComboBox Width="180"
-
-                                          ItemsSource="{Binding Clientes}"
-
-                                          SelectedValue="{Binding FiltroClienteId}"
-
-                                          SelectedValueBinding="{Binding Id}"
-
-                                          DisplayMemberBinding="{Binding Nombre}"
-
-                                          PlaceholderText="{loc:Translate Key=General.Select}" />
-
-                            </StackPanel>
-
-                            <StackPanel Margin="5">
-
-                                <TextBlock Text="{loc:Translate Key=Obras.Status}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
-
-                                <ComboBox Width="140" SelectedIndex="{Binding FiltroEstadoIndex}">
-
-                                    <ComboBoxItem Content="{loc:Translate Key=General.All}" />
-
-                                    <ComboBoxItem Content="{loc:Translate Key=Obras.StatusActive}" />
-
-                                    <ComboBoxItem Content="{loc:Translate Key=Obras.StatusPaused}" />
-
-                                    <ComboBoxItem Content="{loc:Translate Key=Obras.StatusFinished}" />
-
-                                    <ComboBoxItem Content="{loc:Translate Key=Obras.StatusCancelled}" />
-
-                                </ComboBox>
-
-                            </StackPanel>
-
-                        </WrapPanel>
-
-                    </StackPanel>
-
-                </controls:FilterBar.FilterContent>
-
-            </controls:FilterBar>
-
-
-
-            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
-
-                <TextBlock Text="{loc:Translate Key=General.ItemsPerPage}" Classes="pageSizeLabel" Foreground="{DynamicResource TextTertiary}" />
-
-                <ComboBox ItemsSource="{Binding PageSizeOptions}" SelectedItem="{Binding PageSize}">
-
-                    <ComboBox.ItemTemplate>
-
-                        <DataTemplate>
-
-                            <TextBlock Text="{Binding Converter={StaticResource PageSizeConverter}}" />
-
-                        </DataTemplate>
-
-                    </ComboBox.ItemTemplate>
-
-                </ComboBox>
-
-            </StackPanel>
-
-
-
-            <Grid>
-
-                <DataGrid ItemsSource="{Binding Obras}"
-
-                          Classes="eo-grid"
-
-                          AutoGenerateColumns="False"
-
-                          IsReadOnly="True"
-
-                          x:CompileBindings="False"
-
-                          DoubleTapped="OnDataGridDoubleTapped"
-
-                          IsVisible="{Binding !IsLoading}">
-
-                    <DataGrid.Columns>
-
-                        <DataGridTextColumn Header="{loc:Translate Key=Obras.Number}" Binding="{Binding Numero, Mode=OneWay}" Width="80" />
-
-                        <DataGridTextColumn Header="{loc:Translate Key=Obras.Name}" Binding="{Binding Nombre, Mode=OneWay}" Width="*" />
-
-                        <DataGridTextColumn Header="{loc:Translate Key=Obras.Client}" Binding="{Binding ClienteNombre, Mode=OneWay}" Width="160" />
-
-                        <DataGridTextColumn Header="{loc:Translate Key=Obras.Address}" Binding="{Binding Direccion, Mode=OneWay}" Width="180" />
-
-                        <DataGridTextColumn Header="{loc:Translate Key=Obras.Locality}" Binding="{Binding Localidad, Mode=OneWay}" Width="120" />
-
-                        <DataGridTemplateColumn Header="{loc:Translate Key=Obras.Status}" Width="130">
-
-                            <DataGridTemplateColumn.CellTemplate>
-
-                                <DataTemplate x:DataType="dto:ObraDto">
-
-                                    <controls:StatusPill Text="{Binding Estado, Converter={StaticResource EstadoObraDisplayConverter}}"
-
-                                                         Kind="{Binding Estado, Converter={StaticResource EstadoObraToStatusKindConverter}}" />
-
-                                </DataTemplate>
-
-                            </DataGridTemplateColumn.CellTemplate>
-
-                        </DataGridTemplateColumn>
-
-                    </DataGrid.Columns>
-
-                </DataGrid>
-
-                <controls:ListStateOverlay IsLoading="{Binding IsLoading}"
-
-                                           IsEmpty="{Binding IsEmpty}"
-
-                                           HasError="{Binding HasError}"
-
-                                           ErrorMessage="{Binding ErrorMessage}"
-
-                                           RetryCommand="{Binding LoadObrasCommand}" />
-
-            </Grid>
-
-        </DockPanel>
-
-        <Border Grid.Column="1"
-                Background="{DynamicResource SurfaceRaised}"
-                BorderBrush="{DynamicResource BorderSubtle}"
-                BorderThickness="1"
-                CornerRadius="{StaticResource Radius12}"
-                MinWidth="320">
-            <Grid>
-                <ContentControl Content="{Binding EditViewModel}" IsVisible="{Binding IsEditing}" />
-                <controls:EmptyState IsVisible="{Binding !IsEditing}"
-                                     IconKind="Domain"
-                                     Title="{loc:Translate Key=Obras.Title}"
-                                     Description="{loc:Translate Key=General.SelectRecordHint}"
-                                     ActionText="{loc:Translate Key=General.Add}"
-                                     ActionCommand="{Binding AddCommand}" />
-            </Grid>
-        </Border>
-
-    </Grid>
-
+    <controls:MasterDetailLayout>
+        <controls:MasterDetailLayout.Master>
+            <DockPanel>
+                <controls:PageHeader DockPanel.Dock="Top" Title="{loc:Translate Key=Obras.Title}">
+                    <controls:PageHeader.Actions>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="{loc:Translate Key=General.Add}" Classes="eo-primary" Command="{Binding AddCommand}" />
+                            <Button Content="{loc:Translate Key=General.Refresh}" Classes="eo-secondary" Command="{Binding LoadObrasCommand}" />
+                        </StackPanel>
+                    </controls:PageHeader.Actions>
+                </controls:PageHeader>
+
+                <controls:FilterBar DockPanel.Dock="Top"
+                                    Header="{loc:Translate Key=Obras.SearchFilters}">
+                    <controls:FilterBar.FilterContent>
+                        <StackPanel Spacing="10">
+                            <Button HorizontalAlignment="Right"
+                                    Content="{loc:Translate Key=General.ClearFilters}"
+                                    Classes="link"
+                                    Command="{Binding LimpiarFiltrosCommand}" />
+                            <WrapPanel Orientation="Horizontal" Margin="-5">
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="{loc:Translate Key=Obras.NameSearch}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                                    <TextBox Width="200" Text="{Binding FiltroNombre}" PlaceholderText="{loc:Translate Key=General.Search}" />
+                                </StackPanel>
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="{loc:Translate Key=Obras.Client}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                                    <ComboBox Width="180"
+                                              ItemsSource="{Binding Clientes}"
+                                              SelectedValue="{Binding FiltroClienteId}"
+                                              SelectedValueBinding="{Binding Id}"
+                                              DisplayMemberBinding="{Binding Nombre}"
+                                              PlaceholderText="{loc:Translate Key=General.Select}" />
+                                </StackPanel>
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="{loc:Translate Key=Obras.Status}" Classes="filterLabel" Foreground="{DynamicResource TextTertiary}" />
+                                    <ComboBox Width="140" SelectedIndex="{Binding FiltroEstadoIndex}">
+                                        <ComboBoxItem Content="{loc:Translate Key=General.All}" />
+                                        <ComboBoxItem Content="{loc:Translate Key=Obras.StatusActive}" />
+                                        <ComboBoxItem Content="{loc:Translate Key=Obras.StatusPaused}" />
+                                        <ComboBoxItem Content="{loc:Translate Key=Obras.StatusFinished}" />
+                                        <ComboBoxItem Content="{loc:Translate Key=Obras.StatusCancelled}" />
+                                    </ComboBox>
+                                </StackPanel>
+                            </WrapPanel>
+                        </StackPanel>
+                    </controls:FilterBar.FilterContent>
+                </controls:FilterBar>
+
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+                    <TextBlock Text="{loc:Translate Key=General.ItemsPerPage}" Classes="pageSizeLabel" Foreground="{DynamicResource TextTertiary}" />
+                    <ComboBox ItemsSource="{Binding PageSizeOptions}" SelectedItem="{Binding PageSize}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource PageSizeConverter}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+
+                <Grid>
+                    <DataGrid ItemsSource="{Binding Obras}"
+                              Classes="eo-grid"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              x:CompileBindings="False"
+                              DoubleTapped="OnDataGridDoubleTapped"
+                              IsVisible="{Binding !IsLoading}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="{loc:Translate Key=Obras.Number}" Binding="{Binding Numero, Mode=OneWay}" Width="80" />
+                            <DataGridTextColumn Header="{loc:Translate Key=Obras.Name}" Binding="{Binding Nombre, Mode=OneWay}" Width="*" />
+                            <DataGridTextColumn Header="{loc:Translate Key=Obras.Client}" Binding="{Binding ClienteNombre, Mode=OneWay}" Width="160" />
+                            <DataGridTextColumn Header="{loc:Translate Key=Obras.Address}" Binding="{Binding Direccion, Mode=OneWay}" Width="180" />
+                            <DataGridTextColumn Header="{loc:Translate Key=Obras.Locality}" Binding="{Binding Localidad, Mode=OneWay}" Width="120" />
+                            <DataGridTemplateColumn Header="{loc:Translate Key=Obras.Status}" Width="130">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="dto:ObraDto">
+                                        <controls:StatusPill Text="{Binding Estado, Converter={StaticResource EstadoObraDisplayConverter}}"
+                                                             Kind="{Binding Estado, Converter={StaticResource EstadoObraToStatusKindConverter}}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <controls:ListStateOverlay IsLoading="{Binding IsLoading}"
+                                               IsEmpty="{Binding IsEmpty}"
+                                               HasError="{Binding HasError}"
+                                               ErrorMessage="{Binding ErrorMessage}"
+                                               RetryCommand="{Binding LoadObrasCommand}" />
+                </Grid>
+            </DockPanel>
+        </controls:MasterDetailLayout.Master>
+
+        <controls:MasterDetailLayout.Detail>
+            <Border Background="{DynamicResource SurfaceRaised}"
+                    BorderBrush="{DynamicResource BorderSubtle}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource Radius12}"
+                    MinWidth="320">
+                <Grid>
+                    <ContentControl Content="{Binding EditViewModel}" IsVisible="{Binding IsEditing}" />
+                    <controls:EmptyState IsVisible="{Binding !IsEditing}"
+                                         IconKind="Domain"
+                                         Title="{loc:Translate Key=Obras.Title}"
+                                         Description="{loc:Translate Key=General.SelectRecordHint}"
+                                         ActionText="{loc:Translate Key=General.Add}"
+                                         ActionCommand="{Binding AddCommand}" />
+                </Grid>
+            </Border>
+        </controls:MasterDetailLayout.Detail>
+    </controls:MasterDetailLayout>
 </UserControl>
-
