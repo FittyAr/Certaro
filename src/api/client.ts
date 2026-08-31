@@ -4,9 +4,8 @@ import type { AppConfig } from './types'
 /**
  * The only module that talks to Tauri. See `docs/11-contratos-tauri.md` §4.1.
  *
- * No component calls `invoke` directly, and this layer neither handles errors nor transforms data:
- * it normalises the error shape and gets out of the way. Formatting belongs to the components,
- * error handling to the stores and the global interceptor.
+ * In web preview mode (outside Tauri runtime), provides a rich in-memory mock database
+ * that responds reactively to all entity lists, lookups, and dev seeding.
  */
 
 export interface ApiFieldError {
@@ -46,10 +45,6 @@ export function isApiError(value: unknown): value is ApiError {
   )
 }
 
-/**
- * Anything Tauri throws that is not already an `ApiError` — a panic, a missing command, a
- * serialisation failure — becomes one, so callers only ever handle a single error shape.
- */
 function normalise(error: unknown): ApiError {
   if (isApiError(error)) return error
   return {
@@ -61,9 +56,6 @@ function normalise(error: unknown): ApiError {
   }
 }
 
-/**
- * Detects whether the current execution context is inside the Tauri runtime with IPC bridge.
- */
 export function isTauri(): boolean {
   return typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window)
 }
@@ -184,6 +176,292 @@ const DEFAULT_CONFIG: AppConfig = {
 
 let mockConfig = structuredClone(DEFAULT_CONFIG)
 
+// In-Memory Mock Database
+interface MockCategory {
+  id: string
+  nombre: string
+  descripcion: string | null
+  colorHex: string | null
+  icono: string | null
+  categoriaPadreId: string | null
+  categoriaPadreNombre: string | null
+  nivel: number
+  movimientosCount: number
+  subcategoriasCount: number
+  puedeEliminarse: boolean
+  rowVersion: string
+}
+
+interface MockTipoMovimiento {
+  id: string
+  nombre: string
+  descripcion: string | null
+  esIngreso: boolean
+  esSistema: boolean
+  movimientosCount: number
+  puedeEliminarse: boolean
+  rowVersion: string
+}
+
+interface MockCliente {
+  id: string
+  nombre: string
+  cuit: string | null
+  direccion: string | null
+  telefono: string | null
+  email: string | null
+  condicionIva: string | null
+  obrasCount: number
+  facturasCount: number
+  deuda: string
+  puedeEliminarse: boolean
+  rowVersion: string
+}
+
+interface MockObra {
+  id: string
+  numero: number
+  nombre: string
+  direccion: string | null
+  localidad: string | null
+  clienteId: string
+  clienteNombre: string
+  estado: string
+  trabajosCount: number
+  rentabilidad: string
+  puedeEliminarse: boolean
+  rowVersion: string
+}
+
+interface MockTrabajo {
+  id: string
+  obraId: string
+  obraNumero: number
+  obraNombre: string
+  clienteId: string
+  clienteNombre: string
+  descripcion: string
+  fechaInicio: string
+  fechaFin: string | null
+  presupuesto: string
+  estado: string
+  rowVersion: string
+}
+
+interface MockOrden {
+  id: string
+  trabajoId: string
+  titulo: string
+  numeroCertificado: string | null
+  fecha: string
+  totalCertificados: number
+  totalNeto: string
+  rowVersion: string
+}
+
+interface MockCertificado {
+  id: string
+  ordenTrabajoId: string
+  ordenTitulo: string
+  numero: number
+  fecha: string
+  totalCertificado: string
+  totalNeto: string
+  rowVersion: string
+}
+
+interface MockEmpleado {
+  id: string
+  nombre: string
+  dni: string | null
+  cargo: string | null
+  tarifaDiaria: string
+  sueldoBase: string
+  pagoFrecuencia: string
+  email: string | null
+  telefono: string | null
+  fechaIngreso: string
+  fechaEgreso: string | null
+  activo: boolean
+  rowVersion: string
+}
+
+interface MockFactura {
+  id: string
+  numero: string
+  fecha: string
+  fechaVencimiento: string | null
+  clienteId: string
+  clienteNombre: string
+  estado: string
+  subtotal: string
+  iva: string
+  total: string
+  saldoPendiente: string
+  rowVersion: string
+}
+
+interface MockMovimiento {
+  id: string
+  fecha: string
+  concepto: string
+  monto: string
+  cantidad: string
+  total: string
+  moneda: string
+  cotizacionAplicada: string | null
+  tipoMovimientoId: string
+  tipoMovimientoNombre: string
+  esIngreso: boolean
+  categoriaId: string | null
+  categoriaNombre: string | null
+  categoriaColor: string | null
+  clienteId: string | null
+  trabajoId: string | null
+  empleadoId: string | null
+  facturaId: string | null
+  tipoConceptoPagoId: string | null
+  bloqueadoPorLiquidacion: boolean
+  rowVersion: string
+}
+
+interface MockLiquidacion {
+  id: string
+  empleadoId: string
+  empleadoNombre: string
+  empleadoCargo: string | null
+  fechaInicio: string
+  fechaFin: string
+  diasTrabajados: string
+  tarifaAplicada: string
+  totalBruto: string
+  totalAdelantos: string
+  totalNeto: string
+  tienePdf: boolean
+  rowVersion: string
+}
+
+interface MockFeriado {
+  fecha: string
+  nombre: string
+  tipo: string | null
+  origen: string
+}
+
+interface MockDb {
+  categorias: MockCategory[]
+  tiposMovimiento: MockTipoMovimiento[]
+  clientes: MockCliente[]
+  obras: MockObra[]
+  trabajos: MockTrabajo[]
+  ordenes: MockOrden[]
+  certificados: MockCertificado[]
+  empleados: MockEmpleado[]
+  facturas: MockFactura[]
+  movimientos: MockMovimiento[]
+  liquidaciones: MockLiquidacion[]
+  feriados: MockFeriado[]
+}
+
+function createSeedMockDb(): MockDb {
+  const cat1 = { id: '10000000-0000-0000-0000-000000000001', nombre: 'Materiales Eléctricos', descripcion: 'Insumos eléctricos', colorHex: '#3B82F6', icono: 'package', categoriaPadreId: null, categoriaPadreNombre: null, nivel: 0, movimientosCount: 3, subcategoriasCount: 2, puedeEliminarse: false, rowVersion: 'v1' }
+  const cat2 = { id: '10000000-0000-0000-0000-000000000002', nombre: 'Cables y Conductores', descripcion: 'Cables sintetizados y unipolar', colorHex: '#3B82F6', icono: 'layers', categoriaPadreId: cat1.id, categoriaPadreNombre: cat1.nombre, nivel: 1, movimientosCount: 1, subcategoriasCount: 0, puedeEliminarse: false, rowVersion: 'v1' }
+  const cat3 = { id: '10000000-0000-0000-0000-000000000003', nombre: 'Herramientas y Equipos', descripcion: 'Herramientas de mano e instrumental', colorHex: '#F59E0B', icono: 'wrench', categoriaPadreId: null, categoriaPadreNombre: null, nivel: 0, movimientosCount: 1, subcategoriasCount: 0, puedeEliminarse: false, rowVersion: 'v1' }
+  const cat4 = { id: '10000000-0000-0000-0000-000000000004', nombre: 'Servicios y Fletes', descripcion: 'Servicios de logística y traslados', colorHex: '#10B981', icono: 'briefcase', categoriaPadreId: null, categoriaPadreNombre: null, nivel: 0, movimientosCount: 2, subcategoriasCount: 0, puedeEliminarse: false, rowVersion: 'v1' }
+  const cat5 = { id: '10000000-0000-0000-0000-000000000005', nombre: 'Impuestos y Tasas', descripcion: 'Monotributo, IIBB y cargas', colorHex: '#EF4444', icono: 'receipt', categoriaPadreId: null, categoriaPadreNombre: null, nivel: 0, movimientosCount: 1, subcategoriasCount: 0, puedeEliminarse: false, rowVersion: 'v1' }
+  const cat6 = { id: '10000000-0000-0000-0000-000000000006', nombre: 'Viáticos y Combustible', descripcion: 'Combustible y peajes', colorHex: '#06B6D4', icono: 'truck', categoriaPadreId: null, categoriaPadreNombre: null, nivel: 0, movimientosCount: 1, subcategoriasCount: 0, puedeEliminarse: false, rowVersion: 'v1' }
+  const categorias: MockCategory[] = [cat1, cat2, cat3, cat4, cat5, cat6]
+
+  const tipoIngreso = { id: '00000000-0000-0000-0000-000000000001', nombre: 'Ingreso', descripcion: 'Ingreso estándar del sistema', esIngreso: true, esSistema: true, movimientosCount: 2, puedeEliminarse: false, rowVersion: 'v1' }
+  const tipoGasto = { id: '00000000-0000-0000-0000-000000000002', nombre: 'Gasto', descripcion: 'Gasto operativo', esIngreso: false, esSistema: true, movimientosCount: 4, puedeEliminarse: false, rowVersion: 'v1' }
+  const tipoAdelanto = { id: '00000000-0000-0000-0000-000000000003', nombre: 'Adelanto', descripcion: 'Adelanto de sueldo a personal', esIngreso: false, esSistema: true, movimientosCount: 2, puedeEliminarse: false, rowVersion: 'v1' }
+  const tipoAjuste = { id: '00000000-0000-0000-0000-000000000004', nombre: 'Ajuste', descripcion: 'Ajuste contable', esIngreso: true, esSistema: true, movimientosCount: 0, puedeEliminarse: false, rowVersion: 'v1' }
+  const tipoChatarra = { id: '20000000-0000-0000-0000-000000000001', nombre: 'Venta de chatarra / sobrantes', descripcion: 'Ventas accesorias', esIngreso: true, esSistema: false, movimientosCount: 1, puedeEliminarse: false, rowVersion: 'v1' }
+  const tiposMovimiento: MockTipoMovimiento[] = [tipoIngreso, tipoGasto, tipoAdelanto, tipoAjuste, tipoChatarra]
+
+  const cli1 = { id: '30000000-0000-0000-0000-000000000001', nombre: 'Constructora del Plata S.A.', cuit: '30-71234567-9', direccion: 'Av. del Libertador 1234, CABA', telefono: '011-4567-8900', email: 'info@constructoradelplata.com', condicionIva: 'Responsable Inscripto', obrasCount: 1, facturasCount: 1, deuda: '0.0000', puedeEliminarse: false, rowVersion: 'v1' }
+  const cli2 = { id: '30000000-0000-0000-0000-000000000002', nombre: 'Desarrollos Urbanos SRL', cuit: '30-79876543-1', direccion: 'San Martín 567, Rosario', telefono: '0341-423-4567', email: 'admin@desarrollosurbanos.com', condicionIva: 'Responsable Inscripto', obrasCount: 1, facturasCount: 1, deuda: '7502.0000', puedeEliminarse: false, rowVersion: 'v1' }
+  const cli3 = { id: '30000000-0000-0000-0000-000000000003', nombre: 'Consorcio Torre Alvear', cuit: '30-65432109-8', direccion: 'Av. Alvear 1890, CABA', telefono: '011-4812-3456', email: 'consorcio@torrealvear.com', condicionIva: 'Consumidor Final', obrasCount: 1, facturasCount: 1, deuda: '0.0000', puedeEliminarse: false, rowVersion: 'v1' }
+  const cli4 = { id: '30000000-0000-0000-0000-000000000004', nombre: 'Juan Carlos Pérez', cuit: '20-28123456-3', direccion: 'Belgrano 432, San Isidro', telefono: '011-15-5432-1098', email: 'jcperez@gmail.com', condicionIva: 'Consumidor Final', obrasCount: 1, facturasCount: 0, deuda: '0.0000', puedeEliminarse: false, rowVersion: 'v1' }
+  const clientes: MockCliente[] = [cli1, cli2, cli3, cli4]
+
+  const obra1 = { id: '40000000-0000-0000-0000-000000000001', numero: 1, nombre: 'Instalación Eléctrica Integral Torre Alvear', direccion: 'Av. Alvear 1890', localidad: 'CABA', clienteId: cli3.id, clienteNombre: cli3.nombre, estado: 'Activa', trabajosCount: 2, rentabilidad: '11120.0000', puedeEliminarse: false, rowVersion: 'v1' }
+  const obra2 = { id: '40000000-0000-0000-0000-000000000002', numero: 2, nombre: 'Iluminación y Fuerza Motriz Planta del Plata', direccion: 'Parque Industrial Norte', localidad: 'Tigre', clienteId: cli1.id, clienteNombre: cli1.nombre, estado: 'Activa', trabajosCount: 1, rentabilidad: '4550.0000', puedeEliminarse: false, rowVersion: 'v1' }
+  const obra3 = { id: '40000000-0000-0000-0000-000000000003', numero: 3, nombre: 'Cableado Estructurado Oficinas Centro', direccion: 'San Martín 567', localidad: 'Rosario', clienteId: cli2.id, clienteNombre: cli2.nombre, estado: 'Finalizada', trabajosCount: 1, rentabilidad: '14000.0000', puedeEliminarse: false, rowVersion: 'v1' }
+  const obra4 = { id: '40000000-0000-0000-0000-000000000004', numero: 4, nombre: 'Refacción y Tablero Eléctrico Domiciliario', direccion: 'Belgrano 432', localidad: 'San Isidro', clienteId: cli4.id, clienteNombre: cli4.nombre, estado: 'Activa', trabajosCount: 1, rentabilidad: '6500.0000', puedeEliminarse: false, rowVersion: 'v1' }
+  const obras: MockObra[] = [obra1, obra2, obra3, obra4]
+
+  const trab1 = { id: '50000000-0000-0000-0000-000000000001', obraId: obra1.id, obraNumero: 1, obraNombre: obra1.nombre, clienteId: cli3.id, clienteNombre: cli3.nombre, descripcion: 'Tendido de bandejas portacables en subsuelos', fechaInicio: '2025-02-01', fechaFin: null, presupuesto: '1850000.0000', estado: 'EnProceso', rowVersion: 'v1' }
+  const trab2 = { id: '50000000-0000-0000-0000-000000000002', obraId: obra1.id, obraNumero: 1, obraNombre: obra1.nombre, clienteId: cli3.id, clienteNombre: cli3.nombre, descripcion: 'Montaje de tableros seccionales por piso', fechaInicio: '2025-02-10', fechaFin: null, presupuesto: '3200000.0000', estado: 'EnProceso', rowVersion: 'v1' }
+  const trab3 = { id: '50000000-0000-0000-0000-000000000003', obraId: obra2.id, obraNumero: 2, obraNombre: obra2.nombre, clienteId: cli1.id, clienteNombre: cli1.nombre, descripcion: 'Iluminación perimetral LED alta potencia', fechaInicio: '2025-01-20', fechaFin: '2025-02-25', presupuesto: '950000.0000', estado: 'Finalizado', rowVersion: 'v1' }
+  const trab4 = { id: '50000000-0000-0000-0000-000000000004', obraId: obra3.id, obraNumero: 3, obraNombre: obra3.nombre, clienteId: cli2.id, clienteNombre: cli2.nombre, descripcion: 'Puestos de red Cat6 y rack central', fechaInicio: '2025-01-10', fechaFin: '2025-02-20', presupuesto: '1400000.0000', estado: 'Finalizado', rowVersion: 'v1' }
+  const trab5 = { id: '50000000-0000-0000-0000-000000000005', obraId: obra4.id, obraNumero: 4, obraNombre: obra4.nombre, clienteId: cli4.id, clienteNombre: cli4.nombre, descripcion: 'Recableado completo y disyuntor diferencial', fechaInicio: '2025-02-15', fechaFin: null, presupuesto: '650000.0000', estado: 'EnProceso', rowVersion: 'v1' }
+  const trabajos: MockTrabajo[] = [trab1, trab2, trab3, trab4, trab5]
+
+  const ord1 = { id: '60000000-0000-0000-0000-000000000001', trabajoId: trab1.id, titulo: 'Certificación de Avance Etapa 1', numeroCertificado: 'CERT-001', fecha: '2025-02-20', totalCertificados: 1, totalNeto: '1998000.0000', rowVersion: 'v1' }
+  const ord2 = { id: '60000000-0000-0000-0000-000000000002', trabajoId: trab2.id, titulo: 'Certificación de Avance Etapa 2', numeroCertificado: 'CERT-002', fecha: '2025-02-22', totalCertificados: 1, totalNeto: '3200000.0000', rowVersion: 'v1' }
+  const ordenes: MockOrden[] = [ord1, ord2]
+
+  const cert1 = { id: '70000000-0000-0000-0000-000000000001', ordenTrabajoId: ord1.id, ordenTitulo: ord1.titulo, numero: 1, fecha: '2025-02-22', totalCertificado: '1850000.0000', totalNeto: '1998000.0000', rowVersion: 'v1' }
+  const certificados: MockCertificado[] = [cert1]
+
+  const emp1 = { id: '80000000-0000-0000-0000-000000000001', nombre: 'Ricardo Darín', dni: '20.123.456', cargo: 'Operario Electricista', tarifaDiaria: '45000.0000', sueldoBase: '450000.0000', pagoFrecuencia: 'Quincenal', email: 'ricardo.darin@obra.com', telefono: '1145678901', fechaIngreso: '2025-01-15', fechaEgreso: null, activo: true, rowVersion: 'v1' }
+  const emp2 = { id: '80000000-0000-0000-0000-000000000002', nombre: 'Guillermo Francella', dni: '22.345.678', cargo: 'Capataz de Obra', tarifaDiaria: '55000.0000', sueldoBase: '550000.0000', pagoFrecuencia: 'Quincenal', email: 'guillermo.francella@obra.com', telefono: '1145678902', fechaIngreso: '2025-01-15', fechaEgreso: null, activo: true, rowVersion: 'v1' }
+  const emp3 = { id: '80000000-0000-0000-0000-000000000003', nombre: 'Natalia Oreiro', dni: '25.678.901', cargo: 'Técnica Instaladora', tarifaDiaria: '48000.0000', sueldoBase: '480000.0000', pagoFrecuencia: 'Quincenal', email: 'natalia.oreiro@obra.com', telefono: '1145678903', fechaIngreso: '2025-01-15', fechaEgreso: null, activo: true, rowVersion: 'v1' }
+  const emp4 = { id: '80000000-0000-0000-0000-000000000004', nombre: 'Diego Peretti', dni: '18.901.234', cargo: 'Ayudante Práctico', tarifaDiaria: '38000.0000', sueldoBase: '380000.0000', pagoFrecuencia: 'Quincenal', email: 'diego.peretti@obra.com', telefono: '1145678904', fechaIngreso: '2025-01-15', fechaEgreso: null, activo: true, rowVersion: 'v1' }
+  const emp5 = { id: '80000000-0000-0000-0000-000000000005', nombre: 'Érica Rivas', dni: '27.234.567', cargo: 'Administrativa de Obra', tarifaDiaria: '42000.0000', sueldoBase: '420000.0000', pagoFrecuencia: 'Quincenal', email: 'erica.rivas@obra.com', telefono: '1145678905', fechaIngreso: '2025-01-15', fechaEgreso: null, activo: true, rowVersion: 'v1' }
+  const empleados: MockEmpleado[] = [emp1, emp2, emp3, emp4, emp5]
+
+  const fact1 = { id: '90000000-0000-0000-0000-000000000001', numero: '0001-00000101', fecha: '2025-02-10', fechaVencimiento: '2025-03-10', clienteId: cli1.id, clienteNombre: cli1.nombre, estado: 'Emitida', subtotal: '850000.0000', iva: '178500.0000', total: '1028500.0000', saldoPendiente: '1028500.0000', rowVersion: 'v1' }
+  const fact2 = { id: '90000000-0000-0000-0000-000000000002', numero: '0001-00000102', fecha: '2025-02-10', fechaVencimiento: '2025-03-10', clienteId: cli3.id, clienteNombre: cli3.nombre, estado: 'Pagada', subtotal: '1200000.0000', iva: '252000.0000', total: '1452000.0000', saldoPendiente: '0.0000', rowVersion: 'v1' }
+  const fact3 = { id: '90000000-0000-0000-0000-000000000003', numero: '0001-00000103', fecha: '2025-02-15', fechaVencimiento: '2025-03-15', clienteId: cli2.id, clienteNombre: cli2.nombre, estado: 'Borrador', subtotal: '620000.0000', iva: '130200.0000', total: '750200.0000', saldoPendiente: '750200.0000', rowVersion: 'v1' }
+  const facturas: MockFactura[] = [fact1, fact2, fact3]
+
+  const mov1 = { id: 'a0000000-0000-0000-0000-000000000001', fecha: '2025-02-18T14:30:00Z', concepto: 'Cobro Certificado N.º 1 Torre Alvear', monto: '1452000.0000', cantidad: '1.0000', total: '1452000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoIngreso.id, tipoMovimientoNombre: tipoIngreso.nombre, esIngreso: true, categoriaId: cat4.id, categoriaNombre: cat4.nombre, categoriaColor: cat4.colorHex, clienteId: cli3.id, trabajoId: trab1.id, empleadoId: null, facturaId: fact2.id, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
+  const mov2 = { id: 'a0000000-0000-0000-0000-000000000002', fecha: '2025-02-17T11:00:00Z', concepto: 'Anticipo Obra Planta del Plata', monto: '500000.0000', cantidad: '1.0000', total: '500000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoIngreso.id, tipoMovimientoNombre: tipoIngreso.nombre, esIngreso: true, categoriaId: cat4.id, categoriaNombre: cat4.nombre, categoriaColor: cat4.colorHex, clienteId: cli1.id, trabajoId: trab3.id, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
+  const mov3 = { id: 'a0000000-0000-0000-0000-000000000003', fecha: '2025-02-16T16:00:00Z', concepto: 'Venta de cables sobrantes de cobre', monto: '85000.0000', cantidad: '1.0000', total: '85000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoChatarra.id, tipoMovimientoNombre: tipoChatarra.nombre, esIngreso: true, categoriaId: cat1.id, categoriaNombre: cat1.nombre, categoriaColor: cat1.colorHex, clienteId: null, trabajoId: null, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
+  const mov4 = { id: 'a0000000-0000-0000-0000-000000000004', fecha: '2025-02-15T10:00:00Z', concepto: 'Compra de cables sintetizados y termomagnéticas', monto: '340000.0000', cantidad: '1.0000', total: '340000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat2.id, categoriaNombre: cat2.nombre, categoriaColor: cat2.colorHex, clienteId: null, trabajoId: trab1.id, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
+  const mov5 = { id: 'a0000000-0000-0000-0000-000000000005', fecha: '2025-02-14T09:30:00Z', concepto: 'Adquisición de pinza amperimétrica True RMS', monto: '125000.0000', cantidad: '1.0000', total: '125000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat3.id, categoriaNombre: cat3.nombre, categoriaColor: cat3.colorHex, clienteId: null, trabajoId: null, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
+  const mov6 = { id: 'a0000000-0000-0000-0000-000000000006', fecha: '2025-02-13T12:00:00Z', concepto: 'Combustible y peajes traslados a Tigre', monto: '45000.0000', cantidad: '1.0000', total: '45000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat6.id, categoriaNombre: cat6.nombre, categoriaColor: cat6.colorHex, clienteId: null, trabajoId: trab3.id, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
+  const mov7 = { id: 'a0000000-0000-0000-0000-000000000007', fecha: '2025-02-12T15:00:00Z', concepto: 'Pago de Monotributo / IIBB mensual', monto: '62000.0000', cantidad: '1.0000', total: '62000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat5.id, categoriaNombre: cat5.nombre, categoriaColor: cat5.colorHex, clienteId: null, trabajoId: null, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
+  const mov8 = { id: 'a0000000-0000-0000-0000-000000000008', fecha: '2025-02-10T17:00:00Z', concepto: 'Adelanto quincenal Ricardo Darín', monto: '50000.0000', cantidad: '1.0000', total: '50000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoAdelanto.id, tipoMovimientoNombre: tipoAdelanto.nombre, esIngreso: false, categoriaId: null, categoriaNombre: null, categoriaColor: null, clienteId: null, trabajoId: null, empleadoId: emp1.id, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: true, rowVersion: 'v1' }
+  const mov9 = { id: 'a0000000-0000-0000-0000-000000000009', fecha: '2025-02-10T17:15:00Z', concepto: 'Adelanto quincenal Natalia Oreiro', monto: '40000.0000', cantidad: '1.0000', total: '40000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoAdelanto.id, tipoMovimientoNombre: tipoAdelanto.nombre, esIngreso: false, categoriaId: null, categoriaNombre: null, categoriaColor: null, clienteId: null, trabajoId: null, empleadoId: emp3.id, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1' }
+  const movimientos: MockMovimiento[] = [mov1, mov2, mov3, mov4, mov5, mov6, mov7, mov8, mov9]
+
+  const liq1 = { id: 'b0000000-0000-0000-0000-000000000001', empleadoId: emp1.id, empleadoNombre: emp1.nombre, empleadoCargo: emp1.cargo, fechaInicio: '2025-02-01', fechaFin: '2025-02-15', diasTrabajados: '11.0000', tarifaAplicada: '45000.0000', totalBruto: '495000.0000', totalAdelantos: '50000.0000', totalNeto: '445000.0000', tienePdf: false, rowVersion: 'v1' }
+  const liq2 = { id: 'b0000000-0000-0000-0000-000000000002', empleadoId: emp2.id, empleadoNombre: emp2.nombre, empleadoCargo: emp2.cargo, fechaInicio: '2025-02-01', fechaFin: '2025-02-15', diasTrabajados: '11.0000', tarifaAplicada: '55000.0000', totalBruto: '605000.0000', totalAdelantos: '0.0000', totalNeto: '605000.0000', tienePdf: false, rowVersion: 'v1' }
+  const liquidaciones: MockLiquidacion[] = [liq1, liq2]
+
+  const feriados: MockFeriado[] = [
+    { fecha: '2025-01-01', nombre: 'Año Nuevo', tipo: 'Inamovible', origen: 'Api' },
+    { fecha: '2025-03-03', nombre: 'Carnaval', tipo: 'Inamovible', origen: 'Api' },
+    { fecha: '2025-03-04', nombre: 'Carnaval', tipo: 'Inamovible', origen: 'Api' },
+    { fecha: '2025-03-24', nombre: 'Día Nacional de la Memoria por la Verdad y la Justicia', tipo: 'Inamovible', origen: 'Api' },
+    { fecha: '2025-04-02', nombre: 'Día del Veterano y de los Caídos en la Guerra de Malvinas', tipo: 'Inamovible', origen: 'Api' },
+    { fecha: '2025-05-01', nombre: 'Día del Trabajador', tipo: 'Inamovible', origen: 'Api' },
+    { fecha: '2025-05-25', nombre: 'Día de la Revolución de Mayo', tipo: 'Inamovible', origen: 'Api' },
+    { fecha: '2025-07-09', nombre: 'Día de la Independencia', tipo: 'Inamovible', origen: 'Api' },
+    { fecha: '2025-12-25', nombre: 'Navidad', tipo: 'Inamovible', origen: 'Api' },
+  ]
+
+  return {
+    categorias,
+    tiposMovimiento,
+    clientes,
+    obras,
+    trabajos,
+    ordenes,
+    certificados,
+    empleados,
+    facturas,
+    movimientos,
+    liquidaciones,
+    feriados,
+  }
+}
+
+let mockDb: MockDb = createSeedMockDb()
+
 function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>): T {
   switch (command) {
     case 'app_is_ready':
@@ -240,50 +518,62 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         tamanoBytes: 524288,
       } as unknown as T
     case 'dev_seed_database':
+      mockDb = createSeedMockDb()
       return {
-        categorias: 8,
-        tiposMovimiento: 3,
-        empleados: 5,
-        clientes: 4,
-        obras: 4,
-        trabajos: 5,
-        ordenesTrabajo: 3,
-        movimientos: 9,
-        facturas: 3,
-        liquidaciones: 2,
+        categorias: mockDb.categorias.length,
+        tiposMovimiento: mockDb.tiposMovimiento.length,
+        empleados: mockDb.empleados.length,
+        clientes: mockDb.clientes.length,
+        obras: mockDb.obras.length,
+        trabajos: mockDb.trabajos.length,
+        ordenesTrabajo: mockDb.ordenes.length,
+        movimientos: mockDb.movimientos.length,
+        facturas: mockDb.facturas.length,
+        liquidaciones: mockDb.liquidaciones.length,
       } as unknown as T
     case 'backup_list':
       return [] as T
     case 'dashboard_stats':
+    case 'dashboard_kpis':
       return {
         periodo: (args?.periodo as string) ?? 'Mensual',
         desde: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
         hasta: new Date().toISOString(),
-        totalIngresos: '0.0000',
-        totalGastos: '0.0000',
-        balance: '0.0000',
-        cantidadMovimientos: 0,
-        rentabilidad: '0.0000',
-        anteriorIngresos: '0.0000',
-        anteriorGastos: '0.0000',
-        variacionIngresos: null,
-        variacionGastos: null,
-        variacionBalance: null,
-        clientesActivos: 0,
-        trabajosPendientes: 0,
+        totalIngresos: '2037000.0000',
+        totalGastos: '662000.0000',
+        balance: '1375000.0000',
+        cantidadMovimientos: mockDb.movimientos.length,
+        rentabilidad: '67.5000',
+        anteriorIngresos: '1800000.0000',
+        anteriorGastos: '550000.0000',
+        variacionIngresos: '13.1600',
+        variacionGastos: '20.3600',
+        variacionBalance: '10.0000',
+        clientesActivos: mockDb.clientes.length,
+        trabajosPendientes: 3,
         obrasPausadas: 0,
         facturasVencidas: 0,
-        liquidacionesPendientes: 0,
+        liquidacionesPendientes: 1,
         serieMensual: Array.from({ length: 12 }, (_, i) => ({
           mes: i + 1,
-          ingresos: '0.0000',
-          gastos: '0.0000',
+          ingresos: i === new Date().getMonth() ? '2037000.0000' : '1500000.0000',
+          gastos: i === new Date().getMonth() ? '662000.0000' : '450000.0000',
         })),
-        topClientes: [],
-        gastosPorCategoria: [],
-        mejoresObras: [],
+        topClientes: [
+          { id: mockDb.clientes[2]?.id ?? '', nombre: mockDb.clientes[2]?.nombre ?? '', total: '1452000.0000' },
+          { id: mockDb.clientes[0]?.id ?? '', nombre: mockDb.clientes[0]?.nombre ?? '', total: '500000.0000' },
+          { id: mockDb.clientes[1]?.id ?? '', nombre: mockDb.clientes[1]?.nombre ?? '', total: '85000.0000' },
+        ],
+        gastosPorCategoria: [
+          { id: mockDb.categorias[1]?.id ?? '', nombre: mockDb.categorias[1]?.nombre ?? '', colorHex: mockDb.categorias[1]?.colorHex ?? '#3B82F6', total: '340000.0000', porcentaje: '51.3600' },
+          { id: mockDb.categorias[2]?.id ?? '', nombre: mockDb.categorias[2]?.nombre ?? '', colorHex: mockDb.categorias[2]?.colorHex ?? '#F59E0B', total: '125000.0000', porcentaje: '18.8800' },
+          { id: mockDb.categorias[4]?.id ?? '', nombre: mockDb.categorias[4]?.nombre ?? '', colorHex: mockDb.categorias[4]?.colorHex ?? '#EF4444', total: '62000.0000', porcentaje: '9.3600' },
+        ],
+        mejoresObras: [
+          { id: mockDb.obras[0]?.id ?? '', numero: 1, nombre: mockDb.obras[0]?.nombre ?? '', rentabilidad: '1112000.0000', margen: '76.5800' },
+        ],
         peoresObras: [],
-        ultimosMovimientos: [],
+        ultimosMovimientos: mockDb.movimientos.slice(0, 5),
         estadoSistema: {
           version: '0.1.0',
           baseSaludable: true,
@@ -292,6 +582,30 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
           tamanoBytes: 524288,
         },
       } as unknown as T
+    case 'dashboard_serie_mensual':
+      return Array.from({ length: 12 }, (_, i) => ({
+        mes: i + 1,
+        ingresos: i === new Date().getMonth() ? '2037000.0000' : '1500000.0000',
+        gastos: i === new Date().getMonth() ? '662000.0000' : '450000.0000',
+      })) as T
+    case 'dashboard_top_clientes':
+      return [
+        { id: mockDb.clientes[2]?.id ?? '', nombre: mockDb.clientes[2]?.nombre ?? '', total: '1452000.0000' },
+        { id: mockDb.clientes[0]?.id ?? '', nombre: mockDb.clientes[0]?.nombre ?? '', total: '500000.0000' },
+        { id: mockDb.clientes[1]?.id ?? '', nombre: mockDb.clientes[1]?.nombre ?? '', total: '85000.0000' },
+      ] as T
+    case 'dashboard_gastos_categorias':
+      return [
+        { id: mockDb.categorias[1]?.id ?? '', nombre: mockDb.categorias[1]?.nombre ?? '', colorHex: mockDb.categorias[1]?.colorHex ?? '#3B82F6', total: '340000.0000', porcentaje: '51.3600' },
+        { id: mockDb.categorias[2]?.id ?? '', nombre: mockDb.categorias[2]?.nombre ?? '', colorHex: mockDb.categorias[2]?.colorHex ?? '#F59E0B', total: '125000.0000', porcentaje: '18.8800' },
+        { id: mockDb.categorias[4]?.id ?? '', nombre: mockDb.categorias[4]?.nombre ?? '', colorHex: mockDb.categorias[4]?.colorHex ?? '#EF4444', total: '62000.0000', porcentaje: '9.3600' },
+      ] as T
+    case 'dashboard_rentabilidad_obras':
+      return [
+        { id: mockDb.obras[0]?.id ?? '', numero: 1, nombre: mockDb.obras[0]?.nombre ?? '', rentabilidad: '1112000.0000', margen: '76.5800' },
+      ] as T
+    case 'dashboard_ultimos_movimientos':
+      return mockDb.movimientos.slice(0, 10) as T
     case 'dashboard_alertas':
       return [] as T
     case 'cotizaciones_list':
@@ -315,27 +629,57 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         },
       ] as T
     case 'feriados_list':
-      return [] as T
+      return mockDb.feriados as T
     case 'feriados_sync':
-      return { agregados: 0, total: 0 } as T
+      return { agregados: 0, total: mockDb.feriados.length, aniosConError: 0 } as T
     case 'tipos_movimiento_list':
+      return { items: mockDb.tiposMovimiento, totalCount: mockDb.tiposMovimiento.length, page: 1, size: 30 } as T
     case 'categorias_list':
-    case 'movimientos_list':
+      return { items: mockDb.categorias, totalCount: mockDb.categorias.length, page: 1, size: 30 } as T
+    case 'movimientos_list': {
+      const resumen = {
+        totalIngresos: '2037000.0000',
+        totalGastos: '662000.0000',
+        balance: '1375000.0000',
+        cantidad: mockDb.movimientos.length,
+      }
+      return { items: mockDb.movimientos, totalCount: mockDb.movimientos.length, page: 1, size: 30, resumen } as T
+    }
+    case 'movimiento_resumen':
+      return {
+        totalIngresos: '2037000.0000',
+        totalGastos: '662000.0000',
+        balance: '1375000.0000',
+        cantidad: mockDb.movimientos.length,
+      } as T
     case 'clientes_list':
+      return { items: mockDb.clientes, totalCount: mockDb.clientes.length, page: 1, size: 30 } as T
     case 'obras_list':
+      return { items: mockDb.obras, totalCount: mockDb.obras.length, page: 1, size: 30 } as T
     case 'trabajos_list':
+      return { items: mockDb.trabajos, totalCount: mockDb.trabajos.length, page: 1, size: 30 } as T
+    case 'ordenes_list':
+      return { items: mockDb.ordenes, totalCount: mockDb.ordenes.length, page: 1, size: 30 } as T
     case 'facturas_list':
+      return { items: mockDb.facturas, totalCount: mockDb.facturas.length, page: 1, size: 30 } as T
     case 'empleados_list':
+      return { items: mockDb.empleados, totalCount: mockDb.empleados.length, page: 1, size: 30 } as T
     case 'liquidaciones_list':
+      return { items: mockDb.liquidaciones, totalCount: mockDb.liquidaciones.length, page: 1, size: 30 } as T
     case 'certificados_list':
-      return { items: [], totalCount: 0, page: 1, size: 30 } as T
+      return { items: mockDb.certificados, totalCount: mockDb.certificados.length, page: 1, size: 30 } as T
     case 'tipos_movimiento_lookup':
+      return mockDb.tiposMovimiento.map(t => ({ id: t.id, label: t.nombre })) as T
     case 'categorias_lookup':
+      return mockDb.categorias.map(c => ({ id: c.id, label: c.nombre })) as T
     case 'clientes_lookup':
+      return mockDb.clientes.map(c => ({ id: c.id, label: c.nombre })) as T
     case 'obras_lookup':
+      return mockDb.obras.map(o => ({ id: o.id, label: `${o.numero}. ${o.nombre}` })) as T
     case 'trabajos_lookup':
+      return mockDb.trabajos.map(t => ({ id: t.id, label: t.descripcion })) as T
     case 'empleados_lookup':
-      return [] as T
+      return mockDb.empleados.map(e => ({ id: e.id, label: `${e.nombre} (${e.cargo ?? ''})` })) as T
     default:
       return null as unknown as T
   }
@@ -349,7 +693,6 @@ export async function callCommand<T>(command: string, args?: Record<string, unkn
     return await invoke<T>(command, args)
   } catch (error) {
     const apiError = normalise(error)
-    // Logged with the trace id so a user report maps to a line in the backend log file.
     console.error(`[ipc] ${command} failed`, {
       code: apiError.code,
       traceId: apiError.traceId,

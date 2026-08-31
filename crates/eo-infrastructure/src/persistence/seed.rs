@@ -1,8 +1,9 @@
 //! Seeding engine for development and testing demo data.
 //!
 //! Generates a rich, realistic dataset including categories, custom movement types,
-//! employees, clients with contacts, sites (obras), jobs (trabajos), work orders,
-//! cash movements, invoices, and payroll settlements.
+//! employees, attendance records, clients with contacts, sites (obras), jobs (trabajos),
+//! work orders, items, certificates, invoices, invoice payments, cash ledger movements,
+//! payroll settlements, settlement advance links, holidays, and sample attachments.
 
 use chrono::Utc;
 use eo_application::result::AppResult;
@@ -12,8 +13,9 @@ use serde::Serialize;
 use uuid::Uuid;
 
 use crate::persistence::models::{
-    categoria, cliente, cliente_contacto, empleado, factura, liquidacion,
-    movimiento, obra, orden_trabajo, orden_trabajo_item, tipo_movimiento, trabajo,
+    adjunto, asistencia_empleado, categoria, certificado, certificado_item, cliente,
+    cliente_contacto, empleado, factura, feriado, liquidacion, liquidacion_adelanto, movimiento,
+    obra, orden_trabajo, orden_trabajo_item, pago_factura, tipo_movimiento, trabajo,
 };
 
 #[derive(Debug, Clone, Serialize)]
@@ -22,41 +24,50 @@ pub struct SeedSummary {
     pub categorias: usize,
     pub tipos_movimiento: usize,
     pub empleados: usize,
+    pub asistencias: usize,
     pub clientes: usize,
+    pub contactos: usize,
     pub obras: usize,
     pub trabajos: usize,
     pub ordenes_trabajo: usize,
-    pub movimientos: usize,
+    pub orden_trabajo_items: usize,
+    pub certificados: usize,
+    pub certificado_items: usize,
     pub facturas: usize,
+    pub pagos_factura: usize,
+    pub movimientos: usize,
     pub liquidaciones: usize,
+    pub liquidacion_adelantos: usize,
+    pub feriados: usize,
+    pub adjuntos: usize,
 }
 
 pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
     let tx = db.begin().await.map_err(AppError::persistence)?;
     let now = Utc::now().to_rfc3339();
 
-    // 1. Categorías
+    // 1. Categorías (con jerarquía padre-hijo)
     let categorias_data = [
-        ("Materiales", "#3B82F6", "package"),
-        ("Herramientas", "#F59E0B", "wrench"),
-        ("Servicios", "#10B981", "briefcase"),
-        ("Impuestos", "#EF4444", "receipt"),
-        ("Varios", "#8B5CF6", "layers"),
-        ("Viáticos", "#06B6D4", "truck"),
-        ("Publicidad", "#EC4899", "megaphone"),
-        ("Alquiler", "#6366F1", "building"),
+        ("Materiales Eléctricos", "#3B82F6", "package", None),
+        ("Cables y Conductores", "#3B82F6", "layers", Some(0)),
+        ("Tableros y Protecciones", "#3B82F6", "shield", Some(0)),
+        ("Herramientas y Equipos", "#F59E0B", "wrench", None),
+        ("Servicios y Fletes", "#10B981", "briefcase", None),
+        ("Impuestos y Tasas", "#EF4444", "receipt", None),
+        ("Viáticos y Combustible", "#06B6D4", "truck", None),
+        ("Gastos Administrativos", "#8B5CF6", "building", None),
     ];
 
     let mut categorias_ids = Vec::new();
-    for (nombre, color, icono) in categorias_data {
+    for (nombre, color, icono, padre_idx) in categorias_data {
         let id = Uuid::now_v7().to_string();
         let cat = categoria::ActiveModel {
             id: Set(id.clone()),
             nombre: Set(nombre.to_string()),
-            descripcion: Set(Some(format!("Gastos e insumos de {nombre}"))),
+            descripcion: Set(Some(format!("Insumos y gastos de {nombre}"))),
             color_hex: Set(Some(color.to_string())),
             icono: Set(Some(icono.to_string())),
-            categoria_padre_id: Set(None),
+            categoria_padre_id: Set(padre_idx.and_then(|idx| categorias_ids.get(idx)).cloned()),
             created_at: Set(now.clone()),
             updated_at: Set(None),
             row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
@@ -144,6 +155,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
     ];
 
     let mut clientes_ids = Vec::new();
+    let mut contactos_count = 0;
     for (nombre, cuit, dir, tel, mail, iva) in clientes_data {
         let id = Uuid::now_v7().to_string();
         let cli = cliente::ActiveModel {
@@ -162,7 +174,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
         };
         cli.insert(&tx).await.map_err(AppError::persistence)?;
 
-        // Contactos
+        // Contacto principal
         let contacto = cliente_contacto::ActiveModel {
             id: Set(Uuid::now_v7().to_string()),
             cliente_id: Set(id.clone()),
@@ -178,6 +190,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             deleted_at: Set(None),
         };
         contacto.insert(&tx).await.map_err(AppError::persistence)?;
+        contactos_count += 1;
 
         clientes_ids.push(id);
     }
@@ -241,8 +254,33 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
         trabajos_ids.push(id);
     }
 
-    // 7. Ordenes de Trabajo & Items
+    // 7. Asistencias de Empleados
+    let mut asistencias_count = 0;
+    for (emp_idx, emp_id) in empleados_ids.iter().enumerate().take(3) {
+        for dia in 1..=10 {
+            let fecha_asist = format!("2025-02-{:02}T00:00:00Z", dia);
+            let tipo_jornada = if dia == 8 { 2 } else { 1 }; // Jornada Completa / Sábado
+            let asist = asistencia_empleado::ActiveModel {
+                id: Set(Uuid::now_v7().to_string()),
+                empleado_id: Set(emp_id.clone()),
+                fecha: Set(fecha_asist),
+                tipo_jornada: Set(tipo_jornada),
+                trabajo_id: Set(Some(trabajos_ids[emp_idx % trabajos_ids.len()].clone())),
+                observaciones: Set(Some("Jornada cumplida en obra".to_string())),
+                created_at: Set(now.clone()),
+                updated_at: Set(None),
+                row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+                is_deleted: Set(false),
+                deleted_at: Set(None),
+            };
+            asist.insert(&tx).await.map_err(AppError::persistence)?;
+            asistencias_count += 1;
+        }
+    }
+
+    // 8. Ordenes de Trabajo & Items
     let mut ordenes_ids = Vec::new();
+    let mut items_ids = Vec::new();
     for (i, trab_id) in trabajos_ids.iter().enumerate().take(3) {
         let orden_id = Uuid::now_v7().to_string();
         let ot = orden_trabajo::ActiveModel {
@@ -262,9 +300,9 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
         };
         ot.insert(&tx).await.map_err(AppError::persistence)?;
 
-        // Items
+        let item1_id = Uuid::now_v7().to_string();
         let item1 = orden_trabajo_item::ActiveModel {
-            id: Set(Uuid::now_v7().to_string()),
+            id: Set(item1_id.clone()),
             orden_trabajo_id: Set(orden_id.clone()),
             descripcion: Set("Tendido de cañería y cableado".to_string()),
             unidad: Set("MTS".to_string()),
@@ -282,9 +320,11 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             deleted_at: Set(None),
         };
         item1.insert(&tx).await.map_err(AppError::persistence)?;
+        items_ids.push(item1_id);
 
+        let item2_id = Uuid::now_v7().to_string();
         let item2 = orden_trabajo_item::ActiveModel {
-            id: Set(Uuid::now_v7().to_string()),
+            id: Set(item2_id.clone()),
             orden_trabajo_id: Set(orden_id.clone()),
             descripcion: Set("Instalación y conexión de luminarias".to_string()),
             unidad: Set("UN".to_string()),
@@ -302,12 +342,59 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             deleted_at: Set(None),
         };
         item2.insert(&tx).await.map_err(AppError::persistence)?;
+        items_ids.push(item2_id);
 
         ordenes_ids.push(orden_id);
     }
 
-    // 8. Facturas
+    // 9. Certificados & Certificado Items
+    let mut certificados_count = 0;
+    let mut cert_items_count = 0;
+    for (i, ot_id) in ordenes_ids.iter().enumerate().take(2) {
+        let cert_id = Uuid::now_v7().to_string();
+        let cert = certificado::ActiveModel {
+            id: Set(cert_id.clone()),
+            orden_trabajo_id: Set(ot_id.clone()),
+            numero: Set((i + 1) as i32),
+            fecha: Set("2025-02-22".to_string()),
+            observaciones: Set(Some("Certificado de obra aprobado".to_string())),
+            total_certificado: Set(18_500_000_000),
+            ajuste_uocra: Set(1_480_000_000),
+            otros_descuentos: Set(0),
+            total_neto: Set(19_980_000_000),
+            created_at: Set(now.clone()),
+            updated_at: Set(None),
+            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            is_deleted: Set(false),
+            deleted_at: Set(None),
+        };
+        cert.insert(&tx).await.map_err(AppError::persistence)?;
+        certificados_count += 1;
+
+        // Certificado Item
+        let citem = certificado_item::ActiveModel {
+            id: Set(Uuid::now_v7().to_string()),
+            certificado_id: Set(cert_id.clone()),
+            orden_trabajo_item_id: Set(items_ids[i].clone()),
+            cantidad: Set(250_0000),
+            precio_unitario: Set(45_000_000),
+            porcentaje_anterior: Set(0),
+            porcentaje_actual: Set(400_000),
+            subtotal_actual: Set(4_500_000_000),
+            subtotal_acumulado: Set(4_500_000_000),
+            created_at: Set(now.clone()),
+            updated_at: Set(None),
+            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            is_deleted: Set(false),
+            deleted_at: Set(None),
+        };
+        citem.insert(&tx).await.map_err(AppError::persistence)?;
+        cert_items_count += 1;
+    }
+
+    // 10. Facturas & Pagos
     let mut facturas_ids = Vec::new();
+    let mut pagos_count = 0;
     let facturas_data = [
         ("0001-00000101", &clientes_ids[0], 2, 8_500_000_000_i64, 1_785_000_000_i64, 10_285_000_000_i64), // Emitida
         ("0001-00000102", &clientes_ids[2], 3, 12_000_000_000_i64, 2_520_000_000_i64, 14_520_000_000_i64), // Pagada
@@ -333,29 +420,53 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             deleted_at: Set(None),
         };
         f.insert(&tx).await.map_err(AppError::persistence)?;
+
+        // Si es pagada, insertamos el pago
+        if estado == 3 {
+            let pago = pago_factura::ActiveModel {
+                id: Set(Uuid::now_v7().to_string()),
+                factura_id: Set(fact_id.clone()),
+                fecha: Set("2025-02-18".to_string()),
+                monto: Set(tot),
+                medio_pago: Set("Transferencia Bancaria".to_string()),
+                created_at: Set(now.clone()),
+                updated_at: Set(None),
+                row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+                is_deleted: Set(false),
+                deleted_at: Set(None),
+            };
+            pago.insert(&tx).await.map_err(AppError::persistence)?;
+            pagos_count += 1;
+        }
+
         facturas_ids.push(fact_id);
     }
 
-    // 9. Movimientos de Caja
+    // 11. Movimientos de Caja
     let movimientos_data = [
         // Ingresos
-        ("Cobro Certificado N.º 1 Torre Alvear", 14_520_000_000_i64, 10_000_i64, &ingreso_sistema, Some(&categorias_ids[2]), Some(&clientes_ids[2]), Some(&trabajos_ids[0]), None, Some(&facturas_ids[1])),
-        ("Anticipo Obra Planta del Plata", 5_000_000_000_i64, 10_000_i64, &ingreso_sistema, Some(&categorias_ids[2]), Some(&clientes_ids[0]), Some(&trabajos_ids[2]), None, None),
-        ("Venta de cables sobrantes de cobre", 850_000_000_i64, 10_000_i64, &tipos_ids[0], Some(&categorias_ids[4]), None, None, None, None),
+        ("Cobro Certificado N.º 1 Torre Alvear", 14_520_000_000_i64, 10_000_i64, &ingreso_sistema, Some(&categorias_ids[4]), Some(&clientes_ids[2]), Some(&trabajos_ids[0]), None, Some(&facturas_ids[1])),
+        ("Anticipo Obra Planta del Plata", 5_000_000_000_i64, 10_000_i64, &ingreso_sistema, Some(&categorias_ids[4]), Some(&clientes_ids[0]), Some(&trabajos_ids[2]), None, None),
+        ("Venta de cables sobrantes de cobre", 850_000_000_i64, 10_000_i64, &tipos_ids[0], Some(&categorias_ids[0]), None, None, None, None),
         // Gastos
-        ("Compra de cables sintetizados y termomagnéticas", 3_400_000_000_i64, 10_000_i64, &egreso_sistema, Some(&categorias_ids[0]), None, Some(&trabajos_ids[0]), None, None),
-        ("Adquisición de pinza amperimétrica True RMS", 1_250_000_000_i64, 10_000_i64, &egreso_sistema, Some(&categorias_ids[1]), None, None, None, None),
-        ("Combustible y peajes traslados a Tigre", 450_000_000_i64, 10_000_i64, &egreso_sistema, Some(&categorias_ids[5]), None, Some(&trabajos_ids[2]), None, None),
-        ("Pago de Monotributo / IIBB mensual", 620_000_000_i64, 10_000_i64, &egreso_sistema, Some(&categorias_ids[3]), None, None, None, None),
+        ("Compra de cables sintetizados y termomagnéticas", 3_400_000_000_i64, 10_000_i64, &egreso_sistema, Some(&categorias_ids[1]), None, Some(&trabajos_ids[0]), None, None),
+        ("Adquisición de pinza amperimétrica True RMS", 1_250_000_000_i64, 10_000_i64, &egreso_sistema, Some(&categorias_ids[3]), None, None, None, None),
+        ("Combustible y peajes traslados a Tigre", 450_000_000_i64, 10_000_i64, &egreso_sistema, Some(&categorias_ids[6]), None, Some(&trabajos_ids[2]), None, None),
+        ("Pago de Monotributo / IIBB mensual", 620_000_000_i64, 10_000_i64, &egreso_sistema, Some(&categorias_ids[5]), None, None, None, None),
         // Adelantos a empleados
         ("Adelanto quincenal Ricardo Darín", 500_000_000_i64, 10_000_i64, &adelanto_sistema, None, None, None, Some(&empleados_ids[0]), None),
         ("Adelanto quincenal Natalia Oreiro", 400_000_000_i64, 10_000_i64, &adelanto_sistema, None, None, None, Some(&empleados_ids[2]), None),
     ];
 
     let mut movimientos_count = 0;
+    let mut adelanto_movimiento_id = String::new();
     for (conc, monto, cant, tipo_id, cat_id, cli_id, trab_id, emp_id, fact_id) in movimientos_data {
+        let mov_id = Uuid::now_v7().to_string();
+        if conc.contains("Ricardo Darín") {
+            adelanto_movimiento_id = mov_id.clone();
+        }
         let mov = movimiento::ActiveModel {
-            id: Set(Uuid::now_v7().to_string()),
+            id: Set(mov_id),
             fecha: Set("2025-02-18T14:30:00Z".to_string()),
             concepto: Set(conc.to_string()),
             monto: Set(monto),
@@ -379,11 +490,13 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
         movimientos_count += 1;
     }
 
-    // 10. Liquidaciones
+    // 12. Liquidaciones & Descuento de Adelantos
     let mut liquidaciones_count = 0;
+    let mut liq_adelantos_count = 0;
     for (i, emp_id) in empleados_ids.iter().enumerate().take(2) {
+        let liq_id = Uuid::now_v7().to_string();
         let liq = liquidacion::ActiveModel {
-            id: Set(Uuid::now_v7().to_string()),
+            id: Set(liq_id.clone()),
             empleado_id: Set(emp_id.clone()),
             fecha_inicio: Set("2025-02-01".to_string()),
             fecha_fin: Set("2025-02-15".to_string()),
@@ -407,6 +520,79 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
         };
         liq.insert(&tx).await.map_err(AppError::persistence)?;
         liquidaciones_count += 1;
+
+        if i == 0 && !adelanto_movimiento_id.is_empty() {
+            let liq_ad = liquidacion_adelanto::ActiveModel {
+                id: Set(Uuid::now_v7().to_string()),
+                liquidacion_id: Set(liq_id.clone()),
+                movimiento_id: Set(adelanto_movimiento_id.clone()),
+                monto: Set(500_000_000),
+                fecha: Set("2025-02-05".to_string()),
+                concepto: Set("Adelanto quincenal Ricardo Darín".to_string()),
+                created_at: Set(now.clone()),
+                updated_at: Set(None),
+                row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+                is_deleted: Set(false),
+                deleted_at: Set(None),
+            };
+            liq_ad.insert(&tx).await.map_err(AppError::persistence)?;
+            liq_adelantos_count += 1;
+        }
+    }
+
+    // 13. Feriados
+    let feriados_data = [
+        ("2025-01-01", "Año Nuevo", "Inamovible"),
+        ("2025-03-03", "Carnaval", "Inamovible"),
+        ("2025-03-04", "Carnaval", "Inamovible"),
+        ("2025-03-24", "Día Nacional de la Memoria por la Verdad y la Justicia", "Inamovible"),
+        ("2025-04-02", "Día del Veterano y de los Caídos en la Guerra de Malvinas", "Inamovible"),
+        ("2025-05-01", "Día del Trabajador", "Inamovible"),
+        ("2025-05-25", "Día de la Revolución de Mayo", "Inamovible"),
+        ("2025-07-09", "Día de la Independencia", "Inamovible"),
+        ("2025-12-25", "Navidad", "Inamovible"),
+    ];
+
+    let mut feriados_count = 0;
+    for (fecha_fer, nom, tip) in feriados_data {
+        let f = feriado::ActiveModel {
+            fecha: Set(fecha_fer.to_string()),
+            nombre: Set(nom.to_string()),
+            tipo: Set(Some(tip.to_string())),
+            origen: Set("Api".to_string()),
+            created_at: Set(now.clone()),
+            updated_at: Set(None),
+        };
+        // Use insert, ignore conflict if exists
+        let _ = f.insert(&tx).await;
+        feriados_count += 1;
+    }
+
+    // 14. Adjuntos de Prueba
+    let adjuntos_data = [
+        ("Obra", &obras_ids[0], "plano_unifilar_torre_alvear.pdf", "obras/plano_unifilar.pdf", "application/pdf", 1_048_576),
+        ("Factura", &facturas_ids[1], "comprobante_transferencia_102.pdf", "facturas/comprobante_102.pdf", "application/pdf", 256_000),
+        ("Empleado", &empleados_ids[0], "constancia_alta_afip_darin.pdf", "empleados/alta_afip_darin.pdf", "application/pdf", 512_000),
+    ];
+
+    let mut adjuntos_count = 0;
+    for (tipo_ent, ent_id, nom_arch, ruta, mime, tam) in adjuntos_data {
+        let adj = adjunto::ActiveModel {
+            id: Set(Uuid::now_v7().to_string()),
+            entidad_tipo: Set(tipo_ent.to_string()),
+            entidad_id: Set(ent_id.clone()),
+            nombre_archivo: Set(nom_arch.to_string()),
+            ruta_relativa: Set(ruta.to_string()),
+            mime: Set(mime.to_string()),
+            tamano: Set(tam),
+            created_at: Set(now.clone()),
+            updated_at: Set(None),
+            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            is_deleted: Set(false),
+            deleted_at: Set(None),
+        };
+        adj.insert(&tx).await.map_err(AppError::persistence)?;
+        adjuntos_count += 1;
     }
 
     tx.commit().await.map_err(AppError::persistence)?;
@@ -415,12 +601,21 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
         categorias: categorias_ids.len(),
         tipos_movimiento: tipos_ids.len(),
         empleados: empleados_ids.len(),
+        asistencias: asistencias_count,
         clientes: clientes_ids.len(),
+        contactos: contactos_count,
         obras: obras_ids.len(),
         trabajos: trabajos_ids.len(),
         ordenes_trabajo: ordenes_ids.len(),
-        movimientos: movimientos_count,
+        orden_trabajo_items: items_ids.len(),
+        certificados: certificados_count,
+        certificado_items: cert_items_count,
         facturas: facturas_ids.len(),
+        pagos_factura: pagos_count,
+        movimientos: movimientos_count,
         liquidaciones: liquidaciones_count,
+        liquidacion_adelantos: liq_adelantos_count,
+        feriados: feriados_count,
+        adjuntos: adjuntos_count,
     })
 }
