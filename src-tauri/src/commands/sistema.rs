@@ -28,10 +28,7 @@ pub async fn config_set(state: State<'_, AppState>, cambios: Cambios) -> ApiResu
 }
 
 #[tauri::command]
-pub async fn config_reset(
-    state: State<'_, AppState>,
-    claves: Vec<String>,
-) -> ApiResult<AppConfig> {
+pub async fn config_reset(state: State<'_, AppState>, claves: Vec<String>) -> ApiResult<AppConfig> {
     let outcome = match state.services() {
         Ok(services) => services.configuracion.reset(claves).await,
         Err(e) => Err(e),
@@ -109,4 +106,173 @@ pub async fn backup_import_json(
         Err(e) => Err(e),
     };
     handle("backup_import_json", outcome)
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LegacyImportSummaryDto {
+    pub success: bool,
+    pub outcome: String,
+    pub total_rows: u64,
+    pub warnings_count: usize,
+    pub blocking_issues: Vec<String>,
+    pub warnings: Vec<LegacyImportWarningDto>,
+    pub tables: Vec<LegacyImportTableDto>,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LegacyImportWarningDto {
+    pub code: String,
+    pub table: String,
+    pub row_id: Option<String>,
+    pub detail: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LegacyImportTableDto {
+    pub source: String,
+    pub target: String,
+    pub source_rows: u64,
+    pub target_rows: u64,
+}
+
+#[tauri::command]
+pub async fn sistema_detect_legacy_db(
+    state: State<'_, AppState>,
+) -> ApiResult<Option<eo_infrastructure::paths::LegacyDbCandidate>> {
+    let candidate = state.paths.find_legacy_database();
+    handle("sistema_detect_legacy_db", Ok(candidate))
+}
+
+#[tauri::command]
+pub async fn sistema_run_legacy_import(
+    state: State<'_, AppState>,
+    origen: String,
+    allow_orphans: Option<bool>,
+) -> ApiResult<LegacyImportSummaryDto> {
+    let outcome: Result<LegacyImportSummaryDto, eo_application::AppError> = async {
+        let source_path = std::path::PathBuf::from(&origen);
+        if !source_path.is_file() {
+            return Err(eo_application::AppError::Validation(vec![
+                eo_application::error::FieldError::new("origen", "Validation.Backup.RutaInvalida"),
+            ]));
+        }
+
+        let target_temp = state.paths.database().with_extension("legacy_import.tmp");
+        if target_temp.exists() {
+            let _ = tokio::fs::remove_file(&target_temp).await;
+        }
+
+        let opts = eo_import_legacy::ImportOptions {
+            source: source_path,
+            target: target_temp.clone(),
+            dry_run: false,
+            timezone: "America/Argentina/Buenos_Aires".to_string(),
+            report: None,
+            assume_scaled: false,
+            assume_unscaled: false,
+            allow_orphans: allow_orphans.unwrap_or(true),
+        };
+
+        let report = eo_import_legacy::run_import(opts).await.map_err(|e| {
+            eo_application::AppError::unexpected(anyhow::anyhow!("legacy import failed: {e}"))
+        })?;
+
+        if report.has_blocking_issues()
+            || matches!(
+                report.outcome,
+                eo_import_legacy::Outcome::Rollback | eo_import_legacy::Outcome::Aborted
+            )
+        {
+            let _ = tokio::fs::remove_file(&target_temp).await;
+            return Err(eo_application::AppError::conflict(
+                "IMPORT_FAILED",
+                "Welcome.ImportFailed",
+            ));
+        }
+
+        // Disconnect active database connection before replacing the file
+        if let Some(db_handle) = state.db() {
+            db_handle
+                .disconnect()
+                .await
+                .map_err(eo_application::AppError::persistence)?;
+        }
+
+        let target_db = state.paths.database();
+        if target_db.exists() {
+            let bak = target_db.with_extension("db.pre_import_bak");
+            let _ = tokio::fs::rename(&target_db, &bak).await;
+        }
+        let _ = tokio::fs::remove_file(target_db.with_extension("db-wal")).await;
+        let _ = tokio::fs::remove_file(target_db.with_extension("db-shm")).await;
+
+        tokio::fs::rename(&target_temp, &target_db)
+            .await
+            .map_err(|e| {
+                eo_application::AppError::io(anyhow::anyhow!(
+                    "replacing database after import: {e}"
+                ))
+            })?;
+
+        let new_db = eo_infrastructure::persistence::open(&target_db)
+            .await
+            .map_err(eo_application::AppError::persistence)?;
+        if let Some(db_handle) = state.db() {
+            db_handle.replace(new_db).await;
+        }
+
+        let mut total_rows: u64 = 0;
+        let mut tables = Vec::new();
+        for t in &report.tables {
+            total_rows += t.target_rows;
+            tables.push(LegacyImportTableDto {
+                source: t.source.clone(),
+                target: t.target.clone(),
+                source_rows: t.source_rows,
+                target_rows: t.target_rows,
+            });
+        }
+
+        let mut warnings = Vec::new();
+        for w in &report.warnings {
+            warnings.push(LegacyImportWarningDto {
+                code: format!("{:?}", w.code),
+                table: w.table.clone(),
+                row_id: w.row_id.clone(),
+                detail: w.detail.to_string(),
+            });
+        }
+
+        Ok(LegacyImportSummaryDto {
+            success: true,
+            outcome: format!("{:?}", report.outcome),
+            total_rows,
+            warnings_count: warnings.len(),
+            blocking_issues: report.blocking_issues,
+            warnings,
+            tables,
+        })
+    }
+    .await;
+
+    handle("sistema_run_legacy_import", outcome)
+}
+
+#[tauri::command]
+pub async fn dev_seed_database(
+    state: State<'_, AppState>,
+) -> ApiResult<eo_infrastructure::persistence::SeedSummary> {
+    let outcome: Result<eo_infrastructure::persistence::SeedSummary, eo_application::AppError> = async {
+        let db_handle = state.db().ok_or_else(|| {
+            eo_application::AppError::unexpected(anyhow::anyhow!("database not ready"))
+        })?;
+        let conn = db_handle.read().await;
+        eo_infrastructure::persistence::seed_demo_data(&conn).await
+    }
+    .await;
+
+    handle("dev_seed_database", outcome)
 }

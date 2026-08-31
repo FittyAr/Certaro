@@ -11,16 +11,31 @@ import {
   configGetAll,
   configReset,
   configSet,
+  devSeedDatabase,
+  sistemaDetectLegacyDb,
   sistemaInfo,
+  sistemaRunLegacyImport,
   type BackupItem,
   type Cambios,
   type EstadoSistema,
   type ImportResumen,
+  type LegacyDbCandidate,
+  type LegacyImportSummary,
+  type SeedSummary,
   type VerificacionBackup,
 } from '@/api/sistema'
 import type { AppConfig } from '@/api/types'
 
-export type { BackupItem, Cambios, EstadoSistema, ImportResumen, VerificacionBackup }
+export type {
+  BackupItem,
+  Cambios,
+  EstadoSistema,
+  ImportResumen,
+  LegacyDbCandidate,
+  LegacyImportSummary,
+  SeedSummary,
+  VerificacionBackup,
+}
 
 /**
  * System operations: configuration, backups, JSON export/import. See `docs/13` §4–5.
@@ -108,6 +123,35 @@ export const useSistemaStore = defineStore('sistema', () => {
     }
   }
 
+  // ── Migración de datos legados ──────────────────────────────────────────
+
+  async function detectLegacyDb(): Promise<LegacyDbCandidate | null> {
+    return await sistemaDetectLegacyDb()
+  }
+
+  async function runLegacyImport(
+    origen: string,
+    allowOrphans = true,
+  ): Promise<LegacyImportSummary> {
+    loading.value = true
+    try {
+      return await sistemaRunLegacyImport(origen, allowOrphans)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ── Sembrado de datos de prueba ───────────────────────────────────────────
+
+  async function seedDemoData(): Promise<SeedSummary> {
+    loading.value = true
+    try {
+      return await devSeedDatabase()
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     config,
     sistema,
@@ -123,5 +167,8 @@ export const useSistemaStore = defineStore('sistema', () => {
     restoreBackup,
     exportJson,
     importJson,
+    detectLegacyDb,
+    runLegacyImport,
+    seedDemoData,
   }
 })

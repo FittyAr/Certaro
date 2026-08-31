@@ -77,3 +77,67 @@ export function backupExportJson(destino: string): Promise<ImportResumen> {
 export function backupImportJson(origen: string): Promise<ImportResumen> {
   return callCommand('backup_import_json', { origen })
 }
+
+// ── Migración de datos legados ──────────────────────────────────────────────
+
+export interface LegacyDbCandidate {
+  path: string
+  filename: string
+  sizeBytes: number
+  modifiedAt?: string | null
+}
+
+export interface LegacyImportWarning {
+  code: string
+  table: string
+  rowId?: string | null
+  detail: string
+}
+
+export interface LegacyImportTable {
+  source: string
+  target: string
+  sourceRows: number
+  targetRows: number
+}
+
+export interface LegacyImportSummary {
+  success: boolean
+  outcome: string
+  totalRows: number
+  warningsCount: number
+  blockingIssues: string[]
+  warnings: LegacyImportWarning[]
+  tables: LegacyImportTable[]
+}
+
+export function sistemaDetectLegacyDb(): Promise<LegacyDbCandidate | null> {
+  return callCommand('sistema_detect_legacy_db')
+}
+
+export function sistemaRunLegacyImport(
+  origen: string,
+  allowOrphans?: boolean,
+): Promise<LegacyImportSummary> {
+  return callCommand('sistema_run_legacy_import', { origen, allowOrphans })
+}
+
+// ── Sembrado de datos de prueba ───────────────────────────────────────────
+
+export interface SeedSummary {
+  categorias: number
+  tiposMovimiento: number
+  empleados: number
+  clientes: number
+  obras: number
+  trabajos: number
+  ordenesTrabajo: number
+  movimientos: number
+  facturas: number
+  liquidaciones: number
+}
+
+export function devSeedDatabase(): Promise<SeedSummary> {
+  return callCommand('dev_seed_database')
+}
+

@@ -107,6 +107,7 @@ pub fn run() {
             commands::app::ping,
             commands::app::app_info,
             commands::app::app_config,
+            commands::app::app_is_ready,
             commands::tipos_movimiento::tipos_movimiento_list,
             commands::tipos_movimiento::tipos_movimiento_get,
             commands::tipos_movimiento::tipos_movimiento_create,
@@ -218,6 +219,9 @@ pub fn run() {
             commands::sistema::backup_restore,
             commands::sistema::backup_export_json,
             commands::sistema::backup_import_json,
+            commands::sistema::sistema_detect_legacy_db,
+            commands::sistema::sistema_run_legacy_import,
+            commands::sistema::dev_seed_database,
         ])
         .run(tauri::generate_context!())
         .unwrap_or_else(|e| {
@@ -249,6 +253,7 @@ async fn bootstrap(handle: &tauri::AppHandle) -> anyhow::Result<()> {
         env!("CARGO_PKG_VERSION"),
     ));
     state.install_services(
+        db.clone(),
         Arc::new(eo_infrastructure::persistence::SeaOrmUnitOfWork::new(db)),
         holidays,
         dolar,
