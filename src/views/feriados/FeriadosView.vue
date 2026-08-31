@@ -101,9 +101,9 @@ onMounted(cargar)
       </template>
     </PageHeader>
 
-    <div class="flex flex-wrap items-end gap-3">
-      <label class="flex flex-col gap-1">
-        <span class="text-xs text-muted-foreground">{{ $t('Feriados.Anio') }}</span>
+    <div class="flex flex-wrap items-end gap-4 rounded-lg border border-border bg-surface-card p-4 shadow-sm">
+      <label class="flex flex-col gap-1.5">
+        <span class="text-xs font-medium text-foreground">{{ $t('Feriados.Anio') }}</span>
         <InputNumber
           :model-value="store.anio"
           :use-grouping="false"
@@ -113,28 +113,28 @@ onMounted(cargar)
           @update:model-value="store.fetch(Number($event))"
         />
       </label>
-      <label class="flex flex-col gap-1">
-        <span class="text-xs text-muted-foreground">{{ $t('Feriados.Fecha') }}</span>
+      <label class="flex flex-col gap-1.5">
+        <span class="text-xs font-medium text-foreground">{{ $t('Feriados.Fecha') }}</span>
         <DateInput v-model="nuevo.fecha" />
       </label>
-      <label class="flex flex-col gap-1">
-        <span class="text-xs text-muted-foreground">{{ $t('Feriados.Nombre') }}</span>
-        <InputText v-model="nuevo.nombre" />
+      <label class="flex min-w-[240px] flex-1 flex-col gap-1.5">
+        <span class="text-xs font-medium text-foreground">{{ $t('Feriados.Nombre') }}</span>
+        <InputText v-model="nuevo.nombre" class="w-full" />
       </label>
-      <Button :disabled="!nuevo.nombre.trim()" @click="agregar()">
+      <Button :disabled="!nuevo.nombre.trim()" class="flex items-center gap-2" @click="agregar()">
         <AppIcon name="plus" :size="16" />
         {{ $t('Feriados.Agregar') }}
       </Button>
     </div>
 
     <p class="text-xs text-muted-foreground">{{ $t('Feriados.SincronizarAyuda') }}</p>
-    <p v-if="mensaje && resultado" class="text-xs">{{ $t(mensaje, resultado) }}</p>
+    <p v-if="mensaje && resultado" class="text-xs font-medium text-primary">{{ $t(mensaje, resultado) }}</p>
 
     <ListState
       :loading="loading"
       :first-load="firstLoad"
       :error="error"
-      :is-empty="store.feriados.length === 0"
+      :is-empty="(store.feriados?.length ?? 0) === 0"
       :is-filtered="false"
       empty-key="Feriados.Empty"
       class="flex-1"

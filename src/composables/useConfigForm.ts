@@ -1,18 +1,20 @@
-import { computed, ref } from 'vue'
+import { computed, ref, toRaw } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { useI18n } from 'vue-i18n'
 
-import type { Cambios } from '@/api/sistema'
-import { useSistemaStore } from '@/stores/useSistemaStore'
+import { useSistemaStore, type Cambios } from '@/stores/useSistemaStore'
 
 /**
  * Config form helper. See `docs/09` §3.15.
  *
  * Each settings section clones the relevant slice of AppConfig into a local reactive object,
- * tracks whether it differs from the snapshot, and applies only the changed keys.
+ * tracks whether it differs from the snapshot, and applies only the changed keys as dotted paths.
  */
 
-export function useConfigForm<T extends Record<string, unknown>>(section: () => T | null) {
+export function useConfigForm<T extends Record<string, unknown>>(
+  prefix: string,
+  section: () => T | null,
+) {
   const sistema = useSistemaStore()
   const toast = useToast()
   const { t } = useI18n()
@@ -20,24 +22,26 @@ export function useConfigForm<T extends Record<string, unknown>>(section: () => 
   const draft = ref<T | null>(null)
   const saving = ref(false)
 
-  /** Snapshots the current config section into the draft. */
+  /** Snapshots the current config section into the draft safely without Proxy clone issues. */
   function load(): void {
     const current = section()
     if (current) {
-      draft.value = structuredClone(current) as T
+      draft.value = JSON.parse(JSON.stringify(toRaw(current))) as T
     }
   }
 
-  /** Keys whose value differs from the snapshot. */
+  /** Keys whose value differs from the snapshot, formatted with the section prefix. */
   const cambios = computed<Cambios>(() => {
     if (!draft.value) return {}
     const current = section()
     if (!current) return {}
+    const rawCurrent = toRaw(current)
     const diff: Cambios = {}
     for (const [key, value] of Object.entries(draft.value)) {
-      const original = current[key]
+      const original = rawCurrent[key]
       if (JSON.stringify(value) !== JSON.stringify(original)) {
-        diff[key] = typeof value === 'string' ? value : JSON.stringify(value)
+        const dottedKey = prefix ? `${prefix}.${key}` : key
+        diff[dottedKey] = typeof value === 'string' ? value : JSON.stringify(value)
       }
     }
     return diff
@@ -65,7 +69,8 @@ export function useConfigForm<T extends Record<string, unknown>>(section: () => 
   async function resetKey(key: string): Promise<void> {
     saving.value = true
     try {
-      await sistema.resetConfig([key])
+      const dottedKey = prefix ? `${prefix}.${key}` : key
+      await sistema.resetConfig([dottedKey])
       load()
     } finally {
       saving.value = false

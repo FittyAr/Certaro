@@ -109,55 +109,74 @@ onMounted(() => void cargar())
 </script>
 
 <template>
-  <div class="flex max-w-2xl flex-col gap-6 p-4">
-    <!-- System info -->
-    <section v-if="sistema.sistema" class="flex flex-col gap-2">
-      <h3 class="text-sm font-medium">{{ $t('Sistema.Title') }}</h3>
-      <div class="grid grid-cols-2 gap-2 text-sm">
-        <span class="text-muted-foreground">{{ $t('Sistema.Version') }}</span>
-        <span>{{ sistema.sistema.version }}</span>
-        <span class="text-muted-foreground">{{ $t('Sistema.BaseSaludable') }}</span>
-        <span :class="sistema.sistema.baseSaludable ? 'text-positive' : 'text-negative'">
-          {{ sistema.sistema.baseSaludable ? $t('Sistema.BaseSaludable') : $t('Sistema.BaseCorrupta') }}
-        </span>
-        <span class="text-muted-foreground">{{ $t('Sistema.Migraciones') }}</span>
-        <span>{{ sistema.sistema.migraciones }}</span>
-        <span class="text-muted-foreground">{{ $t('Sistema.Tamano') }}</span>
-        <span>{{ formatSize(sistema.sistema.tamanoBytes) }}</span>
+  <div class="flex max-w-4xl flex-col gap-6">
+    <!-- Estado del Sistema -->
+    <section v-if="sistema.sistema" class="rounded-lg border border-border bg-surface-card p-6 shadow-sm">
+      <div class="mb-4 flex items-center gap-2 border-b border-border pb-3">
+        <AppIcon name="database" :size="18" class="text-primary" />
+        <h3 class="text-sm font-semibold text-foreground">{{ $t('Sistema.Title') }}</h3>
       </div>
+
+      <dl class="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+        <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface-raised p-3">
+          <dt class="text-xs text-muted-foreground">{{ $t('Sistema.Version') }}</dt>
+          <dd class="font-medium text-foreground tabular-nums">{{ sistema.sistema.version }}</dd>
+        </div>
+
+        <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface-raised p-3">
+          <dt class="text-xs text-muted-foreground">{{ $t('Dashboard.EstadoBase') }}</dt>
+          <dd :class="sistema.sistema.baseSaludable ? 'text-success font-medium' : 'text-destructive font-medium'">
+            {{ sistema.sistema.baseSaludable ? $t('Sistema.BaseSaludable') : $t('Sistema.BaseCorrupta') }}
+          </dd>
+        </div>
+
+        <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface-raised p-3">
+          <dt class="text-xs text-muted-foreground">{{ $t('Sistema.Migraciones') }}</dt>
+          <dd class="font-medium text-foreground tabular-nums">{{ sistema.sistema.migraciones }}</dd>
+        </div>
+
+        <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface-raised p-3">
+          <dt class="text-xs text-muted-foreground">{{ $t('Sistema.Tamano') }}</dt>
+          <dd class="font-medium text-foreground tabular-nums">{{ formatSize(sistema.sistema.tamanoBytes) }}</dd>
+        </div>
+      </dl>
     </section>
 
-    <!-- Backups -->
-    <section class="flex flex-col gap-3">
-      <div class="flex items-center justify-between">
-        <h3 class="text-sm font-medium">{{ $t('Backup.Title') }}</h3>
-        <div class="flex gap-2">
-          <Button variant="secondary" size="sm" @click="exportarJson">
+    <!-- Copias de Seguridad -->
+    <section class="rounded-lg border border-border bg-surface-card p-6 shadow-sm">
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+        <div class="flex items-center gap-2">
+          <AppIcon name="shield" :size="18" class="text-primary" />
+          <h3 class="text-sm font-semibold text-foreground">{{ $t('Backup.Title') }}</h3>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" class="flex items-center gap-1.5" @click="exportarJson">
             <AppIcon name="download" :size="14" />
             {{ $t('Backup.ExportJson') }}
           </Button>
-          <Button variant="secondary" size="sm" @click="importarJson">
+          <Button variant="outline" size="sm" class="flex items-center gap-1.5" @click="importarJson">
             <AppIcon name="upload" :size="14" />
             {{ $t('Backup.ImportJson') }}
           </Button>
-          <Button size="sm" :disabled="sistema.loading" @click="crearBackup">
+          <Button size="sm" class="flex items-center gap-1.5" :disabled="sistema.loading" @click="crearBackup">
             <AppIcon name="plus" :size="14" />
             {{ $t('Backup.Create') }}
           </Button>
         </div>
       </div>
 
-      <DataTable :value="backups" :empty-message="$t('Backup.Empty')" size="small">
-        <Column field="nombre" header="Nombre" />
-        <Column field="bytes" header="Tamaño">
+      <DataTable :value="backups" :empty-message="$t('Backup.Empty')" size="small" class="text-sm">
+        <Column field="nombre" :header="$t('Adjuntos.Nombre')" />
+        <Column field="bytes" :header="$t('Adjuntos.Tamano')">
           <template #body="{ data }">{{ formatSize(data.bytes) }}</template>
         </Column>
-        <Column header="Acciones" style="width: 200px">
+        <Column :header="$t('General.Actions')" :style="{ width: '120px' }">
           <template #body="{ data }">
             <div class="flex gap-1">
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 :disabled="verificando === data.nombre"
                 :title="$t('Backup.Verify')"
                 @click="verificar(data.nombre)"
@@ -166,7 +185,7 @@ onMounted(() => void cargar())
               </Button>
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 :title="$t('Backup.Restore')"
                 @click="restaurar(data.nombre)"
               >
