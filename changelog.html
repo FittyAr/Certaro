@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Changelog — Certaro</title>
+<meta name="description" content="Historial de cambios de Certaro. Cada versión, cada fix.">
+<meta name="color-scheme" content="dark">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<style>
+.changelog-wrap { max-width: 760px; margin: 0 auto; padding: 2.5rem 0 3rem; }
+.changelog-wrap h1 { font-size: var(--text-3xl); font-weight: 800; letter-spacing:-.02em; text-align:center; }
+.changelog-wrap .sub { text-align:center; color:var(--color-text-muted); margin-top:.5rem; }
+#changelog-loading { text-align:center; color:var(--color-text-dim); padding:2rem; }
+#changelog-error { display:none; text-align:center; padding:2rem; }
+#changelog-error a { color:var(--color-amber); text-decoration:underline; }
+.cl-entry { display:flex; gap:1rem; margin-top:1.5rem; position:relative; }
+.cl-entry::before { content:""; position:absolute; left:15px; top:32px; bottom:-24px; width:1px; background:var(--color-border); }
+.cl-entry:last-child::before { display:none; }
+.cl-dot {
+  flex:0 0 32px; height:32px; border-radius:50%;
+  background:var(--color-soft); border:1px solid var(--color-border);
+  display:grid; place-items:center; font-size:var(--text-xs); font-weight:700; color:var(--color-text-dim);
+  position:relative; z-index:1;
+}
+.cl-latest .cl-dot { background:var(--color-amber); color:var(--color-text-on-accent); border-color:var(--color-amber); box-shadow:0 0 12px #ffb86c55; }
+.cl-card {
+  flex:1; background:var(--color-raised); border:1px solid var(--color-border);
+  border-radius:var(--radius-lg); padding:1rem 1.15rem;
+}
+.cl-latest .cl-card { border-color:var(--color-border-amber); }
+.cl-card-head { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; margin-bottom:.6rem; }
+.cl-version { font-weight:800; font-size:var(--text-md); }
+.cl-date { font-size:var(--text-xs); color:var(--color-text-dim); }
+.cl-badge { font-size:10px; font-weight:800; letter-spacing:.1em; background:var(--color-amber); color:var(--color-text-on-accent); padding:2px 6px; border-radius:999px; }
+.cl-group { margin-top:.6rem; }
+.cl-tag { font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:2px 6px; border-radius:999px; background:var(--color-soft); border:1px solid var(--color-border); color:var(--color-text-muted); }
+.cl-tag.added { background:#4ade8014; border-color:#4ade8050; color:#4ade80; }
+.cl-tag.fixed { background:#f8717114; border-color:#f8717150; color:#f87171; }
+.cl-tag.changed { background:#22d3ee14; border-color:#22d3ee50; color:#22d3ee; }
+.cl-group ul { margin:.4rem 0 0 1.1rem; font-size:var(--text-sm); color:var(--color-text-muted); line-height:1.6; }
+.cl-group li+li { margin-top:.15rem; }
+#changelog-toggle { margin:1.5rem auto 0; display:none; }
+</style>
+<link rel="canonical" href="https://certaro.fitty.ar/changelog.html">
+</head>
+<body>
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a href="index.html" class="logo"><span class="logo-mark">C</span> certaro<span class="tld">.fitty.ar</span></a>
+    <nav class="nav-links">
+      <a href="index.html#features" data-i18n="nav.features">Características</a>
+      <a href="index.html#gallery" data-i18n="nav.screenshots">Capturas</a>
+      <a href="index.html#install" data-i18n="nav.install">Instalación</a>
+      <a href="changelog.html" class="active" data-i18n="nav.changelog">Cambios</a>
+      <a href="https://fitty.ar" data-i18n="nav.back">← fitty.ar</a>
+    </nav>
+    <div class="topbar-actions">
+      <div class="lang-switch">
+        <button data-lang="es" class="active" onclick="setLocale('es')">ES</button>
+        <button data-lang="en" onclick="setLocale('en')">EN</button>
+      </div>
+      <a class="btn btn-icon" href="https://github.com/FittyAr/Certaro" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2.04c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.83 1.24 1.83 1.24 1.07 1.83 2.81 1.3 3.5.99.11-.78.42-1.3.76-1.6-2.67-.3-5.48-1.33-5.48-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.31 1.23a11.5 11.5 0 0 1 6.02 0c2.3-1.55 3.31-1.23 3.31-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.93.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.82.57A12 12 0 0 0 12 .3Z"/></svg>
+      </a>
+    </div>
+  </div>
+</header>
+<main class="container changelog-wrap">
+  <h1 data-i18n="changelog.title">Changelog</h1>
+  <p class="sub" data-i18n="changelog.subtitle">Cada versión, cada fix, en orden cronológico.</p>
+  <div id="changelog-loading" data-i18n="changelog.loading">Cargando cambios…</div>
+  <div id="changelog-error"><span data-i18n="changelog.error">No se pudo cargar el changelog. Ver en GitHub.</span> <a href="https://github.com/FittyAr/Certaro/blob/main/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG.md</a></div>
+  <div id="changelog-timeline"></div>
+  <div style="text-align:center"><button id="changelog-toggle" class="btn btn-ghost btn-sm" data-i18n="changelog.showMore">Ver más</button></div>
+  <p style="text-align:center;margin-top:1.5rem"><a href="index.html" class="btn btn-ghost btn-sm">← Volver</a></p>
+</main>
+<footer class="footer">
+  <div class="container"><div class="footer-bottom"><span><span class="status-dot"></span> <span data-i18n="footer.version">v0.1 · Tauri · Rust · JetBrains Mono · Amber phosphor</span></span><span>© 2026 FittyAr · <span data-i18n="footer.license">App: BSL 1.1 · Sitio: MIT</span></span></div></div>
+</footer>
+<script src="js/translations.js"></script>
+<script src="js/changelog.js"></script>
+</body>
+</html>
