@@ -87,7 +87,7 @@ tauri-plugin-opener = "2"
 
 # Testing
 tokio-test = "0.4"
-mockall = "0.13"
+mockall = "0.15"
 rstest = "0.23"
 proptest = "1"
 wiremock = "0.6"
