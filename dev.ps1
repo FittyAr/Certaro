@@ -2,8 +2,10 @@
 # Asistente de desarrollo para ElectroObra.
 #
 # Uso:
-#   .\dev.ps1 setup          # Instala dependencias y configura el entorno
-#   .\dev.ps1 dev / run      # Arranca la app en modo desarrollo (hot reload)
+#   .\dev.ps1 setup              # Instala dependencias y configura el entorno
+#   .\dev.ps1 dev / run          # Elige web o desktop (pregunta)
+#   .\dev.ps1 dev:web / web      # Solo web (Vite en http://localhost:1420, mock en localStorage)
+#   .\dev.ps1 dev:desktop / desktop # Solo desktop (Tauri + Vite, SQLite en %LOCALAPPDATA%\ElectroObra)
 #   .\dev.ps1 build          # Build de release
 #   .\dev.ps1 test           # Todos los tests (Rust + frontend)
 #   .\dev.ps1 test-rust      # Solo tests de Rust
@@ -24,7 +26,7 @@
 
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("setup", "dev", "run", "build", "test", "test-rust", "test-fe", "lint", "lint-fix",
+    [ValidateSet("setup", "dev", "run", "web", "desktop", "dev:web", "dev:desktop", "build", "test", "test-rust", "test-fe", "lint", "lint-fix",
                  "format", "check", "clean", "clean-all", "i18n", "i18n-fix", "version",
                  "version-sync", "installer", "import", "help")]
     [string]$Command = "help",
@@ -66,7 +68,9 @@ switch ($Command) {
         Write-Host ""
         Write-Host "Comandos:" -ForegroundColor White
         Write-Host "  setup          Instala dependencias y configura el entorno" -ForegroundColor Gray
-        Write-Host "  dev, run       Arranca la app en modo desarrollo (hot reload)" -ForegroundColor Gray
+        Write-Host "  dev, run       Elige desktop o web (pregunta)" -ForegroundColor Gray
+        Write-Host "  dev:web, web     Solo web (http://localhost:1420, datos en localStorage)" -ForegroundColor Gray
+        Write-Host "  dev:desktop, desktop Solo desktop (Tauri, datos en %LOCALAPPDATA%\\ElectroObra\\electroobra.db)" -ForegroundColor Gray
         Write-Host "  build          Build de release" -ForegroundColor Gray
         Write-Host "  test           Todos los tests (Rust + frontend)" -ForegroundColor Gray
         Write-Host "  test-rust      Solo tests de Rust" -ForegroundColor Gray
@@ -106,10 +110,39 @@ switch ($Command) {
     }
 
     { $_ -in @("dev", "run") } {
-        Write-Step "Arrancando en modo desarrollo"
-        Write-Host "    La app abre en http://localhost:1420 con hot reload." -ForegroundColor Gray
-        Write-Host "    Presiona Ctrl+C para detener." -ForegroundColor Gray
-        Write-Host ""
+        $mode = ""
+        if ($Args.Count -gt 0) { $mode = $Args[0].ToLower() }
+        if ($mode -notin @("web", "desktop", "dev:web", "dev:desktop")) {
+            Write-Host ""
+            Write-Host "Elige modo:" -ForegroundColor White
+            Write-Host "  [1] desktop  Tauri + Vite (ventana nativa, SQLite real)" -ForegroundColor Gray
+            Write-Host "  [2] web      Solo Vite (navegador en http://localhost:1420, mock localStorage)" -ForegroundColor Gray
+            $choice = Read-Host "Opción [1/2] (default 1)"
+            if ($choice -eq "2") { $mode = "web" } else { $mode = "desktop" }
+        }
+        if ($mode -in @("web", "dev:web")) {
+            Write-Step "Arrancando solo web (Vite)"
+            Write-Host "    Abre http://localhost:1420 en el navegador." -ForegroundColor Gray
+            Write-Host "    Datos: mock en localStorage (electroobra_mock_db_v2), separado del SQLite de desktop." -ForegroundColor Yellow
+            Write-Host "    Para ver los mismos datos que en desktop: en desktop Exportar JSON y en web Importar JSON (Configuración > Sistema)." -ForegroundColor Gray
+            Write-Host ""
+            pnpm dev --host 0.0.0.0
+        } else {
+            Write-Step "Arrancando desktop (Tauri + Vite)"
+            Write-Host "    Ventana nativa + http://localhost:1420 con hot reload." -ForegroundColor Gray
+            Write-Host "    Datos: SQLite en %LOCALAPPDATA%\ElectroObra\electroobra.db (real, no mock)." -ForegroundColor Gray
+            Write-Host ""
+            pnpm tauri dev
+        }
+    }
+
+    { $_ -in @("web", "dev:web") } {
+        Write-Step "Arrancando solo web (Vite)"
+        pnpm dev --host 0.0.0.0
+    }
+
+    { $_ -in @("desktop", "dev:desktop") } {
+        Write-Step "Arrancando desktop (Tauri + Vite)"
         pnpm tauri dev
     }
 
