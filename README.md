@@ -1,9 +1,23 @@
 # ElectroObra
 
-Operational management and real cash-flow control for a small electrical contracting business:
-movements (income/expense/advances), clients, sites (*obras*), work orders and progress
-certificates, invoices and payments, employees, attendance, payroll settlements
-(*liquidaciones*), reports and exports.
+Operational management and real cash-flow control for SMEs working **by project / site**:
+movements (income, expenses and advances), clients, projects/sites, work orders and certificates
+of progress, invoices and payments, employees, attendance, settlements, reports and exports.
+
+Born for electrical installations, but the domain is generic: any SME that quotes, executes by milestones, certifies progress and settles daily wages.
+
+## Who is it for? (use cases)
+
+Works out-of-the-box for:
+
+**Installations:** electrical, plumbing/gas, HVAC, networking, electronic security, elevators.
+**Light construction:** masonry, painting, drywall, metalwork, carpentry, glazing, waterproofing.
+**Maintenance:** building, facility, landscaping, site cleaning.
+**Field services:** workshops, industrial maintenance, small civil works.
+
+> \Site\/\Obra\ is a generic term for *project/service*. You can rename it to \Project\ in \src/locales/en.json\ without touching logic. With configurable \movement types\/\categories\, the same binary covers all the above.
+
+**Not a fit without redesign:** retail, hospitality, healthcare or education (no site-based progress certification).
 
 > **This branch is a full rewrite.** The previous implementation was C# / .NET / Avalonia.
 > This orphan branch (`rewrite/rust-tauri`) starts from zero on **Rust + Tauri 2 + Vue 3**.
