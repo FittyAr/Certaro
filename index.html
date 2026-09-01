@@ -3,19 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Certaro — Gestión operativa para contratistas eléctricos</title>
-<meta name="description" content="Gestión de obras, trabajos, movimientos, certificaciones, facturación, liquidaciones y asistencia. Desktop nativo con Tauri + Rust. Gratis y de código abierto.">
+<title>Certaro — Tu obra, bajo control</title>
+<meta name="description" content="Gestión completa para contratistas eléctricos: obras, trabajos, caja, certificaciones, facturas, liquidaciones y asistencia. Sin suscripciones, tus datos siempre con vos.">
 <meta name="color-scheme" content="dark">
-<meta property="og:title" content="Certaro — Gestión operativa para contratistas eléctricos">
-<meta property="og:description" content="Tu obra, bajo control. Movimientos, obras, certificaciones, facturas y liquidaciones en un desktop nativo offline.">
+<meta property="og:title" content="Certaro — Tu obra, bajo control">
+<meta property="og:description" content="Todo en un solo lugar. Sin suscripciones, sin nube, sin depender de internet.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://certaro.fitty.ar/">
-<meta property="og:image" content="https://certaro.fitty.ar/assets/certaro-og.png">
+<meta property="og:image" content="https://certaro.fitty.ar/assets/screen-dashboard.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Certaro — Gestión operativa para contratistas eléctricos">
-<meta name="twitter:description" content="Tu obra, bajo control. Desktop nativo offline con Tauri + Rust.">
 <link rel="icon" href="assets/certaro-logo.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/index.css">
@@ -30,165 +27,165 @@
       <span class="logo-mark">C</span>
       certaro<span class="tld">.fitty.ar</span>
     </a>
-    <nav class="nav-links" aria-label="Navegación principal">
-      <a href="#features" data-i18n="nav.features">Características</a>
-      <a href="#gallery" data-i18n="nav.screenshots">Capturas</a>
-      <a href="#install" data-i18n="nav.install">Instalación</a>
-      <a href="changelog.html" data-i18n="nav.changelog">Cambios</a>
-      <a href="https://fitty.ar" data-i18n="nav.back">← fitty.ar</a>
+    <nav class="nav-links" aria-label="Navegación">
+      <a href="#problems" data-i18n="nav.benefits">Beneficios</a>
+      <a href="#how" data-i18n="nav.how">Cómo funciona</a>
+      <a href="changelog.html" data-i18n="nav.changelog">Novedades</a>
+      <a href="#contact" data-i18n="nav.contact">Contacto</a>
     </nav>
     <div class="topbar-actions">
       <div class="lang-switch" role="group" aria-label="Idioma">
         <button data-lang="es" class="active" onclick="setLocale('es')">ES</button>
         <button data-lang="en" onclick="setLocale('en')">EN</button>
       </div>
-      <a class="btn btn-icon" href="https://github.com/FittyAr/Certaro" target="_blank" rel="noopener" aria-label="GitHub">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .3a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2.04c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.83 1.24 1.83 1.24 1.07 1.83 2.81 1.3 3.5.99.11-.78.42-1.3.76-1.6-2.67-.3-5.48-1.33-5.48-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.31 1.23a11.5 11.5 0 0 1 6.02 0c2.3-1.55 3.31-1.23 3.31-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.93.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.82.57A12 12 0 0 0 12 .3Z"/></svg>
-      </a>
-      <a class="btn btn-primary btn-sm" href="https://github.com/FittyAr/Certaro/releases/latest" target="_blank" rel="noopener" data-i18n="nav.download">Descargar</a>
-      <button class="btn btn-icon hamburger" aria-label="Menú" onclick="document.querySelector('.nav-links').classList.toggle('active')">☰</button>
+      <a class="btn btn-primary btn-sm" href="#contact" data-i18n="nav.cta">Solicitar demo</a>
     </div>
   </div>
 </header>
 
 <!-- HERO -->
 <section class="container hero reveal">
-  <div>
-    <span class="hero-badge"><span class="dot"></span> <span data-i18n="hero.badge">Hecho por FittyAr · para la obra</span></span>
+  <div class="hero-text">
+    <span class="eyebrow" data-i18n="hero.badge">Para contratistas eléctricos</span>
     <h1 data-i18n="hero.title">Tu obra,<br>bajo control.</h1>
-    <p class="hero-subtitle" data-i18n="hero.subtitle">Movimientos, clientes, obras, certificaciones, facturas y liquidaciones — todo en un desktop nativo rápido, offline y sin suscripciones.</p>
+    <p class="hero-subtitle" data-i18n="hero.subtitle">Movimientos, obras, certificaciones, facturas y sueldos — todo en un solo lugar. Sin suscripciones, sin nube, sin depender de internet.</p>
     <div class="hero-actions">
-      <a class="btn btn-primary" href="https://github.com/FittyAr/Certaro/releases/latest" target="_blank" rel="noopener" data-i18n="hero.primary">Descargar para Windows</a>
-      <a class="btn btn-ghost" href="https://github.com/FittyAr/Certaro" target="_blank" rel="noopener" data-i18n="hero.secondary">Ver código fuente</a>
-    </div>
-    <div class="hero-meta">
-      <span data-i18n="hero.meta.stack">Tauri · Rust · Vue</span>
-      <span data-i18n="hero.meta.platform">Windows · Linux · macOS</span>
-      <span data-i18n="hero.meta.license">BSL → GPL · Comercial opcional</span>
-      <span data-i18n="hero.meta.mode">Offline first</span>
+      <a class="btn btn-primary" href="#contact" data-i18n="hero.cta">Solicitar demo</a>
+      <a class="btn btn-ghost" href="#how" data-i18n="hero.secondary">Ver cómo funciona</a>
     </div>
   </div>
-  <div class="terminal" role="img" aria-label="Terminal con estado de Certaro">
-    <div class="terminal-bar">
-      <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
-      <span class="term-title">certaro — zsh</span>
+  <div class="hero-media">
+    <img src="assets/screen-dashboard.png" alt="Certaro — panel principal" data-i18n-alt="showcase.alt">
+  </div>
+</section>
+
+<!-- PROBLEMAS -->
+<section id="problems" class="section container reveal">
+  <div class="section-header">
+    <span class="eyebrow" data-i18n="problems.eyebrow">Lo que pasa sin un sistema</span>
+    <h2 class="section-title" data-i18n="problems.title">¿Te suena familiar?</h2>
+  </div>
+  <div class="problems-grid">
+    <div class="problem-card">
+      <div class="problem-icon">📉</div>
+      <h3 data-i18n="problems.p1.title">¿Perdés el control de los gastos?</h3>
+      <p data-i18n="problems.p1.desc">Sin un sistema claro, los gastos se acumulan y no sabés cuánto gastaste hasta que es tarde.</p>
     </div>
-    <div class="terminal-body">
-      <div><span class="dim" data-i18n="hero.terminal.line1">$ certaro --version</span></div>
-      <div><span class="val" data-i18n="hero.terminal.line2">certaro 0.1.0 · FittyAr/Certaro</span></div>
-      <div><span class="dim" data-i18n="hero.terminal.line3">$ certaro status</span></div>
-      <div><span class="ok" data-i18n="hero.terminal.line4">✓ Base: FittyAr/Certaro/certaro.db (saludable)</span></div>
-      <div><span class="ok" data-i18n="hero.terminal.line5">✓ 4 obras · 12 movimientos · 3 certificados</span></div>
-      <div><span class="dim">$</span> <span class="cursor"></span></div>
+    <div class="problem-card">
+      <div class="problem-icon">❓</div>
+      <h3 data-i18n="problems.p2.title">¿No sabés qué obra es rentable?</h3>
+      <p data-i18n="problems.p2.desc">Sin datos ordenados, no podés saber si una obra te da ganancia o te hace perder dinero.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">📝</div>
+      <h3 data-i18n="problems.p3.title">¿Liquidás sueldos a mano?</h3>
+      <p data-i18n="problems.p3.desc">Calcular jornales, recargos y adelantos a mano es lento y propenso a errores.</p>
     </div>
   </div>
 </section>
 
-<!-- FEATURES -->
-<section id="features" class="section container reveal">
+<!-- BENEFICIOS -->
+<section class="section container reveal" style="padding-top:0">
   <div class="section-header">
-    <span class="eyebrow" data-i18n="features.eyebrow">Todo lo que usa tu día a día</span>
-    <h2 class="section-title" data-i18n="features.title">Hecho para la obra, no para el escritorio</h2>
-    <p class="section-subtitle" data-i18n="features.subtitle">Seis módulos que cubren el flujo completo del contratista eléctrico.</p>
+    <span class="eyebrow" data-i18n="benefits.eyebrow">Con Certaro</span>
+    <h2 class="section-title" data-i18n="benefits.title">Todo ordenado, todo a mano</h2>
   </div>
   <div class="features-grid">
     <div class="feature-card">
-      <div class="feature-icon">💰</div>
-      <h3 data-i18n="features.cash.title">Flujo de caja</h3>
-      <p data-i18n="features.cash.desc">Ingresos, gastos y adelantos con categorías, cotización del dólar y balance al instante.</p>
+      <div class="feature-icon">🗂️</div>
+      <h3 data-i18n="benefits.b1.title">Todo en un solo lugar</h3>
+      <p data-i18n="benefits.b1.desc">Obras, movimientos, facturas, liquidaciones y asistencia conectados entre sí.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon">🏗️</div>
-      <h3 data-i18n="features.obras.title">Obras y trabajos</h3>
-      <p data-i18n="features.obras.desc">Obras con estados, trabajos por obra, rentabilidad y próximos vencimientos.</p>
+      <div class="feature-icon">💳</div>
+      <h3 data-i18n="benefits.b2.title">Sin suscripciones</h3>
+      <p data-i18n="benefits.b2.desc">Comprás una vez y es tuyo. Sin pagos mensuales, sin sorpresas.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon">📋</div>
-      <h3 data-i18n="features.cert.title">Certificaciones</h3>
-      <p data-i18n="features.cert.desc">Órdenes de trabajo, ítems con avance porcentual y certificados con ajuste UOCRA.</p>
+      <div class="feature-icon">🔒</div>
+      <h3 data-i18n="benefits.b3.title">Tus datos, en tu máquina</h3>
+      <p data-i18n="benefits.b3.desc">Sin nube, sin depender de internet. Tu información siempre disponible.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon">🧾</div>
-      <h3 data-i18n="features.fact.title">Facturación</h3>
-      <p data-i18n="features.fact.desc">Facturas con estados, pagos parciales y control de mora automático.</p>
+      <div class="feature-icon">📊</div>
+      <h3 data-i18n="benefits.b4.title">Reportes al instante</h3>
+      <p data-i18n="benefits.b4.desc">Balances, rentabilidad y listados listos para imprimir o enviar.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon">📅</div>
-      <h3 data-i18n="features.liq.title">Liquidaciones</h3>
-      <p data-i18n="features.liq.desc">Cálculo de jornales por asistencia real, con recargos por sábado, domingo y feriados.</p>
+      <div class="feature-icon">⚡</div>
+      <h3 data-i18n="benefits.b5.title">Pensado para la obra</h3>
+      <p data-i18n="benefits.b5.desc">Categorías, UOCRA, feriados: todo lo que usás en el día a día, ya incluido.</p>
     </div>
     <div class="feature-card">
-      <div class="feature-icon">👷</div>
-      <h3 data-i18n="features.asist.title">Asistencia</h3>
-      <p data-i18n="features.asist.desc">Grilla por empleado y mes, carga masiva y sincronización de feriados nacionales.</p>
+      <div class="feature-icon">🤝</div>
+      <h3 data-i18n="benefits.b6.title">Soporte cercano</h3>
+      <p data-i18n="benefits.b6.desc">Hablás directo con quien lo hace. Sin tickets eternos ni call center.</p>
     </div>
   </div>
 </section>
 
-<!-- GALLERY -->
+<!-- CÓMO FUNCIONA -->
+<section id="how" class="section container reveal">
+  <div class="section-header">
+    <span class="eyebrow" data-i18n="how.eyebrow">Tan simple como</span>
+    <h2 class="section-title" data-i18n="how.title">Cómo funciona</h2>
+  </div>
+  <div class="how-grid">
+    <div class="how-step">
+      <span class="how-num">01</span>
+      <h3 data-i18n="how.s1.title">Importá tu base vieja</h3>
+      <p data-i18n="how.s1.desc">Si venís del sistema anterior, migrás tus datos en un click. Si empezás de cero, cargás directo.</p>
+    </div>
+    <div class="how-step">
+      <span class="how-num">02</span>
+      <h3 data-i18n="how.s2.title">Cargá tus obras y movimientos</h3>
+      <p data-i18n="how.s2.desc">Obras, trabajos, clientes y movimientos con categorías. Todo conectado y ordenado.</p>
+    </div>
+    <div class="how-step">
+      <span class="how-num">03</span>
+      <h3 data-i18n="how.s3.title">Controlá todo desde el panel</h3>
+      <p data-i18n="how.s3.desc">Dashboard con balance, alertas y rankings. Reportes listos para presentar.</p>
+    </div>
+  </div>
+</section>
+
+<!-- GALERÍA -->
 <section id="gallery" class="section container reveal">
   <div class="section-header">
     <span class="eyebrow" data-i18n="gallery.eyebrow">Capturas reales</span>
-    <h2 class="section-title" data-i18n="gallery.title">Así se ve en tu escritorio</h2>
-    <p class="section-subtitle" data-i18n="gallery.subtitle">Tema oscuro con acentos amber. Tipografía monoespaciada. Todo al alcance sin recargar.</p>
+    <h2 class="section-title" data-i18n="gallery.title">Así se ve Certaro</h2>
+    <p class="section-subtitle" data-i18n="gallery.subtitle">Interfaz clara, datos a la vista. Lo que necesitás, sin vueltas.</p>
   </div>
   <div class="gallery-wrap">
     <div class="gallery-main" id="galleryMain">
-      <div class="gallery-placeholder" id="galleryPlaceholder">
-        <span class="ph-icon">🖼️</span>
-        <span>Screenshots — próximamente con datos reales de la app</span>
-        <small class="dim">Dashboard · Obras · Movimientos · Certificados · Liquidaciones</small>
-      </div>
-      <div class="gallery-nav" id="galleryNav" style="display:none">
+      <img id="galleryImg" src="assets/screen-dashboard.png" alt="Dashboard">
+      <div class="gallery-nav">
         <button onclick="galleryPrev()" aria-label="Anterior">‹</button>
         <button onclick="galleryNext()" aria-label="Siguiente">›</button>
       </div>
     </div>
     <div class="gallery-strip" id="galleryStrip">
-      <button class="gallery-thumb active" onclick="galleryGo(0)">Dashboard</button>
-      <button class="gallery-thumb" onclick="galleryGo(1)">Obras</button>
-      <button class="gallery-thumb" onclick="galleryGo(2)">Movimientos</button>
-      <button class="gallery-thumb" onclick="galleryGo(3)">Certificados</button>
-      <button class="gallery-thumb" onclick="galleryGo(4)">Liquidaciones</button>
+      <button class="gallery-thumb active" onclick="galleryGo(0)"><img src="assets/screen-dashboard.png" alt="thumb"><span>Dashboard</span></button>
+      <button class="gallery-thumb" onclick="galleryGo(1)"><img src="assets/screen-movimientos.png" alt="thumb"><span>Movimientos</span></button>
+      <button class="gallery-thumb" onclick="galleryGo(2)"><img src="assets/screen-facturas.png" alt="thumb"><span>Facturas</span></button>
+      <button class="gallery-thumb" onclick="galleryGo(3)"><img src="assets/screen-asistencia.png" alt="thumb"><span>Asistencia</span></button>
     </div>
     <div class="gallery-caption" id="galleryCaption" data-i18n="gallery.cap.dashboard">Panel — balance, alertas y ranking de obras</div>
   </div>
 </section>
 
-<!-- INSTALL -->
-<section id="install" class="section container reveal">
-  <div class="section-header">
-    <span class="eyebrow" data-i18n="install.eyebrow">Instalación</span>
-    <h2 class="section-title" data-i18n="install.title">Doble click y a trabajar</h2>
-    <p class="section-subtitle" data-i18n="install.subtitle">Sin instaladores pesados. Bajás el .msi o el .exe y seguís con la obra.</p>
-  </div>
-  <div class="install-tabs">
-    <button class="install-tab active" data-tab="win" onclick="installTab('win')" data-i18n="install.win">Windows</button>
-    <button class="install-tab" data-tab="linux" onclick="installTab('linux')" data-i18n="install.linux">Linux / macOS</button>
-  </div>
-  <div class="install-card">
-    <div class="terminal-bar">
-      <div style="display:flex;gap:.4rem;align-items:center"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-title">terminal</span></div>
-      <button class="copy-btn" onclick="copyInstall()" data-i18n="install.copy">Copiar</button>
-    </div>
-    <div class="terminal-body" id="installBody">
-      <span class="prompt">$</span> <span id="installCmd">Certaro_0.1.0_x64.msi</span>
-      <div class="dim" style="margin-top:.5rem"># Descargá desde <span class="val">github.com/FittyAr/Certaro/releases</span> y ejecutá el instalador.</div>
-    </div>
-  </div>
-  <p class="changelog-teaser"><a href="changelog.html" data-i18n="nav.changelog">Ver changelog →</a></p>
-</section>
-
-<!-- CTA -->
-<section class="section container reveal">
+<!-- CONTACTO -->
+<section id="contact" class="section container reveal">
   <div class="cta-card">
-    <h2 data-i18n="cta.title">¿Tenés una obra que necesita orden?</h2>
-    <p data-i18n="cta.subtitle">Probá Certaro hoy. Importá tu base vieja de ElectroObraApp o empezá de cero. Sin cuenta, sin nube, tus datos son tuyos.</p>
+    <span class="eyebrow" data-i18n="contact.eyebrow">Contactanos</span>
+    <h2 data-i18n="contact.title">¿Querés verlo en acción?</h2>
+    <p data-i18n="contact.subtitle">Escribinos y te mostramos cómo Certaro puede ordenar tu obra. Sin compromiso.</p>
     <div class="cta-actions">
-      <a class="btn btn-primary" href="https://github.com/FittyAr/Certaro/releases/latest" target="_blank" rel="noopener" data-i18n="cta.primary">Descargar gratis</a>
-      <a class="btn btn-ghost" href="https://github.com/FittyAr/Certaro" target="_blank" rel="noopener" data-i18n="cta.secondary">Ver en GitHub</a>
+      <a class="btn btn-primary" href="mailto:contacto@fitty.ar?subject=Quiero%20probar%20Certaro" data-i18n="contact.cta">Contactar</a>
     </div>
+    <p class="cta-note" data-i18n="contact.note">Te respondemos en 24 hs. También podés escribirnos desde fitty.ar.</p>
   </div>
+  <p class="changelog-teaser"><a href="changelog.html" data-i18n="nav.changelog">Ver novedades →</a></p>
 </section>
 
 <!-- FOOTER -->
@@ -197,76 +194,57 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <div class="logo"><span class="logo-mark">C</span> certaro<span class="tld">.fitty.ar</span></div>
-        <p data-i18n="footer.tagline">Gestión operativa para contratistas eléctricos. Hecho en Buenos Aires.</p>
+        <p data-i18n="footer.tagline">Gestión operativa para contratistas eléctricos. Hecho en Buenos Aires por FittyAr.</p>
       </div>
       <div class="footer-col">
         <h4 data-i18n="footer.nav">Navegación</h4>
-        <a href="#features" data-i18n="nav.features">Características</a>
-        <a href="#gallery" data-i18n="nav.screenshots">Capturas</a>
-        <a href="#install" data-i18n="nav.install">Instalación</a>
-        <a href="changelog.html" data-i18n="nav.changelog">Cambios</a>
+        <a href="#problems" data-i18n="nav.benefits">Beneficios</a>
+        <a href="#how" data-i18n="nav.how">Cómo funciona</a>
+        <a href="#gallery" data-i18n="gallery.eyebrow">Capturas</a>
+        <a href="changelog.html" data-i18n="nav.changelog">Novedades</a>
       </div>
       <div class="footer-col">
-        <h4 data-i18n="footer.project">Proyecto</h4>
-        <a href="https://github.com/FittyAr/Certaro" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://github.com/FittyAr/Certaro/releases" target="_blank" rel="noopener">Releases</a>
-        <a href="https://github.com/FittyAr/Certaro/blob/main/LICENSE" target="_blank" rel="noopener">Licencia BSL</a>
-        <a href="https://fitty.ar" target="_blank" rel="noopener">fitty.ar</a>
+        <h4 data-i18n="footer.product">Producto</h4>
+        <a href="#problems">Beneficios</a>
+        <a href="#gallery">Capturas</a>
+        <a href="changelog.html">Novedades</a>
       </div>
       <div class="footer-col">
         <h4 data-i18n="footer.contact">Contacto</h4>
-        <a href="https://fitty.ar/#contacto" target="_blank" rel="noopener">fitty.ar/contacto</a>
-        <a href="https://github.com/FittyAr" target="_blank" rel="noopener">FittyAr @ GitHub</a>
+        <a href="mailto:contacto@fitty.ar">contacto@fitty.ar</a>
+        <a href="https://fitty.ar/#contacto" target="_blank" rel="noopener">fitty.ar</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <span><span class="status-dot"></span> <span data-i18n="footer.version">v0.1 · Tauri · Rust · JetBrains Mono · Amber phosphor</span></span>
-      <span>© 2026 <span data-i18n="footer.made">Hecho por</span> <a href="https://fitty.ar" style="color:var(--color-amber)">FittyAr</a> · <span data-i18n="footer.license">App: BSL 1.1 · Sitio: MIT · Código en GitHub</span></span>
+      <span><span class="status-dot"></span> <span data-i18n="footer.version">v0.1 · JetBrains Mono · Amber phosphor</span></span>
+      <span>© 2026 FittyAr</span>
     </div>
   </div>
 </footer>
 
 <script src="js/translations.js"></script>
 <script>
-// Gallery
-const captions = ["gallery.cap.dashboard","gallery.cap.obras","gallery.cap.movimientos","gallery.cap.certificados","gallery.cap.liquidaciones"];
+const galleryImages = ["assets/screen-dashboard.png","assets/screen-movimientos.png","assets/screen-facturas.png","assets/screen-asistencia.png"];
+const captions = ["gallery.cap.dashboard","gallery.cap.movimientos","gallery.cap.facturas","gallery.cap.asistencia"];
 let gIdx = 0;
 function galleryGo(i) {
   gIdx = i;
+  document.getElementById("galleryImg").src = galleryImages[i];
   document.querySelectorAll(".gallery-thumb").forEach((el,idx)=> el.classList.toggle("active", idx===i));
   const cap = document.getElementById("galleryCaption");
   if (cap) { cap.setAttribute("data-i18n", captions[i]); cap.textContent = t(captions[i]); }
 }
-function galleryPrev(){ galleryGo((gIdx-1+5)%5); }
-function galleryNext(){ galleryGo((gIdx+1)%5); }
+function galleryPrev(){ galleryGo((gIdx-1+4)%4); }
+function galleryNext(){ galleryGo((gIdx+1)%4); }
 
-// Install tabs
-function installTab(which) {
-  document.querySelectorAll(".install-tab").forEach(b=> b.classList.toggle("active", b.dataset.tab===which));
-  const cmd = document.getElementById("installCmd");
-  if (which==="win") cmd.textContent = t("install.cmd.win");
-  else cmd.textContent = t("install.cmd.linux");
-}
-function copyInstall(){
-  const txt = document.getElementById("installCmd").textContent;
-  navigator.clipboard.writeText(txt).then(()=>{
-    const btn = document.querySelector(".copy-btn");
-    const orig = btn.textContent;
-    btn.textContent = t("install.copied");
-    setTimeout(()=> btn.textContent = orig, 1500);
-  });
-}
-// Reveal on scroll
 const io = new IntersectionObserver((entries)=>{
   entries.forEach(e=> { if(e.isIntersecting) e.target.classList.add("is-visible"); });
 }, { threshold: 0.12 });
 document.querySelectorAll(".reveal").forEach(el=> io.observe(el));
-// Keep install cmd in sync after locale change
+
 const _setLocale = window.setLocale;
 window.setLocale = function(lang){
   _setLocale(lang);
-  const activeTab = document.querySelector(".install-tab.active");
-  if (activeTab) installTab(activeTab.dataset.tab);
   galleryGo(gIdx);
 };
 </script>
