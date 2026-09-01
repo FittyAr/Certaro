@@ -122,3 +122,18 @@ eo-domain  ←  eo-application  ←  eo-infrastructure
 
 Ask. An incorrect financial formula silently corrupts the client's cash-flow records, which is
 the one thing this system exists to protect.
+## 11. Branching and white-label workflow
+
+`main` is the generic, re-sellable product. Client-specific aesthetics live in long-lived branches.
+
+- `main` - all improvements, no client hardcoding. Builds a generic artifact.
+- `ElectroObra` - personalizations for that client (icons `src-tauri/icons/*`, `public/*`, tokens `src/assets/tokens.css`, `tauri.conf.json` `productName`/`identifier`, `src/locales` overrides). Same functionality, different skin. Published to Microsoft Store from this branch.
+
+Rules:
+- Never hardcode client data in `main` (see S1). Aesthetic overrides belong only in the client branch and must be isolated to assets/tokens/config.
+- Improvements always land in `main` first.
+- Sync periodically one-way: `git checkout ElectroObra && git merge main -m "merge: main -> ElectroObra"` - resolve keeping client assets (`theirs` for `icons/*`, `tokens.css`). Never merge `ElectroObra` back into `main`.
+- For a new client: `git checkout main && git checkout -b client/nombre && git push -u origin client/nombre` (same pattern).
+- Dev choice is explicit: `\dev.ps1 dev:web` (Vite mock) vs `\dev.ps1 dev:desktop` (Tauri SQLite real). Data is separate by design (`localStorage` vs `%LOCALAPPDATA%\ElectroObra\electroobra.db`); share via `Configuracion > Sistema > Exportar/Importar JSON`.
+
+This keeps `main` shippable and client branches cheap to maintain.
