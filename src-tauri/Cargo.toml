@@ -1,25 +1,25 @@
 [package]
-name = "electroobra"
+name = "certaro"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license-file.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "ElectroObra desktop application"
+description = "Certaro desktop application"
 
 [lib]
-name = "electroobra_lib"
+name = "certaro_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { workspace = true }
 
 [dependencies]
-eo-application = { workspace = true }
-eo-infrastructure = { workspace = true }
-eo-domain = { workspace = true }
-eo-import-legacy = { workspace = true }
+certaro-application = { workspace = true }
+certaro-infrastructure = { workspace = true }
+certaro-domain = { workspace = true }
+certaro-import-legacy = { workspace = true }
 
 anyhow = { workspace = true }
 chrono = { workspace = true }

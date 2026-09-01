@@ -4,7 +4,7 @@
 //! call to refresh its list.
 
 use chrono::NaiveDate;
-use eo_application::dtos::feriados::{FeriadoDto, FeriadoInput, FeriadoSyncResult};
+use certaro_application::dtos::feriados::{FeriadoDto, FeriadoInput, FeriadoSyncResult};
 use tauri::State;
 
 use crate::error::{handle, ApiResult};

@@ -1,10 +1,10 @@
 //! Commands of `clientes`. See `docs/11-contratos-tauri.md` §5.4.
 
-use eo_application::dtos::clientes::{
+use certaro_application::dtos::clientes::{
     ClienteDetalle, ClienteFiltroDto, ClienteInput, ClienteListItem,
 };
-use eo_application::dtos::common::{ListQuery, LookupItem};
-use eo_application::PagedResult;
+use certaro_application::dtos::common::{ListQuery, LookupItem};
+use certaro_application::PagedResult;
 use tauri::State;
 use uuid::Uuid;
 

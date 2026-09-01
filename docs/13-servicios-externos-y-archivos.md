@@ -139,7 +139,7 @@ pub trait ExchangeRateProvider: Send + Sync {
 | --- | --- |
 | URL | `ExternalApis.DollarUrl`, default `https://dolarapi.com/v1/dolares` |
 | Método | `GET` |
-| Cabeceras | `Accept: application/json`, `User-Agent: ElectroObra/{version}` **[NUEVO]** |
+| Cabeceras | `Accept: application/json`, `User-Agent: Certaro/{version}` **[NUEVO]** |
 | Timeout | `ExternalApis.TimeoutSeconds`, default **30 s** |
 | Reintentos | 2, con espera de 1 s y 3 s **[NUEVO]** |
 
@@ -290,7 +290,7 @@ consistente sin bloquear ni requerir que la aplicación se cierre.
 | Propiedad | Valor |
 | --- | --- |
 | Directorio | `{data_dir}/{Backup.Directory}`, default `Backups` |
-| Nombre | `electroobra_{yyyyMMdd_HHmmss}.db`, con la hora en **UTC** |
+| Nombre | `Certaro_{yyyyMMdd_HHmmss}.db`, con la hora en **UTC** |
 | Verificación | `PRAGMA integrity_check` debe devolver exactamente `ok` (sin distinguir mayúsculas) |
 | Retención | `Backup.RetentionDays`, default **30** días |
 | Retención mínima | **[NUEVO]** se conservan siempre los 3 backups más recientes, aunque superen los 30 días |
@@ -336,20 +336,20 @@ Los archivos `-wal` y `-shm` se eliminan antes de copiar. **[NUEVO]**
 ### 4.4 Estructura del directorio de datos
 
 ```
-{data_dir}/                       # %LOCALAPPDATA%\ElectroObraApp en Windows
-                                  # ~/.local/share/ElectroObraApp en Linux
-                                  # ~/Library/Application Support/ElectroObraApp en macOS
-├── electroobra.db
-├── electroobra.db-wal
-├── electroobra.db-shm
+{data_dir}/                       # %LOCALAPPDATA%\FittyAr\Certaro en Windows
+                                  # ~/.local/share/FittyAr/Certaro en Linux
+                                  # ~/Library/Application Support/FittyAr/Certaro en macOS
+├── certaro.db
+├── certaro.db-wal
+├── certaro.db-shm
 ├── config.json                   # configuración mutable del usuario (doc 14)
 ├── Backups/
-│   └── electroobra_20260829_143012.db
+│   └── certaro_20260829_143012.db
 ├── attachments/
 │   ├── Movimiento/{id}/…
 │   └── .trash/
 ├── logs/
-│   └── electroobra-20260829.log
+│   └── certaro-20260829.log
 └── exports/                      # [NUEVO] último destino usado, para el diálogo de guardado
 ```
 
@@ -521,7 +521,7 @@ hacer.
 | --- | --- |
 | Biblioteca | `tracing` + `tracing-subscriber` |
 | Destinos | consola (sólo en desarrollo) y archivo |
-| Ruta | `{data_dir}/logs/electroobra-{yyyyMMdd}.log` |
+| Ruta | `{data_dir}/logs/Certaro-{yyyyMMdd}.log` |
 | Rotación | diaria |
 | Retención | `Logging.RetentionDays`, default 30 |
 | Nivel por defecto | `info` en producción, `debug` en desarrollo |

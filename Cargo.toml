@@ -1,11 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/eo-domain",
-    "crates/eo-application",
-    "crates/eo-infrastructure",
-    "crates/eo-migration",
-    "crates/eo-import-legacy",
+    "crates/certaro-domain",
+    "crates/certaro-application",
+    "crates/certaro-infrastructure",
+    "crates/certaro-migration",
+    "crates/certaro-import-legacy",
     "src-tauri",
 ]
 
@@ -14,16 +14,16 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.80"
 license-file = "LICENSE"
-authors = ["ElectroObraApp Project Owners (FittyAr)"]
-repository = "https://github.com/FittyAr/ElectroObra"
+authors = ["Certaro Project Owners (FittyAr)"]
+repository = "https://github.com/FittyAr/Certaro"
 
 [workspace.dependencies]
 # Internal crates
-eo-domain = { path = "crates/eo-domain" }
-eo-application = { path = "crates/eo-application" }
-eo-infrastructure = { path = "crates/eo-infrastructure" }
-eo-migration = { path = "crates/eo-migration" }
-eo-import-legacy = { path = "crates/eo-import-legacy" }
+certaro-domain = { path = "crates/certaro-domain" }
+certaro-application = { path = "crates/certaro-application" }
+certaro-infrastructure = { path = "crates/certaro-infrastructure" }
+certaro-migration = { path = "crates/certaro-migration" }
+certaro-import-legacy = { path = "crates/certaro-import-legacy" }
 
 # Async runtime
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs", "time", "sync"] }
@@ -75,7 +75,7 @@ csv = "1"
 # Config
 figment = { version = "0.10", features = ["json", "env"] }
 
-# CLI (eo-import-legacy only)
+# CLI (certaro-import-legacy only)
 clap = { version = "4", features = ["derive"] }
 
 # Tauri shell

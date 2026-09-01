@@ -1,7 +1,7 @@
 //! Commands of `movimientos`. See `docs/11-contratos-tauri.md` §5.1.
 
-use eo_application::dtos::common::ListQuery;
-use eo_application::dtos::movimientos::{
+use certaro_application::dtos::common::ListQuery;
+use certaro_application::dtos::movimientos::{
     MovimientoDetalle, MovimientoFiltroDto, MovimientoInput, MovimientoListResult,
     MovimientoResumenDto,
 };

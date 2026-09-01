@@ -1,0 +1,17 @@
+[package]
+name = "certaro-migration"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license-file.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "SeaORM migrations for the Certaro schema. No business logic."
+
+[dependencies]
+async-trait = { workspace = true }
+sea-orm-migration = { workspace = true }
+
+[dev-dependencies]
+sea-orm = { workspace = true }
+tokio = { workspace = true }

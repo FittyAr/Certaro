@@ -3,12 +3,12 @@
 //! There is no full `update`: an issued certificate is immutable except for its notes, so the only
 //! write besides issuing and voiding is `certificados_update_observaciones`.
 
-use eo_application::dtos::certificados::{
+use certaro_application::dtos::certificados::{
     CertificadoBorrador, CertificadoDetalle, CertificadoFiltroDto, CertificadoInput,
     CertificadoListItem,
 };
-use eo_application::dtos::common::ListQuery;
-use eo_application::PagedResult;
+use certaro_application::dtos::common::ListQuery;
+use certaro_application::PagedResult;
 use tauri::State;
 use uuid::Uuid;
 

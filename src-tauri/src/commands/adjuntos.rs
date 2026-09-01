@@ -1,7 +1,7 @@
 //! Commands of `adjuntos`. See `docs/11-contratos-tauri.md` §5.12.
 
-use eo_application::dtos::adjuntos::{AdjuntoInput, AdjuntoItem};
-use eo_domain::entities::EntidadAdjunto;
+use certaro_application::dtos::adjuntos::{AdjuntoInput, AdjuntoItem};
+use certaro_domain::entities::EntidadAdjunto;
 use tauri::State;
 use uuid::Uuid;
 

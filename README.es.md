@@ -1,4 +1,4 @@
-# ElectroObra
+# Certaro
 
 Gestión operativa y control de caja real para pymes que trabajan **por proyecto / obra**:
 movimientos (ingresos, gastos y adelantos), clientes, obras/proyectos, órdenes de trabajo y certificados
@@ -45,7 +45,7 @@ Versión en inglés de este documento: [README.md](./README.md).
 ## Estructura del repositorio
 
 ```
-electroobra/
+Certaro/
 ├── Cargo.toml                  # workspace de Rust
 ├── package.json                # workspace del frontend
 ├── VERSION                     # única fuente de verdad de la versión

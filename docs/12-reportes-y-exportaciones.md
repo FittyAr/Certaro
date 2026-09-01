@@ -68,7 +68,7 @@ generar el documento con `typst` como motor de composición y plantillas `.typ` 
 | Liquidación | `Liquidacion_{empleado}_{hasta:yyyyMMdd}.pdf` |
 | Certificado | `Certificado_{obra}_{numero}_{fecha:yyyyMMdd}.pdf` |
 | Asistencia | `Asistencia_{yyyy}-{MM}.{ext}` |
-| Base completa | `electroobra_export_{yyyyMMdd_HHmmss}.json` |
+| Base completa | `Certaro_export_{yyyyMMdd_HHmmss}.json` |
 
 Los componentes que vienen de datos del usuario se sanean: se reemplaza todo carácter inválido para
 nombre de archivo por `_`, se colapsan los `_` repetidos y se recorta a 60 caracteres. Si queda
@@ -94,7 +94,7 @@ vacío, se usa el identificador.
 | 2 | rango de fechas y filtros activos, en prosa | 8 pt, gris |
 | 3 | cantidad de registros | 8 pt, gris |
 
-**[FIX]** El encabezado anterior era una sola línea (`"Listado de Movimientos - ElectroObra"`) sin
+**[FIX]** El encabezado anterior era una sola línea (`"Listado de Movimientos - Certaro"`) sin
 indicar qué filtros se habían aplicado, así que un PDF impreso no decía qué mostraba.
 
 **Tabla**, 7 columnas. El sistema anterior tenía **4** (`Fecha`, `Concepto`, `Tipo`, `Monto`, donde

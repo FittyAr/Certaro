@@ -1,4 +1,4 @@
-# ElectroObra
+# Certaro
 
 Operational management and real cash-flow control for SMEs working **by project / site**:
 movements (income, expenses and advances), clients, projects/sites, work orders and certificates
@@ -45,7 +45,7 @@ Spanish version of this document: [README.es.md](./README.es.md).
 ## Repository layout
 
 ```
-electroobra/
+Certaro/
 ├── Cargo.toml                  # Rust workspace
 ├── package.json                # frontend workspace
 ├── VERSION                     # single source of truth for the version number

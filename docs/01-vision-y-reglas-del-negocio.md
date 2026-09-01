@@ -5,7 +5,7 @@
 
 ## 1. Propósito
 
-ElectroObra es la herramienta de administración diaria de una **empresa pequeña de instalaciones
+Certaro es la herramienta de administración diaria de una **empresa pequeña de instalaciones
 y mantenimiento eléctrico** en Argentina. Su propósito no es la contabilidad fiscal: es el
 **control operativo y el flujo de caja real**.
 

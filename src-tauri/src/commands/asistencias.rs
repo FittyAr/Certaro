@@ -4,7 +4,7 @@
 //! click wins. It is a fast entry grid, not a form with concurrency.
 
 use chrono::NaiveDate;
-use eo_application::dtos::asistencias::{
+use certaro_application::dtos::asistencias::{
     AsistenciaCelda, AsistenciaGrilla, AsistenciaGrillaQuery, AsistenciaRangoInput,
     AsistenciaUpsertInput,
 };

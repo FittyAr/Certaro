@@ -3,13 +3,13 @@
 //! `liquidaciones_suggest` is pure: it computes and persists nothing, and takes several employees
 //! in one call so the wizard does not fire N requests.
 
-use eo_application::dtos::common::ListQuery;
-use eo_application::dtos::liquidaciones::{
+use certaro_application::dtos::common::ListQuery;
+use certaro_application::dtos::liquidaciones::{
     LiquidacionBatchInput, LiquidacionBatchResult, LiquidacionDetalle, LiquidacionFiltroDto,
     LiquidacionInput, LiquidacionListItem, LiquidacionSugerencia, LiquidacionSugerenciaQuery,
     LiquidacionUpdateInput,
 };
-use eo_application::PagedResult;
+use certaro_application::PagedResult;
 use tauri::State;
 use uuid::Uuid;
 

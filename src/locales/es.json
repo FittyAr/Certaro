@@ -978,7 +978,7 @@
     "AllowOrphans": "Permitir referencias huérfanas",
     "AllowOrphansHint": "Convierte claves foráneas inexistentes en valores nulos en lugar de abortar la migración",
     "Back": "Volver",
-    "EnterApp": "Ingresar a ElectroObra",
+    "EnterApp": "Ingresar a Certaro",
     "Import": "Migrar datos del sistema anterior",
     "ImportFailed": "La importación falló debido a inconsistencias o errores bloqueantes.",
     "ImportHint": "Si venís de la versión C#, podés importar tu base de datos SQLite.",
@@ -998,6 +998,6 @@
     "Start": "Empezar desde cero",
     "StartHint": "Creá una base de datos nueva.",
     "Subtitle": "Sistema de gestión operativa para contratistas eléctricos",
-    "Title": "Bienvenido a ElectroObra"
+    "Title": "Bienvenido a Certaro"
   }
 }

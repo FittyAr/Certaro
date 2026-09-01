@@ -261,7 +261,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: v__VERSION__
-          releaseName: 'ElectroObra v__VERSION__'
+          releaseName: 'Certaro v__VERSION__'
           releaseBody: ${{ needs.verify.outputs.notes }}
           releaseDraft: true
           args: --target ${{ matrix.target }} ${{ matrix.args }}
@@ -281,7 +281,7 @@ artefactos de las cuatro plataformas y que el changelog esté bien.
 | Linux | `.deb`, `.AppImage` |
 | macOS | `.dmg` para Apple Silicon e Intel |
 
-Nombre de archivo: `ElectroObra_{version}_{arch}.{ext}`, que es lo que produce Tauri por defecto.
+Nombre de archivo: `Certaro_{version}_{arch}.{ext}`, que es lo que produce Tauri por defecto.
 
 ### 3.3 Firma
 
@@ -372,7 +372,7 @@ Definidos en [`02-arquitectura.md`](./02-arquitectura.md) §5 y
 
 | Aspecto | Valor |
 | --- | --- |
-| Ubicación | `{data_dir}/logs/electroobra-{fecha}.log` |
+| Ubicación | `{data_dir}/logs/Certaro-{fecha}.log` |
 | Formato | JSON por línea |
 | Rotación | diaria |
 | Retención | 30 días, configurable |

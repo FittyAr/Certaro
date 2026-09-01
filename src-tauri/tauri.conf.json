@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "ElectroObra",
+  "productName": "Certaro",
   "version": "0.1.0",
-  "identifier": "com.fittyar.electroobra",
+  "identifier": "com.fittyar.certaro",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "ElectroObra",
+        "title": "Certaro",
         "width": 1280,
         "height": 800,
         "minWidth": 1024,
@@ -38,8 +38,8 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "copyright": "ElectroObraApp Project Owners (FittyAr)",
+    "copyright": "Certaro Project Owners (FittyAr)",
     "shortDescription": "Operational and cash-flow management for electrical contracting",
-    "longDescription": "ElectroObra tracks movements, clients, sites, jobs, certification, invoicing, staff attendance and settlements for an electrical contracting business."
+    "longDescription": "Certaro tracks movements, clients, sites, jobs, certification, invoicing, staff attendance and settlements for an electrical contracting business."
   }
 }

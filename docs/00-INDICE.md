@@ -1,6 +1,6 @@
 # 00 — Índice y guía de lectura
 
-Esta carpeta es **la especificación normativa** de ElectroObra. Está escrita para que quien
+Esta carpeta es **la especificación normativa** de Certaro. Está escrita para que quien
 implemente el sistema en Rust + Tauri + Vue 3 no necesite leer el código C# anterior ni inferir
 reglas de negocio. Si un documento y el código difieren, **manda el documento**. Si el documento
 no dice algo que necesitás, **preguntá**: no inventes fórmulas financieras.

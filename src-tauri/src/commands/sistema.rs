@@ -4,10 +4,10 @@
 //! the backend takes a backup of the current state before either runs, so there is always a way
 //! back from a mistaken click.
 
-use eo_application::config::AppConfig;
-use eo_application::dtos::dashboard::EstadoSistema;
-use eo_application::ports::{BackupItem, ImportResumen, VerificacionBackup};
-use eo_application::use_cases::configuracion::Cambios;
+use certaro_application::config::AppConfig;
+use certaro_application::dtos::dashboard::EstadoSistema;
+use certaro_application::ports::{BackupItem, ImportResumen, VerificacionBackup};
+use certaro_application::use_cases::configuracion::Cambios;
 use tauri::State;
 
 use crate::error::{handle, ApiResult};
@@ -141,7 +141,7 @@ pub struct LegacyImportTableDto {
 #[tauri::command]
 pub async fn sistema_detect_legacy_db(
     state: State<'_, AppState>,
-) -> ApiResult<Option<eo_infrastructure::paths::LegacyDbCandidate>> {
+) -> ApiResult<Option<certaro_infrastructure::paths::LegacyDbCandidate>> {
     let candidate = state.paths.find_legacy_database();
     handle("sistema_detect_legacy_db", Ok(candidate))
 }
@@ -152,11 +152,11 @@ pub async fn sistema_run_legacy_import(
     origen: String,
     allow_orphans: Option<bool>,
 ) -> ApiResult<LegacyImportSummaryDto> {
-    let outcome: Result<LegacyImportSummaryDto, eo_application::AppError> = async {
+    let outcome: Result<LegacyImportSummaryDto, certaro_application::AppError> = async {
         let source_path = std::path::PathBuf::from(&origen);
         if !source_path.is_file() {
-            return Err(eo_application::AppError::Validation(vec![
-                eo_application::error::FieldError::new("origen", "Validation.Backup.RutaInvalida"),
+            return Err(certaro_application::AppError::Validation(vec![
+                certaro_application::error::FieldError::new("origen", "Validation.Backup.RutaInvalida"),
             ]));
         }
 
@@ -165,7 +165,7 @@ pub async fn sistema_run_legacy_import(
             let _ = tokio::fs::remove_file(&target_temp).await;
         }
 
-        let opts = eo_import_legacy::ImportOptions {
+        let opts = certaro_import_legacy::ImportOptions {
             source: source_path,
             target: target_temp.clone(),
             dry_run: false,
@@ -176,18 +176,18 @@ pub async fn sistema_run_legacy_import(
             allow_orphans: allow_orphans.unwrap_or(true),
         };
 
-        let report = eo_import_legacy::run_import(opts).await.map_err(|e| {
-            eo_application::AppError::unexpected(anyhow::anyhow!("legacy import failed: {e}"))
+        let report = certaro_import_legacy::run_import(opts).await.map_err(|e| {
+            certaro_application::AppError::unexpected(anyhow::anyhow!("legacy import failed: {e}"))
         })?;
 
         if report.has_blocking_issues()
             || matches!(
                 report.outcome,
-                eo_import_legacy::Outcome::Rollback | eo_import_legacy::Outcome::Aborted
+                certaro_import_legacy::Outcome::Rollback | certaro_import_legacy::Outcome::Aborted
             )
         {
             let _ = tokio::fs::remove_file(&target_temp).await;
-            return Err(eo_application::AppError::conflict(
+            return Err(certaro_application::AppError::conflict(
                 "IMPORT_FAILED",
                 "Welcome.ImportFailed",
             ));
@@ -198,7 +198,7 @@ pub async fn sistema_run_legacy_import(
             db_handle
                 .disconnect()
                 .await
-                .map_err(eo_application::AppError::persistence)?;
+                .map_err(certaro_application::AppError::persistence)?;
         }
 
         let target_db = state.paths.database();
@@ -212,14 +212,14 @@ pub async fn sistema_run_legacy_import(
         tokio::fs::rename(&target_temp, &target_db)
             .await
             .map_err(|e| {
-                eo_application::AppError::io(anyhow::anyhow!(
+                certaro_application::AppError::io(anyhow::anyhow!(
                     "replacing database after import: {e}"
                 ))
             })?;
 
-        let new_db = eo_infrastructure::persistence::open(&target_db)
+        let new_db = certaro_infrastructure::persistence::open(&target_db)
             .await
-            .map_err(eo_application::AppError::persistence)?;
+            .map_err(certaro_application::AppError::persistence)?;
         if let Some(db_handle) = state.db() {
             db_handle.replace(new_db).await;
         }
@@ -264,13 +264,13 @@ pub async fn sistema_run_legacy_import(
 #[tauri::command]
 pub async fn dev_seed_database(
     state: State<'_, AppState>,
-) -> ApiResult<eo_infrastructure::persistence::SeedSummary> {
-    let outcome: Result<eo_infrastructure::persistence::SeedSummary, eo_application::AppError> = async {
+) -> ApiResult<certaro_infrastructure::persistence::SeedSummary> {
+    let outcome: Result<certaro_infrastructure::persistence::SeedSummary, certaro_application::AppError> = async {
         let db_handle = state.db().ok_or_else(|| {
-            eo_application::AppError::unexpected(anyhow::anyhow!("database not ready"))
+            certaro_application::AppError::unexpected(anyhow::anyhow!("database not ready"))
         })?;
         let conn = db_handle.read().await;
-        eo_infrastructure::persistence::seed_demo_data(&conn).await
+        certaro_infrastructure::persistence::seed_demo_data(&conn).await
     }
     .await;
 

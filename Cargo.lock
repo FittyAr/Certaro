@@ -663,6 +663,138 @@ dependencies = [
 ]
 
 [[package]]
+name = "certaro"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "certaro-application",
+ "certaro-domain",
+ "certaro-import-legacy",
+ "certaro-infrastructure",
+ "chrono",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-fs",
+ "tauri-plugin-opener",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "certaro-application"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "certaro-domain",
+ "chrono",
+ "chrono-tz",
+ "mockall",
+ "pretty_assertions",
+ "rstest",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror 2.0.20",
+ "tokio",
+ "tokio-test",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "certaro-domain"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "chrono-tz",
+ "pretty_assertions",
+ "proptest",
+ "rstest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.20",
+ "uuid",
+]
+
+[[package]]
+name = "certaro-import-legacy"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "certaro-domain",
+ "certaro-infrastructure",
+ "certaro-migration",
+ "chrono",
+ "chrono-tz",
+ "clap",
+ "hex",
+ "pretty_assertions",
+ "rstest",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tempfile",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
+name = "certaro-infrastructure"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "certaro-application",
+ "certaro-domain",
+ "certaro-migration",
+ "chrono",
+ "chrono-tz",
+ "csv",
+ "docx-rs",
+ "figment",
+ "futures",
+ "insta",
+ "pdf-extract",
+ "pretty_assertions",
+ "printpdf",
+ "reqwest 0.12.28",
+ "rstest",
+ "rust_xlsxwriter",
+ "sea-orm",
+ "sea-orm-migration",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror 2.0.20",
+ "tokio",
+ "tokio-test",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
+ "uuid",
+ "wiremock",
+ "zip 2.4.2",
+]
+
+[[package]]
+name = "certaro-migration"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "sea-orm",
+ "sea-orm-migration",
+ "tokio",
+]
+
+[[package]]
 name = "cesu8"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1387,28 +1519,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "electroobra"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "eo-application",
- "eo-domain",
- "eo-import-legacy",
- "eo-infrastructure",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-fs",
- "tauri-plugin-opener",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
 name = "embed-resource"
 version = "3.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1468,116 +1578,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.119",
-]
-
-[[package]]
-name = "eo-application"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "chrono",
- "chrono-tz",
- "eo-domain",
- "mockall",
- "pretty_assertions",
- "rstest",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror 2.0.20",
- "tokio",
- "tokio-test",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "eo-domain"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "chrono-tz",
- "pretty_assertions",
- "proptest",
- "rstest",
- "serde",
- "serde_json",
- "thiserror 2.0.20",
- "uuid",
-]
-
-[[package]]
-name = "eo-import-legacy"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "chrono-tz",
- "clap",
- "eo-domain",
- "eo-infrastructure",
- "eo-migration",
- "hex",
- "pretty_assertions",
- "rstest",
- "sea-orm",
- "serde",
- "serde_json",
- "sqlx",
- "tempfile",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "uuid",
-]
-
-[[package]]
-name = "eo-infrastructure"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "chrono",
- "chrono-tz",
- "csv",
- "docx-rs",
- "eo-application",
- "eo-domain",
- "eo-migration",
- "figment",
- "futures",
- "insta",
- "pdf-extract",
- "pretty_assertions",
- "printpdf",
- "reqwest 0.12.28",
- "rstest",
- "rust_xlsxwriter",
- "sea-orm",
- "sea-orm-migration",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror 2.0.20",
- "tokio",
- "tokio-test",
- "tracing",
- "tracing-appender",
- "tracing-subscriber",
- "uuid",
- "wiremock",
- "zip 2.4.2",
-]
-
-[[package]]
-name = "eo-migration"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "sea-orm",
- "sea-orm-migration",
- "tokio",
 ]
 
 [[package]]

@@ -4,7 +4,7 @@
 //! unexpected errors keep their cause in the log and hand the frontend a generic key plus the
 //! trace id, so a user can report "trace 0192f3a1…" and the line is findable.
 
-use eo_application::AppError;
+use certaro_application::AppError;
 use serde::Serialize;
 use std::collections::BTreeMap;
 

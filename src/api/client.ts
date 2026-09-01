@@ -62,7 +62,7 @@ export function isTauri(): boolean {
 
 const DEFAULT_CONFIG: AppConfig = {
   application: {
-    name: 'ElectroObra',
+    name: 'Certaro',
     environment: 'development',
     seedEnabled: true,
     lastPageSize: 30,
@@ -85,13 +85,13 @@ const DEFAULT_CONFIG: AppConfig = {
     zonaHoraria: 'America/Argentina/Buenos_Aires',
   },
   business: {
-    nombreComercial: 'ElectroObra',
+    nombreComercial: 'Certaro',
     lema: 'Instalaciones Eléctricas',
     contratista: 'Pablo Báez',
     cuit: '20-12345678-9',
     direccion: 'Av. Principal 123',
     telefono: '+54 9 11 1234-5678',
-    email: 'contacto@electroobra.com',
+    email: 'contacto@certaro.com',
     logoPath: null,
     ivaSugerido: '21.0000',
     facturaDiasVencimientoDefault: 30,
@@ -171,12 +171,12 @@ const DEFAULT_CONFIG: AppConfig = {
     font: 'Helvetica',
     mostrarLogo: true,
     mostrarFirmas: true,
-    pieDePagina: 'ElectroObra - Gestión de Obras',
+    pieDePagina: 'Certaro - Gestión de Obras',
   },
 }
 
-const CONFIG_STORAGE_KEY = 'electroobra_mock_config_v2'
-const DB_STORAGE_KEY = 'electroobra_mock_db_v2'
+const CONFIG_STORAGE_KEY = 'certaro_mock_config_v2'
+const DB_STORAGE_KEY = 'certaro_mock_db_v2'
 
 function loadMockConfig(): AppConfig {
   if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {

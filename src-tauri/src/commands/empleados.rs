@@ -1,10 +1,10 @@
 //! Commands of `empleados`. See `docs/11-contratos-tauri.md` §5.7.
 
-use eo_application::dtos::common::{ListQuery, LookupItem};
-use eo_application::dtos::empleados::{
+use certaro_application::dtos::common::{ListQuery, LookupItem};
+use certaro_application::dtos::empleados::{
     EmpleadoDetalle, EmpleadoFiltroDto, EmpleadoInput, EmpleadoListItem,
 };
-use eo_application::PagedResult;
+use certaro_application::PagedResult;
 use tauri::State;
 use uuid::Uuid;
 

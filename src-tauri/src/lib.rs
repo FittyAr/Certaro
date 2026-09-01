@@ -7,13 +7,13 @@ pub mod commands;
 pub mod error;
 pub mod state;
 
-use eo_application::config::{AppConfig, Environment};
-use eo_infrastructure::backup::SqliteBackupService;
-use eo_infrastructure::external::dolar::HttpExchangeRateProvider;
-use eo_infrastructure::external::holidays::HttpHolidayProvider;
-use eo_infrastructure::files::{FsAttachmentStore, SystemOpener};
-use eo_infrastructure::paths::AppPaths;
-use eo_infrastructure::{config as infra_config, telemetry};
+use certaro_application::config::{AppConfig, Environment};
+use certaro_infrastructure::backup::SqliteBackupService;
+use certaro_infrastructure::external::dolar::HttpExchangeRateProvider;
+use certaro_infrastructure::external::holidays::HttpHolidayProvider;
+use certaro_infrastructure::files::{FsAttachmentStore, SystemOpener};
+use certaro_infrastructure::paths::AppPaths;
+use certaro_infrastructure::{config as infra_config, telemetry};
 use state::AppState;
 use std::sync::Arc;
 use tauri::{Emitter, Manager};
@@ -233,10 +233,10 @@ pub fn run() {
 /// cases so the commands can serve requests.
 async fn bootstrap(handle: &tauri::AppHandle) -> anyhow::Result<()> {
     let state = handle.state::<AppState>();
-    let db = eo_infrastructure::persistence::open(&state.paths.database()).await?;
+    let db = certaro_infrastructure::persistence::open(&state.paths.database()).await?;
     // Behind a handle so that restoring a backup can close the connection before the file under it
     // is replaced. See `docs/13-servicios-externos-y-archivos.md` §4.3.
-    let db = eo_infrastructure::persistence::DbHandle::new(db);
+    let db = certaro_infrastructure::persistence::DbHandle::new(db);
     let config = state.config();
     let holidays = Arc::new(HttpHolidayProvider::new(&config.external_apis)?);
     let dolar = Arc::new(HttpExchangeRateProvider::new(&config.external_apis)?);
@@ -254,7 +254,7 @@ async fn bootstrap(handle: &tauri::AppHandle) -> anyhow::Result<()> {
     ));
     state.install_services(
         db.clone(),
-        Arc::new(eo_infrastructure::persistence::SeaOrmUnitOfWork::new(db)),
+        Arc::new(certaro_infrastructure::persistence::SeaOrmUnitOfWork::new(db)),
         holidays,
         dolar,
         attachments,

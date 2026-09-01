@@ -1,6 +1,6 @@
 # AGENTS.md — Rules for the implementing agent
 
-You are implementing **ElectroObra** from scratch on Rust + Tauri 2 + Vue 3. The full
+You are implementing **Certaro** (generic, formerly ElectroObra) from scratch on Rust + Tauri 2 + Vue 3. The full
 specification lives in [`docs/`](../docs) and is **normative**: if the code and the docs
 disagree, the docs win. If the docs are silent or contradictory, stop and ask — do not invent
 business rules.
@@ -25,7 +25,7 @@ business rules.
 | Connection strings, paths, directories | configuration (`../docs/14-configuracion-e-i18n.md`) |
 | Company name, contractor name, logo | configuration — the legacy app hardcoded these |
 | Tax rates, thresholds, page sizes, timeouts | configuration or a `constants` module |
-| Fixed GUIDs of system rows | `eo-domain` constants module, single definition |
+| Fixed GUIDs of system rows | `certaro-domain` constants module, single definition |
 
 A literal string in a `.vue` template or a colour like `#252525` anywhere is a defect.
 
@@ -46,10 +46,10 @@ eo-domain  ←  eo-application  ←  eo-infrastructure
                     └──── src-tauri ─────┘   →   src/ (Vue)
 ```
 
-- `eo-domain` depends on nothing but `chrono`, `uuid`, `serde`, `thiserror`. **No SeaORM, no I/O.**
-- `eo-application` declares **ports** as traits and contains use cases. It must not reference
+- `certaro-domain` depends on nothing but `chrono`, `uuid`, `serde`, `thiserror`. **No SeaORM, no I/O.**
+- `certaro-application` declares **ports** as traits and contains use cases. It must not reference
   SeaORM, `reqwest`, the filesystem or Tauri.
-- `eo-infrastructure` implements the ports. It is the only crate that knows about SQL, HTTP,
+- `certaro-infrastructure` implements the ports. It is the only crate that knows about SQL, HTTP,
   PDF generation and the filesystem.
 - `src-tauri` commands are a **thin** layer: deserialize input → call a use case → map
   `Result<T, AppError>` to a serializable payload. No business logic in commands.
@@ -81,7 +81,7 @@ eo-domain  ←  eo-application  ←  eo-infrastructure
 ## 6. Style and tooling
 
 - Follow the guidelines provided by the installed skills in `.agents/skills/`:
-  - `rust-skills` for all Rust crates (`eo-domain`, `eo-application`, `eo-infrastructure`, `src-tauri`).
+  - `rust-skills` for all Rust crates (`certaro-domain`, `certaro-application`, `certaro-infrastructure`, `src-tauri`).
   - `tauri-v2` for Tauri configuration, capability files, and backend commands.
   - `vue-best-practices` for the frontend Vue 3 application (`src/`).
 - `cargo fmt --all` and `cargo clippy --workspace --all-targets -- -D warnings` must pass.
@@ -95,7 +95,7 @@ eo-domain  ←  eo-application  ←  eo-infrastructure
 ## 7. Comments and documentation
 
 - Comments explain **why**, never **what**. No narration of the obvious.
-- Public items in `eo-domain` and `eo-application` carry `///` doc comments.
+- Public items in `certaro-domain` and `certaro-application` carry `///` doc comments.
 - If you change the structure or the setup steps, update `README.md` **and** `README.es.md`.
 - If you discover a business rule the docs missed, add it to the relevant `docs/` file in the
   same change.
@@ -130,10 +130,10 @@ the one thing this system exists to protect.
 - `ElectroObra` - personalizations for that client (icons `src-tauri/icons/*`, `public/*`, tokens `src/assets/tokens.css`, `tauri.conf.json` `productName`/`identifier`, `src/locales` overrides). Same functionality, different skin. Published to Microsoft Store from this branch.
 
 Rules:
-- Never hardcode client data in `main` (see S1). Aesthetic overrides belong only in the client branch and must be isolated to assets/tokens/config.
+- Never hardcode client data in `main` (see �1). Aesthetic overrides belong only in the client branch and must be isolated to assets/tokens/config.
 - Improvements always land in `main` first.
 - Sync periodically one-way: `git checkout ElectroObra && git merge main -m "merge: main -> ElectroObra"` - resolve keeping client assets (`theirs` for `icons/*`, `tokens.css`). Never merge `ElectroObra` back into `main`.
 - For a new client: `git checkout main && git checkout -b client/nombre && git push -u origin client/nombre` (same pattern).
-- Dev choice is explicit: `\dev.ps1 dev:web` (Vite mock) vs `\dev.ps1 dev:desktop` (Tauri SQLite real). Data is separate by design (`localStorage` vs `%LOCALAPPDATA%\ElectroObra\electroobra.db`); share via `Configuracion > Sistema > Exportar/Importar JSON`.
+- Dev choice is explicit: `\dev.ps1 dev:web` (Vite mock) vs `\dev.ps1 dev:desktop` (Tauri SQLite real). Data is separate by design (`localStorage` vs `%LOCALAPPDATA%\FittyAr\Certaro\certaro.db`); share via `Configuracion > Sistema > Exportar/Importar JSON`.
 
 This keeps `main` shippable and client branches cheap to maintain.

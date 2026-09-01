@@ -14,7 +14,7 @@ export interface VersionInfo {
   url: string
 }
 
-const GITHUB_REPO = 'nicoechaniz/ElectroObra-rust'
+const GITHUB_REPO = 'FittyAr/Certaro'
 
 export function useVersionCheck() {
   const config = useConfigStore()

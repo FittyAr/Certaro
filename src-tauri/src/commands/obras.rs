@@ -1,9 +1,9 @@
 //! Commands of `obras`. See `docs/11-contratos-tauri.md` §5.5.
 
-use eo_application::dtos::common::{ListQuery, LookupItem};
-use eo_application::dtos::obras::{ObraDetalle, ObraFiltroDto, ObraInput, ObraListItem};
-use eo_application::PagedResult;
-use eo_domain::EstadoObra;
+use certaro_application::dtos::common::{ListQuery, LookupItem};
+use certaro_application::dtos::obras::{ObraDetalle, ObraFiltroDto, ObraInput, ObraListItem};
+use certaro_application::PagedResult;
+use certaro_domain::EstadoObra;
 use tauri::State;
 use uuid::Uuid;
 

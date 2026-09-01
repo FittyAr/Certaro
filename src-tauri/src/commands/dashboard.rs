@@ -3,8 +3,8 @@
 //! The alerts are a separate command from the statistics: they refresh on their own schedule, and
 //! folding them into `dashboard_stats` would recompute every ranking to update a badge.
 
-use eo_application::dtos::cotizaciones::Cotizacion;
-use eo_application::dtos::dashboard::{Alerta, DashboardStats, PeriodoDashboard};
+use certaro_application::dtos::cotizaciones::Cotizacion;
+use certaro_application::dtos::dashboard::{Alerta, DashboardStats, PeriodoDashboard};
 use tauri::State;
 
 use crate::error::{handle, ApiResult};

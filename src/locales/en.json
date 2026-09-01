@@ -978,7 +978,7 @@
     "AllowOrphans": "Allow orphan references",
     "AllowOrphansHint": "Converts missing foreign keys to null values instead of aborting the migration",
     "Back": "Back",
-    "EnterApp": "Open ElectroObra",
+    "EnterApp": "Open Certaro",
     "Import": "Migrate from legacy system",
     "ImportFailed": "Import failed due to inconsistencies or blocking issues.",
     "ImportHint": "If you are coming from the C# version, you can import your SQLite database.",
@@ -998,6 +998,6 @@
     "Start": "Start fresh",
     "StartHint": "Create a new empty database.",
     "Subtitle": "Operations management for electrical contractors",
-    "Title": "Welcome to ElectroObra"
+    "Title": "Welcome to Certaro"
   }
 }

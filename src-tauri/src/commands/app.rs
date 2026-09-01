@@ -2,7 +2,7 @@
 
 use crate::error::{handle, ApiResult};
 use crate::state::AppState;
-use eo_application::config::AppConfig;
+use certaro_application::config::AppConfig;
 use serde::Serialize;
 use tauri::State;
 

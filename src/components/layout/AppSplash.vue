@@ -10,7 +10,7 @@ import AppIcon from '@/components/ui/AppIcon.vue'
       </div>
 
       <div class="space-y-1">
-        <h1 class="text-2xl font-bold tracking-tight">ElectroObra</h1>
+        <h1 class="text-2xl font-bold tracking-tight">Certaro</h1>
         <p class="text-xs text-muted-foreground">{{ $t('Welcome.Subtitle') }}</p>
       </div>
 

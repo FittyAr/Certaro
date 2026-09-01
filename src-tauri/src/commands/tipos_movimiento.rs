@@ -3,11 +3,11 @@
 //! A command deserialises, delegates and wraps the error. It never validates, calculates or
 //! touches SQL.
 
-use eo_application::dtos::common::{ListQuery, LookupItem};
-use eo_application::dtos::tipos_movimiento::{
+use certaro_application::dtos::common::{ListQuery, LookupItem};
+use certaro_application::dtos::tipos_movimiento::{
     TipoMovimientoDetalle, TipoMovimientoFiltroDto, TipoMovimientoInput, TipoMovimientoListItem,
 };
-use eo_application::PagedResult;
+use certaro_application::PagedResult;
 use tauri::State;
 use uuid::Uuid;
 

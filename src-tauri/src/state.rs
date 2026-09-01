@@ -5,37 +5,37 @@
 
 use std::sync::{Arc, OnceLock};
 
-use eo_application::config::AppConfig;
-use eo_application::ports::exchange_rate::ExchangeRateProvider;
-use eo_application::ports::holidays::HolidayProvider;
-use eo_application::ports::repositories::UnitOfWork;
-use eo_application::ports::settings::SettingsStore;
-use eo_application::ports::{AttachmentStore, BackupPort, OpenerPort};
-use eo_application::use_cases::adjuntos::AdjuntosService;
-use eo_application::use_cases::asistencias::AsistenciasService;
-use eo_application::use_cases::categorias::CategoriasService;
-use eo_application::use_cases::certificados::CertificadosService;
-use eo_application::use_cases::clientes::ClientesService;
-use eo_application::use_cases::comercial::ComercialService;
-use eo_application::use_cases::configuracion::ConfiguracionService;
-use eo_application::use_cases::cotizaciones::CotizacionesService;
-use eo_application::use_cases::dashboard::DashboardService;
-use eo_application::use_cases::empleados::EmpleadosService;
-use eo_application::use_cases::facturas::FacturasService;
-use eo_application::use_cases::feriados::FeriadosService;
-use eo_application::use_cases::liquidaciones::LiquidacionesService;
-use eo_application::use_cases::movimientos::MovimientosService;
-use eo_application::use_cases::obras::ObrasService;
-use eo_application::use_cases::ordenes_trabajo::OrdenesTrabajoService;
-use eo_application::use_cases::reportes::ReportesService;
-use eo_application::use_cases::sistema::SistemaService;
-use eo_application::use_cases::tipos_movimiento::TiposMovimientoService;
-use eo_application::use_cases::trabajos::TrabajosService;
-use eo_application::AppError;
-use eo_domain::clock::{Clock, SystemClock};
-use eo_domain::ids::{IdGenerator, UuidV7Generator};
-use eo_infrastructure::paths::AppPaths;
-use eo_infrastructure::reporting::adapter::{FsFileWriter, ReportGeneratorAdapter};
+use certaro_application::config::AppConfig;
+use certaro_application::ports::exchange_rate::ExchangeRateProvider;
+use certaro_application::ports::holidays::HolidayProvider;
+use certaro_application::ports::repositories::UnitOfWork;
+use certaro_application::ports::settings::SettingsStore;
+use certaro_application::ports::{AttachmentStore, BackupPort, OpenerPort};
+use certaro_application::use_cases::adjuntos::AdjuntosService;
+use certaro_application::use_cases::asistencias::AsistenciasService;
+use certaro_application::use_cases::categorias::CategoriasService;
+use certaro_application::use_cases::certificados::CertificadosService;
+use certaro_application::use_cases::clientes::ClientesService;
+use certaro_application::use_cases::comercial::ComercialService;
+use certaro_application::use_cases::configuracion::ConfiguracionService;
+use certaro_application::use_cases::cotizaciones::CotizacionesService;
+use certaro_application::use_cases::dashboard::DashboardService;
+use certaro_application::use_cases::empleados::EmpleadosService;
+use certaro_application::use_cases::facturas::FacturasService;
+use certaro_application::use_cases::feriados::FeriadosService;
+use certaro_application::use_cases::liquidaciones::LiquidacionesService;
+use certaro_application::use_cases::movimientos::MovimientosService;
+use certaro_application::use_cases::obras::ObrasService;
+use certaro_application::use_cases::ordenes_trabajo::OrdenesTrabajoService;
+use certaro_application::use_cases::reportes::ReportesService;
+use certaro_application::use_cases::sistema::SistemaService;
+use certaro_application::use_cases::tipos_movimiento::TiposMovimientoService;
+use certaro_application::use_cases::trabajos::TrabajosService;
+use certaro_application::AppError;
+use certaro_domain::clock::{Clock, SystemClock};
+use certaro_domain::ids::{IdGenerator, UuidV7Generator};
+use certaro_infrastructure::paths::AppPaths;
+use certaro_infrastructure::reporting::adapter::{FsFileWriter, ReportGeneratorAdapter};
 
 /// The use cases, available only once the background bootstrap has opened the database.
 pub struct Services {
@@ -178,7 +178,7 @@ pub struct AppState {
     pub clock: Arc<dyn Clock>,
     pub ids: Arc<dyn IdGenerator>,
     /// The database connection handle, allowing connection replacement on restore or legacy import.
-    db: OnceLock<eo_infrastructure::persistence::DbHandle>,
+    db: OnceLock<certaro_infrastructure::persistence::DbHandle>,
     /// Written once by `bootstrap`. A command that arrives before the window received
     /// `app://ready` gets a clean error instead of a panic on an empty database handle.
     services: OnceLock<Services>,
@@ -200,7 +200,7 @@ impl AppState {
         self.settings.snapshot()
     }
 
-    pub fn db(&self) -> Option<&eo_infrastructure::persistence::DbHandle> {
+    pub fn db(&self) -> Option<&certaro_infrastructure::persistence::DbHandle> {
         self.db.get()
     }
 
@@ -209,7 +209,7 @@ impl AppState {
     #[allow(clippy::too_many_arguments)]
     pub fn install_services(
         &self,
-        db: eo_infrastructure::persistence::DbHandle,
+        db: certaro_infrastructure::persistence::DbHandle,
         uow: Arc<dyn UnitOfWork>,
         holidays: Arc<dyn HolidayProvider>,
         dolar: Arc<dyn ExchangeRateProvider>,

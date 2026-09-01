@@ -1,9 +1,9 @@
 //! Commands of the commercial analysis. See `docs/11-contratos-tauri.md` §5.2 y §5.3.
 
-use eo_application::dtos::comercial::{
+use certaro_application::dtos::comercial::{
     AntiguedadDeuda, AntiguedadDeudaQuery, CuentaCorriente, CuentaCorrienteQuery,
 };
-use eo_application::dtos::dashboard::RentabilidadItem;
+use certaro_application::dtos::dashboard::RentabilidadItem;
 use tauri::State;
 use uuid::Uuid;
 

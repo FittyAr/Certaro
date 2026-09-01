@@ -3,8 +3,8 @@
 //! One command per report family, all of them taking the destination path the frontend got from
 //! the system dialog. There is no command that decides a path on its own.
 
-use eo_application::dtos::movimientos::MovimientoFiltroDto;
-use eo_application::dtos::reportes::{ExportResult, FormatoExport, ReporteRequest};
+use certaro_application::dtos::movimientos::MovimientoFiltroDto;
+use certaro_application::dtos::reportes::{ExportResult, FormatoExport, ReporteRequest};
 use tauri::State;
 use uuid::Uuid;
 

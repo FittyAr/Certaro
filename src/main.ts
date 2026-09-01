@@ -155,7 +155,7 @@ const app = createApp(App)
  */
 const router = createAppRouter({
   seedEnabled: import.meta.env.DEV,
-  appName: () => 'ElectroObra',
+  appName: () => 'Certaro',
 })
 
 app.use(createPinia())

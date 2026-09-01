@@ -29,7 +29,7 @@ lugar. Se descarta por tres motivos:
 
 ```
 base vieja (lectura, solo lectura)        base nueva (escritura)
-electroobra_legacy.db          ──────►    electroobra.db
+Certaro_legacy.db          ──────►    Certaro.db
         │                                     ▲
         │                                     │
         └── eo-import-legacy ─────────────────┘
@@ -1007,12 +1007,12 @@ misma suma.
   "started_at": "2026-08-29T14:30:12.000Z",
   "finished_at": "2026-08-29T14:31:47.412Z",
   "source": {
-    "path": "C:\\Users\\...\\electroobra_legacy.db",
+    "path": "C:\\Users\\...\\Certaro_legacy.db",
     "schema_version": "20260828214627_RescaleMonetaryValues",
     "scale_state": "AlreadyScaled",
     "integrity_check": "ok"
   },
-  "target": { "path": "C:\\Users\\...\\electroobra.db" },
+  "target": { "path": "C:\\Users\\...\\Certaro.db" },
   "dry_run": false,
   "outcome": "SuccessWithWarnings",
   "tables": [
@@ -1127,20 +1127,20 @@ producción con dos años de uso.
 Lo que se documenta en el README y se le indica al usuario:
 
 1. Cerrar la aplicación vieja por completo.
-2. Copiar `electroobra.db` a un lugar seguro. Esta copia es el respaldo real; no se toca.
+2. Copiar `Certaro.db` a un lugar seguro. Esta copia es el respaldo real; no se toca.
 3. Ejecutar con `--dry-run` primero:
 
 ```bash
 eo-import-legacy \
-  --source "C:\Users\Usuario\AppData\Local\ElectroObraApp\electroobra.db" \
-  --target "C:\Users\Usuario\AppData\Local\ElectroObraApp\electroobra_new.db" \
+  --source "C:\Users\Usuario\AppData\Local\ElectroObraApp\Certaro.db" \
+  --target "C:\Users\Usuario\AppData\Local\ElectroObraApp\Certaro_new.db" \
   --dry-run
 ```
 
 4. Leer `import_report.json`. Revisar cada advertencia, en particular las de código
    `PAGO_ESCALA_HEURISTICA` y `ADELANTO_SUMA_DIFIERE`.
 5. Si el reporte está bien, ejecutar de nuevo sin `--dry-run`.
-6. Renombrar `electroobra_new.db` a `electroobra.db` y abrir la aplicación nueva.
+6. Renombrar `Certaro_new.db` a `Certaro.db` y abrir la aplicación nueva.
 7. Verificar a ojo tres cosas: el total del dashboard del mes en curso, el saldo de un cliente
    conocido, y una liquidación reciente. Si los tres coinciden con lo que mostraba el sistema viejo,
    el import está bien.

@@ -1,11 +1,11 @@
 //! Commands of `trabajos`. See `docs/11-contratos-tauri.md` §5.6.
 
-use eo_application::dtos::common::{ListQuery, LookupItem};
-use eo_application::dtos::trabajos::{
+use certaro_application::dtos::common::{ListQuery, LookupItem};
+use certaro_application::dtos::trabajos::{
     TrabajoDetalle, TrabajoFiltroDto, TrabajoInput, TrabajoListItem,
 };
-use eo_application::PagedResult;
-use eo_domain::EstadoTrabajo;
+use certaro_application::PagedResult;
+use certaro_domain::EstadoTrabajo;
 use tauri::State;
 use uuid::Uuid;
 

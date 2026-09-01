@@ -22,7 +22,7 @@ arranca sin ningún archivo.
 `UserSettingsService` leía y escribía **el mismo archivo** por su cuenta, sin pasar por
 `IConfiguration`. Resultado: un valor cambiado desde la pantalla de configuración no se veía en el
 código que usaba `IConfiguration` hasta reiniciar, y los dos tenían **defaults distintos para la
-misma clave** — `Application:Name` valía `"ElectroObraApp"` en un lado y `"ElectroObra"` en el otro,
+misma clave** — `Application:Name` valía `"ElectroObraApp"` en un lado y `"Certaro"` en el otro,
 y `Application:Branding:LogoPath` apuntaba a un `.svg` en uno y a un `.png` en el otro.
 
 ### 1.2 Tipado
@@ -79,7 +79,7 @@ La columna **Legado** indica de qué clave del sistema anterior proviene.
 
 | Clave | Tipo | Default | Legado | Nota |
 | --- | --- | --- | --- | --- |
-| `Application.Name` | string | `ElectroObra` | `Application:Name` | título de ventana y reportes |
+| `Application.Name` | string | `Certaro` | `Application:Name` | título de ventana y reportes |
 | `Application.Environment` | enum | `Production` | `DOTNET_ENVIRONMENT` | `Development` \| `Production` |
 | `Application.SeedEnabled` | bool | `false` (`true` en desarrollo) | `Application:SeedEnabled` | habilita la ruta de sembrado |
 | `Application.LastPageSize` | u32 | `30` | `Application:LastPageSize` | 0, 10, 30, 50 o 100 |
@@ -408,7 +408,7 @@ un módulo y **no** se duplican por módulo:
 {
   "General": {
     "Add": "Agregar",
-    "AppName": "ElectroObra",
+    "AppName": "Certaro",
     "Cancel": "Cancelar",
     "ClearFilters": "Limpiar filtros",
     "Close": "Cerrar",

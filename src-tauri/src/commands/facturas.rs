@@ -3,13 +3,13 @@
 //! Every payment command answers with the whole invoice: a payment changes the balance and can
 //! change the state, and returning only the payment would leave the screen showing stale totals.
 
-use eo_application::dtos::common::{ListQuery, LookupItem};
-use eo_application::dtos::facturas::{
+use certaro_application::dtos::common::{ListQuery, LookupItem};
+use certaro_application::dtos::facturas::{
     FacturaDetalle, FacturaFiltroDto, FacturaInput, FacturaListItem, PagoFacturaInput,
     PagoFacturaItem,
 };
-use eo_application::PagedResult;
-use eo_domain::EstadoFactura;
+use certaro_application::PagedResult;
+use certaro_domain::EstadoFactura;
 use tauri::State;
 use uuid::Uuid;
 

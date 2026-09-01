@@ -2,8 +2,8 @@
 //!
 //! The list is not paged: a job has a handful of sheets and each sheet tens of lines.
 
-use eo_application::dtos::common::LookupItem;
-use eo_application::dtos::ordenes_trabajo::{
+use certaro_application::dtos::common::LookupItem;
+use certaro_application::dtos::ordenes_trabajo::{
     OrdenTrabajoDetalle, OrdenTrabajoInput, OrdenTrabajoListItem,
 };
 use tauri::State;

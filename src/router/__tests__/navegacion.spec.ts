@@ -107,7 +107,7 @@ describe('guardas', () => {
     // Memory history: a test has no address bar, and the guards under test do not depend on one.
     const router = createRouter({ history: createMemoryHistory(), routes: activeRoutes(false) })
     const { registerGuards } = await import('@/router/guards')
-    registerGuards(router, () => 'ElectroObra')
+    registerGuards(router, () => 'Certaro')
     return router
   }
 

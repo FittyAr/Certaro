@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for working on ElectroObra. This document describes the workflow; the coding rules live
+Thanks for working on Certaro. This document describes the workflow; the coding rules live
 in [AGENTS.md](./.agents/AGENTS.md) and the functional specification in [`docs/`](./docs).
 
 ## Prerequisites
@@ -15,7 +15,7 @@ in [AGENTS.md](./.agents/AGENTS.md) and the functional specification in [`docs/`
 ## Setup
 
 ```bash
-git clone <repo> && cd electroobra
+git clone <repo> && cd Certaro
 pnpm install
 cargo build --workspace
 pnpm tauri:dev

@@ -1,10 +1,10 @@
 //! Commands of `categorias`. See `docs/11-contratos-tauri.md` §5.12.
 
-use eo_application::dtos::categorias::{
+use certaro_application::dtos::categorias::{
     CategoriaDetalle, CategoriaFiltroDto, CategoriaInput, CategoriaListItem,
 };
-use eo_application::dtos::common::{ListQuery, LookupItem};
-use eo_application::PagedResult;
+use certaro_application::dtos::common::{ListQuery, LookupItem};
+use certaro_application::PagedResult;
 use tauri::State;
 use uuid::Uuid;
 
