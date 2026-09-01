@@ -53,7 +53,7 @@ const classes = computed(() =>
 </script>
 
 <template>
-  <button :type="props.type" :disabled="props.disabled" :class="classes">
+  <button v-bind="$attrs" :type="props.type" :disabled="props.disabled" :class="classes">
     <slot />
   </button>
 </template>

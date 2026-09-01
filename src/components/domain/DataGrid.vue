@@ -3,6 +3,7 @@ import Column from 'primevue/column'
 import DataTable, { type DataTableSortEvent } from 'primevue/datatable'
 import Paginator, { type PageState } from 'primevue/paginator'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import { PAGE_SIZES } from '@/api/types'
 import ListState from '@/components/domain/ListState.vue'
@@ -32,6 +33,12 @@ const rowsPerPage = computed(() =>
 )
 
 const pageSizeOptions = PAGE_SIZES.filter((size) => size !== 0)
+const { t } = useI18n()
+
+// Vue-i18n consumes brace placeholders, while PrimeVue must receive them untouched.
+const pageReportTemplate = computed(() =>
+  t('General.PageReport', { first: '{first}', last: '{last}', totalRecords: '{totalRecords}' }),
+)
 
 defineOptions({ inheritAttrs: false })
 
@@ -90,7 +97,7 @@ function onPage(event: PageState): void {
           :total-records="table.total.value"
           :rows-per-page-options="pageSizeOptions"
           template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          :current-page-report-template="$t('General.PageReport')"
+          :current-page-report-template="pageReportTemplate"
           @page="onPage"
         />
       </div>

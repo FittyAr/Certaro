@@ -70,7 +70,7 @@ async function sincronizar(): Promise<void> {
 const resultado = ref<{ agregados: number; total: number; aniosConError: number } | null>(null)
 
 async function agregar(): Promise<void> {
-  if (!nuevo.value.nombre.trim()) return
+  if (!nuevo.value.nombre.trim() || !nuevo.value.fecha) return
   try {
     await store.add({ fecha: nuevo.value.fecha, nombre: nuevo.value.nombre })
     nuevo.value.nombre = ''
@@ -101,7 +101,9 @@ onMounted(cargar)
       </template>
     </PageHeader>
 
-    <div class="flex flex-wrap items-end gap-4 rounded-lg border border-border bg-surface-card p-4 shadow-sm">
+    <div
+      class="flex flex-wrap items-end gap-4 rounded-lg border border-border bg-surface-card p-4 shadow-sm"
+    >
       <label class="flex flex-col gap-1.5">
         <span class="text-xs font-medium text-foreground">{{ $t('Feriados.Anio') }}</span>
         <InputNumber
@@ -121,14 +123,20 @@ onMounted(cargar)
         <span class="text-xs font-medium text-foreground">{{ $t('Feriados.Nombre') }}</span>
         <InputText v-model="nuevo.nombre" class="w-full" />
       </label>
-      <Button :disabled="!nuevo.nombre.trim()" class="flex items-center gap-2" @click="agregar()">
+      <Button
+        :disabled="!nuevo.nombre.trim() || !nuevo.fecha"
+        class="flex items-center gap-2"
+        @click="agregar()"
+      >
         <AppIcon name="plus" :size="16" />
         {{ $t('Feriados.Agregar') }}
       </Button>
     </div>
 
     <p class="text-xs text-muted-foreground">{{ $t('Feriados.SincronizarAyuda') }}</p>
-    <p v-if="mensaje && resultado" class="text-xs font-medium text-primary">{{ $t(mensaje, resultado) }}</p>
+    <p v-if="mensaje && resultado" class="text-xs font-medium text-primary">
+      {{ $t(mensaje, resultado) }}
+    </p>
 
     <ListState
       :loading="loading"
@@ -153,7 +161,12 @@ onMounted(cargar)
         </Column>
         <Column :header="$t('General.Actions')" :style="{ width: '5rem' }">
           <template #body="{ data }">
-            <Button variant="ghost" size="sm" @click="quitar(data)">
+            <Button
+              variant="ghost"
+              size="sm"
+              :aria-label="$t('General.Delete')"
+              @click="quitar(data)"
+            >
               <AppIcon name="trash-2" :size="14" />
             </Button>
           </template>

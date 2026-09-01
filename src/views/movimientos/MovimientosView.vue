@@ -34,7 +34,7 @@ import {
 } from '@/stores/useMovimientosStore'
 
 /**
- * The cash ledger. See `docs/09-modulos-funcionales.md` §3.2.
+ * The cash ledger. See `docs/09-modulos-funcionales.md` Â§3.2.
  *
  * This is the only screen whose filtering and paging happen on the server: the table grows without
  * bound and cannot be shipped whole to the frontend. The totals under the table describe the whole
@@ -221,7 +221,7 @@ onMounted(() => {
               class="inline-block size-3 rounded-full border border-border"
               :style="{ backgroundColor: data.categoriaColor }"
             />
-            {{ data.categoriaNombre ?? '—' }}
+            {{ data.categoriaNombre ?? 'â€”' }}
           </span>
         </template>
       </Column>
@@ -249,6 +249,7 @@ onMounted(() => {
             :title="
               data.bloqueadoPorLiquidacion ? $t('Movimientos.BloqueadoLiquidacion') : undefined
             "
+            :aria-label="$t('General.Edit')"
             @click="drawer.openEdit(data.id)"
           >
             <AppIcon name="pencil" :size="14" />
@@ -257,6 +258,7 @@ onMounted(() => {
             variant="ghost"
             size="sm"
             :disabled="data.bloqueadoPorLiquidacion"
+            :aria-label="$t('General.Delete')"
             @click="onDelete(data)"
           >
             <AppIcon name="trash-2" :size="14" />

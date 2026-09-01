@@ -197,10 +197,20 @@ onMounted(async () => {
 
       <template #actions="{ data }">
         <div class="flex gap-1">
-          <Button variant="ghost" size="sm" @click="drawer.openEdit(data.id)">
+          <Button
+            variant="ghost"
+            size="sm"
+            :aria-label="$t('General.Edit')"
+            @click="drawer.openEdit(data.id)"
+          >
             <AppIcon name="pencil" :size="14" />
           </Button>
-          <Button variant="ghost" size="sm" @click="onDelete(data)">
+          <Button
+            variant="ghost"
+            size="sm"
+            :aria-label="$t('General.Delete')"
+            @click="onDelete(data)"
+          >
             <AppIcon name="trash-2" :size="14" />
           </Button>
         </div>
