@@ -97,7 +97,7 @@ pretty_assertions = "1"
 # Reading back what the generators produced: a PDF is verified by its extracted text and an XLSX
 # by the XML inside its zip (doc 17 §4.4). Comparing bytes would break on every library bump.
 pdf-extract = "0.7"
-zip = { version = "2", default-features = false, features = ["deflate"] }
+zip = { version = "8", default-features = false, features = ["deflate"] }
 
 [profile.release]
 codegen-units = 1
