@@ -58,6 +58,20 @@ impl AsistenciasService {
                 "Validation.Asistencia.RangoInvalid",
             )]));
         }
+        let max_rango = self
+            .settings
+            .snapshot()
+            .settlement
+            .asistencia_max_rango_dias as i64;
+        let dias = (query.hasta - query.desde).num_days() + 1;
+        if dias > max_rango {
+            return Err(AppError::Validation(vec![crate::error::FieldError::new(
+                "hasta",
+                "Validation.Asistencia.RangoExcedido",
+            )
+            .with_param("max", max_rango.to_string())
+            .with_param("actual", dias.to_string())]));
+        }
 
         let tx = self.uow.begin().await?;
         let outcome = async {

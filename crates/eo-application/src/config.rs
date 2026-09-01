@@ -230,6 +230,9 @@ pub struct SettlementConfig {
     pub sincronizar_feriados_al_iniciar: bool,
     /// The current year plus the next ones.
     pub anios_feriados_a_sincronizar: u8,
+    /// Maximum number of days the attendance grid may query in one request.
+    /// 92 covers the last 3 months and keeps the matrix bounded.
+    pub asistencia_max_rango_dias: u32,
 }
 
 impl Default for SettlementConfig {
@@ -244,6 +247,7 @@ impl Default for SettlementConfig {
             periodo_por_defecto_dias: 15,
             sincronizar_feriados_al_iniciar: true,
             anios_feriados_a_sincronizar: 2,
+            asistencia_max_rango_dias: 92,
         }
     }
 }

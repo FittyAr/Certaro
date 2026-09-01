@@ -218,7 +218,8 @@
     "TimeoutSeconds": "Timeout (segundos)",
     "Title": "Configuración",
     "WhatsAppLiquidacionTemplate": "Plantilla WhatsApp liquidaciones",
-    "WhatsAppTemplate": "Plantilla WhatsApp"
+    "WhatsAppTemplate": "Plantilla WhatsApp",
+    "AsistenciaMaxRangoDias": "Rango máximo de asistencia (días)"
   },
   "Conflict": {
     "Categoria": {
@@ -763,6 +764,7 @@
     "Movimientos": "Movimientos de caja",
     "Obras": "Obras",
     "OrdenesTrabajo": "Órdenes de trabajo",
+    "AlreadySeeded": "La base ya contiene datos de prueba. Borrá la base o restaurá un backup vacío para volver a sembrar.",
     "Subtitle": "Poblar la base de datos con clientes, obras, empleados, movimientos y facturas de demostración",
     "Success": "¡Datos de prueba generados con éxito!",
     "SummaryTitle": "Resumen de datos creados",
@@ -864,7 +866,8 @@
     "Asistencia": {
       "EmpleadoRequired": "Elegí un empleado.",
       "ObservacionesMaxLength": "Las observaciones no pueden pasar de {max} caracteres.",
-      "RangoInvalid": "La fecha final no puede ser anterior a la inicial."
+      "RangoInvalid": "La fecha final no puede ser anterior a la inicial.",
+      "RangoExcedido": "El rango no puede superar {max} días (pediste {actual}). Ajusta Desde/Hasta o cambia el límite en Configuración > Liquidaciones."
     },
     "Backup": {
       "VersionIncompatible": "El backup es de una versión más nueva de la aplicación"

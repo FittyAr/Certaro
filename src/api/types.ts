@@ -159,6 +159,7 @@ export interface SettlementConfig {
   periodoPorDefectoDias: number
   sincronizarFeriadosAlIniciar: boolean
   aniosFeriadosASincronizar: number
+  asistenciaMaxRangoDias: number
 }
 
 export interface DashboardConfig {

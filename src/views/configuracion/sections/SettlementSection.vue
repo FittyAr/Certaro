@@ -116,6 +116,11 @@ watch(
           <span class="text-xs font-medium text-foreground">{{ $t('Configuracion.SincronizarFeriadosAlIniciar') }}</span>
           <ToggleSwitch v-model="draft.sincronizarFeriadosAlIniciar" />
         </div>
+
+        <label class="flex flex-col gap-1.5 sm:col-span-2">
+          <span class="text-xs font-medium text-foreground">{{ $t('Configuracion.AsistenciaMaxRangoDias') }}</span>
+          <InputNumber v-model="draft.asistenciaMaxRangoDias" :min="7" :max="365" fluid />
+        </label>
       </div>
     </div>
 

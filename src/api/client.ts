@@ -113,6 +113,7 @@ const DEFAULT_CONFIG: AppConfig = {
     periodoPorDefectoDias: 15,
     sincronizarFeriadosAlIniciar: true,
     aniosFeriadosASincronizar: 2,
+    asistenciaMaxRangoDias: 92,
   },
   dashboard: {
     lastPeriod: 'mensual',

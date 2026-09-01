@@ -40,6 +40,17 @@ async function sembrarDatos(): Promise<void> {
   try {
     const resumen = await sistema.seedDemoData()
     await sistema.loadSistema()
+    // Idempotent seed returns all zeros when data already exists
+    const isNoop = (resumen.clientes + resumen.obras + resumen.movimientos) === 0
+    if (isNoop) {
+      toast.add({
+        severity: 'info',
+        summary: t('General.Success') ?? t('Seed.Success'),
+        detail: t('Seed.AlreadySeeded'),
+        life: 5000,
+      })
+      return
+    }
     toast.add({
       severity: 'success',
       summary: t('Seed.Success'),
@@ -47,10 +58,13 @@ async function sembrarDatos(): Promise<void> {
       life: 4000,
     })
   } catch (err: unknown) {
+    const api = (err as { messageKey?: string })?.messageKey
+      ? (err as { messageKey: string; params?: Record<string, string> })
+      : null
     toast.add({
       severity: 'error',
       summary: t('General.Error'),
-      detail: String(err),
+      detail: api ? t(api.messageKey, api.params ?? {}) : String(err),
       life: 5000,
     })
   } finally {

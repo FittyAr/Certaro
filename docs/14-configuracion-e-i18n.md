@@ -147,6 +147,7 @@ documentos que se entregan al cliente.
 | `Settlement.PeriodoPorDefectoDias` | u32 | `15` | — **[NUEVO]** el asistente arrancaba con `hoy - 15` hardcodeado |
 | `Settlement.SincronizarFeriadosAlIniciar` | bool | `true` | — **[NUEVO]** |
 | `Settlement.AniosFeriadosASincronizar` | u8 | `2` | — **[NUEVO]** el año actual y los siguientes |
+| `Settlement.AsistenciaMaxRangoDias` | u32 | `92` | — **[NUEVO]** máximo de días que la grilla de asistencia puede consultar de una vez (últimos 3 meses) |
 
 Los multiplicadores de aquí son los **defaults por empleado**: cada empleado tiene los suyos en su
 ficha y los de configuración se usan al crear uno nuevo.

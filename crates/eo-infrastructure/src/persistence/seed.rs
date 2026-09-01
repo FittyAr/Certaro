@@ -5,11 +5,14 @@
 //! work orders, items, certificates, invoices, invoice payments, cash ledger movements,
 //! payroll settlements, settlement advance links, holidays, and sample attachments.
 
-use chrono::Utc;
+use chrono::{Datelike, Utc};
 use eo_application::result::AppResult;
 use eo_application::AppError;
 use eo_domain::RowVersion;
-use sea_orm::{ActiveModelTrait, DatabaseConnection, Set, TransactionTrait};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set,
+    TransactionTrait,
+};
 use serde::Serialize;
 use uuid::Uuid;
 
@@ -46,6 +49,38 @@ pub struct SeedSummary {
 pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
     let tx = db.begin().await.map_err(AppError::persistence)?;
     let now = Utc::now().to_rfc3339();
+
+    // Idempotency: if seed data already exists, no-op (avoids UNIQUE violations on re-run).
+    // We check `obras.numero = 1` which is the first seeded obra.
+    let already_seeded = obra::Entity::find()
+        .filter(obra::Column::Numero.eq(1_i32))
+        .one(&tx)
+        .await
+        .map_err(AppError::persistence)?;
+    if already_seeded.is_some() {
+        tx.rollback().await.map_err(AppError::persistence)?;
+        return Ok(SeedSummary {
+            categorias: 0,
+            tipos_movimiento: 0,
+            empleados: 0,
+            asistencias: 0,
+            clientes: 0,
+            contactos: 0,
+            obras: 0,
+            trabajos: 0,
+            ordenes_trabajo: 0,
+            orden_trabajo_items: 0,
+            certificados: 0,
+            certificado_items: 0,
+            facturas: 0,
+            pagos_factura: 0,
+            movimientos: 0,
+            liquidaciones: 0,
+            liquidacion_adelantos: 0,
+            feriados: 0,
+            adjuntos: 0,
+        });
+    }
 
     // 1. Categorías (con jerarquía padre-hijo)
     let categorias_data = [
@@ -255,12 +290,42 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
         trabajos_ids.push(id);
     }
 
-    // 7. Asistencias de Empleados
+    // 7. Asistencias de Empleados — últimos 3 meses con rotación realista y feriados
     let mut asistencias_count = 0;
-    for (emp_idx, emp_id) in empleados_ids.iter().enumerate().take(3) {
-        for dia in 1..=10 {
-            let fecha_asist = format!("2025-02-{:02}T00:00:00Z", dia);
-            let tipo_jornada = if dia == 8 { 2 } else { 1 }; // Jornada Completa / Sábado
+    // Feriados del período para marcar Feriado trabajado vs Falta
+    let feriados_set: std::collections::HashSet<String> = [
+        "2025-06-16", "2025-06-20", "2025-07-09", "2025-08-17", "2025-10-12", "2025-11-24", "2025-12-08", "2025-12-25",
+        "2026-01-01", "2026-03-03", "2026-03-04", "2026-03-24", "2026-04-02",
+    ]
+    .iter()
+    .map(|s| s.to_string())
+    .collect();
+    let hoy = chrono::Utc::now().date_naive();
+    let desde = hoy - chrono::Duration::days(92);
+    for (emp_idx, emp_id) in empleados_ids.iter().enumerate() {
+        let mut fecha = desde;
+        let mut dia_idx = 0;
+        while fecha <= hoy {
+            let fecha_asist = fecha.format("%Y-%m-%d").to_string();
+            let es_feriado = feriados_set.contains(&fecha_asist);
+            let tipo_jornada = if es_feriado {
+                // 50% de los feriados se trabajan
+                if dia_idx % 2 == 0 { 4 } else { 2 }
+            } else {
+                match fecha.weekday() {
+                    chrono::Weekday::Sat => {
+                        if dia_idx % 3 == 0 { 0 } else { 2 }
+                    }
+                    chrono::Weekday::Sun => 2, // Falta
+                    _ => match dia_idx % 20 {
+                        0..=13 => 0, // 70% Completa
+                        14..=16 => 1, // 15% Media
+                        17..=18 => 2, // 10% Falta
+                        _ => 3,       // 5% FaltaJustificada
+                    },
+                }
+            };
+            dia_idx += 1;
             let asist = asistencia_empleado::ActiveModel {
                 id: Set(Uuid::now_v7().to_string()),
                 empleado_id: Set(emp_id.clone()),
@@ -276,6 +341,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             };
             asist.insert(&tx).await.map_err(AppError::persistence)?;
             asistencias_count += 1;
+            fecha = fecha + chrono::Duration::days(1);
         }
     }
 

@@ -19,7 +19,8 @@ async fn el_sembrado_de_datos_de_prueba_puebla_las_tablas_correctamente() {
     assert_eq!(resumen.categorias, 8);
     assert_eq!(resumen.tipos_movimiento, 3);
     assert_eq!(resumen.empleados, 5);
-    assert_eq!(resumen.asistencias, 30);
+    // 5 empleados × 93 días (hoy inclusive -92) = 465, con rotación realista
+    assert_eq!(resumen.asistencias, 465);
     assert_eq!(resumen.clientes, 4);
     assert_eq!(resumen.contactos, 4);
     assert_eq!(resumen.obras, 4);
@@ -38,7 +39,24 @@ async fn el_sembrado_de_datos_de_prueba_puebla_las_tablas_correctamente() {
 
     assert_eq!(count(&db, "SELECT COUNT(*) AS n FROM categorias").await, 8);
     assert_eq!(count(&db, "SELECT COUNT(*) AS n FROM empleados").await, 5);
-    assert_eq!(count(&db, "SELECT COUNT(*) AS n FROM asistencias_empleado").await, 30);
+    assert_eq!(count(&db, "SELECT COUNT(*) AS n FROM asistencias_empleado").await, 465);
+}
+
+#[tokio::test]
+async fn el_sembrado_es_idempotente_segunda_llamada_no_duplica() {
+    let db = open_in_memory().await.unwrap();
+    let primera = seed_demo_data(&db).await.unwrap();
+    assert_eq!(primera.obras, 4);
+
+    // Segunda llamada debe ser no-op (early-exit), sin violar UNIQUE obras.numero
+    let segunda = seed_demo_data(&db).await.unwrap();
+    assert_eq!(segunda.obras, 0);
+    assert_eq!(segunda.categorias, 0);
+    assert_eq!(segunda.clientes, 0);
+
+    assert_eq!(count(&db, "SELECT COUNT(*) AS n FROM obras").await, 4);
+    assert_eq!(count(&db, "SELECT COUNT(*) AS n FROM categorias").await, 8);
+    assert_eq!(count(&db, "SELECT COUNT(*) AS n FROM asistencias_empleado").await, 465);
     assert_eq!(count(&db, "SELECT COUNT(*) AS n FROM clientes").await, 4);
     assert_eq!(count(&db, "SELECT COUNT(*) AS n FROM cliente_contactos").await, 4);
     assert_eq!(count(&db, "SELECT COUNT(*) AS n FROM obras").await, 4);

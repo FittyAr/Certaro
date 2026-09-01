@@ -218,7 +218,8 @@
     "TimeoutSeconds": "Timeout (seconds)",
     "Title": "Settings",
     "WhatsAppLiquidacionTemplate": "WhatsApp settlement template",
-    "WhatsAppTemplate": "WhatsApp template"
+    "WhatsAppTemplate": "WhatsApp template",
+    "AsistenciaMaxRangoDias": "Max attendance range (days)"
   },
   "Conflict": {
     "Categoria": {
@@ -763,6 +764,7 @@
     "Movimientos": "Cash movements",
     "Obras": "Sites",
     "OrdenesTrabajo": "Work orders",
+    "AlreadySeeded": "The database already contains sample data. Delete the database or restore an empty backup to seed again.",
     "Subtitle": "Populate the database with sample clients, sites, employees, movements, and invoices",
     "Success": "Sample data generated successfully!",
     "SummaryTitle": "Created records summary",
@@ -864,7 +866,8 @@
     "Asistencia": {
       "EmpleadoRequired": "Pick an employee.",
       "ObservacionesMaxLength": "The notes cannot exceed {max} characters.",
-      "RangoInvalid": "The end date cannot precede the start date."
+      "RangoInvalid": "The end date cannot precede the start date.",
+      "RangoExcedido": "Range cannot exceed {max} days (asked {actual}). Adjust From/To or change the limit in Settings > Payroll."
     },
     "Backup": {
       "VersionIncompatible": "The backup is from a newer version of the application"

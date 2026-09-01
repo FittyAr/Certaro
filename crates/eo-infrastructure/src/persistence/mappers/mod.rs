@@ -36,8 +36,12 @@ pub fn instant_opt(raw: Option<&str>) -> Result<Option<DateTime<Utc>>, AppError>
 }
 
 /// A civil date, stored as the bare `YYYY-MM-DD` the domain and the frontend both use.
+/// Tolerates the legacy `YYYY-MM-DDTHH:MM:SSZ` form that the first seed wrote.
 pub fn civil(raw: &str) -> Result<NaiveDate, AppError> {
     time::parse_civil(raw)
+        .or_else(|_| {
+            time::from_storage(raw).map(|dt| dt.date_naive())
+        })
         .map_err(|e| AppError::persistence(anyhow::anyhow!("invalid date {raw:?}: {e}")))
 }
 
