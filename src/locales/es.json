@@ -130,7 +130,8 @@
     "SinContactos": "Sin contactos cargados",
     "SoloConDeuda": "Solo con deuda",
     "Subtitle": "Clientes, contactos y saldo pendiente",
-    "Telefono": "Teléfono"
+    "Telefono": "Teléfono",
+    "CuentaCorriente": "Cuenta corriente"
   },
   "Comercial": {
     "Antiguedad": {
@@ -596,7 +597,9 @@
     "Rentabilidad": "Rentabilidad",
     "SoloActivas": "Solo activas",
     "Subtitle": "Obras, su estado y su rentabilidad",
-    "Trabajos": "Trabajos"
+    "Trabajos": "Trabajos",
+    "VerTrabajos": "Ver trabajos",
+    "VerCaja": "Ver caja"
   },
   "Ordenes": {
     "AjusteUocra": "Ajuste UOCRA",

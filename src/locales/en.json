@@ -130,7 +130,8 @@
     "SinContactos": "No contacts yet",
     "SoloConDeuda": "With debt only",
     "Subtitle": "Customers, contacts and outstanding balance",
-    "Telefono": "Phone"
+    "Telefono": "Phone",
+    "CuentaCorriente": "Current account"
   },
   "Comercial": {
     "Antiguedad": {
@@ -596,7 +597,9 @@
     "Rentabilidad": "Profit",
     "SoloActivas": "Active only",
     "Subtitle": "Sites, their state and their profit",
-    "Trabajos": "Jobs"
+    "Trabajos": "Jobs",
+    "VerTrabajos": "View jobs",
+    "VerCaja": "View cash"
   },
   "Ordenes": {
     "AjusteUocra": "UOCRA adjustment",
