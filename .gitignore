@@ -1,3 +1,40 @@
 # No build artifacts - pure static site
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Node / frontend dependencies & build outputs
+node_modules/
+dist/
+dist-ssr/
+coverage/
+.nyc_output/
+.vite/
+.pnpm-store/
+*.log
+
+# Rust / Tauri artifacts (from main/ElectroObra branches)
+/target/
+**/target/
+/src-tauri/
+*.pdb
+
+# Local data & environment
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+/data/
+/backups/
+/exports/
+/attachments/
+/logs/
+.env
+.env.*
+!.env.example
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.recommended.json
+.idea/
+
