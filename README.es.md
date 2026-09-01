@@ -1,8 +1,23 @@
 # ElectroObra
 
-Gestión operativa y control de caja real para una empresa pequeña de instalaciones eléctricas:
-movimientos (ingresos, gastos y adelantos), clientes, obras, órdenes de trabajo y certificados
+Gestión operativa y control de caja real para pymes que trabajan **por proyecto / obra**:
+movimientos (ingresos, gastos y adelantos), clientes, obras/proyectos, órdenes de trabajo y certificados
 de avance, facturas y pagos, empleados, asistencia, liquidaciones, reportes y exportaciones.
+
+Nació para instalaciones eléctricas, pero el dominio es genérico: cualquier pyme que presupuesta, ejecuta por hitos, certifica avance y liquida jornales.
+
+## ¿Para quién es? (casos de uso)
+
+Sirve directo, sin tocar código, para:
+
+**Instalaciones:** eléctrica, sanitaria/gas, HVAC, redes, seguridad electrónica, ascensores.
+**Construcción liviana:** albañilería, pintura, durlock, herrería, carpintería, vidriería, impermeabilizaciones.
+**Mantenimiento:** edilicio, facility, paisajismo, limpieza de obra.
+**Servicios técnicos a campo:** talleres, mantenimiento industrial, obras civiles menores.
+
+> `Obra` es un término genérico para *proyecto/servicio*. En `src/locales/es.json` puedes renombrarlo a `Proyecto` sin tocar lógica. Con `tipos_movimiento`/`categorias` configurables, el mismo binario cubre todos los rubros de arriba.
+
+**No encaja sin rediseño:** retail, gastronomía, salud o educación (no trabajan por obra ni certifican avance).
 
 > **Esta rama es una reescritura total.** La implementación anterior era C# / .NET / Avalonia.
 > Esta rama huérfana (`rewrite/rust-tauri`) arranca de cero sobre **Rust + Tauri 2 + Vue 3**.
