@@ -174,8 +174,8 @@ const DEFAULT_CONFIG: AppConfig = {
   },
 }
 
-const CONFIG_STORAGE_KEY = 'electroobra_mock_config_v1'
-const DB_STORAGE_KEY = 'electroobra_mock_db_v1'
+const CONFIG_STORAGE_KEY = 'electroobra_mock_config_v2'
+const DB_STORAGE_KEY = 'electroobra_mock_db_v2'
 
 function loadMockConfig(): AppConfig {
   if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
@@ -523,6 +523,69 @@ function saveMockDb(db: MockDb): void {
 }
 
 let mockDb: MockDb = loadMockDb()
+
+export function validateMockMovimiento(dto: Record<string, unknown>): ApiError | null {
+  const fields: ApiFieldError[] = []
+  const add = (field: string, messageKey: string): void => { fields.push({ field, messageKey, params: {} }) }
+  if (typeof dto.concepto !== "string" || !dto.concepto.trim()) add("concepto", "Validation.Movimiento.ConceptoRequired")
+  const monto = Number(dto.monto)
+  if (!Number.isFinite(monto) || monto <= 0) add("monto", "Validation.Movimiento.MontoRequired")
+  const cantidad = Number(dto.cantidad)
+  if (!Number.isFinite(cantidad) || cantidad <= 0) add("cantidad", "Validation.Movimiento.CantidadRequired")
+  if (typeof dto.tipoMovimientoId !== "string" || !dto.tipoMovimientoId.trim()) add("tipoMovimientoId", "Validation.Movimiento.TipoRequired")
+  if (typeof dto.categoriaId !== "string" || !dto.categoriaId.trim()) add("categoriaId", "Validation.Movimiento.CategoriaRequired")
+  if (dto.moneda === "Usd" && (!Number.isFinite(Number(dto.cotizacionAplicada)) || Number(dto.cotizacionAplicada) <= 0)) add("cotizacionAplicada", "Validation.Movimiento.CotizacionRequired")
+  if (dto.moneda !== "Usd" && dto.cotizacionAplicada !== null && dto.cotizacionAplicada !== undefined) add("cotizacionAplicada", "Validation.Movimiento.CotizacionForbidden")
+  return fields.length ? { code: "VALIDATION", messageKey: "Validation.Invalid", params: {}, fields, traceId: "preview-validation" } : null
+}
+export function validateMockCliente(dto: Record<string, unknown>): ApiError | null {
+  const fields: ApiFieldError[] = []
+  if (typeof dto.nombre !== "string" || !dto.nombre.trim()) fields.push({ field: "nombre", messageKey: "Validation.Cliente.NombreRequired", params: {} })
+  if (typeof dto.email === "string" && dto.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dto.email)) fields.push({ field: "email", messageKey: "Validation.Cliente.EmailInvalid", params: {} })
+  return fields.length ? { code: "VALIDATION", messageKey: "Validation.Invalid", params: {}, fields, traceId: "preview-validation" } : null
+}
+export function validateMockObra(dto: Record<string, unknown>): ApiError | null {
+  const fields: ApiFieldError[] = []
+  if (typeof dto.nombre !== "string" || !dto.nombre.trim()) fields.push({ field: "nombre", messageKey: "Validation.Obra.NombreRequired", params: {} })
+  if (typeof dto.clienteId !== "string" || !dto.clienteId.trim()) fields.push({ field: "clienteId", messageKey: "Validation.Obra.ClienteRequired", params: {} })
+  return fields.length ? { code: "VALIDATION", messageKey: "Validation.Invalid", params: {}, fields, traceId: "preview-validation" } : null
+}
+export function validateMockTrabajo(dto: Record<string, unknown>): ApiError | null {
+  const fields: ApiFieldError[] = []
+  if (typeof dto.descripcion !== "string" || !dto.descripcion.trim()) fields.push({ field: "descripcion", messageKey: "Validation.Trabajo.DescripcionRequired", params: {} })
+  if (typeof dto.obraId !== "string" || !dto.obraId.trim()) fields.push({ field: "obraId", messageKey: "Validation.Trabajo.ObraRequired", params: {} })
+  return fields.length ? { code: "VALIDATION", messageKey: "Validation.Invalid", params: {}, fields, traceId: "preview-validation" } : null
+}
+export function validateMockFactura(dto: Record<string, unknown>): ApiError | null {
+  const fields: ApiFieldError[] = []
+  if (typeof dto.numero !== "string" || !dto.numero.trim()) fields.push({ field: "numero", messageKey: "Validation.Factura.NumeroRequired", params: {} })
+  if (typeof dto.clienteId !== "string" || !dto.clienteId.trim()) fields.push({ field: "clienteId", messageKey: "Validation.Factura.ClienteRequired", params: {} })
+  return fields.length ? { code: "VALIDATION", messageKey: "Validation.Invalid", params: {}, fields, traceId: "preview-validation" } : null
+}
+export function validateMockEmpleado(dto: Record<string, unknown>): ApiError | null {
+  const fields: ApiFieldError[] = []
+  if (typeof dto.nombre !== "string" || !dto.nombre.trim()) fields.push({ field: "nombre", messageKey: "Validation.Empleado.NombreRequired", params: {} })
+  return fields.length ? { code: "VALIDATION", messageKey: "Validation.Invalid", params: {}, fields, traceId: "preview-validation" } : null
+}
+export function validateMockCategoria(dto: Record<string, unknown>): ApiError | null {
+  const fields: ApiFieldError[] = []
+  if (typeof dto.nombre !== "string" || !dto.nombre.trim()) fields.push({ field: "nombre", messageKey: "Validation.Categoria.NombreRequired", params: {} })
+  return fields.length ? { code: "VALIDATION", messageKey: "Validation.Invalid", params: {}, fields, traceId: "preview-validation" } : null
+}
+export function validateMockTipoMovimiento(dto: Record<string, unknown>): ApiError | null {
+  const fields: ApiFieldError[] = []
+  if (typeof dto.nombre !== "string" || !dto.nombre.trim()) fields.push({ field: "nombre", messageKey: "Validation.TipoMovimiento.NombreRequired", params: {} })
+  return fields.length ? { code: "VALIDATION", messageKey: "Validation.Invalid", params: {}, fields, traceId: "preview-validation" } : null
+}
+export function validateMockFeriado(dto: Record<string, unknown>): ApiError | null {
+  const fields: ApiFieldError[] = []
+  if (typeof dto.fecha !== "string" || !dto.fecha) fields.push({ field: "fecha", messageKey: "Validation.Feriado.FechaRequired", params: {} })
+  if (typeof dto.nombre !== "string" || !dto.nombre.trim()) fields.push({ field: "nombre", messageKey: "Validation.Feriado.NombreRequired", params: {} })
+  return fields.length ? { code: "VALIDATION", messageKey: "Validation.Invalid", params: {}, fields, traceId: "preview-validation" } : null
+}
+function mockAudit(rowVersion: string): { createdAt: string; updatedAt: null; rowVersion: string; isDeleted: boolean; deletedAt: null } {
+  return { createdAt: new Date().toISOString(), updatedAt: null, rowVersion, isDeleted: false, deletedAt: null }
+}
 
 function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>): T {
   switch (command) {
@@ -1118,6 +1181,58 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       saveMockDb(mockDb)
       return null as T
     }
+
+    // ==========================================
+    // ORDENES DE TRABAJO
+    // ==========================================
+    case "ordenes_trabajo_list": {
+      const trabajoId = String(args?.trabajoId ?? "")
+      let filtered = [...mockDb.ordenes]
+      if (trabajoId) filtered = filtered.filter(o => o.trabajoId === trabajoId)
+      return structuredClone(filtered) as T
+    }
+    case "ordenes_trabajo_get": {
+      const id = String(args?.id ?? "")
+      const ord = mockDb.ordenes.find(o => o.id === id) || mockDb.ordenes[0]!
+      const dummyItem = { id: generateUuid(), descripcion: "Item QA", unidad: "u", cantidad: "10.0000", precioUnitario: "10000.0000", porcentajeAnterior: "0.0000", porcentajeActual: "0.0000", porcentajeAcumulado: "0.0000", porcentajePendiente: "100.0000", base: "100000.0000", subtotalActual: "0.0000", subtotalAcumulado: "0.0000", ejecutado: false, nota: null, orden: 1, certificado: false }
+      return structuredClone({ ...ord, trabajoDescripcion: ord.titulo, obraId: "", obraNumero: 1, obraNombre: "", clienteId: "", clienteNombre: "", observaciones: null, ajusteUocraPorcentaje: "0.0000", otrosDescuentos: "0.0000", items: [dummyItem], totalPresupuestado: "100000.0000", totalCertificado: "0.0000", ajusteUocra: "0.0000", totalNeto: ord.totalNeto, certificadosCount: 0, puedeEliminarse: true, audit: mockAudit(ord.rowVersion) }) as T
+    }
+    case "ordenes_trabajo_create": {
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      if (typeof dto.titulo !== "string" || !String(dto.titulo).trim()) throw { code: "VALIDATION", messageKey: "Validation.OrdenTrabajo.TituloRequired", params: {}, fields: [{ field: "titulo", messageKey: "Validation.OrdenTrabajo.TituloRequired", params: {} }], traceId: "preview-validation" } as ApiError
+      const newOrden: MockOrden = {
+        id: generateUuid(),
+        trabajoId: String(dto.trabajoId ?? ""),
+        titulo: String(dto.titulo ?? ""),
+        numeroCertificado: null,
+        fecha: String(dto.fecha ?? new Date().toISOString().split("T")[0]),
+        totalCertificados: 0,
+        totalNeto: "0.0000",
+        rowVersion: generateUuid(),
+      }
+      mockDb.ordenes.unshift(newOrden)
+      saveMockDb(mockDb)
+      return structuredClone({ ...newOrden, audit: mockAudit(newOrden.rowVersion), items: [] }) as T
+    }
+    case "ordenes_trabajo_update": {
+      const id = String(args?.id ?? "")
+      const dto = (args?.dto ?? {}) as Record<string, unknown>
+      const idx = mockDb.ordenes.findIndex(o => o.id === id)
+      if (idx >= 0) {
+        mockDb.ordenes[idx] = { ...mockDb.ordenes[idx]!, titulo: String(dto.titulo ?? mockDb.ordenes[idx]!.titulo), fecha: String(dto.fecha ?? mockDb.ordenes[idx]!.fecha), rowVersion: generateUuid() }
+        saveMockDb(mockDb)
+        return structuredClone({ ...mockDb.ordenes[idx]!, audit: mockAudit(mockDb.ordenes[idx]!.rowVersion) }) as T
+      }
+      return structuredClone(mockDb.ordenes[0]) as T
+    }
+    case "ordenes_trabajo_delete": {
+      const id = String(args?.id ?? "")
+      mockDb.ordenes = mockDb.ordenes.filter(o => o.id !== id)
+      saveMockDb(mockDb)
+      return null as T
+    }
+    case "ordenes_trabajo_lookup":
+      return structuredClone(mockDb.ordenes.map(o => ({ id: o.id, label: o.titulo }))) as T
 
     // ==========================================
     // EMPLEADOS
