@@ -8,6 +8,7 @@
 use chrono::Utc;
 use eo_application::result::AppResult;
 use eo_application::AppError;
+use eo_domain::RowVersion;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, Set, TransactionTrait};
 use serde::Serialize;
 use uuid::Uuid;
@@ -70,7 +71,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             categoria_padre_id: Set(padre_idx.and_then(|idx| categorias_ids.get(idx)).cloned()),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -95,7 +96,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             es_sistema: Set(false),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -138,7 +139,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             activo: Set(true),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -168,7 +169,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             condicion_iva: Set(Some(iva.to_string())),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -185,7 +186,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             es_principal: Set(true),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -216,7 +217,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             estado: Set(estado),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -246,7 +247,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             estado: Set(estado),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -269,7 +270,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
                 observaciones: Set(Some("Jornada cumplida en obra".to_string())),
                 created_at: Set(now.clone()),
                 updated_at: Set(None),
-                row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+                row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
                 is_deleted: Set(false),
                 deleted_at: Set(None),
             };
@@ -294,7 +295,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             otros_descuentos: Set(0),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -315,7 +316,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             orden: Set(1),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -337,7 +338,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             orden: Set(2),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -364,7 +365,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             total_neto: Set(19_980_000_000),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -384,7 +385,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             subtotal_acumulado: Set(4_500_000_000),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -415,7 +416,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             observaciones: Set(Some("Facturación de servicios eléctricos".to_string())),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -431,7 +432,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
                 medio_pago: Set("Transferencia Bancaria".to_string()),
                 created_at: Set(now.clone()),
                 updated_at: Set(None),
-                row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+                row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
                 is_deleted: Set(false),
                 deleted_at: Set(None),
             };
@@ -482,7 +483,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             factura_id: Set(fact_id.cloned()),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -514,7 +515,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             pdf_generado_at: Set(None),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
@@ -531,7 +532,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
                 concepto: Set("Adelanto quincenal Ricardo Darín".to_string()),
                 created_at: Set(now.clone()),
                 updated_at: Set(None),
-                row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+                row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
                 is_deleted: Set(false),
                 deleted_at: Set(None),
             };
@@ -587,7 +588,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             tamano: Set(tam),
             created_at: Set(now.clone()),
             updated_at: Set(None),
-            row_version: Set(Uuid::now_v7().as_bytes().to_vec()),
+            row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
             is_deleted: Set(false),
             deleted_at: Set(None),
         };
