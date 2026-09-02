@@ -29,6 +29,14 @@ const EXPECTED_TABLES: &[&str] = &[
 /// Tables that exist in the legacy schema but are not imported.
 const EXCLUDED_TABLES: &[&str] = &["__EFMigrationsHistory", "SchemaVersions"];
 
+/// Returns true if the database looks like an already-migrated Certaro/Rust database
+/// (snake_case tables) rather than a legacy Avalonia/C# database (PascalCase).
+pub fn is_already_migrated(all_tables: &[String]) -> bool {
+    // Rust/Certaro uses seaql_migrations and snake_case tables; legacy uses PascalCase
+    all_tables.iter().any(|t| t == "seaql_migrations")
+        || all_tables.iter().any(|t| t == "tipos_movimiento")
+}
+
 /// Row counts per table, in the same order as `EXPECTED_TABLES`.
 pub type Inventory = Vec<(String, u64)>;
 

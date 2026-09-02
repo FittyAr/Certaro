@@ -89,6 +89,7 @@ async fn main() -> ExitCode {
             let code = match report.outcome {
                 Outcome::Success => 0,
                 Outcome::SuccessWithWarnings => 1,
+                Outcome::AlreadyMigrated => 0,
                 Outcome::Aborted => 2,
                 Outcome::Rollback => {
                     if report.has_blocking_issues() {

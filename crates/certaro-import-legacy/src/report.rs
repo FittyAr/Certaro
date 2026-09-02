@@ -43,6 +43,7 @@ pub enum Outcome {
     SuccessWithWarnings,
     Aborted,
     Rollback,
+    AlreadyMigrated,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -175,6 +176,11 @@ impl ImportReport {
 
     pub fn finish(&mut self) {
         self.finished_at = Some(Utc::now());
+        // Preserve AlreadyMigrated outcome — it is set explicitly by the early-exit path
+        // and should not be overwritten by the normal success/warning logic.
+        if self.outcome == Outcome::AlreadyMigrated {
+            return;
+        }
         if self.has_blocking_issues() {
             self.outcome = Outcome::Rollback;
         } else if !self.warnings.is_empty() {
