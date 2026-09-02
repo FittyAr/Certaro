@@ -77,22 +77,6 @@ impl KanbanTableroRepository for SeaOrmKanbanTableroRepository {
     }
 
     async fn update(&self, entity: &KanbanTablero) -> AppResult<()> {
-        let current = kanban_tablero::Entity::find_by_id(entity.id.to_string())
-            .filter(kanban_tablero::Column::IsDeleted.eq(false))
-            .one(self.conn())
-            .await
-            .map_err(AppError::persistence)?
-            .ok_or_else(|| AppError::NotFound {
-                entity: "kanban_tableros",
-                id: entity.id.to_string(),
-            })?;
-
-        if current.row_version != entity.audit.row_version.as_bytes() {
-            return Err(AppError::Concurrency {
-                entity: "kanban_tableros",
-            });
-        }
-
         let active = tablero_to_active(entity);
         active
             .update(self.conn())
@@ -180,22 +164,6 @@ impl KanbanColumnaRepository for SeaOrmKanbanColumnaRepository {
     }
 
     async fn update(&self, entity: &KanbanColumna) -> AppResult<()> {
-        let current = kanban_columna::Entity::find_by_id(entity.id.to_string())
-            .filter(kanban_columna::Column::IsDeleted.eq(false))
-            .one(self.conn())
-            .await
-            .map_err(AppError::persistence)?
-            .ok_or_else(|| AppError::NotFound {
-                entity: "kanban_columnas",
-                id: entity.id.to_string(),
-            })?;
-
-        if current.row_version != entity.audit.row_version.as_bytes() {
-            return Err(AppError::Concurrency {
-                entity: "kanban_columnas",
-            });
-        }
-
         let active = columna_to_active(entity);
         active
             .update(self.conn())
@@ -332,22 +300,6 @@ impl KanbanTarjetaRepository for SeaOrmKanbanTarjetaRepository {
     }
 
     async fn update(&self, entity: &KanbanTarjeta) -> AppResult<()> {
-        let current = kanban_tarjeta::Entity::find_by_id(entity.id.to_string())
-            .filter(kanban_tarjeta::Column::IsDeleted.eq(false))
-            .one(self.conn())
-            .await
-            .map_err(AppError::persistence)?
-            .ok_or_else(|| AppError::NotFound {
-                entity: "kanban_tarjetas",
-                id: entity.id.to_string(),
-            })?;
-
-        if current.row_version != entity.audit.row_version.as_bytes() {
-            return Err(AppError::Concurrency {
-                entity: "kanban_tarjetas",
-            });
-        }
-
         let active = tarjeta_to_active(entity);
         active
             .update(self.conn())
@@ -489,22 +441,6 @@ impl KanbanEtiquetaRepository for SeaOrmKanbanEtiquetaRepository {
     }
 
     async fn update(&self, entity: &KanbanEtiqueta) -> AppResult<()> {
-        let current = kanban_etiqueta::Entity::find_by_id(entity.id.to_string())
-            .filter(kanban_etiqueta::Column::IsDeleted.eq(false))
-            .one(self.conn())
-            .await
-            .map_err(AppError::persistence)?
-            .ok_or_else(|| AppError::NotFound {
-                entity: "kanban_etiquetas",
-                id: entity.id.to_string(),
-            })?;
-
-        if current.row_version != entity.audit.row_version.as_bytes() {
-            return Err(AppError::Concurrency {
-                entity: "kanban_etiquetas",
-            });
-        }
-
         let active = etiqueta_to_active(entity);
         active
             .update(self.conn())

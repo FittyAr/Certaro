@@ -162,11 +162,18 @@ impl KanbanService {
                 id: id.to_string(),
             })?;
 
-        let now = self.clock.now_utc();
-        let mut audit = current.audit;
-        audit.row_version = RowVersion::parse_hex(&input.rowVersion).map_err(|_| {
+        let expected = RowVersion::parse_hex(&input.rowVersion).map_err(|_| {
             validation_err("rowVersion", "Validation.RowVersion.Invalid")
         })?;
+
+        if current.audit.row_version != expected {
+            return Err(AppError::Concurrency {
+                entity: "kanban_tableros",
+            });
+        }
+
+        let now = self.clock.now_utc();
+        let mut audit = current.audit;
         audit.touch(now);
 
         let updated = KanbanTablero {
@@ -253,11 +260,18 @@ impl KanbanService {
                 id: id.to_string(),
             })?;
 
-        let now = self.clock.now_utc();
-        let mut audit = current.audit;
-        audit.row_version = RowVersion::parse_hex(&input.rowVersion).map_err(|_| {
+        let expected = RowVersion::parse_hex(&input.rowVersion).map_err(|_| {
             validation_err("rowVersion", "Validation.RowVersion.Invalid")
         })?;
+
+        if current.audit.row_version != expected {
+            return Err(AppError::Concurrency {
+                entity: "kanban_columnas",
+            });
+        }
+
+        let now = self.clock.now_utc();
+        let mut audit = current.audit;
         audit.touch(now);
 
         let updated = KanbanColumna {
@@ -352,11 +366,18 @@ impl KanbanService {
                 id: id.to_string(),
             })?;
 
-        let now = self.clock.now_utc();
-        let mut audit = current.audit;
-        audit.row_version = RowVersion::parse_hex(&input.rowVersion).map_err(|_| {
+        let expected = RowVersion::parse_hex(&input.rowVersion).map_err(|_| {
             validation_err("rowVersion", "Validation.RowVersion.Invalid")
         })?;
+
+        if current.audit.row_version != expected {
+            return Err(AppError::Concurrency {
+                entity: "kanban_tarjetas",
+            });
+        }
+
+        let now = self.clock.now_utc();
+        let mut audit = current.audit;
         audit.touch(now);
 
         let updated = KanbanTarjeta {
@@ -427,12 +448,19 @@ impl KanbanService {
                 id: input.nuevaColumnaId.to_string(),
             })?;
 
+        let expected = RowVersion::parse_hex(&input.rowVersion).map_err(|_| {
+            validation_err("rowVersion", "Validation.RowVersion.Invalid")
+        })?;
+
+        if current.audit.row_version != expected {
+            return Err(AppError::Concurrency {
+                entity: "kanban_tarjetas",
+            });
+        }
+
         let mut updated = current.clone();
         let now = self.clock.now_utc();
         let mut audit = updated.audit;
-        audit.row_version = RowVersion::parse_hex(&input.rowVersion).map_err(|_| {
-            validation_err("rowVersion", "Validation.RowVersion.Invalid")
-        })?;
         audit.touch(now);
 
         updated.columna_id = input.nuevaColumnaId;
@@ -590,11 +618,18 @@ impl KanbanService {
                 id: id.to_string(),
             })?;
 
-        let now = self.clock.now_utc();
-        let mut audit = current.audit;
-        audit.row_version = RowVersion::parse_hex(&input.rowVersion).map_err(|_| {
+        let expected = RowVersion::parse_hex(&input.rowVersion).map_err(|_| {
             validation_err("rowVersion", "Validation.RowVersion.Invalid")
         })?;
+
+        if current.audit.row_version != expected {
+            return Err(AppError::Concurrency {
+                entity: "kanban_etiquetas",
+            });
+        }
+
+        let now = self.clock.now_utc();
+        let mut audit = current.audit;
         audit.touch(now);
 
         let updated = KanbanEtiqueta {
