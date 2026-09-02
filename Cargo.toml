@@ -87,8 +87,8 @@ tauri-plugin-opener = "2"
 
 # Testing
 tokio-test = "0.4"
-mockall = "0.13"
-rstest = "0.23"
+mockall = "0.15"
+rstest = "0.26"
 proptest = "1"
 wiremock = "0.6"
 insta = { version = "1", features = ["json"] }
@@ -96,7 +96,7 @@ tempfile = "3"
 pretty_assertions = "1"
 # Reading back what the generators produced: a PDF is verified by its extracted text and an XLSX
 # by the XML inside its zip (doc 17 §4.4). Comparing bytes would break on every library bump.
-pdf-extract = "0.7"
+pdf-extract = "0.12"
 zip = { version = "8", default-features = false, features = ["deflate"] }
 
 [profile.release]
