@@ -31,7 +31,7 @@
     "@tauri-apps/plugin-dialog": "^2.0.0",
     "@tauri-apps/plugin-fs": "^2.0.0",
     "@tauri-apps/plugin-opener": "^2.0.0",
-    "@vueuse/core": "^11.0.0",
+    "@vueuse/core": "^14.4.0",
     "chart.js": "^4.5.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
