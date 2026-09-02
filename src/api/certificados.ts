@@ -13,7 +13,7 @@ import type {
 /** See `docs/11-contratos-tauri.md` §5.5. */
 
 export interface CertificadoFiltro {
-  obraId?: Uuid
+  proyectoId?: Uuid
   trabajoId?: Uuid
   clienteId?: Uuid
   fechaDesde?: CivilDate
@@ -52,7 +52,7 @@ export interface CertificadoBorrador {
   ordenTitulo: string
   numeroSugerido: number
   trabajoDescripcion: string
-  obraNombre: string
+  proyectoNombre: string
   clienteNombre: string
   ajusteUocraPorcentaje: Decimal4
   otrosDescuentos: Money
@@ -81,9 +81,9 @@ export interface CertificadoListItem {
   ordenTitulo: string
   trabajoId: Uuid
   trabajoDescripcion: string
-  obraId: Uuid
-  obraNumero: number
-  obraNombre: string
+  proyectoId: Uuid
+  proyectoNumero: number
+  proyectoNombre: string
   clienteId: Uuid
   clienteNombre: string
   totalCertificado: Money
@@ -102,9 +102,9 @@ export interface CertificadoDetalle {
   ordenTitulo: string
   trabajoId: Uuid
   trabajoDescripcion: string
-  obraId: Uuid
-  obraNumero: number
-  obraNombre: string
+  proyectoId: Uuid
+  proyectoNumero: number
+  proyectoNombre: string
   clienteId: Uuid
   clienteNombre: string
   totalCertificado: Money

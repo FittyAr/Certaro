@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import Column from 'primevue/column'
+import Divider from 'primevue/divider'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
@@ -7,14 +7,13 @@ import ToggleSwitch from 'primevue/toggleswitch'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 import CrudDrawer from '@/components/domain/CrudDrawer.vue'
-import DataGrid from '@/components/domain/DataGrid.vue'
 import FieldError from '@/components/domain/FieldError.vue'
 import FilterBar from '@/components/domain/FilterBar.vue'
-import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
-import StatePill from '@/components/domain/StatePill.vue'
+import ProyectosTreeTable from '@/components/domain/ProyectosTreeTable.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
@@ -25,12 +24,12 @@ import { useShortcuts } from '@/composables/useShortcuts'
 import { useClientesStore } from '@/stores/useClientesStore'
 import type { LookupItem } from '@/stores/useCatalogStore'
 import {
-  useObrasStore,
-  type EstadoObra,
-  type ObraFiltro,
-  type ObraInput,
-  type ObraListItem,
-} from '@/stores/useObrasStore'
+  useProyectosStore,
+  type EstadoProyecto,
+  type ProyectoFiltro,
+  type ProyectoInput,
+  type ProyectoListItem,
+} from '@/stores/useProyectosStore'
 
 /**
  * Sites. See `docs/09-modulos-funcionales.md` §3.4.
@@ -41,13 +40,14 @@ import {
 
 const { t } = useI18n()
 const confirm = useConfirm()
+const router = useRouter()
 const { confirmDelete } = useConfirmDelete()
 const { notify } = useApiError()
-const store = useObrasStore()
+const store = useProyectosStore()
 const clientes = useClientesStore()
 
-const table = useServerTable<ObraFiltro, ObraListItem>({
-  key: 'obras',
+const table = useServerTable<ProyectoFiltro, ProyectoListItem>({
+  key: 'proyectos',
   initialFilter: { texto: '' },
   fetch: (query) => store.fetchPaged(query),
   defaultSort: { field: 'numero', dir: 'Desc' },
@@ -55,17 +55,17 @@ const table = useServerTable<ObraFiltro, ObraListItem>({
 
 const opcionesCliente = ref<LookupItem[]>([])
 
-const estadoOptions = computed<{ label: string; value: EstadoObra }[]>(() =>
+const estadoOptions = computed<{ label: string; value: EstadoProyecto }[]>(() =>
   (['Activa', 'Pausada', 'Finalizada', 'Cancelada'] as const).map((value) => ({
-    label: t(`State.Obra.${value}`),
+    label: t(`State.Proyecto.${value}`),
     value,
   })),
 )
 
-type Model = ObraInput & { rowVersion?: string }
+type Model = ProyectoInput & { rowVersion?: string }
 
 const drawer = useCrudDrawer<Model>({
-  entityKey: 'Entity.Obra',
+  entityKey: 'Entity.Proyecto',
   empty: () => ({ numero: 0, nombre: '', direccion: null, localidad: null, clienteId: '' }),
   load: async (id) => {
     const d = await store.fetchOne(id)
@@ -97,7 +97,7 @@ async function abrirCreate(): Promise<void> {
  * Finalising or cancelling a site with open jobs closes them too, so it is asked about first.
  * The answer is what `cascada` carries; without it the backend refuses the move.
  */
-async function cambiarEstado(row: ObraListItem, destino: EstadoObra): Promise<void> {
+async function cambiarEstado(row: ProyectoListItem, destino: EstadoProyecto): Promise<void> {
   const cierra = destino === 'Finalizada' || destino === 'Cancelada'
   const aplicar = async (cascada: boolean) => {
     try {
@@ -115,7 +115,7 @@ async function cambiarEstado(row: ObraListItem, destino: EstadoObra): Promise<vo
 
   confirm.require({
     header: t('General.Confirm'),
-    message: t('Obras.ConfirmarCascada', { count: row.trabajosCount }),
+    message: t('Proyectos.ConfirmarCascada', { count: row.trabajosCount }),
     acceptLabel: t('General.Continue'),
     rejectLabel: t('General.Cancel'),
     accept: () => void aplicar(true),
@@ -131,13 +131,17 @@ const filtrosActivos = computed(() =>
   ),
 )
 
-function onDelete(row: ObraListItem): void {
+function onDelete(row: ProyectoListItem): void {
   confirmDelete({
-    entityKey: 'Entity.Obra',
+    entityKey: 'Entity.Proyecto',
     label: `${row.numero} · ${row.nombre}`,
     action: () => store.remove(row.id, row.rowVersion),
     onDone: () => table.reload(),
   })
+}
+
+function onTrabajoNavigate(trabajo: { id: string }): void {
+  void router.push({ name: 'trabajo-detalle', params: { trabajoId: trabajo.id } })
 }
 
 useShortcuts({ 'ctrl+n': () => void abrirCreate() })
@@ -154,7 +158,7 @@ onMounted(async () => {
 
 <template>
   <section class="flex h-full flex-col gap-4 p-6">
-    <PageHeader :title="$t('Menu.Obras')" :subtitle="$t('Obras.Subtitle')">
+    <PageHeader :title="$t('Menu.Proyectos')" :subtitle="$t('Proyectos.Subtitle')">
       <template #actions>
         <Button @click="abrirCreate()">
           <AppIcon name="plus" :size="16" />
@@ -166,10 +170,10 @@ onMounted(async () => {
     <FilterBar :active="filtrosActivos" @clear="table.resetFilter()">
       <label class="flex flex-col gap-1">
         <span class="text-xs text-muted-foreground">{{ $t('General.Search') }}</span>
-        <InputText v-model="table.filter.value.texto" :placeholder="$t('Obras.BuscarHint')" />
+        <InputText v-model="table.filter.value.texto" :placeholder="$t('Proyectos.BuscarHint')" />
       </label>
       <label class="flex flex-col gap-1">
-        <span class="text-xs text-muted-foreground">{{ $t('Obras.Cliente') }}</span>
+        <span class="text-xs text-muted-foreground">{{ $t('Proyectos.Cliente') }}</span>
         <Select
           v-model="table.filter.value.clienteId"
           :options="opcionesCliente"
@@ -181,7 +185,7 @@ onMounted(async () => {
         />
       </label>
       <label class="flex flex-col gap-1">
-        <span class="text-xs text-muted-foreground">{{ $t('Obras.Estado') }}</span>
+        <span class="text-xs text-muted-foreground">{{ $t('Proyectos.Estado') }}</span>
         <Select
           v-model="table.filter.value.estado"
           :options="estadoOptions"
@@ -193,75 +197,25 @@ onMounted(async () => {
       </label>
       <label class="flex items-center gap-2 self-end pb-2">
         <ToggleSwitch v-model="table.filter.value.soloActivas" />
-        <span class="text-xs text-muted-foreground">{{ $t('Obras.SoloActivas') }}</span>
+        <span class="text-xs text-muted-foreground">{{ $t('Proyectos.SoloActivas') }}</span>
       </label>
     </FilterBar>
 
-    <DataGrid
+    <Divider />
+
+    <ProyectosTreeTable
       :table="table"
-      empty-key="Obras.Empty"
       class="flex-1"
-      @row-edit="(row) => drawer.openEdit(row.id)"
-    >
-      <Column field="numero" :header="$t('Obras.Numero')" sortable>
-        <template #body="{ data }">
-          <span class="tabular-nums">{{ data.numero }}</span>
-        </template>
-      </Column>
-      <Column field="nombre" :header="$t('Obras.Nombre')" sortable />
-      <Column field="clienteNombre" :header="$t('Obras.Cliente')" sortable />
-      <Column field="localidad" :header="$t('Obras.Localidad')">
-        <template #body="{ data }">{{ data.localidad ?? '—' }}</template>
-      </Column>
-      <Column field="estado" :header="$t('Obras.Estado')" sortable>
-        <template #body="{ data }"><StatePill entity="Obra" :value="data.estado" /></template>
-      </Column>
-      <Column field="trabajosCount" :header="$t('Obras.Trabajos')" sortable>
-        <template #body="{ data }">
-          <span class="tabular-nums">{{ data.trabajosCount }}</span>
-        </template>
-      </Column>
-      <Column field="rentabilidad" :header="$t('Obras.Rentabilidad')" sortable>
-        <template #body="{ data }"><MoneyText :value="data.rentabilidad" colored /></template>
-      </Column>
+      @proyecto-edit="(row) => drawer.openEdit(row.id)"
+      @proyecto-delete="onDelete"
+      @proyecto-transition="(row, destino) => cambiarEstado(row, destino as EstadoProyecto)"
+      @trabajo-navigate="onTrabajoNavigate"
+    />
 
-      <template #actions="{ data }">
-        <div class="flex gap-1">
-          <Button
-            v-if="data.estado !== 'Finalizada' && data.estado !== 'Cancelada'"
-            variant="ghost"
-            size="sm"
-            :title="$t('Actions.Obra.Finalizada')"
-            @click="cambiarEstado(data, 'Finalizada')"
-          >
-            <AppIcon name="check" :size="14" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            :aria-label="$t('General.Edit')"
-            @click="drawer.openEdit(data.id)"
-          >
-            <AppIcon name="pencil" :size="14" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            :disabled="!data.puedeEliminarse"
-            :title="!data.puedeEliminarse ? $t('Obras.NoBorrable') : undefined"
-            :aria-label="$t('General.Delete')"
-            @click="onDelete(data)"
-          >
-            <AppIcon name="trash-2" :size="14" />
-          </Button>
-        </div>
-      </template>
-    </DataGrid>
-
-    <CrudDrawer :drawer="drawer" title-key="Entity.Obra">
+    <CrudDrawer :drawer="drawer" title-key="Entity.Proyecto">
       <div class="grid grid-cols-[8rem_1fr] gap-3">
         <label class="flex flex-col gap-1">
-          <span class="text-sm">{{ $t('Obras.Numero') }}</span>
+          <span class="text-sm">{{ $t('Proyectos.Numero') }}</span>
           <InputNumber
             v-model="drawer.model.value.numero"
             :min="1"
@@ -270,21 +224,21 @@ onMounted(async () => {
             fluid
             input-class="tabular-nums"
           />
-          <FieldError id="obra-numero-error" :message="drawer.fieldErrors.value.numero" />
+          <FieldError id="proyecto-numero-error" :message="drawer.fieldErrors.value.numero" />
         </label>
         <label class="flex flex-col gap-1">
-          <span class="text-sm">{{ $t('Obras.Nombre') }}</span>
+          <span class="text-sm">{{ $t('Proyectos.Nombre') }}</span>
           <InputText
             v-model="drawer.model.value.nombre"
             :invalid="Boolean(drawer.fieldErrors.value.nombre)"
-            aria-describedby="obra-nombre-error"
+            aria-describedby="proyecto-nombre-error"
           />
-          <FieldError id="obra-nombre-error" :message="drawer.fieldErrors.value.nombre" />
+          <FieldError id="proyecto-nombre-error" :message="drawer.fieldErrors.value.nombre" />
         </label>
       </div>
 
       <label class="flex flex-col gap-1">
-        <span class="text-sm">{{ $t('Obras.Cliente') }}</span>
+        <span class="text-sm">{{ $t('Proyectos.Cliente') }}</span>
         <Select
           v-model="drawer.model.value.clienteId"
           :options="opcionesCliente"
@@ -293,16 +247,16 @@ onMounted(async () => {
           filter
           :invalid="Boolean(drawer.fieldErrors.value.clienteId)"
         />
-        <FieldError id="obra-cliente-error" :message="drawer.fieldErrors.value.clienteId" />
+        <FieldError id="proyecto-cliente-error" :message="drawer.fieldErrors.value.clienteId" />
       </label>
 
       <label class="flex flex-col gap-1">
-        <span class="text-sm">{{ $t('Obras.Direccion') }}</span>
+        <span class="text-sm">{{ $t('Proyectos.Direccion') }}</span>
         <InputText v-model="drawer.model.value.direccion" />
       </label>
 
       <label class="flex flex-col gap-1">
-        <span class="text-sm">{{ $t('Obras.Localidad') }}</span>
+        <span class="text-sm">{{ $t('Proyectos.Localidad') }}</span>
         <InputText v-model="drawer.model.value.localidad" />
       </label>
     </CrudDrawer>

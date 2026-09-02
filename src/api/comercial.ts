@@ -69,13 +69,13 @@ export function antiguedadDeuda(query: AntiguedadDeudaQuery): Promise<Antiguedad
   return callCommand('clientes_antiguedad_deuda', { query })
 }
 
-export function rentabilidadObras(limite?: number): Promise<RentabilidadItem[]> {
-  return callCommand('obras_rentabilidad', { limite: limite ?? null })
+export function rentabilidadProyectos(limite?: number): Promise<RentabilidadItem[]> {
+  return callCommand('proyectos_rentabilidad', { limite: limite ?? null })
 }
 
 export function rentabilidadTrabajos(
-  obraId?: Uuid,
+  proyectoId?: Uuid,
   limite?: number,
 ): Promise<RentabilidadItem[]> {
-  return callCommand('trabajos_rentabilidad', { obraId: obraId ?? null, limite: limite ?? null })
+  return callCommand('trabajos_rentabilidad', { proyectoId: proyectoId ?? null, limite: limite ?? null })
 }

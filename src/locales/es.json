@@ -8,9 +8,9 @@
       "PagadaParcial": "Marcar como pago parcial",
       "Vencida": "Marcar como vencida"
     },
-    "Obra": {
+    "Proyecto": {
       "Activa": "Reactivar",
-      "Cancelada": "Cancelar obra",
+      "Cancelada": "Cancelar proyecto",
       "Finalizada": "Finalizar",
       "Pausada": "Pausar"
     },
@@ -96,7 +96,7 @@
     "Fecha": "Fecha",
     "Hasta": "Hasta",
     "Numero": "N.º",
-    "Obra": "Obra",
+    "Proyecto": "Proyecto",
     "Observaciones": "Observaciones",
     "Orden": "Orden",
     "OtrosDescuentos": "Otros descuentos",
@@ -125,9 +125,9 @@
     "Empty": "Todavía no hay clientes",
     "EsPrincipal": "Contacto principal",
     "Etiqueta": "Etiqueta",
-    "NoBorrable": "El cliente tiene obras o facturas asociadas",
+    "NoBorrable": "El cliente tiene proyectos o facturas asociadas",
     "Nombre": "Nombre",
-    "Obras": "Obras",
+    "Proyectos": "Proyectos",
     "SinContactos": "Sin contactos cargados",
     "SoloConDeuda": "Solo con deuda",
     "Subtitle": "Clientes, contactos y saldo pendiente",
@@ -150,7 +150,7 @@
       "TotalPagado": "Total pagado"
     },
     "Rentabilidad": {
-      "Contexto": "Obra",
+      "Contexto": "Proyecto",
       "Gastos": "Gastos",
       "Ingresos": "Ingresos",
       "Margen": "Margen",
@@ -254,7 +254,7 @@
       "CaidaIngresos": "Los ingresos cayeron respecto del período anterior",
       "FacturasVencidas": "{cantidad} facturas vencidas sin cobrar",
       "LiquidacionesPendientes": "{cantidad} empleados sin liquidar en el período",
-      "ObrasPausadas": "{cantidad} obras pausadas"
+      "ProyectosPausados": "{cantidad} proyectos pausadas"
     },
     "Balance": "Balance",
     "ClientesActivos": "Clientes activos",
@@ -271,7 +271,7 @@
     "Ingresos": "Ingresos",
     "LiquidacionesPendientes": "Liquidaciones pendientes",
     "Megabytes": "{valor} MB",
-    "MejoresObras": "Obras más rentables",
+    "MejoresProyectos": "Proyectos más rentables",
     "Mes": {
       "M1": "Ene",
       "M10": "Oct",
@@ -288,8 +288,8 @@
     },
     "Migraciones": "Migraciones",
     "Movimientos": "Movimientos",
-    "ObrasPausadas": "Obras pausadas",
-    "PeoresObras": "Obras menos rentables",
+    "ProyectosPausados": "Proyectos pausadas",
+    "PeoresProyectos": "Proyectos menos rentables",
     "Period": {
       "Anual": "Año",
       "Mensual": "Mes",
@@ -337,7 +337,7 @@
     "Feriado": "feriado",
     "Liquidacion": "liquidación",
     "Movimiento": "movimiento",
-    "Obra": "obra",
+    "Proyecto": "proyecto",
     "OrdenTrabajo": "orden de trabajo",
     "TipoMovimiento": "tipo de movimiento",
     "Trabajo": "trabajo"
@@ -545,7 +545,7 @@
     "Liquidaciones": "Liquidaciones",
     "MovementTypes": "Tipos de movimiento",
     "Movimientos": "Movimientos",
-    "Obras": "Obras",
+    "Proyectos": "Proyectos",
     "Reports": "Reportes",
     "Seed": "Datos de prueba",
     "Settings": "Configuración",
@@ -581,23 +581,23 @@
     "Tipo": "Tipo",
     "Total": "Total"
   },
-  "Obras": {
+  "Proyectos": {
     "BuscarHint": "Nombre, número, dirección o localidad",
     "Caja": {
-      "Title": "Caja de la obra"
+      "Title": "Caja del proyecto"
     },
     "Cliente": "Cliente",
-    "ConfirmarCascada": "La obra tiene {count} trabajos abiertos. Se cerrarán junto con la obra. ¿Continuar?",
+    "ConfirmarCascada": "El proyecto tiene {count} trabajos abiertos. Se cerrarán junto con el proyecto. ¿Continuar?",
     "Direccion": "Dirección",
-    "Empty": "Todavía no hay obras",
+    "Empty": "Todavía no hay proyectos",
     "Estado": "Estado",
     "Localidad": "Localidad",
-    "NoBorrable": "La obra tiene trabajos asociados",
+    "NoBorrable": "El proyecto tiene trabajos asociados",
     "Nombre": "Nombre",
     "Numero": "Número",
     "Rentabilidad": "Rentabilidad",
     "SoloActivas": "Solo activas",
-    "Subtitle": "Obras, su estado y su rentabilidad",
+    "Subtitle": "Proyectos, su estado y su rentabilidad",
     "Trabajos": "Trabajos",
     "VerCaja": "Ver caja",
     "VerTrabajos": "Ver trabajos"
@@ -617,7 +617,7 @@
     "Items": "Ítems",
     "Nota": "Nota",
     "Nueva": "Nueva orden de trabajo",
-    "Obra": "Obra",
+    "Proyecto": "Proyecto",
     "Observaciones": "Observaciones",
     "OtrosDescuentos": "Otros descuentos",
     "PrecioUnitario": "Precio unitario",
@@ -650,8 +650,8 @@
       "Importe": "IMPORTE",
       "ItemDescripcion": "ÍTEM / DESCRIPCIÓN",
       "Numero": "Certificado N°:",
-      "Obra": "Obra:",
-      "ObraGeneral": "Obra General",
+      "Proyecto": "Proyecto:",
+      "ObraGeneral": "Proyecto General",
       "OtrosDescuentos": "OTROS DESCUENTOS:",
       "PU": "P. UNIT.",
       "Ref": "Ref.:",
@@ -669,7 +669,7 @@
       "Fecha": "Fecha",
       "Moneda": "Moneda",
       "Monto": "Monto",
-      "Obra": "Obra",
+      "Proyecto": "Proyecto",
       "Observaciones": "Observaciones",
       "Subtotal": "Subtotal",
       "Tarifa": "Tarifa",
@@ -763,15 +763,15 @@
     "Liquidaciones": "Liquidaciones",
     "Loading": "Sembrando datos...",
     "Movimientos": "Movimientos de caja",
-    "Obras": "Obras",
+    "Proyectos": "Proyectos",
     "OrdenesTrabajo": "Órdenes de trabajo",
-    "Subtitle": "Poblar la base de datos con clientes, obras, empleados, movimientos y facturas de demostración",
+    "Subtitle": "Poblar la base de datos con clientes, proyectos, empleados, movimientos y facturas de demostración",
     "Success": "¡Datos de prueba generados con éxito!",
     "SummaryTitle": "Resumen de datos creados",
     "TiposMovimiento": "Tipos de movimiento",
     "Title": "Generador de Datos de Prueba",
     "Trabajos": "Trabajos",
-    "WarningText": "Esta acción creará un conjunto completo de registros de prueba (categorías, empleados, clientes, obras, trabajos, certificaciones, facturas y movimientos de caja) para facilitar el testing del sistema.",
+    "WarningText": "Esta acción creará un conjunto completo de registros de prueba (categorías, empleados, clientes, proyectos, trabajos, certificaciones, facturas y movimientos de caja) para facilitar el testing del sistema.",
     "WarningTitle": "Herramienta de Desarrollo y Pruebas"
   },
   "Sistema": {
@@ -797,7 +797,7 @@
     "Liquidacion": {
       "YaEntregada": "La liquidación de {empleado} ya tiene el PDF entregado: los importes no se pueden cambiar."
     },
-    "Obra": {
+    "Proyecto": {
       "Activa": "Activa",
       "Cancelada": "Cancelada",
       "Finalizada": "Finalizada",
@@ -846,9 +846,9 @@
     "FechaFin": "Fecha de fin",
     "FechaInicio": "Fecha de inicio",
     "Hasta": "Hasta",
-    "Obra": "Obra",
+    "Proyecto": "Proyecto",
     "Presupuesto": "Presupuesto",
-    "Subtitle": "Trabajos contratados dentro de cada obra"
+    "Subtitle": "Trabajos contratados dentro de cada proyecto"
   },
   "Update": {
     "Available": "Hay una nueva versión disponible: v{version}",

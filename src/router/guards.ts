@@ -9,7 +9,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 /** The list a malformed detail route falls back to. */
 const PARENT_OF: Record<string, string> = {
   clienteId: 'clientes',
-  obraId: 'obras',
+  proyectoId: 'proyectos',
   trabajoId: 'trabajos',
   ordenId: 'trabajos',
   certificadoId: 'certificados',

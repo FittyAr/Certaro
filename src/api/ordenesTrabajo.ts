@@ -67,9 +67,9 @@ export interface OrdenTrabajoDetalle {
   id: Uuid
   trabajoId: Uuid
   trabajoDescripcion: string
-  obraId: Uuid
-  obraNumero: number
-  obraNombre: string
+  proyectoId: Uuid
+  proyectoNumero: number
+  proyectoNombre: string
   clienteId: Uuid
   clienteNombre: string
   titulo: string

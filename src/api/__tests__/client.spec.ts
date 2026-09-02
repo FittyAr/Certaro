@@ -6,7 +6,7 @@ import {
   validateMockEmpleado,
   validateMockFactura,
   validateMockMovimiento,
-  validateMockObra,
+  validateMockProyecto,
   validateMockTipoMovimiento,
   validateMockTrabajo,
 } from '@/api/client'
@@ -41,11 +41,11 @@ describe('validacion del mock', () => {
     })
   })
 
-  it('rechaza crear una obra sin cliente', () => {
-    expect(validateMockObra({ nombre: '', clienteId: '' })).toMatchObject({ code: 'VALIDATION' })
+  it('rechaza crear una proyecto sin cliente', () => {
+    expect(validateMockProyecto({ nombre: '', clienteId: '' })).toMatchObject({ code: 'VALIDATION' })
   })
   it('rechaza crear un trabajo sin descripcion', () => {
-    expect(validateMockTrabajo({ descripcion: '', obraId: '' })).toMatchObject({ code: 'VALIDATION' })
+    expect(validateMockTrabajo({ descripcion: '', proyectoId: '' })).toMatchObject({ code: 'VALIDATION' })
   })
   it('rechaza crear una factura sin cliente', () => {
     expect(validateMockFactura({ numero: '', clienteId: '' })).toMatchObject({ code: 'VALIDATION' })

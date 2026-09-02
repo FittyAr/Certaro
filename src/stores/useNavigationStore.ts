@@ -12,7 +12,7 @@ export const useNavigationStore = defineStore('navigation', () => {
   const recent = ref<string[]>([])
 
   /**
-   * Published by a detail screen once it loaded its record, so `Obras › Edificio Rivadavia 1230`
+   * Published by a detail screen once it loaded its record, so `Proyectos › Edificio Rivadavia 1230`
    * can show the site name instead of a placeholder.
    */
   function publishName(routeName: string, label: string): void {

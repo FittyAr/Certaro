@@ -66,14 +66,14 @@ export interface DashboardStats {
   variacionBalance: Decimal4 | null
   clientesActivos: number
   trabajosPendientes: number
-  obrasPausadas: number
+  proyectosPausadas: number
   facturasVencidas: number
   liquidacionesPendientes: number
   serieMensual: PuntoSerie[]
   topClientes: TopCliente[]
   gastosPorCategoria: TopCliente[]
-  mejoresObras: RentabilidadItem[]
-  peoresObras: RentabilidadItem[]
+  mejoresProyectos: RentabilidadItem[]
+  peoresProyectos: RentabilidadItem[]
   ultimosMovimientos: MovimientoListItem[]
   estadoSistema: EstadoSistema
 }
@@ -81,7 +81,7 @@ export interface DashboardStats {
 export type TipoAlerta =
   | 'FacturasVencidas'
   | 'BalanceNegativo'
-  | 'ObrasPausadas'
+  | 'ProyectosPausados'
   | 'LiquidacionesPendientes'
   | 'CaidaIngresos'
 

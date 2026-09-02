@@ -63,8 +63,8 @@ export const useTrabajosStore = defineStore('trabajos', () => {
     if (current.value?.id === id) current.value = null
   }
 
-  function lookup(obraId?: Uuid, texto?: string, limite?: number): Promise<LookupItem[]> {
-    return lookupTrabajos(obraId, texto, limite)
+  function lookup(proyectoId?: Uuid, texto?: string, limite?: number): Promise<LookupItem[]> {
+    return lookupTrabajos(proyectoId, texto, limite)
   }
 
   return {

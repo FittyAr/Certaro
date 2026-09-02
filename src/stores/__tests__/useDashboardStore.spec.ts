@@ -67,7 +67,7 @@ describe('useDashboardStore', () => {
   })
 
   it('las alertas viajan con el periodo vigente', async () => {
-    respuesta = [{ tipo: 'ObrasPausadas', cantidad: 2 }]
+    respuesta = [{ tipo: 'ProyectosPausados', cantidad: 2 }]
     const store = useDashboardStore()
     store.periodo = 'Total'
     await store.fetchAlertas()

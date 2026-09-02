@@ -123,7 +123,7 @@ const DEFAULT_CONFIG: AppConfig = {
     topClientesCantidad: 5,
     topCategoriasCantidad: 5,
     ultimosMovimientosCantidad: 10,
-    obrasRankingCantidad: 5,
+    proyectosRankingCantidad: 5,
     alertaCaidaIngresosPct: '20.0000',
   },
   externalApis: {
@@ -171,7 +171,7 @@ const DEFAULT_CONFIG: AppConfig = {
     font: 'Helvetica',
     mostrarLogo: true,
     mostrarFirmas: true,
-    pieDePagina: 'Certaro - Gestión de Obras',
+    pieDePagina: 'Certaro - Gestión de Proyectos',
   },
 }
 
@@ -237,14 +237,14 @@ interface MockCliente {
   telefono: string | null
   email: string | null
   condicionIva: string | null
-  obrasCount: number
+  proyectosCount: number
   facturasCount: number
   deuda: string
   puedeEliminarse: boolean
   rowVersion: string
 }
 
-interface MockObra {
+interface MockProyecto {
   id: string
   numero: number
   nombre: string
@@ -261,9 +261,9 @@ interface MockObra {
 
 interface MockTrabajo {
   id: string
-  obraId: string
-  obraNumero: number
-  obraNombre: string
+  proyectoId: string
+  proyectoNumero: number
+  proyectoNombre: string
   clienteId: string
   clienteNombre: string
   descripcion: string
@@ -380,7 +380,7 @@ interface MockDb {
   categorias: MockCategory[]
   tiposMovimiento: MockTipoMovimiento[]
   clientes: MockCliente[]
-  obras: MockObra[]
+  proyectos: MockProyecto[]
   trabajos: MockTrabajo[]
   ordenes: MockOrden[]
   certificados: MockCertificado[]
@@ -418,23 +418,23 @@ function createSeedMockDb(): MockDb {
   const tipoChatarra = { id: '20000000-0000-0000-0000-000000000001', nombre: 'Venta de chatarra / sobrantes', descripcion: 'Ventas accesorias', esIngreso: true, esSistema: false, movimientosCount: 1, puedeEliminarse: false, rowVersion: 'v1' }
   const tiposMovimiento: MockTipoMovimiento[] = [tipoIngreso, tipoGasto, tipoAdelanto, tipoAjuste, tipoChatarra]
 
-  const cli1 = { id: '30000000-0000-0000-0000-000000000001', nombre: 'Constructora del Plata S.A.', cuit: '30-71234567-9', direccion: 'Av. del Libertador 1234, CABA', telefono: '011-4567-8900', email: 'info@constructoradelplata.com', condicionIva: 'Responsable Inscripto', obrasCount: 1, facturasCount: 1, deuda: '0.0000', puedeEliminarse: false, rowVersion: 'v1' }
-  const cli2 = { id: '30000000-0000-0000-0000-000000000002', nombre: 'Desarrollos Urbanos SRL', cuit: '30-79876543-1', direccion: 'San Martín 567, Rosario', telefono: '0341-423-4567', email: 'admin@desarrollosurbanos.com', condicionIva: 'Responsable Inscripto', obrasCount: 1, facturasCount: 1, deuda: '7502.0000', puedeEliminarse: false, rowVersion: 'v1' }
-  const cli3 = { id: '30000000-0000-0000-0000-000000000003', nombre: 'Consorcio Torre Alvear', cuit: '30-65432109-8', direccion: 'Av. Alvear 1890, CABA', telefono: '011-4812-3456', email: 'consorcio@torrealvear.com', condicionIva: 'Consumidor Final', obrasCount: 1, facturasCount: 1, deuda: '0.0000', puedeEliminarse: false, rowVersion: 'v1' }
-  const cli4 = { id: '30000000-0000-0000-0000-000000000004', nombre: 'Juan Carlos Pérez', cuit: '20-28123456-3', direccion: 'Belgrano 432, San Isidro', telefono: '011-15-5432-1098', email: 'jcperez@gmail.com', condicionIva: 'Consumidor Final', obrasCount: 1, facturasCount: 0, deuda: '0.0000', puedeEliminarse: false, rowVersion: 'v1' }
+  const cli1 = { id: '30000000-0000-0000-0000-000000000001', nombre: 'Constructora del Plata S.A.', cuit: '30-71234567-9', direccion: 'Av. del Libertador 1234, CABA', telefono: '011-4567-8900', email: 'info@constructoradelplata.com', condicionIva: 'Responsable Inscripto', proyectosCount: 1, facturasCount: 1, deuda: '0.0000', puedeEliminarse: false, rowVersion: 'v1' }
+  const cli2 = { id: '30000000-0000-0000-0000-000000000002', nombre: 'Desarrollos Urbanos SRL', cuit: '30-79876543-1', direccion: 'San Martín 567, Rosario', telefono: '0341-423-4567', email: 'admin@desarrollosurbanos.com', condicionIva: 'Responsable Inscripto', proyectosCount: 1, facturasCount: 1, deuda: '7502.0000', puedeEliminarse: false, rowVersion: 'v1' }
+  const cli3 = { id: '30000000-0000-0000-0000-000000000003', nombre: 'Consorcio Torre Alvear', cuit: '30-65432109-8', direccion: 'Av. Alvear 1890, CABA', telefono: '011-4812-3456', email: 'consorcio@torrealvear.com', condicionIva: 'Consumidor Final', proyectosCount: 1, facturasCount: 1, deuda: '0.0000', puedeEliminarse: false, rowVersion: 'v1' }
+  const cli4 = { id: '30000000-0000-0000-0000-000000000004', nombre: 'Juan Carlos Pérez', cuit: '20-28123456-3', direccion: 'Belgrano 432, San Isidro', telefono: '011-15-5432-1098', email: 'jcperez@gmail.com', condicionIva: 'Consumidor Final', proyectosCount: 1, facturasCount: 0, deuda: '0.0000', puedeEliminarse: false, rowVersion: 'v1' }
   const clientes: MockCliente[] = [cli1, cli2, cli3, cli4]
 
   const obra1 = { id: '40000000-0000-0000-0000-000000000001', numero: 1, nombre: 'Instalación Eléctrica Integral Torre Alvear', direccion: 'Av. Alvear 1890', localidad: 'CABA', clienteId: cli3.id, clienteNombre: cli3.nombre, estado: 'Activa', trabajosCount: 2, rentabilidad: '11120.0000', puedeEliminarse: false, rowVersion: 'v1' }
   const obra2 = { id: '40000000-0000-0000-0000-000000000002', numero: 2, nombre: 'Iluminación y Fuerza Motriz Planta del Plata', direccion: 'Parque Industrial Norte', localidad: 'Tigre', clienteId: cli1.id, clienteNombre: cli1.nombre, estado: 'Activa', trabajosCount: 1, rentabilidad: '4550.0000', puedeEliminarse: false, rowVersion: 'v1' }
   const obra3 = { id: '40000000-0000-0000-0000-000000000003', numero: 3, nombre: 'Cableado Estructurado Oficinas Centro', direccion: 'San Martín 567', localidad: 'Rosario', clienteId: cli2.id, clienteNombre: cli2.nombre, estado: 'Finalizada', trabajosCount: 1, rentabilidad: '14000.0000', puedeEliminarse: false, rowVersion: 'v1' }
   const obra4 = { id: '40000000-0000-0000-0000-000000000004', numero: 4, nombre: 'Refacción y Tablero Eléctrico Domiciliario', direccion: 'Belgrano 432', localidad: 'San Isidro', clienteId: cli4.id, clienteNombre: cli4.nombre, estado: 'Activa', trabajosCount: 1, rentabilidad: '6500.0000', puedeEliminarse: false, rowVersion: 'v1' }
-  const obras: MockObra[] = [obra1, obra2, obra3, obra4]
+  const proyectos: MockProyecto[] = [obra1, obra2, obra3, obra4]
 
-  const trab1 = { id: '50000000-0000-0000-0000-000000000001', obraId: obra1.id, obraNumero: 1, obraNombre: obra1.nombre, clienteId: cli3.id, clienteNombre: cli3.nombre, descripcion: 'Tendido de bandejas portacables en subsuelos', fechaInicio: '2025-02-01', fechaFin: null, presupuesto: '1850000.0000', estado: 'EnProceso', rowVersion: 'v1' }
-  const trab2 = { id: '50000000-0000-0000-0000-000000000002', obraId: obra1.id, obraNumero: 1, obraNombre: obra1.nombre, clienteId: cli3.id, clienteNombre: cli3.nombre, descripcion: 'Montaje de tableros seccionales por piso', fechaInicio: '2025-02-10', fechaFin: null, presupuesto: '3200000.0000', estado: 'EnProceso', rowVersion: 'v1' }
-  const trab3 = { id: '50000000-0000-0000-0000-000000000003', obraId: obra2.id, obraNumero: 2, obraNombre: obra2.nombre, clienteId: cli1.id, clienteNombre: cli1.nombre, descripcion: 'Iluminación perimetral LED alta potencia', fechaInicio: '2025-01-20', fechaFin: '2025-02-25', presupuesto: '950000.0000', estado: 'Finalizado', rowVersion: 'v1' }
-  const trab4 = { id: '50000000-0000-0000-0000-000000000004', obraId: obra3.id, obraNumero: 3, obraNombre: obra3.nombre, clienteId: cli2.id, clienteNombre: cli2.nombre, descripcion: 'Puestos de red Cat6 y rack central', fechaInicio: '2025-01-10', fechaFin: '2025-02-20', presupuesto: '1400000.0000', estado: 'Finalizado', rowVersion: 'v1' }
-  const trab5 = { id: '50000000-0000-0000-0000-000000000005', obraId: obra4.id, obraNumero: 4, obraNombre: obra4.nombre, clienteId: cli4.id, clienteNombre: cli4.nombre, descripcion: 'Recableado completo y disyuntor diferencial', fechaInicio: '2025-02-15', fechaFin: null, presupuesto: '650000.0000', estado: 'EnProceso', rowVersion: 'v1' }
+  const trab1 = { id: '50000000-0000-0000-0000-000000000001', proyectoId: obra1.id, proyectoNumero: 1, proyectoNombre: obra1.nombre, clienteId: cli3.id, clienteNombre: cli3.nombre, descripcion: 'Tendido de bandejas portacables en subsuelos', fechaInicio: '2025-02-01', fechaFin: null, presupuesto: '1850000.0000', estado: 'EnProceso', rowVersion: 'v1' }
+  const trab2 = { id: '50000000-0000-0000-0000-000000000002', proyectoId: obra1.id, proyectoNumero: 1, proyectoNombre: obra1.nombre, clienteId: cli3.id, clienteNombre: cli3.nombre, descripcion: 'Montaje de tableros seccionales por piso', fechaInicio: '2025-02-10', fechaFin: null, presupuesto: '3200000.0000', estado: 'EnProceso', rowVersion: 'v1' }
+  const trab3 = { id: '50000000-0000-0000-0000-000000000003', proyectoId: obra2.id, proyectoNumero: 2, proyectoNombre: obra2.nombre, clienteId: cli1.id, clienteNombre: cli1.nombre, descripcion: 'Iluminación perimetral LED alta potencia', fechaInicio: '2025-01-20', fechaFin: '2025-02-25', presupuesto: '950000.0000', estado: 'Finalizado', rowVersion: 'v1' }
+  const trab4 = { id: '50000000-0000-0000-0000-000000000004', proyectoId: obra3.id, proyectoNumero: 3, proyectoNombre: obra3.nombre, clienteId: cli2.id, clienteNombre: cli2.nombre, descripcion: 'Puestos de red Cat6 y rack central', fechaInicio: '2025-01-10', fechaFin: '2025-02-20', presupuesto: '1400000.0000', estado: 'Finalizado', rowVersion: 'v1' }
+  const trab5 = { id: '50000000-0000-0000-0000-000000000005', proyectoId: obra4.id, proyectoNumero: 4, proyectoNombre: obra4.nombre, clienteId: cli4.id, clienteNombre: cli4.nombre, descripcion: 'Recableado completo y disyuntor diferencial', fechaInicio: '2025-02-15', fechaFin: null, presupuesto: '650000.0000', estado: 'EnProceso', rowVersion: 'v1' }
   const trabajos: MockTrabajo[] = [trab1, trab2, trab3, trab4, trab5]
 
   const ord1 = { id: '60000000-0000-0000-0000-000000000001', trabajoId: trab1.id, titulo: 'Certificación de Avance Etapa 1', numeroCertificado: 'CERT-001', fecha: '2025-02-20', totalCertificados: 1, totalNeto: '1998000.0000', rowVersion: 'v1' }
@@ -445,10 +445,10 @@ function createSeedMockDb(): MockDb {
   const certificados: MockCertificado[] = [cert1]
 
   const emp1 = { id: '80000000-0000-0000-0000-000000000001', nombre: 'Ricardo Darín', dni: '20.123.456', cargo: 'Operario Electricista', tarifaDiaria: '45000.0000', sueldoBase: '450000.0000', pagoFrecuencia: 'Quincenal', email: 'ricardo.darin@obra.com', telefono: '1145678901', fechaIngreso: '2025-01-15', fechaEgreso: null, activo: true, rowVersion: 'v1' }
-  const emp2 = { id: '80000000-0000-0000-0000-000000000002', nombre: 'Guillermo Francella', dni: '22.345.678', cargo: 'Capataz de Obra', tarifaDiaria: '55000.0000', sueldoBase: '550000.0000', pagoFrecuencia: 'Quincenal', email: 'guillermo.francella@obra.com', telefono: '1145678902', fechaIngreso: '2025-01-15', fechaEgreso: null, activo: true, rowVersion: 'v1' }
+  const emp2 = { id: '80000000-0000-0000-0000-000000000002', nombre: 'Guillermo Francella', dni: '22.345.678', cargo: 'Capataz de Proyecto', tarifaDiaria: '55000.0000', sueldoBase: '550000.0000', pagoFrecuencia: 'Quincenal', email: 'guillermo.francella@obra.com', telefono: '1145678902', fechaIngreso: '2025-01-15', fechaEgreso: null, activo: true, rowVersion: 'v1' }
   const emp3 = { id: '80000000-0000-0000-0000-000000000003', nombre: 'Natalia Oreiro', dni: '25.678.901', cargo: 'Técnica Instaladora', tarifaDiaria: '48000.0000', sueldoBase: '480000.0000', pagoFrecuencia: 'Quincenal', email: 'natalia.oreiro@obra.com', telefono: '1145678903', fechaIngreso: '2025-01-15', fechaEgreso: null, activo: true, rowVersion: 'v1' }
   const emp4 = { id: '80000000-0000-0000-0000-000000000004', nombre: 'Diego Peretti', dni: '18.901.234', cargo: 'Ayudante Práctico', tarifaDiaria: '38000.0000', sueldoBase: '380000.0000', pagoFrecuencia: 'Quincenal', email: 'diego.peretti@obra.com', telefono: '1145678904', fechaIngreso: '2025-01-15', fechaEgreso: null, activo: true, rowVersion: 'v1' }
-  const emp5 = { id: '80000000-0000-0000-0000-000000000005', nombre: 'Érica Rivas', dni: '27.234.567', cargo: 'Administrativa de Obra', tarifaDiaria: '42000.0000', sueldoBase: '420000.0000', pagoFrecuencia: 'Quincenal', email: 'erica.rivas@obra.com', telefono: '1145678905', fechaIngreso: '2025-01-15', fechaEgreso: null, activo: true, rowVersion: 'v1' }
+  const emp5 = { id: '80000000-0000-0000-0000-000000000005', nombre: 'Érica Rivas', dni: '27.234.567', cargo: 'Administrativa de Proyecto', tarifaDiaria: '42000.0000', sueldoBase: '420000.0000', pagoFrecuencia: 'Quincenal', email: 'erica.rivas@obra.com', telefono: '1145678905', fechaIngreso: '2025-01-15', fechaEgreso: null, activo: true, rowVersion: 'v1' }
   const empleados: MockEmpleado[] = [emp1, emp2, emp3, emp4, emp5]
 
   const fact1 = { id: '90000000-0000-0000-0000-000000000001', numero: '0001-00000101', fecha: '2025-02-10', fechaVencimiento: '2025-03-10', clienteId: cli1.id, clienteNombre: cli1.nombre, estado: 'Emitida', subtotal: '850000.0000', iva: '178500.0000', total: '1028500.0000', saldoPendiente: '1028500.0000', rowVersion: 'v1' }
@@ -457,7 +457,7 @@ function createSeedMockDb(): MockDb {
   const facturas: MockFactura[] = [fact1, fact2, fact3]
 
   const mov1: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000001', fecha: '2025-02-18T14:30:00Z', concepto: 'Cobro Certificado N.º 1 Torre Alvear', monto: '1452000.0000', cantidad: '1.0000', total: '1452000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoIngreso.id, tipoMovimientoNombre: tipoIngreso.nombre, esIngreso: true, categoriaId: cat4.id, categoriaNombre: cat4.nombre, categoriaColor: cat4.colorHex, clienteId: cli3.id, trabajoId: trab1.id, empleadoId: null, facturaId: fact2.id, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-18T14:30:00Z', updatedAt: null }
-  const mov2: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000002', fecha: '2025-02-17T11:00:00Z', concepto: 'Anticipo Obra Planta del Plata', monto: '500000.0000', cantidad: '1.0000', total: '500000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoIngreso.id, tipoMovimientoNombre: tipoIngreso.nombre, esIngreso: true, categoriaId: cat4.id, categoriaNombre: cat4.nombre, categoriaColor: cat4.colorHex, clienteId: cli1.id, trabajoId: trab3.id, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-17T11:00:00Z', updatedAt: null }
+  const mov2: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000002', fecha: '2025-02-17T11:00:00Z', concepto: 'Anticipo Proyecto Planta del Plata', monto: '500000.0000', cantidad: '1.0000', total: '500000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoIngreso.id, tipoMovimientoNombre: tipoIngreso.nombre, esIngreso: true, categoriaId: cat4.id, categoriaNombre: cat4.nombre, categoriaColor: cat4.colorHex, clienteId: cli1.id, trabajoId: trab3.id, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-17T11:00:00Z', updatedAt: null }
   const mov3: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000003', fecha: '2025-02-16T16:00:00Z', concepto: 'Venta de cables sobrantes de cobre', monto: '85000.0000', cantidad: '1.0000', total: '85000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoChatarra.id, tipoMovimientoNombre: tipoChatarra.nombre, esIngreso: true, categoriaId: cat1.id, categoriaNombre: cat1.nombre, categoriaColor: cat1.colorHex, clienteId: null, trabajoId: null, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-16T16:00:00Z', updatedAt: null }
   const mov4: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000004', fecha: '2025-02-15T10:00:00Z', concepto: 'Compra de cables sintetizados y termomagnéticas', monto: '340000.0000', cantidad: '1.0000', total: '340000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat2.id, categoriaNombre: cat2.nombre, categoriaColor: cat2.colorHex, clienteId: null, trabajoId: trab1.id, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-15T10:00:00Z', updatedAt: null }
   const mov5: MockMovimiento = { id: 'a0000000-0000-0000-0000-000000000005', fecha: '2025-02-14T09:30:00Z', concepto: 'Adquisición de pinza amperimétrica True RMS', monto: '125000.0000', cantidad: '1.0000', total: '125000.0000', moneda: 'Ars', cotizacionAplicada: null, tipoMovimientoId: tipoGasto.id, tipoMovimientoNombre: tipoGasto.nombre, esIngreso: false, categoriaId: cat3.id, categoriaNombre: cat3.nombre, categoriaColor: cat3.colorHex, clienteId: null, trabajoId: null, empleadoId: null, facturaId: null, tipoConceptoPagoId: null, bloqueadoPorLiquidacion: false, rowVersion: 'v1', createdAt: '2025-02-14T09:30:00Z', updatedAt: null }
@@ -487,7 +487,7 @@ function createSeedMockDb(): MockDb {
     categorias,
     tiposMovimiento,
     clientes,
-    obras,
+    proyectos,
     trabajos,
     ordenes,
     certificados,
@@ -545,16 +545,16 @@ export function validateMockCliente(dto: Record<string, unknown>): ApiError | nu
   if (typeof dto.email === "string" && dto.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dto.email)) fields.push({ field: "email", messageKey: "Validation.Cliente.EmailInvalid", params: {} })
   return fields.length ? { code: "VALIDATION", messageKey: "Validation.Invalid", params: {}, fields, traceId: "preview-validation" } : null
 }
-export function validateMockObra(dto: Record<string, unknown>): ApiError | null {
+export function validateMockProyecto(dto: Record<string, unknown>): ApiError | null {
   const fields: ApiFieldError[] = []
-  if (typeof dto.nombre !== "string" || !dto.nombre.trim()) fields.push({ field: "nombre", messageKey: "Validation.Obra.NombreRequired", params: {} })
-  if (typeof dto.clienteId !== "string" || !dto.clienteId.trim()) fields.push({ field: "clienteId", messageKey: "Validation.Obra.ClienteRequired", params: {} })
+  if (typeof dto.nombre !== "string" || !dto.nombre.trim()) fields.push({ field: "nombre", messageKey: "Validation.Proyecto.NombreRequired", params: {} })
+  if (typeof dto.clienteId !== "string" || !dto.clienteId.trim()) fields.push({ field: "clienteId", messageKey: "Validation.Proyecto.ClienteRequired", params: {} })
   return fields.length ? { code: "VALIDATION", messageKey: "Validation.Invalid", params: {}, fields, traceId: "preview-validation" } : null
 }
 export function validateMockTrabajo(dto: Record<string, unknown>): ApiError | null {
   const fields: ApiFieldError[] = []
   if (typeof dto.descripcion !== "string" || !dto.descripcion.trim()) fields.push({ field: "descripcion", messageKey: "Validation.Trabajo.DescripcionRequired", params: {} })
-  if (typeof dto.obraId !== "string" || !dto.obraId.trim()) fields.push({ field: "obraId", messageKey: "Validation.Trabajo.ObraRequired", params: {} })
+  if (typeof dto.proyectoId !== "string" || !dto.proyectoId.trim()) fields.push({ field: "proyectoId", messageKey: "Validation.Trabajo.ProyectoRequired", params: {} })
   return fields.length ? { code: "VALIDATION", messageKey: "Validation.Invalid", params: {}, fields, traceId: "preview-validation" } : null
 }
 export function validateMockFactura(dto: Record<string, unknown>): ApiError | null {
@@ -653,7 +653,7 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         tiposMovimiento: mockDb.tiposMovimiento.length,
         empleados: mockDb.empleados.length,
         clientes: mockDb.clientes.length,
-        obras: mockDb.obras.length,
+        proyectos: mockDb.proyectos.length,
         trabajos: mockDb.trabajos.length,
         ordenesTrabajo: mockDb.ordenes.length,
         movimientos: mockDb.movimientos.length,
@@ -680,7 +680,7 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         variacionBalance: '10.0000',
         clientesActivos: mockDb.clientes.length,
         trabajosPendientes: 3,
-        obrasPausadas: 0,
+        proyectosPausadas: 0,
         facturasVencidas: 0,
         liquidacionesPendientes: 1,
         serieMensual: Array.from({ length: 12 }, (_, i) => ({
@@ -698,10 +698,10 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
           { id: mockDb.categorias[2]?.id ?? '', nombre: mockDb.categorias[2]?.nombre ?? '', colorHex: mockDb.categorias[2]?.colorHex ?? '#F59E0B', total: '125000.0000', porcentaje: '18.8800' },
           { id: mockDb.categorias[4]?.id ?? '', nombre: mockDb.categorias[4]?.nombre ?? '', colorHex: mockDb.categorias[4]?.colorHex ?? '#EF4444', total: '62000.0000', porcentaje: '9.3600' },
         ],
-        mejoresObras: [
-          { id: mockDb.obras[0]?.id ?? '', numero: 1, nombre: mockDb.obras[0]?.nombre ?? '', rentabilidad: '1112000.0000', margen: '76.5800' },
+        mejoresProyectos: [
+          { id: mockDb.proyectos[0]?.id ?? '', numero: 1, nombre: mockDb.proyectos[0]?.nombre ?? '', rentabilidad: '1112000.0000', margen: '76.5800' },
         ],
-        peoresObras: [],
+        peoresProyectos: [],
         ultimosMovimientos: mockDb.movimientos.slice(0, 5),
         estadoSistema: {
           version: '0.1.0',
@@ -729,9 +729,9 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         { id: mockDb.categorias[2]?.id ?? '', nombre: mockDb.categorias[2]?.nombre ?? '', colorHex: mockDb.categorias[2]?.colorHex ?? '#F59E0B', total: '125000.0000', porcentaje: '18.8800' },
         { id: mockDb.categorias[4]?.id ?? '', nombre: mockDb.categorias[4]?.nombre ?? '', colorHex: mockDb.categorias[4]?.colorHex ?? '#EF4444', total: '62000.0000', porcentaje: '9.3600' },
       ]) as T
-    case 'dashboard_rentabilidad_obras':
+    case 'dashboard_rentabilidad_proyectos':
       return structuredClone([
-        { id: mockDb.obras[0]?.id ?? '', numero: 1, nombre: mockDb.obras[0]?.nombre ?? '', rentabilidad: '1112000.0000', margen: '76.5800' },
+        { id: mockDb.proyectos[0]?.id ?? '', numero: 1, nombre: mockDb.proyectos[0]?.nombre ?? '', rentabilidad: '1112000.0000', margen: '76.5800' },
       ]) as T
     case 'dashboard_ultimos_movimientos':
       return structuredClone(mockDb.movimientos.slice(0, 10)) as T
@@ -955,7 +955,7 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         telefono: (dto.telefono as string | null) ?? null,
         email: (dto.email as string | null) ?? null,
         condicionIva: (dto.condicionIva as string | null) ?? 'Responsable Inscripto',
-        obrasCount: 0,
+        proyectosCount: 0,
         facturasCount: 0,
         deuda: '0.0000',
         puedeEliminarse: true,
@@ -1002,12 +1002,12 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       } as T
 
     // ==========================================
-    // OBRAS
+    // PROYECTOS
     // ==========================================
-    case 'obras_list': {
+    case 'proyectos_list': {
       const query = (args?.query ?? {}) as Record<string, unknown>
       const filtro = (args?.filtro ?? query?.filtro ?? {}) as Record<string, unknown>
-      let filtered = [...mockDb.obras]
+      let filtered = [...mockDb.proyectos]
       if (filtro.nombre && typeof filtro.nombre === 'string' && filtro.nombre.trim() !== '') {
         const needle = filtro.nombre.trim().toLowerCase()
         filtered = filtered.filter(o => o.nombre.toLowerCase().includes(needle) || o.clienteNombre.toLowerCase().includes(needle))
@@ -1017,27 +1017,27 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       }
       return structuredClone({ items: filtered, totalCount: filtered.length, page: 1, size: 30 }) as T
     }
-    case 'obras_lookup':
-      return structuredClone(mockDb.obras.map(o => ({ id: o.id, label: `${o.numero}. ${o.nombre}` }))) as T
-    case 'obras_get':
+    case 'proyectos_lookup':
+      return structuredClone(mockDb.proyectos.map(o => ({ id: o.id, label: `${o.numero}. ${o.nombre}` }))) as T
+    case 'proyectos_get':
     case 'obra_get': {
       const id = String(args?.id ?? '')
-      const ob = mockDb.obras.find(o => o.id === id) || mockDb.obras[0]!
+      const ob = mockDb.proyectos.find(o => o.id === id) || mockDb.proyectos[0]!
       return structuredClone({
         ...ob,
         createdAt: new Date().toISOString(),
         updatedAt: null,
       }) as T
     }
-    case 'obras_siguiente_numero':
-      return (mockDb.obras.length + 1) as T
-    case 'obras_create':
+    case 'proyectos_siguiente_numero':
+      return (mockDb.proyectos.length + 1) as T
+    case 'proyectos_create':
     case 'obra_create': {
       const dto = (args?.dto ?? {}) as Record<string, unknown>
       const cli = mockDb.clientes.find(c => c.id === dto.clienteId)
-      const newOb: MockObra = {
+      const newOb: MockProyecto = {
         id: generateUuid(),
-        numero: mockDb.obras.length + 1,
+        numero: mockDb.proyectos.length + 1,
         nombre: String(dto.nombre || ''),
         direccion: (dto.direccion as string | null) ?? null,
         localidad: (dto.localidad as string | null) ?? null,
@@ -1049,51 +1049,51 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         puedeEliminarse: true,
         rowVersion: generateUuid(),
       }
-      mockDb.obras.unshift(newOb)
+      mockDb.proyectos.unshift(newOb)
       saveMockDb(mockDb)
       return structuredClone(newOb) as T
     }
-    case 'obras_update':
+    case 'proyectos_update':
     case 'obra_update': {
       const id = String(args?.id ?? '')
       const dto = (args?.dto ?? {}) as Record<string, unknown>
-      const idx = mockDb.obras.findIndex(o => o.id === id)
+      const idx = mockDb.proyectos.findIndex(o => o.id === id)
       if (idx >= 0) {
         const cli = mockDb.clientes.find(c => c.id === dto.clienteId)
-        mockDb.obras[idx] = {
-          ...mockDb.obras[idx]!,
-          nombre: String(dto.nombre || mockDb.obras[idx]!.nombre),
-          direccion: (dto.direccion as string | null) ?? mockDb.obras[idx]!.direccion,
-          localidad: (dto.localidad as string | null) ?? mockDb.obras[idx]!.localidad,
-          clienteId: String(dto.clienteId || mockDb.obras[idx]!.clienteId),
-          clienteNombre: cli?.nombre ?? mockDb.obras[idx]!.clienteNombre,
+        mockDb.proyectos[idx] = {
+          ...mockDb.proyectos[idx]!,
+          nombre: String(dto.nombre || mockDb.proyectos[idx]!.nombre),
+          direccion: (dto.direccion as string | null) ?? mockDb.proyectos[idx]!.direccion,
+          localidad: (dto.localidad as string | null) ?? mockDb.proyectos[idx]!.localidad,
+          clienteId: String(dto.clienteId || mockDb.proyectos[idx]!.clienteId),
+          clienteNombre: cli?.nombre ?? mockDb.proyectos[idx]!.clienteNombre,
           rowVersion: generateUuid(),
         }
         saveMockDb(mockDb)
-        return structuredClone(mockDb.obras[idx]) as T
+        return structuredClone(mockDb.proyectos[idx]) as T
       }
-      return structuredClone(mockDb.obras[0]) as T
+      return structuredClone(mockDb.proyectos[0]) as T
     }
-    case 'obras_transition': {
+    case 'proyectos_transition': {
       const id = String(args?.id ?? '')
       const nuevoEstado = String(args?.nuevoEstado ?? 'Activa')
-      const idx = mockDb.obras.findIndex(o => o.id === id)
+      const idx = mockDb.proyectos.findIndex(o => o.id === id)
       if (idx >= 0) {
-        mockDb.obras[idx]!.estado = nuevoEstado
+        mockDb.proyectos[idx]!.estado = nuevoEstado
         saveMockDb(mockDb)
-        return structuredClone(mockDb.obras[idx]) as T
+        return structuredClone(mockDb.proyectos[idx]) as T
       }
-      return structuredClone(mockDb.obras[0]) as T
+      return structuredClone(mockDb.proyectos[0]) as T
     }
-    case 'obras_delete':
+    case 'proyectos_delete':
     case 'obra_delete': {
       const id = String(args?.id ?? '')
-      mockDb.obras = mockDb.obras.filter(o => o.id !== id)
+      mockDb.proyectos = mockDb.proyectos.filter(o => o.id !== id)
       saveMockDb(mockDb)
       return null as T
     }
     case 'obras_next_numero':
-      return (mockDb.obras.length + 1) as T
+      return (mockDb.proyectos.length + 1) as T
 
     // ==========================================
     // TRABAJOS
@@ -1104,7 +1104,7 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       let filtered = [...mockDb.trabajos]
       if (filtro.descripcion && typeof filtro.descripcion === 'string' && filtro.descripcion.trim() !== '') {
         const needle = filtro.descripcion.trim().toLowerCase()
-        filtered = filtered.filter(t => t.descripcion.toLowerCase().includes(needle) || t.obraNombre.toLowerCase().includes(needle))
+        filtered = filtered.filter(t => t.descripcion.toLowerCase().includes(needle) || t.proyectoNombre.toLowerCase().includes(needle))
       }
       if (filtro.estado) {
         filtered = filtered.filter(t => t.estado === filtro.estado)
@@ -1126,12 +1126,12 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
     case 'trabajos_create':
     case 'trabajo_create': {
       const dto = (args?.dto ?? {}) as Record<string, unknown>
-      const ob = mockDb.obras.find(o => o.id === dto.obraId)
+      const ob = mockDb.proyectos.find(o => o.id === dto.proyectoId)
       const newTrab: MockTrabajo = {
         id: generateUuid(),
-        obraId: String(dto.obraId || ''),
-        obraNumero: ob?.numero ?? 1,
-        obraNombre: ob?.nombre ?? '',
+        proyectoId: String(dto.proyectoId || ''),
+        proyectoNumero: ob?.numero ?? 1,
+        proyectoNombre: ob?.nombre ?? '',
         clienteId: ob?.clienteId ?? '',
         clienteNombre: ob?.clienteNombre ?? '',
         descripcion: String(dto.descripcion || ''),
@@ -1196,7 +1196,7 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       const id = String(args?.id ?? "")
       const ord = mockDb.ordenes.find(o => o.id === id) || mockDb.ordenes[0]!
       const dummyItem = { id: generateUuid(), descripcion: "Item QA", unidad: "u", cantidad: "10.0000", precioUnitario: "10000.0000", porcentajeAnterior: "0.0000", porcentajeActual: "0.0000", porcentajeAcumulado: "0.0000", porcentajePendiente: "100.0000", base: "100000.0000", subtotalActual: "0.0000", subtotalAcumulado: "0.0000", ejecutado: false, nota: null, orden: 1, certificado: false }
-      return structuredClone({ ...ord, trabajoDescripcion: ord.titulo, obraId: "", obraNumero: 1, obraNombre: "", clienteId: "", clienteNombre: "", observaciones: null, ajusteUocraPorcentaje: "0.0000", otrosDescuentos: "0.0000", items: [dummyItem], totalPresupuestado: "100000.0000", totalCertificado: "0.0000", ajusteUocra: "0.0000", totalNeto: ord.totalNeto, certificadosCount: 0, puedeEliminarse: true, audit: mockAudit(ord.rowVersion) }) as T
+      return structuredClone({ ...ord, trabajoDescripcion: ord.titulo, proyectoId: "", proyectoNumero: 1, proyectoNombre: "", clienteId: "", clienteNombre: "", observaciones: null, ajusteUocraPorcentaje: "0.0000", otrosDescuentos: "0.0000", items: [dummyItem], totalPresupuestado: "100000.0000", totalCertificado: "0.0000", ajusteUocra: "0.0000", totalNeto: ord.totalNeto, certificadosCount: 0, puedeEliminarse: true, audit: mockAudit(ord.rowVersion) }) as T
     }
     case "ordenes_trabajo_create": {
       const dto = (args?.dto ?? {}) as Record<string, unknown>
@@ -1348,7 +1348,7 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
       const fact = mockDb.facturas.find(f => f.id === id) || mockDb.facturas[0]!
       return structuredClone({
         ...fact,
-        observaciones: 'Facturación de obra',
+        observaciones: 'Facturación de proyecto',
         items: [],
         pagos: [],
         createdAt: new Date().toISOString(),
@@ -1461,7 +1461,7 @@ function mockBrowserCommand<T>(command: string, args?: Record<string, unknown>):
         ordenTitulo: mockDb.ordenes[0]?.titulo ?? '',
         numeroSugerido: 1,
         trabajoDescripcion: mockDb.trabajos[0]?.descripcion ?? '',
-        obraNombre: mockDb.obras[0]?.nombre ?? '',
+        proyectoNombre: mockDb.proyectos[0]?.nombre ?? '',
         clienteNombre: mockDb.clientes[2]?.nombre ?? '',
         ajusteUocraPorcentaje: '8.0000',
         otrosDescuentos: '0.0000',

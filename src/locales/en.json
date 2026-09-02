@@ -10,7 +10,7 @@
     },
     "Obra": {
       "Activa": "Reactivate",
-      "Cancelada": "Cancel site",
+      "Cancelada": "Cancel project",
       "Finalizada": "Finish",
       "Pausada": "Pause"
     },
@@ -96,7 +96,7 @@
     "Fecha": "Date",
     "Hasta": "To",
     "Numero": "No.",
-    "Obra": "Site",
+    "Obra": "Project",
     "Observaciones": "Notes",
     "Orden": "Order",
     "OtrosDescuentos": "Other discounts",
@@ -125,9 +125,9 @@
     "Empty": "No customers yet",
     "EsPrincipal": "Main contact",
     "Etiqueta": "Label",
-    "NoBorrable": "The customer has sites or invoices",
+    "NoBorrable": "The customer has projects or invoices",
     "Nombre": "Name",
-    "Obras": "Sites",
+    "Proyectos": "Projects",
     "SinContactos": "No contacts yet",
     "SoloConDeuda": "With debt only",
     "Subtitle": "Customers, contacts and outstanding balance",
@@ -150,7 +150,7 @@
       "TotalPagado": "Total paid"
     },
     "Rentabilidad": {
-      "Contexto": "Site",
+      "Contexto": "Project",
       "Gastos": "Expenses",
       "Ingresos": "Income",
       "Margen": "Margin",
@@ -254,7 +254,7 @@
       "CaidaIngresos": "Income fell against the previous period",
       "FacturasVencidas": "{cantidad} overdue invoices",
       "LiquidacionesPendientes": "{cantidad} employees not settled for the period",
-      "ObrasPausadas": "{cantidad} paused sites"
+      "ProyectosPausados": "{cantidad} paused projects"
     },
     "Balance": "Balance",
     "ClientesActivos": "Active customers",
@@ -271,7 +271,7 @@
     "Ingresos": "Income",
     "LiquidacionesPendientes": "Pending settlements",
     "Megabytes": "{valor} MB",
-    "MejoresObras": "Most profitable sites",
+    "MejoresProyectos": "Most profitable projects",
     "Mes": {
       "M1": "Jan",
       "M10": "Oct",
@@ -288,8 +288,8 @@
     },
     "Migraciones": "Migrations",
     "Movimientos": "Movements",
-    "ObrasPausadas": "Paused sites",
-    "PeoresObras": "Least profitable sites",
+    "ProyectosPausados": "Paused projects",
+    "PeoresProyectos": "Least profitable projects",
     "Period": {
       "Anual": "Year",
       "Mensual": "Month",
@@ -337,7 +337,7 @@
     "Feriado": "holiday",
     "Liquidacion": "settlement",
     "Movimiento": "movement",
-    "Obra": "site",
+    "Obra": "project",
     "OrdenTrabajo": "work order",
     "TipoMovimiento": "movement type",
     "Trabajo": "job"
@@ -545,7 +545,7 @@
     "Liquidaciones": "Payroll",
     "MovementTypes": "Movement types",
     "Movimientos": "Movements",
-    "Obras": "Sites",
+    "Proyectos": "Projects",
     "Reports": "Reports",
     "Seed": "Sample data",
     "Settings": "Settings",
@@ -581,23 +581,23 @@
     "Tipo": "Type",
     "Total": "Total"
   },
-  "Obras": {
+  "Proyectos": {
     "BuscarHint": "Name, number, address or locality",
     "Caja": {
-      "Title": "Site cash flow"
+      "Title": "Project cash flow"
     },
     "Cliente": "Customer",
-    "ConfirmarCascada": "The site has {count} open jobs. They will be closed along with it. Continue?",
+    "ConfirmarCascada": "The project has {count} open jobs. They will be closed along with it. Continue?",
     "Direccion": "Address",
-    "Empty": "No sites yet",
+    "Empty": "No projects yet",
     "Estado": "State",
     "Localidad": "Locality",
-    "NoBorrable": "The site has jobs",
+    "NoBorrable": "The project has jobs",
     "Nombre": "Name",
     "Numero": "Number",
     "Rentabilidad": "Profit",
     "SoloActivas": "Active only",
-    "Subtitle": "Sites, their state and their profit",
+    "Subtitle": "Projects, their state and their profit",
     "Trabajos": "Jobs",
     "VerCaja": "View cash",
     "VerTrabajos": "View jobs"
@@ -617,7 +617,7 @@
     "Items": "Items",
     "Nota": "Note",
     "Nueva": "New work order",
-    "Obra": "Site",
+    "Obra": "Project",
     "Observaciones": "Notes",
     "OtrosDescuentos": "Other discounts",
     "PrecioUnitario": "Unit price",
@@ -650,8 +650,8 @@
       "Importe": "AMOUNT",
       "ItemDescripcion": "ITEM / DESCRIPTION",
       "Numero": "Certificate no.:",
-      "Obra": "Site:",
-      "ObraGeneral": "General site",
+      "Obra": "Project:",
+      "ObraGeneral": "General project",
       "OtrosDescuentos": "OTHER DEDUCTIONS:",
       "PU": "UNIT PR.",
       "Ref": "Ref.:",
@@ -669,7 +669,7 @@
       "Fecha": "Date",
       "Moneda": "Currency",
       "Monto": "Amount",
-      "Obra": "Site",
+      "Obra": "Project",
       "Observaciones": "Notes",
       "Subtotal": "Subtotal",
       "Tarifa": "Rate",
@@ -763,15 +763,15 @@
     "Liquidaciones": "Settlements",
     "Loading": "Seeding data...",
     "Movimientos": "Cash movements",
-    "Obras": "Sites",
+    "Proyectos": "Projects",
     "OrdenesTrabajo": "Work orders",
-    "Subtitle": "Populate the database with sample clients, sites, employees, movements, and invoices",
+    "Subtitle": "Populate the database with sample clients, projects, employees, movements, and invoices",
     "Success": "Sample data generated successfully!",
     "SummaryTitle": "Created records summary",
     "TiposMovimiento": "Movement types",
     "Title": "Sample Data Generator",
     "Trabajos": "Jobs",
-    "WarningText": "This action will create a comprehensive set of test records (categories, employees, clients, sites, jobs, certifications, invoices, and cash ledger movements) to facilitate system testing.",
+    "WarningText": "This action will create a comprehensive set of test records (categories, employees, clients, projects, jobs, certifications, invoices, and cash ledger movements) to facilitate system testing.",
     "WarningTitle": "Development & Testing Tool"
   },
   "Sistema": {
@@ -846,9 +846,9 @@
     "FechaFin": "End date",
     "FechaInicio": "Start date",
     "Hasta": "To",
-    "Obra": "Site",
+    "Obra": "Project",
     "Presupuesto": "Budget",
-    "Subtitle": "Jobs contracted inside each site"
+    "Subtitle": "Jobs contracted inside each project"
   },
   "Update": {
     "Available": "A new version is available: v{version}",

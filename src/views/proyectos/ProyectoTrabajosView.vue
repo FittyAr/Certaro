@@ -10,7 +10,7 @@ import { useTrabajosStore, type TrabajoListItem } from '@/stores/useTrabajosStor
 const route = useRoute()
 const { notify } = useApiError()
 const store = useTrabajosStore()
-const obraId = computed(() => String(route.params.obraId ?? ''))
+const proyectoId = computed(() => String(route.params.proyectoId ?? ''))
 const items = ref<TrabajoListItem[]>([])
 const loading = ref(false)
 const firstLoad = ref(true)
@@ -22,7 +22,7 @@ async function cargar(): Promise<void> {
     const res = await store.fetchPaged({
       page: 1,
       pageSize: 50,
-      filtro: { obraId: obraId.value } as unknown as Record<string, unknown>,
+      filtro: { proyectoId: proyectoId.value } as unknown as Record<string, unknown>,
       sortDir: 'Desc',
     })
     items.value = res.items
@@ -37,7 +37,7 @@ onMounted(cargar)
 </script>
 <template>
   <section class="flex h-full flex-col gap-4 p-6">
-    <PageHeader :title="$t('Menu.Trabajos')" :subtitle="String(obraId)" />
+    <PageHeader :title="$t('Menu.Trabajos')" :subtitle="String(proyectoId)" />
     <ListState
       :loading="loading"
       :first-load="firstLoad"

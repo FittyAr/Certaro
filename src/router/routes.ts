@@ -5,7 +5,7 @@ import type { RouteRecordRaw } from 'vue-router'
  *
  * Creating and editing a list record is **not** a route: it is a drawer over the list, so closing
  * it returns to the same page, filters and scroll without serialising all of that state. The
- * exception is an entity with children — Obra, Trabajo, Orden, Certificado — which gets a detail
+ * exception is an entity with children — Proyecto, Trabajo, Orden, Certificado — which gets a detail
  * route because it is a working screen rather than a form.
  */
 
@@ -60,35 +60,35 @@ export const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/obras',
-    name: 'obras',
-    component: () => import('@/views/obras/ObrasView.vue'),
-    meta: { titleKey: 'Menu.Obras' },
+    path: '/proyectos',
+    name: 'proyectos',
+    component: () => import('@/views/proyectos/ProyectosView.vue'),
+    meta: { titleKey: 'Menu.Proyectos' },
   },
   {
-    path: '/obras/:obraId',
-    name: 'obra-detalle',
-    component: () => import('@/views/obras/ObraDetalleView.vue'),
-    meta: { titleKey: 'Menu.Obras', breadcrumb: ['obras'], idParam: 'obraId' },
+    path: '/proyectos/:proyectoId',
+    name: 'proyecto-detalle',
+    component: () => import('@/views/proyectos/ProyectoDetalleView.vue'),
+    meta: { titleKey: 'Menu.Proyectos', breadcrumb: ['proyectos'], idParam: 'proyectoId' },
   },
   {
-    path: '/obras/:obraId/trabajos',
-    name: 'obra-trabajos',
-    component: () => import('@/views/obras/ObraTrabajosView.vue'),
+    path: '/proyectos/:proyectoId/trabajos',
+    name: 'proyecto-trabajos',
+    component: () => import('@/views/proyectos/ProyectoTrabajosView.vue'),
     meta: {
       titleKey: 'Menu.Trabajos',
-      breadcrumb: ['obras', 'obra-detalle'],
-      idParam: 'obraId',
+      breadcrumb: ['proyectos', 'proyecto-detalle'],
+      idParam: 'proyectoId',
     },
   },
   {
-    path: '/obras/:obraId/caja',
-    name: 'obra-caja',
-    component: () => import('@/views/obras/ObraCajaView.vue'),
+    path: '/proyectos/:proyectoId/caja',
+    name: 'proyecto-caja',
+    component: () => import('@/views/proyectos/ProyectoCajaView.vue'),
     meta: {
-      titleKey: 'Obras.Caja.Title',
-      breadcrumb: ['obras', 'obra-detalle'],
-      idParam: 'obraId',
+      titleKey: 'Proyectos.Caja.Title',
+      breadcrumb: ['proyectos', 'proyecto-detalle'],
+      idParam: 'proyectoId',
     },
   },
   {

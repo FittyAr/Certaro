@@ -129,7 +129,7 @@ export interface SeedSummary {
   tiposMovimiento: number
   empleados: number
   clientes: number
-  obras: number
+  proyectos: number
   trabajos: number
   ordenesTrabajo: number
   movimientos: number

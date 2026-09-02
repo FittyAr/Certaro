@@ -170,7 +170,7 @@ export interface DashboardConfig {
   topClientesCantidad: number
   topCategoriasCantidad: number
   ultimosMovimientosCantidad: number
-  obrasRankingCantidad: number
+  proyectosRankingCantidad: number
   /** Percentage drop in income that raises the alert. */
   alertaCaidaIngresosPct: Decimal4
 }

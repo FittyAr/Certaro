@@ -50,7 +50,7 @@ export interface ClienteListItem {
   telefono: string | null
   email: string | null
   condicionIva: string | null
-  obrasCount: number
+  proyectosCount: number
   facturasCount: number
   deuda: Money
   puedeEliminarse: boolean
@@ -66,7 +66,7 @@ export interface ClienteDetalle {
   email: string | null
   condicionIva: string | null
   contactos: ClienteContacto[]
-  obrasCount: number
+  proyectosCount: number
   facturasCount: number
   puedeEliminarse: boolean
   audit: Audit
@@ -76,7 +76,7 @@ export const CLIENTES_SORTABLE = [
   'nombre',
   'cuit',
   'deuda',
-  'obrasCount',
+  'proyectosCount',
   'facturasCount',
   'createdAt',
 ] as const

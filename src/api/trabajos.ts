@@ -17,7 +17,7 @@ export type EstadoTrabajo = 'Presupuestado' | 'EnProceso' | 'Pausado' | 'Finaliz
 
 export interface TrabajoFiltro {
   texto?: string
-  obraId?: Uuid
+  proyectoId?: Uuid
   /** Resolved through the site: a job carries no customer of its own. */
   clienteId?: Uuid
   estado?: EstadoTrabajo
@@ -26,7 +26,7 @@ export interface TrabajoFiltro {
 }
 
 export interface TrabajoInput {
-  obraId: Uuid
+  proyectoId: Uuid
   descripcion: string
   fechaInicio: CivilDate
   fechaFin: CivilDate | null
@@ -35,9 +35,9 @@ export interface TrabajoInput {
 
 export interface TrabajoListItem {
   id: Uuid
-  obraId: Uuid
-  obraNumero: number
-  obraNombre: string
+  proyectoId: Uuid
+  proyectoNumero: number
+  proyectoNombre: string
   clienteId: Uuid
   clienteNombre: string
   descripcion: string
@@ -50,9 +50,9 @@ export interface TrabajoListItem {
 
 export interface TrabajoDetalle {
   id: Uuid
-  obraId: Uuid
-  obraNumero: number
-  obraNombre: string
+  proyectoId: Uuid
+  proyectoNumero: number
+  proyectoNombre: string
   clienteId: Uuid
   clienteNombre: string
   descripcion: string
@@ -67,7 +67,7 @@ export interface TrabajoDetalle {
 export const TRABAJOS_SORTABLE = [
   'fechaInicio',
   'descripcion',
-  'obraNombre',
+  'proyectoNombre',
   'clienteNombre',
   'presupuesto',
   'estado',
@@ -110,9 +110,9 @@ export function deleteTrabajo(id: Uuid, rowVersion: RowVersion): Promise<void> {
 }
 
 export function lookupTrabajos(
-  obraId?: Uuid,
+  proyectoId?: Uuid,
   texto?: string,
   limite?: number,
 ): Promise<LookupItem[]> {
-  return callCommand('trabajos_lookup', { obraId, texto, limite })
+  return callCommand('trabajos_lookup', { proyectoId, texto, limite })
 }

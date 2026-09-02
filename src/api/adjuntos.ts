@@ -9,7 +9,7 @@ export type EntidadAdjunto =
   | 'Certificado'
   | 'Liquidacion'
   | 'Cliente'
-  | 'Obra'
+  | 'Proyecto'
   | 'Trabajo'
 
 export interface AdjuntoItem {

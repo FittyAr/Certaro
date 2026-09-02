@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import {
   antiguedadDeuda,
   cuentaCorriente,
-  rentabilidadObras,
+  rentabilidadProyectos,
   rentabilidadTrabajos,
   type AntiguedadDeuda,
   type AntiguedadDeudaQuery,
@@ -33,21 +33,21 @@ export const useComercialStore = defineStore('comercial', () => {
     return antiguedadDeuda(query)
   }
 
-  function fetchRentabilidadObras(limite?: number): Promise<RentabilidadItem[]> {
-    return rentabilidadObras(limite)
+  function fetchRentabilidadProyectos(limite?: number): Promise<RentabilidadItem[]> {
+    return rentabilidadProyectos(limite)
   }
 
   function fetchRentabilidadTrabajos(
-    obraId?: Uuid,
+    proyectoId?: Uuid,
     limite?: number,
   ): Promise<RentabilidadItem[]> {
-    return rentabilidadTrabajos(obraId, limite)
+    return rentabilidadTrabajos(proyectoId, limite)
   }
 
   return {
     fetchCuentaCorriente,
     fetchAntiguedad,
-    fetchRentabilidadObras,
+    fetchRentabilidadProyectos,
     fetchRentabilidadTrabajos,
   }
 })

@@ -12,9 +12,9 @@ import { activeRoutes, routes } from '@/router/routes'
 const DETAIL_ROUTES = new Set([
   'cliente-detalle',
   'cliente-cuenta',
-  'obra-detalle',
-  'obra-trabajos',
-  'obra-caja',
+  'proyecto-detalle',
+  'proyecto-trabajos',
+  'proyecto-caja',
   'trabajo-detalle',
   'trabajo-ordenes',
   'orden-detalle',
@@ -52,7 +52,7 @@ describe('menú y rutas', () => {
       'dashboard',
       'movimientos',
       'clientes',
-      'obras',
+      'proyectos',
       'trabajos',
       'certificados',
       'facturas',
@@ -86,9 +86,9 @@ describe('menú y rutas', () => {
   })
 
   it('se resalta el ancestro mas cercano presente en el menu', () => {
-    // Standing in `/obras/:id/trabajos` the highlighted entry is Obras, not Trabajos: that is
+    // Standing in `/proyectos/:id/trabajos` the highlighted entry is Proyectos, not Trabajos: that is
     // how the screen was reached.
-    expect(activeMenuRoute(['obras', 'obra-detalle', 'obra-trabajos'])).toBe('obras')
+    expect(activeMenuRoute(['proyectos', 'proyecto-detalle', 'proyecto-trabajos'])).toBe('proyectos')
     expect(activeMenuRoute(['clientes', 'cliente-detalle'])).toBe('clientes')
     expect(activeMenuRoute(['movimientos'])).toBe('movimientos')
   })
@@ -113,14 +113,14 @@ describe('guardas', () => {
 
   it('un :id que no es uuid redirige al listado padre', async () => {
     const router = await routerWithGuard()
-    await router.push('/obras/no-es-un-uuid')
-    expect(router.currentRoute.value.name).toBe('obras')
+    await router.push('/proyectos/no-es-un-uuid')
+    expect(router.currentRoute.value.name).toBe('proyectos')
   })
 
   it('un :id valido entra al detalle', async () => {
     const router = await routerWithGuard()
-    await router.push('/obras/018f4c1e-6f7a-7c3d-9b21-0a1b2c3d4e5f')
-    expect(router.currentRoute.value.name).toBe('obra-detalle')
+    await router.push('/proyectos/018f4c1e-6f7a-7c3d-9b21-0a1b2c3d4e5f')
+    expect(router.currentRoute.value.name).toBe('proyecto-detalle')
   })
 
   it('una ruta desconocida cae en el panel, no en un 404', async () => {
