@@ -19,6 +19,8 @@ import {
   type KanbanTableroDto,
   type KanbanTarjetaDto,
   type MoverTarjetaInput,
+  type ReordenarColumnasInput,
+  type ReordenarTarjetasInput,
   type PrioridadTarjeta,
   type TipoPresetTablero,
 } from '@/api/kanban'
@@ -42,6 +44,8 @@ export type {
   KanbanTableroDto,
   KanbanTarjetaDto,
   MoverTarjetaInput,
+  ReordenarColumnasInput,
+  ReordenarTarjetasInput,
   PrioridadTarjeta,
   TipoPresetTablero,
   RowVersion,
@@ -239,6 +243,47 @@ export const useKanbanStore = defineStore('kanban', () => {
     }
   }
 
+  async function reordenarColumnas(input: ReordenarColumnasInput) {
+    if (detalle.value) {
+      input.columnaIds.forEach((id, idx) => {
+        const col = detalle.value?.columnas.find((c) => c.id === id)
+        if (col) col.orden = idx
+      })
+    }
+    try {
+      await kanbanApi.reordenarColumnas(input)
+    } catch (e: any) {
+      error.value = e?.message ?? 'Error al reordenar columnas'
+      if (currentTableroId.value) {
+        await fetchDetalle(currentTableroId.value)
+      }
+      throw e
+    }
+  }
+
+  async function reordenarTarjetas(input: ReordenarTarjetasInput) {
+    if (detalle.value) {
+      const card = detalle.value.tarjetas.find((t) => t.id === input.tarjetaId)
+      if (card) {
+        card.columnaId = input.destinoColumnaId
+        card.orden = input.nuevoOrden
+      }
+      input.tarjetaIdsEnDestino.forEach((id, idx) => {
+        const c = detalle.value?.tarjetas.find((t) => t.id === id)
+        if (c) c.orden = idx
+      })
+    }
+    try {
+      await kanbanApi.reordenarTarjetas(input)
+    } catch (e: any) {
+      error.value = e?.message ?? 'Error al reordenar tarjetas'
+      if (currentTableroId.value) {
+        await fetchDetalle(currentTableroId.value)
+      }
+      throw e
+    }
+  }
+
   async function deleteTarjeta(id: Uuid, rowVersion: RowVersion) {
     try {
       await kanbanApi.deleteTarjeta(id, rowVersion)
@@ -328,10 +373,12 @@ export const useKanbanStore = defineStore('kanban', () => {
     deleteTablero,
     createColumna,
     updateColumna,
+    reordenarColumnas,
     deleteColumna,
     createTarjeta,
     updateTarjeta,
     moverTarjeta,
+    reordenarTarjetas,
     deleteTarjeta,
     syncPreset,
     createEtiqueta,

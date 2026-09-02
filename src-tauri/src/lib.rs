@@ -251,6 +251,8 @@ pub fn run() {
             commands::kanban::kanban_create_tarjeta,
             commands::kanban::kanban_update_tarjeta,
             commands::kanban::kanban_mover_tarjeta,
+            commands::kanban::kanban_reordenar_columnas,
+            commands::kanban::kanban_reordenar_tarjetas,
             commands::kanban::kanban_delete_tarjeta,
             commands::kanban::kanban_sincronizar_preset,
             commands::kanban::kanban_list_etiquetas,

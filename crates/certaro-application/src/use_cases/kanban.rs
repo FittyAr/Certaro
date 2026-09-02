@@ -13,7 +13,7 @@ use crate::dtos::kanban::{
     ActualizarTableroInput, ActualizarTarjetaInput, CrearChecklistInput, CrearColumnaInput,
     CrearEtiquetaInput, CrearTableroInput, CrearTarjetaInput, KanbanChecklistDto, KanbanColumnaDto,
     KanbanEtiquetaDto, KanbanTableroDetalleDto, KanbanTableroDto, KanbanTarjetaDto,
-    MoverTarjetaInput,
+    MoverTarjetaInput, ReordenarColumnasInput, ReordenarTarjetasInput,
 };
 use crate::error::FieldError;
 use crate::ports::clock::ClockPort;
@@ -477,6 +477,68 @@ impl KanbanService {
                     trabajo.estado = estado;
                     trabajo.audit.touch(now);
                     tx.trabajos().update(&trabajo, esperado).await?;
+                }
+            }
+        }
+
+        tx.commit().await?;
+        Ok(())
+    }
+
+    pub async fn reordenar_columnas(&self, input: ReordenarColumnasInput) -> AppResult<()> {
+        let tx = self.uow.begin().await?;
+        let now = self.clock.now_utc();
+        for (idx, col_id) in input.columnaIds.into_iter().enumerate() {
+            if let Some(mut col) = tx.kanban_columnas().find_by_id(col_id).await? {
+                if col.orden != idx as i32 {
+                    col.orden = idx as i32;
+                    col.audit.touch(now);
+                    tx.kanban_columnas().update(&col).await?;
+                }
+            }
+        }
+        tx.commit().await?;
+        Ok(())
+    }
+
+    pub async fn reordenar_tarjetas(&self, input: ReordenarTarjetasInput) -> AppResult<()> {
+        let tx = self.uow.begin().await?;
+        let now = self.clock.now_utc();
+
+        let target_col = tx
+            .kanban_columnas()
+            .find_by_id(input.destinoColumnaId)
+            .await?
+            .ok_or_else(|| AppError::NotFound {
+                entity: "kanban_columnas",
+                id: input.destinoColumnaId.to_string(),
+            })?;
+
+        if let Some(mut card) = tx.kanban_tarjetas().find_by_id(input.tarjetaId).await? {
+            let trabajo_id = card.trabajo_id;
+            card.columna_id = input.destinoColumnaId;
+            card.orden = input.nuevoOrden;
+            card.audit.touch(now);
+            tx.kanban_tarjetas().update(&card).await?;
+
+            if let (Some(trab_id), Some(estado_int)) = (trabajo_id, target_col.estado_mapeado) {
+                if let Ok(estado) = EstadoTrabajo::from_i32(estado_int) {
+                    if let Some(mut trabajo) = tx.trabajos().find_by_id(trab_id).await? {
+                        let esperado = trabajo.audit.row_version;
+                        trabajo.estado = estado;
+                        trabajo.audit.touch(now);
+                        tx.trabajos().update(&trabajo, esperado).await?;
+                    }
+                }
+            }
+        }
+
+        for (idx, card_id) in input.tarjetaIdsEnDestino.into_iter().enumerate() {
+            if let Some(mut c) = tx.kanban_tarjetas().find_by_id(card_id).await? {
+                if c.orden != idx as i32 {
+                    c.orden = idx as i32;
+                    c.audit.touch(now);
+                    tx.kanban_tarjetas().update(&c).await?;
                 }
             }
         }

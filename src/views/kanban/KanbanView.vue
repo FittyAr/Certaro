@@ -22,8 +22,15 @@ const canMove = computed(() => can('kanban:mover_tarjeta'))
 // Filters
 const searchText = ref('')
 const selectedPrioridad = ref<string>('all')
+
+// Drag & Drop State
+type DragType = 'card' | 'column' | null
+const dragType = ref<DragType>(null)
 const draggedCard = ref<KanbanTarjetaDto | null>(null)
+const draggedColumn = ref<KanbanColumnaDto | null>(null)
 const dragOverColumnaId = ref<Uuid | null>(null)
+const dragOverCardId = ref<Uuid | null>(null)
+const justFinishedDrag = ref(false)
 
 // Modals
 const showCardModal = ref(false)
@@ -96,18 +103,107 @@ function getPriorityClass(p: PrioridadTarjeta) {
   }
 }
 
-// Drag & Drop
-function onDragStart(e: DragEvent, card: KanbanTarjetaDto) {
-  if (!canMove.value) return
-  draggedCard.value = card
+// -------------------------------------------------------------
+// Drag & Drop: COLUMNS
+// -------------------------------------------------------------
+function onColumnDragStart(e: DragEvent, col: KanbanColumnaDto) {
+  if (!canManage.value) return
+  dragType.value = 'column'
+  draggedColumn.value = col
   if (e.dataTransfer) {
     e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('text/plain', card.id)
+    e.dataTransfer.setData('text/plain', `col:${col.id}`)
   }
 }
 
-function onDragOver(e: DragEvent, columnaId: Uuid) {
-  if (!draggedCard.value || !canMove.value) return
+function onColumnDragOver(e: DragEvent, targetColId: Uuid) {
+  if (dragType.value !== 'column' || !draggedColumn.value) return
+  e.preventDefault()
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'move'
+  }
+  dragOverColumnaId.value = targetColId
+}
+
+async function onColumnDrop(e: DragEvent, targetColId: Uuid) {
+  e.preventDefault()
+  e.stopPropagation()
+  if (dragType.value !== 'column' || !draggedColumn.value || !store.currentTableroId) return
+  const sourceCol = draggedColumn.value
+  dragType.value = null
+  draggedColumn.value = null
+  dragOverColumnaId.value = null
+
+  if (sourceCol.id === targetColId) return
+
+  const cols = [...sortedColumnas.value]
+  const fromIdx = cols.findIndex((c) => c.id === sourceCol.id)
+  const toIdx = cols.findIndex((c) => c.id === targetColId)
+  if (fromIdx === -1 || toIdx === -1) return
+
+  const [moved] = cols.splice(fromIdx, 1)
+  if (!moved) return
+  cols.splice(toIdx, 0, moved)
+
+  const newColumnaIds = cols.map((c) => c.id)
+
+  try {
+    await store.reordenarColumnas({
+      tableroId: store.currentTableroId,
+      columnaIds: newColumnaIds,
+    })
+  } catch (err: unknown) {
+    alert(err instanceof Error ? err.message : 'Error al reordenar columnas')
+  }
+}
+
+function onColumnDragEnd() {
+  dragType.value = null
+  draggedColumn.value = null
+  dragOverColumnaId.value = null
+}
+
+async function moverColumna(col: KanbanColumnaDto, direccion: 'izq' | 'der') {
+  if (!canManage.value || !store.detalle || !store.currentTableroId) return
+  const cols = [...sortedColumnas.value]
+  const idx = cols.findIndex((c) => c.id === col.id)
+  if (idx === -1) return
+
+  const targetIdx = direccion === 'izq' ? idx - 1 : idx + 1
+  if (targetIdx < 0 || targetIdx >= cols.length) return
+
+  const [moved] = cols.splice(idx, 1)
+  if (!moved) return
+  cols.splice(targetIdx, 0, moved)
+
+  const newColumnaIds = cols.map((c) => c.id)
+
+  try {
+    await store.reordenarColumnas({
+      tableroId: store.currentTableroId,
+      columnaIds: newColumnaIds,
+    })
+  } catch (err: unknown) {
+    alert(err instanceof Error ? err.message : 'Error al reordenar columnas')
+  }
+}
+
+// -------------------------------------------------------------
+// Drag & Drop: CARDS
+// -------------------------------------------------------------
+function onCardDragStart(e: DragEvent, card: KanbanTarjetaDto) {
+  if (!canMove.value) return
+  dragType.value = 'card'
+  draggedCard.value = card
+  justFinishedDrag.value = true
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', `card:${card.id}`)
+  }
+}
+
+function onCardDragOver(e: DragEvent, columnaId: Uuid) {
+  if (dragType.value !== 'card' || !draggedCard.value) return
   e.preventDefault()
   if (e.dataTransfer) {
     e.dataTransfer.dropEffect = 'move'
@@ -115,88 +211,80 @@ function onDragOver(e: DragEvent, columnaId: Uuid) {
   dragOverColumnaId.value = columnaId
 }
 
-function onDragLeave(e: DragEvent, columnaId: Uuid) {
-  const currentTarget = e.currentTarget as HTMLElement | null
-  const relatedTarget = e.relatedTarget as HTMLElement | null
-  if (currentTarget && relatedTarget && currentTarget.contains(relatedTarget)) {
-    return
+function onCardDragOverCard(e: DragEvent, targetCard: KanbanTarjetaDto, columnaId: Uuid) {
+  if (dragType.value !== 'card' || !draggedCard.value) return
+  e.preventDefault()
+  e.stopPropagation()
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'move'
   }
-  if (dragOverColumnaId.value === columnaId) {
-    dragOverColumnaId.value = null
-  }
+  dragOverColumnaId.value = columnaId
+  dragOverCardId.value = targetCard.id
 }
 
-async function onDrop(e: DragEvent, targetColumnaId: Uuid) {
+async function onCardDrop(e: DragEvent, targetColumnaId: Uuid, targetCardId?: Uuid) {
   e.preventDefault()
-  dragOverColumnaId.value = null
-  if (!draggedCard.value || !canMove.value) return
+  e.stopPropagation()
+  if (dragType.value !== 'card' || !draggedCard.value) return
   const card = draggedCard.value
+  const origenColumnaId = card.columnaId
+
+  dragType.value = null
   draggedCard.value = null
+  dragOverColumnaId.value = null
+  dragOverCardId.value = null
+  setTimeout(() => {
+    justFinishedDrag.value = false
+  }, 100)
 
-  if (card.columnaId === targetColumnaId) return
+  const colCards = getTarjetasPorColumna(targetColumnaId).filter((c) => c.id !== card.id)
 
-  const targetCards = getTarjetasPorColumna(targetColumnaId)
-  const nuevoOrden = targetCards.length
+  let nuevoOrden = colCards.length
+  if (targetCardId) {
+    const targetIdx = colCards.findIndex((c) => c.id === targetCardId)
+    if (targetIdx !== -1) {
+      colCards.splice(targetIdx, 0, card)
+      nuevoOrden = targetIdx
+    } else {
+      colCards.push(card)
+    }
+  } else {
+    colCards.push(card)
+  }
+
+  const tarjetaIdsEnDestino = colCards.map((c) => c.id)
 
   try {
-    await store.moverTarjeta({
+    await store.reordenarTarjetas({
       tarjetaId: card.id,
-      nuevaColumnaId: targetColumnaId,
+      origenColumnaId,
+      destinoColumnaId: targetColumnaId,
       nuevoOrden,
-      rowVersion: card.rowVersion,
+      tarjetaIdsEnDestino,
     })
   } catch (err: unknown) {
     alert(err instanceof Error ? err.message : 'Error al mover la tarjeta')
   }
 }
 
-// Column reordering
-async function moverColumna(col: KanbanColumnaDto, direccion: 'izq' | 'der') {
-  if (!canManage.value || !store.detalle) return
-  const cols = sortedColumnas.value
-  const idx = cols.findIndex((c) => c.id === col.id)
-  if (idx === -1) return
-
-  const targetIdx = direccion === 'izq' ? idx - 1 : idx + 1
-  if (targetIdx < 0 || targetIdx >= cols.length) return
-
-  const targetCol = cols[targetIdx]
-  if (!targetCol) return
-
-  const ordenCol = col.orden
-  const ordenTarget = targetCol.orden
-
-  const nuevoOrdenCol = ordenTarget
-  const nuevoOrdenTarget = ordenCol === ordenTarget ? (direccion === 'izq' ? ordenCol + 1 : ordenCol - 1) : ordenCol
-
-  col.orden = nuevoOrdenCol
-  targetCol.orden = nuevoOrdenTarget
-
-  try {
-    await Promise.all([
-      store.updateColumna(col.id, {
-        nombre: col.nombre,
-        color: col.color,
-        orden: nuevoOrdenCol,
-        limiteWip: col.limiteWip,
-        rowVersion: col.rowVersion,
-      }),
-      store.updateColumna(targetCol.id, {
-        nombre: targetCol.nombre,
-        color: targetCol.color,
-        orden: nuevoOrdenTarget,
-        limiteWip: targetCol.limiteWip,
-        rowVersion: targetCol.rowVersion,
-      }),
-    ])
-  } catch (_e) {
-    if (store.currentTableroId) {
-      await store.fetchDetalle(store.currentTableroId)
-    }
-  }
+function onCardDragEnd() {
+  dragType.value = null
+  draggedCard.value = null
+  dragOverColumnaId.value = null
+  dragOverCardId.value = null
+  setTimeout(() => {
+    justFinishedDrag.value = false
+  }, 100)
 }
 
+function handleCardClick(card: KanbanTarjetaDto) {
+  if (justFinishedDrag.value) return
+  openEditCard(card)
+}
+
+// -------------------------------------------------------------
 // Card CRUD
+// -------------------------------------------------------------
 function openCreateCard(columnaId: Uuid) {
   editingCard.value = null
   cardFormColumnaId.value = columnaId
@@ -257,7 +345,9 @@ async function removeCard(card: KanbanTarjetaDto) {
   }
 }
 
+// -------------------------------------------------------------
 // Column CRUD
+// -------------------------------------------------------------
 function openCreateColumn() {
   editingColumn.value = null
   columnFormNombre.value = ''
@@ -311,7 +401,9 @@ async function removeColumn(col: KanbanColumnaDto) {
   }
 }
 
+// -------------------------------------------------------------
 // Board CRUD
+// -------------------------------------------------------------
 function openCreateBoard() {
   boardFormNombre.value = ''
   boardFormDescripcion.value = ''
@@ -333,7 +425,9 @@ async function saveBoard() {
   }
 }
 
+// -------------------------------------------------------------
 // Checklist modal
+// -------------------------------------------------------------
 async function openChecklist(card: KanbanTarjetaDto) {
   checklistCard.value = card
   checklistItems.value = await store.listChecklist(card.id)
@@ -483,6 +577,7 @@ async function removeChecklist(item: any) {
     <div
       v-else-if="store.detalle"
       class="flex-1 flex gap-4 overflow-x-auto pb-4 items-start select-none"
+      @dragover.prevent
     >
       <div
         v-for="(col, index) in sortedColumnas"
@@ -495,14 +590,20 @@ async function removeChecklist(item: any) {
           borderTopColor: col.color || 'var(--color-primary, currentColor)',
           borderTopWidth: '4px'
         }"
-        @dragover="onDragOver($event, col.id)"
-        @dragenter="onDragOver($event, col.id)"
-        @dragleave="onDragLeave($event, col.id)"
-        @drop="onDrop($event, col.id)"
+        @dragover="dragType === 'column' ? onColumnDragOver($event, col.id) : onCardDragOver($event, col.id)"
+        @drop="dragType === 'column' ? onColumnDrop($event, col.id) : onCardDrop($event, col.id)"
       >
-        <!-- Column Header -->
-        <div class="p-3 border-b border-border flex items-center justify-between gap-2 bg-muted/20">
-          <div class="flex items-center gap-2 min-w-0">
+        <!-- Column Header: Draggable for reordering columns -->
+        <div
+          class="p-3 border-b border-border flex items-center justify-between gap-2 bg-muted/20 select-none"
+          :class="canManage ? 'cursor-grab active:cursor-grabbing' : ''"
+          :draggable="canManage"
+          @dragstart="onColumnDragStart($event, col)"
+          @dragend="onColumnDragEnd"
+        >
+          <div class="flex items-center gap-2 min-w-0 pointer-events-none">
+            <!-- Drag Handle icon for column -->
+            <span v-if="canManage" class="text-muted-foreground text-xs leading-none">⋮⋮</span>
             <!-- Column colored dot indicator -->
             <span
               class="w-3 h-3 rounded-full shrink-0 border border-border shadow-xs"
@@ -525,7 +626,7 @@ async function removeChecklist(item: any) {
                 type="button"
                 class="p-1 rounded-sm hover:bg-muted text-muted-foreground hover:text-foreground text-[10px] leading-none"
                 title="Mover columna a la izquierda"
-                @click="moverColumna(col, 'izq')"
+                @click.stop="moverColumna(col, 'izq')"
               >
                 ◀
               </button>
@@ -534,7 +635,7 @@ async function removeChecklist(item: any) {
                 type="button"
                 class="p-1 rounded-sm hover:bg-muted text-muted-foreground hover:text-foreground text-[10px] leading-none"
                 title="Mover columna a la derecha"
-                @click="moverColumna(col, 'der')"
+                @click.stop="moverColumna(col, 'der')"
               >
                 ▶
               </button>
@@ -544,7 +645,7 @@ async function removeChecklist(item: any) {
               v-if="canCreate"
               class="p-1 rounded-sm hover:bg-muted text-muted-foreground hover:text-foreground text-sm"
               :title="t('Kanban.NewCard')"
-              @click="openCreateCard(col.id)"
+              @click.stop="openCreateCard(col.id)"
             >
               +
             </button>
@@ -552,7 +653,7 @@ async function removeChecklist(item: any) {
               v-if="canManage"
               class="p-1 rounded-sm hover:bg-muted text-muted-foreground hover:text-foreground text-xs"
               :title="t('Kanban.EditColumn')"
-              @click="openEditColumn(col)"
+              @click.stop="openEditColumn(col)"
             >
               ✎
             </button>
@@ -560,7 +661,7 @@ async function removeChecklist(item: any) {
               v-if="canManage && !store.currentTablero?.esPreset"
               class="p-1 rounded-sm hover:bg-muted text-destructive text-xs"
               :title="t('Kanban.DeleteColumn')"
-              @click="removeColumn(col)"
+              @click.stop="removeColumn(col)"
             >
               ✕
             </button>
@@ -570,19 +671,26 @@ async function removeChecklist(item: any) {
         <!-- Cards Container -->
         <div
           class="flex-1 overflow-y-auto p-2.5 flex flex-col gap-2.5 min-h-30"
-          @dragover="onDragOver($event, col.id)"
-          @drop="onDrop($event, col.id)"
+          @dragover.prevent="onCardDragOver($event, col.id)"
+          @drop="onCardDrop($event, col.id)"
         >
           <div
             v-for="card in getTarjetasPorColumna(col.id)"
             :key="card.id"
-            class="p-3 rounded-lg bg-surface-elevated border border-border shadow-xs hover:border-primary/50 transition-all cursor-grab active:cursor-grabbing flex flex-col gap-2"
+            class="p-3 rounded-lg bg-surface-elevated border shadow-xs hover:border-primary/50 transition-all cursor-grab active:cursor-grabbing flex flex-col gap-2 select-none"
+            :class="[
+              dragOverCardId === card.id ? 'border-primary ring-2 ring-primary/50' : 'border-border',
+              draggedCard?.id === card.id ? 'opacity-40' : ''
+            ]"
             :draggable="canMove"
-            @dragstart="onDragStart($event, card)"
-            @click="openEditCard(card)"
+            @dragstart="onCardDragStart($event, card)"
+            @dragend="onCardDragEnd"
+            @dragover.prevent="onCardDragOverCard($event, card, col.id)"
+            @drop="onCardDrop($event, col.id, card.id)"
+            @click="handleCardClick(card)"
           >
             <!-- Card Meta: Priority & Tags -->
-            <div class="flex flex-wrap items-center justify-between gap-1.5">
+            <div class="flex flex-wrap items-center justify-between gap-1.5 pointer-events-none">
               <span
                 class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border"
                 :class="getPriorityClass(card.prioridad)"
@@ -602,7 +710,7 @@ async function removeChecklist(item: any) {
             </div>
 
             <!-- Title & Description -->
-            <div>
+            <div class="pointer-events-none">
               <h4 class="text-xs font-semibold text-foreground leading-snug">
                 {{ card.titulo }}
               </h4>
@@ -617,7 +725,7 @@ async function removeChecklist(item: any) {
             <!-- Footer: Due date, Checklist & Actions -->
             <div class="flex items-center justify-between border-t border-border pt-2 text-[11px] text-muted-foreground">
               <div class="flex items-center gap-2">
-                <span v-if="card.fechaVencimiento" class="flex items-center gap-1 font-mono">
+                <span v-if="card.fechaVencimiento" class="flex items-center gap-1 font-mono pointer-events-none">
                   📅 {{ card.fechaVencimiento }}
                 </span>
                 <button

@@ -5,7 +5,7 @@ use certaro_application::dtos::kanban::{
     ActualizarTableroInput, ActualizarTarjetaInput, CrearChecklistInput, CrearColumnaInput,
     CrearEtiquetaInput, CrearTableroInput, CrearTarjetaInput, KanbanChecklistDto, KanbanColumnaDto,
     KanbanEtiquetaDto, KanbanTableroDetalleDto, KanbanTableroDto, KanbanTarjetaDto,
-    MoverTarjetaInput,
+    MoverTarjetaInput, ReordenarColumnasInput, ReordenarTarjetasInput,
 };
 use tauri::State;
 use uuid::Uuid;
@@ -145,6 +145,30 @@ pub async fn kanban_mover_tarjeta(
         Err(e) => Err(e),
     };
     handle("kanban_mover_tarjeta", outcome)
+}
+
+#[tauri::command]
+pub async fn kanban_reordenar_columnas(
+    state: State<'_, AppState>,
+    input: ReordenarColumnasInput,
+) -> ApiResult<()> {
+    let outcome = match state.services() {
+        Ok(services) => services.kanban.reordenar_columnas(input).await,
+        Err(e) => Err(e),
+    };
+    handle("kanban_reordenar_columnas", outcome)
+}
+
+#[tauri::command]
+pub async fn kanban_reordenar_tarjetas(
+    state: State<'_, AppState>,
+    input: ReordenarTarjetasInput,
+) -> ApiResult<()> {
+    let outcome = match state.services() {
+        Ok(services) => services.kanban.reordenar_tarjetas(input).await,
+        Err(e) => Err(e),
+    };
+    handle("kanban_reordenar_tarjetas", outcome)
 }
 
 #[tauri::command]

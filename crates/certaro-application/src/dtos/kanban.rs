@@ -239,3 +239,21 @@ pub struct ActualizarChecklistInput {
     pub orden: i32,
     pub rowVersion: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReordenarColumnasInput {
+    pub tableroId: Uuid,
+    pub columnaIds: Vec<Uuid>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReordenarTarjetasInput {
+    pub tarjetaId: Uuid,
+    pub origenColumnaId: Uuid,
+    pub destinoColumnaId: Uuid,
+    pub nuevoOrden: i32,
+    pub tarjetaIdsEnDestino: Vec<Uuid>,
+}
+

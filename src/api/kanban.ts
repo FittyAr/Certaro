@@ -147,6 +147,19 @@ export interface ActualizarChecklistInput {
   rowVersion: RowVersion
 }
 
+export interface ReordenarColumnasInput {
+  tableroId: Uuid
+  columnaIds: Uuid[]
+}
+
+export interface ReordenarTarjetasInput {
+  tarjetaId: Uuid
+  origenColumnaId: Uuid
+  destinoColumnaId: Uuid
+  nuevoOrden: number
+  tarjetaIdsEnDestino: Uuid[]
+}
+
 export const kanbanApi = {
   listTableros: () => callCommand<KanbanTableroDto[]>('kanban_list_tableros'),
   getTablero: (id: Uuid) => callCommand<KanbanTableroDetalleDto>('kanban_get_tablero', { id }),
@@ -161,6 +174,8 @@ export const kanbanApi = {
     callCommand<KanbanColumnaDto>('kanban_create_columna', { input }),
   updateColumna: (id: Uuid, input: ActualizarColumnaInput) =>
     callCommand<KanbanColumnaDto>('kanban_update_columna', { id, input }),
+  reordenarColumnas: (input: ReordenarColumnasInput) =>
+    callCommand<void>('kanban_reordenar_columnas', { input }),
   deleteColumna: (id: Uuid, rowVersion: RowVersion) =>
     callCommand<void>('kanban_delete_columna', { id, rowVersion }),
 
@@ -170,6 +185,8 @@ export const kanbanApi = {
     callCommand<KanbanTarjetaDto>('kanban_update_tarjeta', { id, input }),
   moverTarjeta: (input: MoverTarjetaInput) =>
     callCommand<void>('kanban_mover_tarjeta', { input }),
+  reordenarTarjetas: (input: ReordenarTarjetasInput) =>
+    callCommand<void>('kanban_reordenar_tarjetas', { input }),
   deleteTarjeta: (id: Uuid, rowVersion: RowVersion) =>
     callCommand<void>('kanban_delete_tarjeta', { id, rowVersion }),
 
@@ -193,3 +210,4 @@ export const kanbanApi = {
   deleteChecklistItem: (id: Uuid) =>
     callCommand<void>('kanban_delete_checklist_item', { id }),
 }
+
