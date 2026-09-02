@@ -31,7 +31,7 @@ async-trait = "0.1"
 futures = "0.3"
 
 # Persistence
-sea-orm = { version = "1", features = [
+sea-orm = { version = "2", features = [
     "sqlx-sqlite",
     "runtime-tokio-rustls",
     "macros",
