@@ -117,6 +117,7 @@
     "BuscarHint": "Name, tax id or email",
     "CondicionIva": "VAT condition",
     "Contactos": "Contacts",
+    "CuentaCorriente": "Current account",
     "Cuit": "Tax id",
     "Deuda": "Debt",
     "Direccion": "Address",
@@ -130,8 +131,7 @@
     "SinContactos": "No contacts yet",
     "SoloConDeuda": "With debt only",
     "Subtitle": "Customers, contacts and outstanding balance",
-    "Telefono": "Phone",
-    "CuentaCorriente": "Current account"
+    "Telefono": "Phone"
   },
   "Comercial": {
     "Antiguedad": {
@@ -173,6 +173,7 @@
     "AniosFeriadosASincronizar": "Years to sync",
     "Applied": "Settings saved",
     "Apply": "Apply",
+    "AsistenciaMaxRangoDias": "Max attendance range (days)",
     "Business": "Business",
     "CodigoPais": "Country code (WhatsApp)",
     "Communication": "Communication",
@@ -218,8 +219,7 @@
     "TimeoutSeconds": "Timeout (seconds)",
     "Title": "Settings",
     "WhatsAppLiquidacionTemplate": "WhatsApp settlement template",
-    "WhatsAppTemplate": "WhatsApp template",
-    "AsistenciaMaxRangoDias": "Max attendance range (days)"
+    "WhatsAppTemplate": "WhatsApp template"
   },
   "Conflict": {
     "Categoria": {
@@ -599,8 +599,8 @@
     "SoloActivas": "Active only",
     "Subtitle": "Sites, their state and their profit",
     "Trabajos": "Jobs",
-    "VerTrabajos": "View jobs",
-    "VerCaja": "View cash"
+    "VerCaja": "View cash",
+    "VerTrabajos": "View jobs"
   },
   "Ordenes": {
     "AjusteUocra": "UOCRA adjustment",
@@ -750,6 +750,7 @@
     "Title": "Reports"
   },
   "Seed": {
+    "AlreadySeeded": "The database already contains sample data. Delete the database or restore an empty backup to seed again.",
     "Button": "Seed sample data",
     "Categorias": "Categories",
     "Clientes": "Clients",
@@ -764,7 +765,6 @@
     "Movimientos": "Cash movements",
     "Obras": "Sites",
     "OrdenesTrabajo": "Work orders",
-    "AlreadySeeded": "The database already contains sample data. Delete the database or restore an empty backup to seed again.",
     "Subtitle": "Populate the database with sample clients, sites, employees, movements, and invoices",
     "Success": "Sample data generated successfully!",
     "SummaryTitle": "Created records summary",
@@ -866,8 +866,8 @@
     "Asistencia": {
       "EmpleadoRequired": "Pick an employee.",
       "ObservacionesMaxLength": "The notes cannot exceed {max} characters.",
-      "RangoInvalid": "The end date cannot precede the start date.",
-      "RangoExcedido": "Range cannot exceed {max} days (asked {actual}). Adjust From/To or change the limit in Settings > Payroll."
+      "RangoExcedido": "Range cannot exceed {max} days (asked {actual}). Adjust From/To or change the limit in Settings > Payroll.",
+      "RangoInvalid": "The end date cannot precede the start date."
     },
     "Backup": {
       "VersionIncompatible": "The backup is from a newer version of the application"
@@ -977,6 +977,8 @@
   "Welcome": {
     "AllowOrphans": "Allow orphan references",
     "AllowOrphansHint": "Converts missing foreign keys to null values instead of aborting the migration",
+    "AlreadyMigratedSubtitle": "The selected database is already in Certaro format. It was copied directly and the original was renamed to .bkp.",
+    "AlreadyMigratedTitle": "Database already migrated!",
     "Back": "Back",
     "EnterApp": "Open Certaro",
     "Import": "Migrate from legacy system",

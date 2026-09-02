@@ -1,6 +1,6 @@
 import { definePreset } from '@primeuix/themes'
 import Aura from '@primeuix/themes/aura'
-import { setLicense } from '@primeuix/license-manager'
+import { registerLicense } from '@primeui/license-manager'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import ConfirmationService from 'primevue/confirmationservice'
@@ -19,7 +19,7 @@ import './assets/main.css'
  */
 const primeUiKey = import.meta.env.VITE_PRIMEUI_LICENSE_KEY as string | undefined
 if (primeUiKey) {
-  setLicense(primeUiKey)
+  registerLicense({ primeui: primeUiKey })
 }
 
 const preset = definePreset(Aura, {

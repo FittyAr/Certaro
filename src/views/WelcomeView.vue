@@ -270,15 +270,28 @@ async function onFinish(): Promise<void> {
           <AppIcon name="check-circle" :size="32" />
         </div>
         <div>
-          <h2 class="text-xl font-bold text-foreground">{{ $t('Welcome.ImportSuccessTitle') }}</h2>
+          <h2 class="text-xl font-bold text-foreground">
+            {{
+              importSummary.outcome === 'AlreadyMigrated'
+                ? $t('Welcome.AlreadyMigratedTitle')
+                : $t('Welcome.ImportSuccessTitle')
+            }}
+          </h2>
           <p class="text-sm text-muted-foreground">
-            {{ $t('Welcome.ImportSuccessSubtitle', { total: importSummary.totalRows }) }}
+            {{
+              importSummary.outcome === 'AlreadyMigrated'
+                ? $t('Welcome.AlreadyMigratedSubtitle')
+                : $t('Welcome.ImportSuccessSubtitle', { total: importSummary.totalRows })
+            }}
           </p>
         </div>
       </div>
 
       <!-- Tables Count Summary -->
-      <div class="rounded-lg border border-border bg-surface-card p-4">
+      <div
+        v-if="importSummary.outcome !== 'AlreadyMigrated'"
+        class="rounded-lg border border-border bg-surface-card p-4"
+      >
         <h3 class="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {{ $t('Welcome.ImportSummaryTables') }}
         </h3>

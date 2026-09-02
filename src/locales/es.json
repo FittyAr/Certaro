@@ -117,6 +117,7 @@
     "BuscarHint": "Nombre, CUIT o correo",
     "CondicionIva": "Condición de IVA",
     "Contactos": "Contactos",
+    "CuentaCorriente": "Cuenta corriente",
     "Cuit": "CUIT",
     "Deuda": "Deuda",
     "Direccion": "Dirección",
@@ -130,8 +131,7 @@
     "SinContactos": "Sin contactos cargados",
     "SoloConDeuda": "Solo con deuda",
     "Subtitle": "Clientes, contactos y saldo pendiente",
-    "Telefono": "Teléfono",
-    "CuentaCorriente": "Cuenta corriente"
+    "Telefono": "Teléfono"
   },
   "Comercial": {
     "Antiguedad": {
@@ -173,6 +173,7 @@
     "AniosFeriadosASincronizar": "Años a sincronizar",
     "Applied": "Configuración guardada",
     "Apply": "Aplicar",
+    "AsistenciaMaxRangoDias": "Rango máximo de asistencia (días)",
     "Business": "Negocio",
     "CodigoPais": "Código de país (WhatsApp)",
     "Communication": "Comunicación",
@@ -218,8 +219,7 @@
     "TimeoutSeconds": "Timeout (segundos)",
     "Title": "Configuración",
     "WhatsAppLiquidacionTemplate": "Plantilla WhatsApp liquidaciones",
-    "WhatsAppTemplate": "Plantilla WhatsApp",
-    "AsistenciaMaxRangoDias": "Rango máximo de asistencia (días)"
+    "WhatsAppTemplate": "Plantilla WhatsApp"
   },
   "Conflict": {
     "Categoria": {
@@ -599,8 +599,8 @@
     "SoloActivas": "Solo activas",
     "Subtitle": "Obras, su estado y su rentabilidad",
     "Trabajos": "Trabajos",
-    "VerTrabajos": "Ver trabajos",
-    "VerCaja": "Ver caja"
+    "VerCaja": "Ver caja",
+    "VerTrabajos": "Ver trabajos"
   },
   "Ordenes": {
     "AjusteUocra": "Ajuste UOCRA",
@@ -750,6 +750,7 @@
     "Title": "Reportes"
   },
   "Seed": {
+    "AlreadySeeded": "La base ya contiene datos de prueba. Borrá la base o restaurá un backup vacío para volver a sembrar.",
     "Button": "Sembrar datos de prueba",
     "Categorias": "Categorías",
     "Clientes": "Clientes",
@@ -764,7 +765,6 @@
     "Movimientos": "Movimientos de caja",
     "Obras": "Obras",
     "OrdenesTrabajo": "Órdenes de trabajo",
-    "AlreadySeeded": "La base ya contiene datos de prueba. Borrá la base o restaurá un backup vacío para volver a sembrar.",
     "Subtitle": "Poblar la base de datos con clientes, obras, empleados, movimientos y facturas de demostración",
     "Success": "¡Datos de prueba generados con éxito!",
     "SummaryTitle": "Resumen de datos creados",
@@ -866,8 +866,8 @@
     "Asistencia": {
       "EmpleadoRequired": "Elegí un empleado.",
       "ObservacionesMaxLength": "Las observaciones no pueden pasar de {max} caracteres.",
-      "RangoInvalid": "La fecha final no puede ser anterior a la inicial.",
-      "RangoExcedido": "El rango no puede superar {max} días (pediste {actual}). Ajusta Desde/Hasta o cambia el límite en Configuración > Liquidaciones."
+      "RangoExcedido": "El rango no puede superar {max} días (pediste {actual}). Ajusta Desde/Hasta o cambia el límite en Configuración > Liquidaciones.",
+      "RangoInvalid": "La fecha final no puede ser anterior a la inicial."
     },
     "Backup": {
       "VersionIncompatible": "El backup es de una versión más nueva de la aplicación"
@@ -977,6 +977,8 @@
   "Welcome": {
     "AllowOrphans": "Permitir referencias huérfanas",
     "AllowOrphansHint": "Convierte claves foráneas inexistentes en valores nulos en lugar de abortar la migración",
+    "AlreadyMigratedSubtitle": "La base de datos ya está en formato Certaro. Se copió directamente y la original se renombró a .bkp.",
+    "AlreadyMigratedTitle": "¡Base ya migrada!",
     "Back": "Volver",
     "EnterApp": "Ingresar a Certaro",
     "Import": "Migrar datos del sistema anterior",
