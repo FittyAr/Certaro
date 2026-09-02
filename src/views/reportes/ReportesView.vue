@@ -12,7 +12,7 @@ import type { MovimientoFiltro } from '@/stores/useMovimientosStore'
 import { useReportesStore } from '@/stores/useReportesStore'
 
 /**
- * The report centre. See `docs/09-modulos-funcionales.md` §3.12.
+ * The report centre. See `docs/09-modulos-funcionales.md` ï¿½3.12.
  *
  * Each card asks only for what its report needs and then opens the save dialog. Nothing is written
  * anywhere the user did not choose.
@@ -37,11 +37,11 @@ async function cargarSelectores(): Promise<void> {
     certificados.fetchPaged({ page: 1, pageSize: 100, filtro: {}, sortDir: 'Desc' }),
   ])
   opcionesLiquidacion.value = liq.items.map((l) => ({
-    label: `${l.empleadoNombre} · ${l.fechaInicio} — ${l.fechaFin}`,
+    label: `${l.empleadoNombre} ï¿½ ${l.fechaInicio} ï¿½ ${l.fechaFin}`,
     value: l.id,
   }))
   opcionesCertificado.value = cert.items.map((c) => ({
-    label: `${c.obraNombre} · Nº ${c.numero}`,
+    label: `${c.proyectoNombre} Â· NÂº ${c.numero}`,
     value: c.id,
   }))
 }

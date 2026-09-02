@@ -12,6 +12,7 @@ import DateInput from '@/components/domain/DateInput.vue'
 import DateText from '@/components/domain/DateText.vue'
 import FieldError from '@/components/domain/FieldError.vue'
 import ExportMenu from '@/components/domain/ExportMenu.vue'
+import Divider from 'primevue/divider'
 import FilterBar from '@/components/domain/FilterBar.vue'
 import MoneyInput from '@/components/domain/MoneyInput.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
@@ -139,6 +140,24 @@ function onDelete(row: MovimientoListItem): void {
   })
 }
 
+function movimientoContextMenu(row: MovimientoListItem) {
+  return [
+    {
+      label: t('General.Edit'),
+      icon: 'pi pi-pencil',
+      disabled: row.bloqueadoPorLiquidacion,
+      command: () => drawer.openEdit(row.id),
+    },
+    { separator: true },
+    {
+      label: t('General.Delete'),
+      icon: 'pi pi-trash',
+      disabled: row.bloqueadoPorLiquidacion,
+      command: () => onDelete(row),
+    },
+  ]
+}
+
 useShortcuts({ 'ctrl+n': () => drawer.openCreate() })
 
 onMounted(() => {
@@ -202,11 +221,14 @@ onMounted(() => {
       </label>
     </FilterBar>
 
+    <Divider />
+
     <DataGrid
       :table="table"
       empty-key="Movimientos.Empty"
       class="flex-1"
-      @row-edit="(row) => drawer.openEdit(row.id)"
+      :context-menu-items="movimientoContextMenu"
+      @row-edit="(row: any) => drawer.openEdit(row.id)"
     >
       <Column field="fecha" :header="$t('Movimientos.Fecha')" sortable>
         <template #body="{ data }"><DateText :value="data.fecha" instant /></template>

@@ -7,6 +7,7 @@ import { useRouter } from 'vue-router'
 import DataGrid from '@/components/domain/DataGrid.vue'
 import DateInput from '@/components/domain/DateInput.vue'
 import DateText from '@/components/domain/DateText.vue'
+import Divider from 'primevue/divider'
 import FilterBar from '@/components/domain/FilterBar.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
@@ -22,7 +23,7 @@ import {
   type CertificadoListItem,
 } from '@/stores/useCertificadosStore'
 import { useClientesStore } from '@/stores/useClientesStore'
-import { useObrasStore } from '@/stores/useObrasStore'
+import { useProyectosStore } from '@/stores/useProyectosStore'
 import { useTrabajosStore } from '@/stores/useTrabajosStore'
 
 /**
@@ -37,7 +38,7 @@ const { notify } = useApiError()
 const { confirmDelete } = useConfirmDelete()
 const store = useCertificadosStore()
 const clientes = useClientesStore()
-const obras = useObrasStore()
+const proyectos = useProyectosStore()
 const trabajos = useTrabajosStore()
 
 const table = useServerTable<CertificadoFiltro, CertificadoListItem>({
@@ -48,7 +49,7 @@ const table = useServerTable<CertificadoFiltro, CertificadoListItem>({
 })
 
 const opcionesCliente = ref<LookupItem[]>([])
-const opcionesObra = ref<LookupItem[]>([])
+const opcionesProyecto = ref<LookupItem[]>([])
 const opcionesTrabajo = ref<LookupItem[]>([])
 
 /** Narrowing by customer narrows the site list, and by site the job list: the usual way in. */
@@ -56,7 +57,7 @@ watch(
   () => table.filter.value.clienteId,
   async (clienteId) => {
     try {
-      opcionesObra.value = await obras.lookup(clienteId, undefined, 200)
+      opcionesProyecto.value = await proyectos.lookup(clienteId, undefined, 200)
     } catch (e) {
       notify(e)
     }
@@ -64,10 +65,10 @@ watch(
 )
 
 watch(
-  () => table.filter.value.obraId,
-  async (obraId) => {
+  () => table.filter.value.proyectoId,
+  async (proyectoId) => {
     try {
-      opcionesTrabajo.value = await trabajos.lookup(obraId, undefined, 200)
+      opcionesTrabajo.value = await trabajos.lookup(proyectoId, undefined, 200)
     } catch (e) {
       notify(e)
     }
@@ -77,7 +78,7 @@ watch(
 const filtrosActivos = computed(() =>
   Boolean(
     table.filter.value.clienteId ||
-    table.filter.value.obraId ||
+    table.filter.value.proyectoId ||
     table.filter.value.trabajoId ||
     table.filter.value.fechaDesde ||
     table.filter.value.fechaHasta,
@@ -101,9 +102,9 @@ function onAnular(row: CertificadoListItem): void {
 onMounted(async () => {
   table.start()
   try {
-    ;[opcionesCliente.value, opcionesObra.value] = await Promise.all([
+    ;[opcionesCliente.value, opcionesProyecto.value] = await Promise.all([
       clientes.lookup(undefined, 200),
-      obras.lookup(undefined, undefined, 200),
+      proyectos.lookup(undefined, undefined, 200),
     ])
   } catch (e) {
     notify(e)
@@ -129,10 +130,10 @@ onMounted(async () => {
         />
       </label>
       <label class="flex flex-col gap-1">
-        <span class="text-xs text-muted-foreground">{{ $t('Certificados.Obra') }}</span>
+        <span class="text-xs text-muted-foreground">{{ $t('Certificados.Proyecto') }}</span>
         <Select
-          v-model="table.filter.value.obraId"
-          :options="opcionesObra"
+          v-model="table.filter.value.proyectoId"
+          :options="opcionesProyecto"
           option-label="label"
           option-value="id"
           filter
@@ -162,13 +163,15 @@ onMounted(async () => {
       </label>
     </FilterBar>
 
+    <Divider />
+
     <DataGrid :table="table" empty-key="Certificados.Empty" class="flex-1" @row-edit="abrirDetalle">
       <Column field="numero" :header="$t('Certificados.Numero')" sortable />
       <Column field="fecha" :header="$t('Certificados.Fecha')" sortable>
         <template #body="{ data }"><DateText :value="data.fecha" /></template>
       </Column>
-      <Column field="obraNombre" :header="$t('Certificados.Obra')">
-        <template #body="{ data }">{{ data.obraNumero }} · {{ data.obraNombre }}</template>
+      <Column field="proyectoNombre" :header="$t('Certificados.Proyecto')">
+        <template #body="{ data }">{{ data.proyectoNumero }} · {{ data.proyectoNombre }}</template>
       </Column>
       <Column field="trabajoDescripcion" :header="$t('Certificados.Trabajo')" />
       <Column field="ordenTitulo" :header="$t('Certificados.Orden')" />

@@ -161,8 +161,8 @@ onMounted(cargar)
           class="grid grid-cols-2 gap-3 rounded-md border border-border p-4 text-sm md:grid-cols-4"
         >
           <div>
-            <dt class="text-xs text-muted-foreground">{{ $t('Ordenes.Obra') }}</dt>
-            <dd>{{ orden.obraNumero }} · {{ orden.obraNombre }}</dd>
+            <dt class="text-xs text-muted-foreground">{{ $t('Ordenes.Proyecto') }}</dt>
+            <dd>{{ orden.proyectoNumero }} · {{ orden.proyectoNombre }}</dd>
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">{{ $t('Ordenes.Cliente') }}</dt>

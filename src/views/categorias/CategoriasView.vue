@@ -133,7 +133,7 @@ onMounted(() => {
       :table="table"
       empty-key="Categorias.Empty"
       class="flex-1"
-      @row-edit="(row) => drawer.openEdit(row.id)"
+      @row-edit="(row: any) => drawer.openEdit(row.id)"
     >
       <Column field="nombre" :header="$t('Categorias.Nombre')" sortable>
         <template #body="{ data }">

@@ -278,7 +278,7 @@ onMounted(() => {
       :table="table"
       empty-key="Liquidaciones.Empty"
       class="flex-1"
-      @row-edit="(row) => abrirDetalle(row)"
+      @row-edit="(row: any) => abrirDetalle(row)"
     >
       <Column field="empleadoNombre" :header="$t('Empleados.Nombre')" sortable />
       <Column field="fechaInicio" :header="$t('Liquidaciones.Periodo')" sortable>

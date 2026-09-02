@@ -11,6 +11,16 @@ export const useUiStore = defineStore('ui', () => {
   const sidebarExpanded = ref(true)
   const commandPaletteOpen = ref(false)
   const shortcutHelpOpen = ref(false)
+  const sidebarGroupExpanded = ref<Record<string, boolean>>(
+    (() => {
+      try {
+        const raw = localStorage.getItem('ui:sidebarGroups')
+        return raw ? (JSON.parse(raw) as Record<string, boolean>) : {}
+      } catch {
+        return {}
+      }
+    })(),
+  )
   /** Hides every amount on screen, for working with somebody looking over your shoulder. */
   const privacyMode = ref(false)
   const bootstrapState = ref<'initializing' | 'ready' | 'failed'>('initializing')
@@ -51,6 +61,30 @@ export const useUiStore = defineStore('ui', () => {
     sidebarExpanded.value = !sidebarExpanded.value
   }
 
+  function isGroupExpanded(key: string, defaultExpanded = true): boolean {
+    const v = sidebarGroupExpanded.value[key]
+    return v === undefined ? defaultExpanded : v
+  }
+
+  function toggleGroup(key: string, defaultExpanded = true): void {
+    const current = isGroupExpanded(key, defaultExpanded)
+    sidebarGroupExpanded.value = { ...sidebarGroupExpanded.value, [key]: !current }
+    try {
+      localStorage.setItem('ui:sidebarGroups', JSON.stringify(sidebarGroupExpanded.value))
+    } catch {
+      // ignore
+    }
+  }
+
+  function setGroupExpanded(key: string, expanded: boolean): void {
+    sidebarGroupExpanded.value = { ...sidebarGroupExpanded.value, [key]: expanded }
+    try {
+      localStorage.setItem('ui:sidebarGroups', JSON.stringify(sidebarGroupExpanded.value))
+    } catch {
+      // ignore
+    }
+  }
+
   function openCommandPalette(): void {
     commandPaletteOpen.value = true
   }
@@ -82,6 +116,7 @@ export const useUiStore = defineStore('ui', () => {
     privacyMode,
     bootstrapState,
     bootstrapErrorKey,
+    sidebarGroupExpanded,
     setTheme,
     cycleTheme,
     toggleSidebar,
@@ -90,5 +125,8 @@ export const useUiStore = defineStore('ui', () => {
     togglePrivacy,
     markReady,
     markFailed,
+    isGroupExpanded,
+    toggleGroup,
+    setGroupExpanded,
   }
 })

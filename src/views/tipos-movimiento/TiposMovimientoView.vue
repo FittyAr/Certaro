@@ -116,7 +116,7 @@ onMounted(() => table.start())
       :table="table"
       empty-key="TiposMovimiento.Empty"
       class="flex-1"
-      @row-edit="(row) => drawer.openEdit(row.id)"
+      @row-edit="(row: any) => drawer.openEdit(row.id)"
     >
       <Column field="nombre" :header="$t('TiposMovimiento.Nombre')" sortable />
       <Column field="descripcion" :header="$t('TiposMovimiento.Descripcion')">

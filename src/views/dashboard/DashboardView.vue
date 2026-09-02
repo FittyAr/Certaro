@@ -259,7 +259,7 @@ onMounted(() => {
         <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <KpiCard :label="$t('Dashboard.ClientesActivos')" :count="stats.clientesActivos" />
           <KpiCard :label="$t('Dashboard.TrabajosPendientes')" :count="stats.trabajosPendientes" />
-          <KpiCard :label="$t('Dashboard.ObrasPausadas')" :count="stats.obrasPausadas" />
+          <KpiCard :label="$t('Dashboard.ProyectosPausados')" :count="stats.proyectosPausadas" />
           <KpiCard :label="$t('Dashboard.FacturasVencidas')" :count="stats.facturasVencidas" />
           <KpiCard
             :label="$t('Dashboard.LiquidacionesPendientes')"
@@ -311,33 +311,33 @@ onMounted(() => {
 
         <div class="grid gap-3 lg:grid-cols-2">
           <section class="rounded-lg border border-border bg-surface-card p-4">
-            <h3 class="mb-3 text-sm font-semibold">{{ $t('Dashboard.MejoresObras') }}</h3>
-            <p v-if="!stats.mejoresObras?.length" class="text-xs text-muted-foreground">
+            <h3 class="mb-3 text-sm font-semibold">{{ $t('Dashboard.MejoresProyectos') }}</h3>
+            <p v-if="!stats.mejoresProyectos?.length" class="text-xs text-muted-foreground">
               {{ $t('Dashboard.SinDatos') }}
             </p>
             <ul v-else class="space-y-2 text-sm">
-              <li v-for="obra in stats.mejoresObras" :key="obra.id" class="space-y-1">
+              <li v-for="proyecto in stats.mejoresProyectos" :key="proyecto.id" class="space-y-1">
                 <div class="flex items-center gap-2">
-                  <span class="flex-1 truncate">{{ obra.nombre }}</span>
-                  <MoneyText :value="obra.rentabilidad" colored />
+                  <span class="flex-1 truncate">{{ proyecto.nombre }}</span>
+                  <MoneyText :value="proyecto.rentabilidad" colored />
                 </div>
-                <PercentBar :value="obra.margenPorcentaje" />
+                <PercentBar :value="proyecto.margenPorcentaje" />
               </li>
             </ul>
           </section>
 
           <section class="rounded-lg border border-border bg-surface-card p-4">
-            <h3 class="mb-3 text-sm font-semibold">{{ $t('Dashboard.PeoresObras') }}</h3>
-            <p v-if="!stats.peoresObras?.length" class="text-xs text-muted-foreground">
+            <h3 class="mb-3 text-sm font-semibold">{{ $t('Dashboard.PeoresProyectos') }}</h3>
+            <p v-if="!stats.peoresProyectos?.length" class="text-xs text-muted-foreground">
               {{ $t('Dashboard.SinDatos') }}
             </p>
             <ul v-else class="space-y-2 text-sm">
-              <li v-for="obra in stats.peoresObras" :key="obra.id" class="space-y-1">
+              <li v-for="proyecto in stats.peoresProyectos" :key="proyecto.id" class="space-y-1">
                 <div class="flex items-center gap-2">
-                  <span class="flex-1 truncate">{{ obra.nombre }}</span>
-                  <MoneyText :value="obra.rentabilidad" colored />
+                  <span class="flex-1 truncate">{{ proyecto.nombre }}</span>
+                  <MoneyText :value="proyecto.rentabilidad" colored />
                 </div>
-                <PercentBar :value="obra.margenPorcentaje" />
+                <PercentBar :value="proyecto.margenPorcentaje" />
               </li>
             </ul>
           </section>

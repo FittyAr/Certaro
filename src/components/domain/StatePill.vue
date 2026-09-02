@@ -8,7 +8,7 @@ import { computed } from 'vue'
  * storage detail, and reading it here would break the day a state is appended out of order.
  */
 
-export type StateEntity = 'Factura' | 'Obra' | 'Trabajo'
+export type StateEntity = 'Factura' | 'Proyecto' | 'Trabajo'
 
 const props = defineProps<{ entity: StateEntity; value: string }>()
 
@@ -22,7 +22,7 @@ const TOKENS: Record<StateEntity, Record<string, string>> = {
     Vencida: 'overdue',
     Anulada: 'void',
   },
-  Obra: {
+  Proyecto: {
     Activa: 'active',
     Pausada: 'paused',
     Finalizada: 'finished',

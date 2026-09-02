@@ -11,6 +11,7 @@ import DateInput from '@/components/domain/DateInput.vue'
 import DateText from '@/components/domain/DateText.vue'
 import DecimalInput from '@/components/domain/DecimalInput.vue'
 import FieldError from '@/components/domain/FieldError.vue'
+import Divider from 'primevue/divider'
 import FilterBar from '@/components/domain/FilterBar.vue'
 import MoneyInput from '@/components/domain/MoneyInput.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
@@ -163,11 +164,13 @@ onMounted(async () => {
       </label>
     </FilterBar>
 
+    <Divider />
+
     <DataGrid
       :table="table"
       empty-key="Empleados.Empty"
       class="flex-1"
-      @row-edit="(row) => drawer.openEdit(row.id)"
+      @row-edit="(row: any) => drawer.openEdit(row.id)"
     >
       <Column field="nombre" :header="$t('Empleados.Nombre')" sortable />
       <Column field="dni" :header="$t('Empleados.Dni')">

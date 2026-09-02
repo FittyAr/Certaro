@@ -22,11 +22,15 @@ export interface MenuItem {
 export interface MenuGroup {
   labelKey: string
   items: MenuItem[]
+  collapsible?: boolean
+  defaultExpanded?: boolean
 }
 
 export const MENU: MenuGroup[] = [
   {
     labelKey: 'Menu.Group.Operacion',
+    collapsible: true,
+    defaultExpanded: true,
     items: [
       { route: 'dashboard', labelKey: 'Menu.Dashboard', icon: 'layout-dashboard' },
       {
@@ -39,9 +43,11 @@ export const MENU: MenuGroup[] = [
   },
   {
     labelKey: 'Menu.Group.Comercial',
+    collapsible: true,
+    defaultExpanded: true,
     items: [
       { route: 'clientes', labelKey: 'Menu.Clientes', icon: 'users' },
-      { route: 'obras', labelKey: 'Menu.Obras', icon: 'building-2' },
+      { route: 'proyectos', labelKey: 'Menu.Proyectos', icon: 'building-2' },
       { route: 'trabajos', labelKey: 'Menu.Trabajos', icon: 'hammer' },
       { route: 'certificados', labelKey: 'Menu.Certificados', icon: 'file-badge' },
       {
@@ -54,6 +60,8 @@ export const MENU: MenuGroup[] = [
   },
   {
     labelKey: 'Menu.Group.Personal',
+    collapsible: true,
+    defaultExpanded: true,
     items: [
       { route: 'empleados', labelKey: 'Menu.Empleados', icon: 'id-card' },
       { route: 'asistencia', labelKey: 'Menu.Asistencia', icon: 'calendar-check' },
@@ -67,6 +75,8 @@ export const MENU: MenuGroup[] = [
   },
   {
     labelKey: 'Menu.Group.Sistema',
+    collapsible: true,
+    defaultExpanded: true,
     items: [
       { route: 'reportes', labelKey: 'Menu.Reports', icon: 'file-chart-column' },
       { route: 'categorias', labelKey: 'Menu.Categories', icon: 'tags' },
@@ -96,7 +106,7 @@ export function numericShortcutRoutes(): string[] {
 /** The menu entry to highlight, given the chain of route names of the current location. */
 export function activeMenuRoute(routeChain: string[]): string | undefined {
   const known = new Set(menuItems(true).map((item) => item.route))
-  // Walked from the deepest ancestor outwards: standing in `/obras/:id/trabajos` the entry to
-  // highlight is Obras, because that is how the screen was reached.
+  // Walked from the deepest ancestor outwards: standing in `/proyectos/:id/trabajos` the entry to
+  // highlight is Proyectos, because that is how the screen was reached.
   return [...routeChain].reverse().find((name) => known.has(name))
 }

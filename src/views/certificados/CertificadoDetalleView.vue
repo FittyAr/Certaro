@@ -139,8 +139,8 @@ onMounted(cargar)
           class="grid grid-cols-2 gap-3 rounded-md border border-border p-4 text-sm md:grid-cols-4"
         >
           <div>
-            <dt class="text-xs text-muted-foreground">{{ $t('Certificados.Obra') }}</dt>
-            <dd>{{ certificado.obraNumero }} � {{ certificado.obraNombre }}</dd>
+            <dt class="text-xs text-muted-foreground">{{ $t('Certificados.Proyecto') }}</dt>
+            <dd>{{ certificado.proyectoNumero }} � {{ certificado.proyectoNombre }}</dd>
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">{{ $t('Certificados.Cliente') }}</dt>

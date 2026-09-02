@@ -12,6 +12,7 @@ import DataGrid from '@/components/domain/DataGrid.vue'
 import DateInput from '@/components/domain/DateInput.vue'
 import DateText from '@/components/domain/DateText.vue'
 import FieldError from '@/components/domain/FieldError.vue'
+import Divider from 'primevue/divider'
 import FilterBar from '@/components/domain/FilterBar.vue'
 import MoneyInput from '@/components/domain/MoneyInput.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
@@ -26,7 +27,7 @@ import { useServerTable } from '@/composables/useServerTable'
 import { useShortcuts } from '@/composables/useShortcuts'
 import type { LookupItem } from '@/stores/useCatalogStore'
 import { useClientesStore } from '@/stores/useClientesStore'
-import { useObrasStore } from '@/stores/useObrasStore'
+import { useProyectosStore } from '@/stores/useProyectosStore'
 import {
   useTrabajosStore,
   type EstadoTrabajo,
@@ -47,7 +48,7 @@ const router = useRouter()
 const { confirmDelete } = useConfirmDelete()
 const { notify } = useApiError()
 const store = useTrabajosStore()
-const obras = useObrasStore()
+const proyectos = useProyectosStore()
 const clientes = useClientesStore()
 
 const table = useServerTable<TrabajoFiltro, TrabajoListItem>({
@@ -57,7 +58,7 @@ const table = useServerTable<TrabajoFiltro, TrabajoListItem>({
   defaultSort: { field: 'fechaInicio', dir: 'Desc' },
 })
 
-const opcionesObra = ref<LookupItem[]>([])
+const opcionesProyecto = ref<LookupItem[]>([])
 const opcionesCliente = ref<LookupItem[]>([])
 
 const estadoOptions = computed<{ label: string; value: EstadoTrabajo }[]>(() =>
@@ -72,7 +73,7 @@ watch(
   () => table.filter.value.clienteId,
   async (clienteId) => {
     try {
-      opcionesObra.value = await obras.lookup(clienteId, undefined, 200)
+      opcionesProyecto.value = await proyectos.lookup(clienteId, undefined, 200)
     } catch (e) {
       notify(e)
     }
@@ -88,7 +89,7 @@ function hoy(): string {
 const drawer = useCrudDrawer<Model>({
   entityKey: 'Entity.Trabajo',
   empty: () => ({
-    obraId: '',
+    proyectoId: '',
     descripcion: '',
     fechaInicio: hoy(),
     fechaFin: null,
@@ -97,7 +98,7 @@ const drawer = useCrudDrawer<Model>({
   load: async (id) => {
     const d = await store.fetchOne(id)
     return {
-      obraId: d.obraId,
+      proyectoId: d.proyectoId,
       descripcion: d.descripcion,
       fechaInicio: d.fechaInicio,
       fechaFin: d.fechaFin,
@@ -122,7 +123,7 @@ async function cambiarEstado(row: TrabajoListItem, destino: EstadoTrabajo): Prom
 const filtrosActivos = computed(() =>
   Boolean(
     table.filter.value.texto ||
-    table.filter.value.obraId ||
+    table.filter.value.proyectoId ||
     table.filter.value.clienteId ||
     table.filter.value.estado ||
     table.filter.value.fechaDesde ||
@@ -144,13 +145,22 @@ function onDelete(row: TrabajoListItem): void {
   })
 }
 
+function trabajoContextMenu(row: TrabajoListItem) {
+  return [
+    { label: t('General.Edit'), icon: 'pi pi-pencil', command: () => drawer.openEdit(row.id) },
+    { label: t('Ordenes.Title'), icon: 'pi pi-file-edit', command: () => verOrdenes(row) },
+    { separator: true },
+    { label: t('General.Delete'), icon: 'pi pi-trash', command: () => onDelete(row) },
+  ]
+}
+
 useShortcuts({ 'ctrl+n': () => drawer.openCreate() })
 
 onMounted(async () => {
   table.start()
   try {
-    ;[opcionesObra.value, opcionesCliente.value] = await Promise.all([
-      obras.lookup(undefined, undefined, 200),
+    ;[opcionesProyecto.value, opcionesCliente.value] = await Promise.all([
+      proyectos.lookup(undefined, undefined, 200),
       clientes.lookup(undefined, 200),
     ])
   } catch (e) {
@@ -188,10 +198,10 @@ onMounted(async () => {
         />
       </label>
       <label class="flex flex-col gap-1">
-        <span class="text-xs text-muted-foreground">{{ $t('Trabajos.Obra') }}</span>
+        <span class="text-xs text-muted-foreground">{{ $t('Trabajos.Proyecto') }}</span>
         <Select
-          v-model="table.filter.value.obraId"
-          :options="opcionesObra"
+          v-model="table.filter.value.proyectoId"
+          :options="opcionesProyecto"
           option-label="label"
           option-value="id"
           filter
@@ -220,18 +230,21 @@ onMounted(async () => {
       </label>
     </FilterBar>
 
+    <Divider />
+
     <DataGrid
       :table="table"
       empty-key="Trabajos.Empty"
       class="flex-1"
-      @row-edit="(row) => drawer.openEdit(row.id)"
+      :context-menu-items="trabajoContextMenu"
+      @row-edit="(row: any) => drawer.openEdit(row.id)"
     >
       <Column field="fechaInicio" :header="$t('Trabajos.FechaInicio')" sortable>
         <template #body="{ data }"><DateText :value="data.fechaInicio" /></template>
       </Column>
       <Column field="descripcion" :header="$t('Trabajos.Descripcion')" sortable />
-      <Column field="obraNombre" :header="$t('Trabajos.Obra')" sortable>
-        <template #body="{ data }">{{ data.obraNumero }} · {{ data.obraNombre }}</template>
+      <Column field="proyectoNombre" :header="$t('Trabajos.Proyecto')" sortable>
+        <template #body="{ data }">{{ data.proyectoNumero }} · {{ data.proyectoNombre }}</template>
       </Column>
       <Column field="clienteNombre" :header="$t('Trabajos.Cliente')" sortable />
       <Column field="presupuesto" :header="$t('Trabajos.Presupuesto')" sortable>
@@ -286,16 +299,16 @@ onMounted(async () => {
 
     <CrudDrawer :drawer="drawer" title-key="Entity.Trabajo">
       <label class="flex flex-col gap-1">
-        <span class="text-sm">{{ $t('Trabajos.Obra') }}</span>
+        <span class="text-sm">{{ $t('Trabajos.Proyecto') }}</span>
         <Select
-          v-model="drawer.model.value.obraId"
-          :options="opcionesObra"
+          v-model="drawer.model.value.proyectoId"
+          :options="opcionesProyecto"
           option-label="label"
           option-value="id"
           filter
-          :invalid="Boolean(drawer.fieldErrors.value.obraId)"
+          :invalid="Boolean(drawer.fieldErrors.value.proyectoId)"
         />
-        <FieldError id="trab-obra-error" :message="drawer.fieldErrors.value.obraId" />
+        <FieldError id="trab-proyecto-error" :message="drawer.fieldErrors.value.proyectoId" />
       </label>
 
       <label class="flex flex-col gap-1">

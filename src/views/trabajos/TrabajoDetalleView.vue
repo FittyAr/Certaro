@@ -3,6 +3,8 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ListState from '@/components/domain/ListState.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
+import StatePill from '@/components/domain/StatePill.vue'
+import Divider from 'primevue/divider'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { Button } from '@/components/ui/button'
@@ -35,7 +37,7 @@ onMounted(cargar)
   <section class="flex h-full flex-col gap-4 p-6">
     <PageHeader
       :title="trabajo?.descripcion ?? $t('Menu.Trabajos')"
-      :subtitle="trabajo?.obraNombre"
+      :subtitle="trabajo?.proyectoNombre"
     >
       <template #actions>
         <Button variant="outline" @click="router.back()">
@@ -49,6 +51,8 @@ onMounted(cargar)
         </Button>
       </template>
     </PageHeader>
+
+    <Divider />
     <ListState
       :loading="loading"
       :first-load="firstLoad"
@@ -64,12 +68,12 @@ onMounted(cargar)
         class="grid gap-4 rounded-md border border-border p-4 text-sm md:grid-cols-2"
       >
         <div>
-          <span class="text-xs text-muted-foreground">Obra</span>
-          <p>{{ trabajo.obraNombre }}</p>
+          <span class="text-xs text-muted-foreground">Proyecto</span>
+          <p>{{ trabajo.proyectoNombre }}</p>
         </div>
         <div>
           <span class="text-xs text-muted-foreground">Estado</span>
-          <p>{{ trabajo.estado }}</p>
+          <p><StatePill entity="Trabajo" :value="trabajo.estado.actual" /></p>
         </div>
         <div>
           <span class="text-xs text-muted-foreground">Presupuesto</span>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Divider from 'primevue/divider'
 import Drawer from 'primevue/drawer'
 import { computed } from 'vue'
 
@@ -53,6 +54,8 @@ const title = computed(() =>
     <form class="space-y-4" @submit.prevent="drawer.save()">
       <slot />
     </form>
+
+    <Divider class="my-4" />
 
     <template #footer>
       <div class="flex justify-end gap-2">

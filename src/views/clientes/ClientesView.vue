@@ -3,11 +3,13 @@ import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import CrudDrawer from '@/components/domain/CrudDrawer.vue'
 import DataGrid from '@/components/domain/DataGrid.vue'
 import FieldError from '@/components/domain/FieldError.vue'
+import Divider from 'primevue/divider'
 import FilterBar from '@/components/domain/FilterBar.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
@@ -33,6 +35,7 @@ import {
  */
 
 const { confirmDelete } = useConfirmDelete()
+const { t } = useI18n()
 const router = useRouter()
 const store = useClientesStore()
 
@@ -125,6 +128,24 @@ function onDelete(row: ClienteListItem): void {
   })
 }
 
+function clienteContextMenu(row: ClienteListItem) {
+  return [
+    { label: t('General.Edit'), icon: 'pi pi-pencil', command: () => drawer.openEdit(row.id) },
+    {
+      label: t('Comercial.CuentaCorriente.Title'),
+      icon: 'pi pi-wallet',
+      command: () => verCuenta(row.id),
+    },
+    { separator: true },
+    {
+      label: t('General.Delete'),
+      icon: 'pi pi-trash',
+      disabled: !row.puedeEliminarse,
+      command: () => onDelete(row),
+    },
+  ]
+}
+
 useShortcuts({ 'ctrl+n': () => drawer.openCreate() })
 
 onMounted(() => table.start())
@@ -156,11 +177,14 @@ onMounted(() => table.start())
       </label>
     </FilterBar>
 
+    <Divider />
+
     <DataGrid
       :table="table"
       empty-key="Clientes.Empty"
       class="flex-1"
-      @row-edit="(row) => drawer.openEdit(row.id)"
+      :context-menu-items="clienteContextMenu"
+      @row-edit="(row: any) => drawer.openEdit(row.id)"
     >
       <Column field="nombre" :header="$t('Clientes.Nombre')" sortable />
       <Column field="cuit" :header="$t('Clientes.Cuit')" sortable>
@@ -174,9 +198,9 @@ onMounted(() => table.start())
       <Column field="email" :header="$t('Clientes.Email')">
         <template #body="{ data }">{{ data.email ?? '—' }}</template>
       </Column>
-      <Column field="obrasCount" :header="$t('Clientes.Obras')" sortable>
+      <Column field="proyectosCount" :header="$t('Clientes.Proyectos')" sortable>
         <template #body="{ data }">
-          <span class="tabular-nums">{{ data.obrasCount }}</span>
+          <span class="tabular-nums">{{ data.proyectosCount }}</span>
         </template>
       </Column>
       <Column field="deuda" :header="$t('Clientes.Deuda')" sortable>

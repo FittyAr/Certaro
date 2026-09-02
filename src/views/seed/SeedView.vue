@@ -98,8 +98,8 @@ async function ejecutarSembrado(): Promise<void> {
           </div>
 
           <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface-raised p-3">
-            <dt class="text-xs text-muted-foreground">{{ $t('Seed.Obras') }}</dt>
-            <dd class="text-lg font-bold text-foreground tabular-nums">{{ summary.obras }}</dd>
+            <dt class="text-xs text-muted-foreground">{{ $t('Seed.Proyectos') }}</dt>
+            <dd class="text-lg font-bold text-foreground tabular-nums">{{ summary.proyectos }}</dd>
           </div>
 
           <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface-raised p-3">

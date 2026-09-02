@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ListState from '@/components/domain/ListState.vue'
+import Divider from 'primevue/divider'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { Button } from '@/components/ui/button'
@@ -48,6 +49,8 @@ onMounted(cargar)
         </Button>
       </template>
     </PageHeader>
+
+    <Divider />
     <ListState
       :loading="loading"
       :first-load="firstLoad"
