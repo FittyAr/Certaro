@@ -23,7 +23,14 @@ pub const FORMAT_VERSION: u32 = 2;
 ///
 /// Taken from the model rather than from `sqlite_master`, so the migration bookkeeping tables never
 /// take part and an unknown name in a file is caught by comparing against this.
-pub const TABLAS: [&str; 20] = [
+pub const TABLAS: [&str; 27] = [
+    "roles",
+    "permisos",
+    "usuarios",
+    "usuario_roles",
+    "rol_permisos",
+    "sesiones",
+    "auth_externo",
     "tipos_movimiento",
     "categorias",
     "tipos_concepto_pago",

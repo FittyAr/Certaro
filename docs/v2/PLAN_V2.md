@@ -31,14 +31,14 @@
   - [x] 1.5 Adaptación de modelos y tipos de auditoría (soft-delete y unique indexes portables)
   - [x] 1.6 Tests de persistencia y verificación multi-dialecto
 
-- [ ] **Fase 2: Sistema de Autenticación, Usuarios, Roles y Permisos (RBAC)**
-  - [ ] 2.1 Entidades de dominio (`Usuario`, `Rol`, `Permiso`, `Sesion`, `AuthExterno`)
-  - [ ] 2.2 Modelos de persistencia SeaORM y migraciones para las 7 tablas de Auth
-  - [ ] 2.3 Puertos de seguridad (`PasswordHasher` con Argon2id, `TokenPort`, `TotpPort`)
-  - [ ] 2.4 Casos de uso de autenticación y gestión de usuarios/roles
-  - [ ] 2.5 Seed de usuario Super Administrador y catálogo de permisos
-  - [ ] 2.6 Middleware/Guard de permisos en Tauri (bypass transparente en modo SQLite)
-  - [ ] 2.7 Frontend: Store de Auth (`useAuthStore`), vistas de Login, Usuarios y Roles, composable `usePermission`
+- [x] **Fase 2: Sistema de Autenticación, Usuarios, Roles y Permisos (RBAC)**
+  - [x] 2.1 Entidades de dominio (`Usuario`, `Rol`, `Permiso`, `Sesion`, `AuthExterno`)
+  - [x] 2.2 Modelos de persistencia SeaORM y migraciones para las 7 tablas de Auth
+  - [x] 2.3 Puertos de seguridad (`PasswordHasher` con Argon2id, `TokenPort`, `TotpPort`)
+  - [x] 2.4 Casos de uso de autenticación y gestión de usuarios/roles
+  - [x] 2.5 Seed de usuario Super Administrador y catálogo de permisos
+  - [x] 2.6 Middleware/Guard de permisos en Tauri (bypass transparente en modo SQLite)
+  - [x] 2.7 Frontend: Store de Auth (`useAuthStore`), vistas de Login, Usuarios y Roles, composable `usePermission`
 
 - [ ] **Fase 3: Módulo Tablero Kanban**
   - [ ] 3.1 Entidades de dominio (`KanbanTablero`, `KanbanColumna`, `KanbanTarjeta`, `KanbanEtiqueta`, etc.)
@@ -115,4 +115,6 @@ sistema:configuracion    sistema:backup           sistema:restore
 
 | Fecha | Commit | Descripción |
 |---|---|---|
-| 2026-09-02 | *(inicial)* | Creación de rama `feat/v2-enterprise-expansion` y documento `docs/v2/PLAN_V2.md` |
+| 2026-09-02 | `001509b` | Creación de rama `feat/v2-enterprise-expansion` y documento `docs/v2/PLAN_V2.md` |
+| 2026-09-02 | `9957b1b` | feat: add multi-database support for MySQL and PostgreSQL (fase 1) |
+| 2026-09-02 | `HEAD` | feat: implement enterprise authentication & RBAC system (fase 2) |

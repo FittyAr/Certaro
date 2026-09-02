@@ -21,6 +21,7 @@ const DETAIL_ROUTES = new Set([
   'certificado-detalle',
   'liquidacion-detalle',
   'welcome',
+  'login',
 ])
 
 function topLevelRoutes(): string[] {

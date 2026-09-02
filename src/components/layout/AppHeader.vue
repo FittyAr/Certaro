@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 
 import { Button } from '@/components/ui/button'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import { useAuthStore } from '@/stores/useAuthStore'
 import { useUiStore } from '@/stores/useUiStore'
 
 /** Fixed header of `docs/10-navegacion-y-atajos.md` §1. */
@@ -12,6 +13,7 @@ import { useUiStore } from '@/stores/useUiStore'
 defineProps<{ overlay: boolean }>()
 
 const ui = useUiStore()
+const authStore = useAuthStore()
 const route = useRoute()
 const { t } = useI18n()
 
@@ -64,5 +66,27 @@ const themeIcon = computed(() =>
     >
       <AppIcon :name="ui.privacyMode ? 'eye-off' : 'eye'" />
     </Button>
+
+    <div v-if="authStore.user" class="flex items-center gap-2 pl-2 border-l border-border">
+      <div
+        class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs"
+        :title="authStore.user.email"
+      >
+        {{ authStore.user.nombreCompleto.slice(0, 2).toUpperCase() }}
+      </div>
+      <span class="text-xs font-medium text-foreground max-w-[120px] truncate hidden md:inline">
+        {{ authStore.user.nombreCompleto }}
+      </span>
+      <Button
+        v-if="authStore.requiresLogin"
+        variant="ghost"
+        size="icon"
+        class="text-muted-foreground hover:text-destructive"
+        title="Cerrar sesión"
+        @click="authStore.logout()"
+      >
+        <AppIcon name="LogOut" :size="16" />
+      </Button>
+    </div>
   </header>
 </template>

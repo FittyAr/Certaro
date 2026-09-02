@@ -19,6 +19,10 @@ declare module 'vue-router' {
     idParam?: string
     /** Registered only when the seed screen is enabled. */
     devOnly?: boolean
+    /** Required permission to access the route. */
+    permission?: string
+    /** Route only accessible when unauthenticated (e.g. login). */
+    guestOnly?: boolean
   }
 }
 
@@ -196,6 +200,24 @@ export const routes: RouteRecordRaw[] = [
     name: 'feriados',
     component: () => import('@/views/feriados/FeriadosView.vue'),
     meta: { titleKey: 'Menu.Feriados' },
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('@/views/auth/LoginView.vue'),
+    meta: { titleKey: 'Auth.Login.Title', guestOnly: true },
+  },
+  {
+    path: '/admin/usuarios',
+    name: 'usuarios',
+    component: () => import('@/views/admin/UsuariosView.vue'),
+    meta: { titleKey: 'Menu.Usuarios', permission: 'usuarios:ver' },
+  },
+  {
+    path: '/admin/roles',
+    name: 'roles',
+    component: () => import('@/views/admin/RolesView.vue'),
+    meta: { titleKey: 'Menu.Roles', permission: 'usuarios:gestionar_roles' },
   },
   {
     path: '/configuracion',

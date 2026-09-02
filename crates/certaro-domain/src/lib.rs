@@ -22,10 +22,11 @@ pub mod time;
 
 pub use decimal4::Decimal4;
 pub use entities::{
-    AsistenciaEmpleado, Audit, Categoria, Certificado, CertificadoItem, Cliente, ClienteContacto,
-    Empleado, Factura, Feriado, Liquidacion, LiquidacionAdelanto, Movimiento, Proyecto, OrdenTrabajo,
-    OrdenTrabajoItem, OrigenFeriado, PagoFactura, ReglasLiquidacion, ResumenAsistencia,
-    TipoMovimiento, Trabajo,
+    Adjunto, AsistenciaEmpleado, Audit, AuthExterno, AuthProvider, Categoria, Certificado,
+    CertificadoItem, Cliente, ClienteContacto, Empleado, Factura, Feriado, Liquidacion,
+    LiquidacionAdelanto, Movimiento, OrdenTrabajo, OrdenTrabajoItem, OrigenFeriado, PagoFactura,
+    Permiso, Proyecto, ReglasLiquidacion, ResumenAsistencia, Rol, RolPermiso, Sesion,
+    TipoMovimiento, Trabajo, Usuario, UsuarioRol,
 };
 pub use enums::{
     EstadoFactura, EstadoProyecto, EstadoTrabajo, FrecuenciaPago, MedioPago, Moneda, TipoJornada,

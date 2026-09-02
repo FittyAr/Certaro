@@ -17,6 +17,8 @@ export interface MenuItem {
   synonymKeys?: string[]
   /** Only registered when `Application.SeedEnabled` is on. */
   devOnly?: boolean
+  /** Required permission to see in menu. */
+  permission?: string
 }
 
 export interface MenuGroup {
@@ -82,6 +84,8 @@ export const MENU: MenuGroup[] = [
       { route: 'categorias', labelKey: 'Menu.Categories', icon: 'tags' },
       { route: 'tipos-movimiento', labelKey: 'Menu.MovementTypes', icon: 'list-tree' },
       { route: 'feriados', labelKey: 'Menu.Feriados', icon: 'calendar-days' },
+      { route: 'usuarios', labelKey: 'Menu.Usuarios', icon: 'users-round', permission: 'usuarios:ver' },
+      { route: 'roles', labelKey: 'Menu.Roles', icon: 'shield-check', permission: 'usuarios:gestionar_roles' },
       { route: 'configuracion', labelKey: 'Menu.Settings', icon: 'settings' },
       { route: 'seed', labelKey: 'Menu.Seed', icon: 'database', devOnly: true },
     ],

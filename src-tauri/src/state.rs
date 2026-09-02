@@ -11,8 +11,10 @@ use certaro_application::ports::holidays::HolidayProvider;
 use certaro_application::ports::repositories::UnitOfWork;
 use certaro_application::ports::settings::SettingsStore;
 use certaro_application::ports::{AttachmentStore, BackupPort, OpenerPort};
+use certaro_application::ports::auth::{PasswordHasher, TokenPort, TotpPort};
 use certaro_application::use_cases::adjuntos::AdjuntosService;
 use certaro_application::use_cases::asistencias::AsistenciasService;
+use certaro_application::use_cases::auth::AuthService;
 use certaro_application::use_cases::categorias::CategoriasService;
 use certaro_application::use_cases::certificados::CertificadosService;
 use certaro_application::use_cases::clientes::ClientesService;
@@ -59,6 +61,7 @@ pub struct Services {
     pub adjuntos: AdjuntosService,
     pub sistema: SistemaService,
     pub configuracion: ConfiguracionService,
+    pub auth: AuthService,
 }
 
 impl Services {
@@ -73,6 +76,9 @@ impl Services {
         attachments: Arc<dyn AttachmentStore>,
         opener: Arc<dyn OpenerPort>,
         backup: Arc<dyn BackupPort>,
+        hasher: Arc<dyn PasswordHasher>,
+        tokens: Arc<dyn TokenPort>,
+        totp: Arc<dyn TotpPort>,
     ) -> Self {
         Self {
             tipos_movimiento: TiposMovimientoService::new(
@@ -167,6 +173,15 @@ impl Services {
                 Arc::clone(&clock),
             ),
             configuracion: ConfiguracionService::new(Arc::clone(&settings)),
+            auth: AuthService::new(
+                Arc::clone(&uow),
+                Arc::clone(&clock),
+                Arc::clone(&ids),
+                Arc::clone(&settings),
+                hasher,
+                tokens,
+                totp,
+            ),
             movimientos: MovimientosService::new(uow, clock, ids, settings),
         }
     }
@@ -220,6 +235,9 @@ impl AppState {
         attachments: Arc<dyn AttachmentStore>,
         opener: Arc<dyn OpenerPort>,
         backup: Arc<dyn BackupPort>,
+        hasher: Arc<dyn PasswordHasher>,
+        tokens: Arc<dyn TokenPort>,
+        totp: Arc<dyn TotpPort>,
     ) {
         let _ = self.db.set(db);
         let services = Services::build(
@@ -232,6 +250,9 @@ impl AppState {
             attachments,
             opener,
             backup,
+            hasher,
+            tokens,
+            totp,
         );
         let _ = self.services.set(services);
     }

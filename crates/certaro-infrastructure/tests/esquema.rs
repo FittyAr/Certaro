@@ -29,7 +29,7 @@ async fn count(db: &DatabaseConnection, sql: &str) -> i64 {
 }
 
 #[tokio::test]
-async fn las_migraciones_crean_las_veintiuna_tablas() {
+async fn las_migraciones_crean_las_veintiocho_tablas() {
     let db = open_in_memory().await.unwrap();
     let tablas = scalars(
         &db,
@@ -45,6 +45,7 @@ async fn las_migraciones_crean_las_veintiuna_tablas() {
             "adjuntos",
             "app_metadata",
             "asistencias_empleado",
+            "auth_externo",
             "categorias",
             "certificado_items",
             "certificados",
@@ -59,12 +60,36 @@ async fn las_migraciones_crean_las_veintiuna_tablas() {
             "orden_trabajo_items",
             "ordenes_trabajo",
             "pagos_factura",
+            "permisos",
             "proyectos",
+            "rol_permisos",
+            "roles",
+            "sesiones",
             "tipos_concepto_pago",
             "tipos_movimiento",
             "trabajos",
+            "usuario_roles",
+            "usuarios",
         ]
     );
+}
+
+#[tokio::test]
+async fn la_semilla_crea_super_admin_y_roles_de_sistema() {
+    let db = open_in_memory().await.unwrap();
+    let super_admin = scalars(
+        &db,
+        "SELECT email FROM usuarios WHERE id = '00000000-0000-0000-0000-000000000999'",
+        "email",
+    )
+    .await;
+    assert_eq!(super_admin, ["admin@certaro.local"]);
+
+    let roles_cnt = count(&db, "SELECT COUNT(*) as n FROM roles WHERE es_sistema = 1").await;
+    assert_eq!(roles_cnt, 3);
+
+    let permisos_cnt = count(&db, "SELECT COUNT(*) as n FROM permisos").await;
+    assert_eq!(permisos_cnt, 39);
 }
 
 #[tokio::test]

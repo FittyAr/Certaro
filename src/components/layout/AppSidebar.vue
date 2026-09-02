@@ -6,6 +6,7 @@ import Divider from 'primevue/divider'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { useBreadcrumb } from '@/composables/useBreadcrumb'
 import { activeMenuRoute, MENU, numericShortcutRoutes } from '@/router/menu'
+import { useAuthStore } from '@/stores/useAuthStore'
 import { useConfigStore } from '@/stores/useConfigStore'
 import { useUiStore } from '@/stores/useUiStore'
 
@@ -15,6 +16,7 @@ const props = defineProps<{ overlay: boolean }>()
 
 const ui = useUiStore()
 const config = useConfigStore()
+const authStore = useAuthStore()
 const { routeChain } = useBreadcrumb()
 
 const seedEnabled = computed(() => config.config?.application.seedEnabled ?? false)
@@ -22,7 +24,11 @@ const seedEnabled = computed(() => config.config?.application.seedEnabled ?? fal
 const groups = computed(() =>
   MENU.map((group) => ({
     ...group,
-    items: group.items.filter((item) => !item.devOnly || seedEnabled.value),
+    items: group.items.filter((item) => {
+      if (item.devOnly && !seedEnabled.value) return false
+      if (item.permission && !authStore.hasPermission(item.permission)) return false
+      return true
+    }),
   })).filter((group) => group.items.length > 0),
 )
 

@@ -49,6 +49,11 @@
     "Subtitle": "Un click recorre los tipos de jornada y vuelve al vacío",
     "TipoJornada": "Tipo de jornada"
   },
+  "Auth": {
+    "Login": {
+      "Title": "Iniciar Sesión"
+    }
+  },
   "Backup": {
     "Create": "Crear backup",
     "Created": "Backup creado",
@@ -96,11 +101,11 @@
     "Fecha": "Fecha",
     "Hasta": "Hasta",
     "Numero": "N.º",
-    "Proyecto": "Proyecto",
     "Observaciones": "Observaciones",
     "Orden": "Orden",
     "OtrosDescuentos": "Otros descuentos",
     "PrecioUnitario": "Precio unitario",
+    "Proyecto": "Proyecto",
     "Subtitle": "Historial de certificaciones de avance",
     "Subtotal": "Subtotal",
     "SubtotalAcumulado": "Subtotal acumulado",
@@ -288,7 +293,6 @@
     },
     "Migraciones": "Migraciones",
     "Movimientos": "Movimientos",
-    "ProyectosPausados": "Proyectos pausadas",
     "PeoresProyectos": "Proyectos menos rentables",
     "Period": {
       "Anual": "Año",
@@ -296,6 +300,7 @@
       "Total": "Todo"
     },
     "Periodo": "Período",
+    "ProyectosPausados": "Proyectos pausadas",
     "SerieAnual": "Ingresos y gastos del año",
     "SinBase": "Sin base de comparación",
     "SinDatos": "Sin datos en el período",
@@ -337,8 +342,8 @@
     "Feriado": "feriado",
     "Liquidacion": "liquidación",
     "Movimiento": "movimiento",
-    "Proyecto": "proyecto",
     "OrdenTrabajo": "orden de trabajo",
+    "Proyecto": "proyecto",
     "TipoMovimiento": "tipo de movimiento",
     "Trabajo": "trabajo"
   },
@@ -469,6 +474,7 @@
     "Theme": "Cambiar tema",
     "To": "Hasta",
     "Version": "Versión {version}",
+    "View": "Ver",
     "WorkInProgress": "Esta pantalla todavía no está implementada",
     "Yes": "Sí"
   },
@@ -547,6 +553,7 @@
     "Movimientos": "Movimientos",
     "Proyectos": "Proyectos",
     "Reports": "Reportes",
+    "Roles": "Roles y Permisos",
     "Seed": "Datos de prueba",
     "Settings": "Configuración",
     "Synonym": {
@@ -555,7 +562,8 @@
       "Gastos": "gastos ingresos",
       "Sueldos": "sueldos jornales pagos"
     },
-    "Trabajos": "Trabajos"
+    "Trabajos": "Trabajos",
+    "Usuarios": "Usuarios"
   },
   "Movimientos": {
     "Balance": "Balance",
@@ -581,6 +589,36 @@
     "Tipo": "Tipo",
     "Total": "Total"
   },
+  "Ordenes": {
+    "AjusteUocra": "Ajuste UOCRA",
+    "Avance": "Avance",
+    "BajarLinea": "Bajar",
+    "Cantidad": "Cantidad",
+    "Certificado": "Certificado",
+    "Certificados": "Certificados",
+    "Cliente": "Cliente",
+    "Descripcion": "Descripción",
+    "Editar": "Editar orden de trabajo",
+    "Empty": "Este trabajo no tiene órdenes de trabajo",
+    "Fecha": "Fecha",
+    "Items": "Ítems",
+    "Nota": "Nota",
+    "Nueva": "Nueva orden de trabajo",
+    "Observaciones": "Observaciones",
+    "OtrosDescuentos": "Otros descuentos",
+    "PrecioUnitario": "Precio unitario",
+    "Proyecto": "Proyecto",
+    "SubirLinea": "Subir",
+    "Subtotal": "Subtotal",
+    "Title": "Órdenes de trabajo",
+    "Titulo": "Título",
+    "TotalCertificado": "Total certificado",
+    "TotalNeto": "Total neto",
+    "TotalPresupuestado": "Total presupuestado",
+    "UltimoCertificado": "Último certificado",
+    "Unidad": "Unidad",
+    "VerDetalle": "Ver detalle"
+  },
   "Proyectos": {
     "BuscarHint": "Nombre, número, dirección o localidad",
     "Caja": {
@@ -602,36 +640,6 @@
     "VerCaja": "Ver caja",
     "VerTrabajos": "Ver trabajos"
   },
-  "Ordenes": {
-    "AjusteUocra": "Ajuste UOCRA",
-    "Avance": "Avance",
-    "BajarLinea": "Bajar",
-    "Cantidad": "Cantidad",
-    "Certificado": "Certificado",
-    "Certificados": "Certificados",
-    "Cliente": "Cliente",
-    "Descripcion": "Descripción",
-    "Editar": "Editar orden de trabajo",
-    "Empty": "Este trabajo no tiene órdenes de trabajo",
-    "Fecha": "Fecha",
-    "Items": "Ítems",
-    "Nota": "Nota",
-    "Nueva": "Nueva orden de trabajo",
-    "Proyecto": "Proyecto",
-    "Observaciones": "Observaciones",
-    "OtrosDescuentos": "Otros descuentos",
-    "PrecioUnitario": "Precio unitario",
-    "SubirLinea": "Subir",
-    "Subtotal": "Subtotal",
-    "Title": "Órdenes de trabajo",
-    "Titulo": "Título",
-    "TotalCertificado": "Total certificado",
-    "TotalNeto": "Total neto",
-    "TotalPresupuestado": "Total presupuestado",
-    "UltimoCertificado": "Último certificado",
-    "Unidad": "Unidad",
-    "VerDetalle": "Ver detalle"
-  },
   "Report": {
     "Certificado": {
       "Act": "ACT",
@@ -650,9 +658,9 @@
       "Importe": "IMPORTE",
       "ItemDescripcion": "ÍTEM / DESCRIPCIÓN",
       "Numero": "Certificado N°:",
-      "Proyecto": "Proyecto:",
       "ObraGeneral": "Proyecto General",
       "OtrosDescuentos": "OTROS DESCUENTOS:",
+      "Proyecto": "Proyecto:",
       "PU": "P. UNIT.",
       "Ref": "Ref.:",
       "SubTotal": "SUB-TOTAL:",
@@ -669,8 +677,8 @@
       "Fecha": "Fecha",
       "Moneda": "Moneda",
       "Monto": "Monto",
-      "Proyecto": "Proyecto",
       "Observaciones": "Observaciones",
+      "Proyecto": "Proyecto",
       "Subtotal": "Subtotal",
       "Tarifa": "Tarifa",
       "Tipo": "Tipo",
@@ -763,8 +771,8 @@
     "Liquidaciones": "Liquidaciones",
     "Loading": "Sembrando datos...",
     "Movimientos": "Movimientos de caja",
-    "Proyectos": "Proyectos",
     "OrdenesTrabajo": "Órdenes de trabajo",
+    "Proyectos": "Proyectos",
     "Subtitle": "Poblar la base de datos con clientes, proyectos, empleados, movimientos y facturas de demostración",
     "Success": "¡Datos de prueba generados con éxito!",
     "SummaryTitle": "Resumen de datos creados",
@@ -846,8 +854,8 @@
     "FechaFin": "Fecha de fin",
     "FechaInicio": "Fecha de inicio",
     "Hasta": "Hasta",
-    "Proyecto": "Proyecto",
     "Presupuesto": "Presupuesto",
+    "Proyecto": "Proyecto",
     "Subtitle": "Trabajos contratados dentro de cada proyecto"
   },
   "Update": {

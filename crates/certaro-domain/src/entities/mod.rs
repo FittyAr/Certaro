@@ -3,6 +3,7 @@
 pub mod adjunto;
 pub mod asistencia_empleado;
 pub mod audit;
+pub mod auth;
 pub mod categoria;
 pub mod certificado;
 pub mod cliente;
@@ -19,6 +20,7 @@ pub mod trabajo;
 pub use adjunto::{Adjunto, EntidadAdjunto};
 pub use asistencia_empleado::{AsistenciaEmpleado, ResumenAsistencia};
 pub use audit::Audit;
+pub use auth::{AuthProvider, AuthExterno, Permiso, Rol, RolPermiso, Sesion, Usuario, UsuarioRol};
 pub use categoria::Categoria;
 pub use certificado::{Certificado, CertificadoItem};
 pub use cliente::{Cliente, ClienteContacto};

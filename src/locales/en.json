@@ -8,7 +8,7 @@
       "PagadaParcial": "Mark as partially paid",
       "Vencida": "Mark as overdue"
     },
-    "Obra": {
+    "Proyecto": {
       "Activa": "Reactivate",
       "Cancelada": "Cancel project",
       "Finalizada": "Finish",
@@ -48,6 +48,11 @@
     "SoloDiasHabiles": "Skip Saturdays, Sundays and holidays",
     "Subtitle": "One click cycles the day types and back to empty",
     "TipoJornada": "Day type"
+  },
+  "Auth": {
+    "Login": {
+      "Title": "Log In"
+    }
   },
   "Backup": {
     "Create": "Create backup",
@@ -96,11 +101,11 @@
     "Fecha": "Date",
     "Hasta": "To",
     "Numero": "No.",
-    "Obra": "Project",
     "Observaciones": "Notes",
     "Orden": "Order",
     "OtrosDescuentos": "Other discounts",
     "PrecioUnitario": "Unit price",
+    "Proyecto": "Project",
     "Subtitle": "History of progress certifications",
     "Subtotal": "Subtotal",
     "SubtotalAcumulado": "Accumulated subtotal",
@@ -288,7 +293,6 @@
     },
     "Migraciones": "Migrations",
     "Movimientos": "Movements",
-    "ProyectosPausados": "Paused projects",
     "PeoresProyectos": "Least profitable projects",
     "Period": {
       "Anual": "Year",
@@ -296,6 +300,7 @@
       "Total": "All"
     },
     "Periodo": "Period",
+    "ProyectosPausados": "Paused projects",
     "SerieAnual": "Income and expenses this year",
     "SinBase": "No basis for comparison",
     "SinDatos": "No data for the period",
@@ -337,8 +342,8 @@
     "Feriado": "holiday",
     "Liquidacion": "settlement",
     "Movimiento": "movement",
-    "Obra": "project",
     "OrdenTrabajo": "work order",
+    "Proyecto": "Project",
     "TipoMovimiento": "movement type",
     "Trabajo": "job"
   },
@@ -469,6 +474,7 @@
     "Theme": "Toggle theme",
     "To": "To",
     "Version": "Version {version}",
+    "View": "View",
     "WorkInProgress": "This screen is not implemented yet",
     "Yes": "Yes"
   },
@@ -547,6 +553,7 @@
     "Movimientos": "Movements",
     "Proyectos": "Projects",
     "Reports": "Reports",
+    "Roles": "Roles & Permissions",
     "Seed": "Sample data",
     "Settings": "Settings",
     "Synonym": {
@@ -555,7 +562,8 @@
       "Gastos": "expenses income",
       "Sueldos": "payroll wages salaries"
     },
-    "Trabajos": "Jobs"
+    "Trabajos": "Jobs",
+    "Usuarios": "Users"
   },
   "Movimientos": {
     "Balance": "Balance",
@@ -581,6 +589,36 @@
     "Tipo": "Type",
     "Total": "Total"
   },
+  "Ordenes": {
+    "AjusteUocra": "UOCRA adjustment",
+    "Avance": "Progress",
+    "BajarLinea": "Move down",
+    "Cantidad": "Quantity",
+    "Certificado": "Certified",
+    "Certificados": "Certificates",
+    "Cliente": "Customer",
+    "Descripcion": "Description",
+    "Editar": "Edit work order",
+    "Empty": "This job has no work orders",
+    "Fecha": "Date",
+    "Items": "Items",
+    "Nota": "Note",
+    "Nueva": "New work order",
+    "Observaciones": "Notes",
+    "OtrosDescuentos": "Other discounts",
+    "PrecioUnitario": "Unit price",
+    "Proyecto": "Project",
+    "SubirLinea": "Move up",
+    "Subtotal": "Subtotal",
+    "Title": "Work orders",
+    "Titulo": "Title",
+    "TotalCertificado": "Certified total",
+    "TotalNeto": "Net total",
+    "TotalPresupuestado": "Quoted total",
+    "UltimoCertificado": "Last certificate",
+    "Unidad": "Unit",
+    "VerDetalle": "View detail"
+  },
   "Proyectos": {
     "BuscarHint": "Name, number, address or locality",
     "Caja": {
@@ -602,36 +640,6 @@
     "VerCaja": "View cash",
     "VerTrabajos": "View jobs"
   },
-  "Ordenes": {
-    "AjusteUocra": "UOCRA adjustment",
-    "Avance": "Progress",
-    "BajarLinea": "Move down",
-    "Cantidad": "Quantity",
-    "Certificado": "Certified",
-    "Certificados": "Certificates",
-    "Cliente": "Customer",
-    "Descripcion": "Description",
-    "Editar": "Edit work order",
-    "Empty": "This job has no work orders",
-    "Fecha": "Date",
-    "Items": "Items",
-    "Nota": "Note",
-    "Nueva": "New work order",
-    "Obra": "Project",
-    "Observaciones": "Notes",
-    "OtrosDescuentos": "Other discounts",
-    "PrecioUnitario": "Unit price",
-    "SubirLinea": "Move up",
-    "Subtotal": "Subtotal",
-    "Title": "Work orders",
-    "Titulo": "Title",
-    "TotalCertificado": "Certified total",
-    "TotalNeto": "Net total",
-    "TotalPresupuestado": "Quoted total",
-    "UltimoCertificado": "Last certificate",
-    "Unidad": "Unit",
-    "VerDetalle": "View detail"
-  },
   "Report": {
     "Certificado": {
       "Act": "CURR",
@@ -650,9 +658,9 @@
       "Importe": "AMOUNT",
       "ItemDescripcion": "ITEM / DESCRIPTION",
       "Numero": "Certificate no.:",
-      "Obra": "Project:",
       "ObraGeneral": "General project",
       "OtrosDescuentos": "OTHER DEDUCTIONS:",
+      "Proyecto": "Project",
       "PU": "UNIT PR.",
       "Ref": "Ref.:",
       "SubTotal": "SUBTOTAL:",
@@ -669,8 +677,8 @@
       "Fecha": "Date",
       "Moneda": "Currency",
       "Monto": "Amount",
-      "Obra": "Project",
       "Observaciones": "Notes",
+      "Proyecto": "Project",
       "Subtotal": "Subtotal",
       "Tarifa": "Rate",
       "Tipo": "Type",
@@ -763,8 +771,8 @@
     "Liquidaciones": "Settlements",
     "Loading": "Seeding data...",
     "Movimientos": "Cash movements",
-    "Proyectos": "Projects",
     "OrdenesTrabajo": "Work orders",
+    "Proyectos": "Projects",
     "Subtitle": "Populate the database with sample clients, projects, employees, movements, and invoices",
     "Success": "Sample data generated successfully!",
     "SummaryTitle": "Created records summary",
@@ -797,7 +805,7 @@
     "Liquidacion": {
       "YaEntregada": "{empleado}'s settlement already has its PDF handed over: the amounts cannot change."
     },
-    "Obra": {
+    "Proyecto": {
       "Activa": "Active",
       "Cancelada": "Cancelled",
       "Finalizada": "Finished",
@@ -846,8 +854,8 @@
     "FechaFin": "End date",
     "FechaInicio": "Start date",
     "Hasta": "To",
-    "Obra": "Project",
     "Presupuesto": "Budget",
+    "Proyecto": "Project",
     "Subtitle": "Jobs contracted inside each project"
   },
   "Update": {

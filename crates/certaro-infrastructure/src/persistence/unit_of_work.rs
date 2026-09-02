@@ -7,11 +7,12 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use certaro_application::ports::repositories::{
-    AdjuntoRepository, AsistenciaRepository, CategoriaRepository, CertificadoRepository,
-    ClienteRepository, DashboardRepository, EmpleadoRepository, FacturaRepository,
-    FeriadoRepository, LiquidacionRepository, MetadataRepository, MovimientoRepository,
-    ProyectoRepository, OrdenTrabajoRepository, TipoMovimientoRepository, TrabajoRepository,
-    Transaction, UnitOfWork,
+    AdjuntoRepository, AsistenciaRepository, AuthExternoRepository, CategoriaRepository,
+    CertificadoRepository, ClienteRepository, DashboardRepository, EmpleadoRepository,
+    FacturaRepository, FeriadoRepository, LiquidacionRepository, MetadataRepository,
+    MovimientoRepository, OrdenTrabajoRepository, PermisoRepository, ProyectoRepository,
+    RolRepository, SesionRepository, TipoMovimientoRepository, TrabajoRepository, Transaction,
+    UnitOfWork, UsuarioRepository,
 };
 use certaro_application::{AppError, AppResult};
 use sea_orm::{DatabaseTransaction, TransactionTrait};
@@ -19,6 +20,10 @@ use sea_orm::{DatabaseTransaction, TransactionTrait};
 use crate::persistence::handle::DbHandle;
 use crate::persistence::repositories::adjunto::SeaOrmAdjuntoRepository;
 use crate::persistence::repositories::asistencia::SeaOrmAsistenciaRepository;
+use crate::persistence::repositories::auth::{
+    SeaOrmAuthExternoRepository, SeaOrmPermisoRepository, SeaOrmRolRepository,
+    SeaOrmSesionRepository, SeaOrmUsuarioRepository,
+};
 use crate::persistence::repositories::categoria::SeaOrmCategoriaRepository;
 use crate::persistence::repositories::certificado::SeaOrmCertificadoRepository;
 use crate::persistence::repositories::cliente::SeaOrmClienteRepository;
@@ -82,6 +87,11 @@ pub struct SeaOrmTransaction {
     feriados: SeaOrmFeriadoRepository,
     dashboard: SeaOrmDashboardRepository,
     metadata: SeaOrmMetadataRepository,
+    usuarios: SeaOrmUsuarioRepository,
+    roles: SeaOrmRolRepository,
+    permisos: SeaOrmPermisoRepository,
+    sesiones: SeaOrmSesionRepository,
+    auth_externo: SeaOrmAuthExternoRepository,
 }
 
 impl SeaOrmTransaction {
@@ -103,6 +113,11 @@ impl SeaOrmTransaction {
             feriados: SeaOrmFeriadoRepository::new(Arc::clone(&tx)),
             dashboard: SeaOrmDashboardRepository::new(Arc::clone(&tx)),
             metadata: SeaOrmMetadataRepository::new(Arc::clone(&tx)),
+            usuarios: SeaOrmUsuarioRepository::new(Arc::clone(&tx)),
+            roles: SeaOrmRolRepository::new(Arc::clone(&tx)),
+            permisos: SeaOrmPermisoRepository::new(Arc::clone(&tx)),
+            sesiones: SeaOrmSesionRepository::new(Arc::clone(&tx)),
+            auth_externo: SeaOrmAuthExternoRepository::new(Arc::clone(&tx)),
             tx,
         }
     }
@@ -129,6 +144,11 @@ impl SeaOrmTransaction {
             feriados,
             dashboard,
             metadata,
+            usuarios,
+            roles,
+            permisos,
+            sesiones,
+            auth_externo,
         } = self;
         drop(tipos_movimiento);
         drop(categorias);
@@ -146,6 +166,11 @@ impl SeaOrmTransaction {
         drop(feriados);
         drop(dashboard);
         drop(metadata);
+        drop(usuarios);
+        drop(roles);
+        drop(permisos);
+        drop(sesiones);
+        drop(auth_externo);
         Arc::try_unwrap(tx).map_err(|_| {
             AppError::unexpected(anyhow::anyhow!("transaction still borrowed when finishing"))
         })
@@ -216,6 +241,26 @@ impl Transaction for SeaOrmTransaction {
 
     fn metadata(&self) -> &dyn MetadataRepository {
         &self.metadata
+    }
+
+    fn usuarios(&self) -> &dyn UsuarioRepository {
+        &self.usuarios
+    }
+
+    fn roles(&self) -> &dyn RolRepository {
+        &self.roles
+    }
+
+    fn permisos(&self) -> &dyn PermisoRepository {
+        &self.permisos
+    }
+
+    fn sesiones(&self) -> &dyn SesionRepository {
+        &self.sesiones
+    }
+
+    fn auth_externo(&self) -> &dyn AuthExternoRepository {
+        &self.auth_externo
     }
 
     async fn commit(self: Box<Self>) -> AppResult<()> {

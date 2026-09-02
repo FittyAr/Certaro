@@ -222,6 +222,24 @@ pub fn run() {
             commands::sistema::sistema_detect_legacy_db,
             commands::sistema::sistema_run_legacy_import,
             commands::sistema::dev_seed_database,
+            commands::auth::auth_get_mode,
+            commands::auth::auth_current_user,
+            commands::auth::auth_login,
+            commands::auth::auth_logout,
+            commands::auth::auth_configurar_2fa,
+            commands::auth::auth_activar_2fa,
+            commands::auth::auth_desactivar_2fa,
+            commands::auth::usuarios_list,
+            commands::auth::usuarios_get,
+            commands::auth::usuarios_create,
+            commands::auth::usuarios_update,
+            commands::auth::usuarios_delete,
+            commands::auth::roles_list,
+            commands::auth::roles_get,
+            commands::auth::roles_create,
+            commands::auth::roles_update,
+            commands::auth::roles_delete,
+            commands::auth::permisos_list,
         ])
         .run(tauri::generate_context!())
         .unwrap_or_else(|e| {
@@ -256,6 +274,9 @@ async fn bootstrap(handle: &tauri::AppHandle) -> anyhow::Result<()> {
         Arc::clone(&state.clock),
         env!("CARGO_PKG_VERSION"),
     ));
+    let hasher = Arc::new(certaro_infrastructure::auth::Argon2PasswordHasher::new());
+    let tokens = Arc::new(certaro_infrastructure::auth::Sha256TokenService::new());
+    let totp = Arc::new(certaro_infrastructure::auth::TotpService::new());
     state.install_services(
         db.clone(),
         Arc::new(certaro_infrastructure::persistence::SeaOrmUnitOfWork::new(db)),
@@ -264,6 +285,9 @@ async fn bootstrap(handle: &tauri::AppHandle) -> anyhow::Result<()> {
         attachments,
         Arc::new(SystemOpener),
         backup,
+        hasher,
+        tokens,
+        totp,
     );
 
     // The calendar is synced here and not on demand: a settlement that cannot see the holidays pays
