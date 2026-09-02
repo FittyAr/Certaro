@@ -63,28 +63,31 @@ function Get-PrimeUiKey {
     if ($env:VITE_PRIMEUI_LICENSE_KEY -and $env:VITE_PRIMEUI_LICENSE_KEY.Trim() -ne "") {
         return
     }
-    # Intenta leer desde .env si existe
-    if (Test-Path ".\.env") {
-        $envLine = Select-String -Path ".\.env" -Pattern "^\s*VITE_PRIMEUI_LICENSE_KEY\s*=\s*(.+)\s*$" -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($envLine -and $envLine.Matches.Count -gt 0) {
-            $val = $envLine.Matches[0].Groups[1].Value.Trim().Trim('"').Trim("'")
-            if ($val -ne "") {
-                $env:VITE_PRIMEUI_LICENSE_KEY = $val
-                return
+    # Intenta leer desde .env / .env.local si existen
+    foreach ($envFile in @(".\.env", ".\.env.local")) {
+        if (Test-Path $envFile) {
+            $envLine = Select-String -Path $envFile -Pattern "^\s*VITE_PRIMEUI_LICENSE_KEY\s*=\s*(.+)\s*$" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($envLine -and $envLine.Matches.Count -gt 0) {
+                $val = $envLine.Matches[0].Groups[1].Value.Trim().Trim('"').Trim("'")
+                if ($val -ne "") {
+                    $env:VITE_PRIMEUI_LICENSE_KEY = $val
+                    return
+                }
             }
         }
     }
-    # Intenta via GitHub CLI (gh secret get) - no requiere .env y funciona en cualquier PC autenticada
+    # GitHub ACTIONS VARIABLES son legibles (los secrets NO: `gh secret get` no existe).
+    # Config una vez por repo:  gh variable set PRIMEUI_KEY --body "<key>"
     try {
-        $ghKey = & gh secret get PRIMEUI_KEY 2>$null
+        $ghKey = & gh variable get PRIMEUI_KEY 2>$null
         if ($LASTEXITCODE -eq 0 -and $ghKey -and $ghKey.Trim() -ne "") {
             $env:VITE_PRIMEUI_LICENSE_KEY = $ghKey.Trim()
-            Write-Ok "PrimeUI license key cargada desde GitHub secrets (PRIMEUI_KEY)."
+            Write-Ok "PrimeUI license key cargada desde GitHub variables (PRIMEUI_KEY)."
             return
         }
     } catch { }
-    Write-Host "    PrimeUI key no encontrada en env/.env/GitHub secrets - modal de licencia puede aparecer." -ForegroundColor Yellow
-    Write-Host "    Para solucionarlo: gh auth login && gh secret get PRIMEUI_KEY | Out-File -Encoding utf8 .env -NoNewline  o  echo 'VITE_PRIMEUI_LICENSE_KEY=<key>' > .env" -ForegroundColor Gray
+    Write-Host "    PrimeUI key no encontrada (env / .env.local / gh variable). Modal de licencia puede aparecer." -ForegroundColor Yellow
+    Write-Host "    Solucion de una sola vez:  gh variable set PRIMEUI_KEY --body `"<tu-key>`"  (vale para todas tus PCs)" -ForegroundColor Gray
 }
 
 # ── Comandos ────────────────────────────────────────────────────────────────

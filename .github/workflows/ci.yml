@@ -54,7 +54,9 @@ jobs:
       - run: pnpm i18n:check
       - run: pnpm test
         env:
-          VITE_PRIMEUI_LICENSE_KEY: ${{ secrets.PRIMEUI_KEY }}
+          # The key lives in a repo *variable* (readable locally via `gh variable get`);
+          # fall back to the secret for repos that never migrated it.
+          VITE_PRIMEUI_LICENSE_KEY: ${{ vars.PRIMEUI_KEY || secrets.PRIMEUI_KEY }}
 
   build:
     needs: [rust, frontend]
@@ -79,4 +81,8 @@ jobs:
       - if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev patchelf
       - run: pnpm install --frozen-lockfile
+        env:
+          VITE_PRIMEUI_LICENSE_KEY: ${{ vars.PRIMEUI_KEY || secrets.PRIMEUI_KEY }}
       - run: pnpm tauri build --target ${{ matrix.target }} --ci
+        env:
+          VITE_PRIMEUI_LICENSE_KEY: ${{ vars.PRIMEUI_KEY || secrets.PRIMEUI_KEY }}
