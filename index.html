@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Certaro — Tu obra, bajo control</title>
-<meta name="description" content="Gestión completa para contratistas eléctricos: obras, trabajos, caja, certificaciones, facturas, liquidaciones y asistencia. Sin suscripciones, tus datos siempre con vos.">
+<meta name="description" content="Gestión completa para contratistas eléctricos: obras, trabajos, caja, certificaciones UOCRA, facturas, liquidaciones y asistencia. Sin suscripciones, tus datos siempre con vos.">
 <meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0a0d">
 <meta property="og:title" content="Certaro — Tu obra, bajo control">
 <meta property="og:description" content="Todo en un solo lugar. Sin suscripciones, sin nube, sin depender de internet.">
 <meta property="og:type" content="website">
@@ -20,31 +21,58 @@
 </head>
 <body>
 
+<a href="#hero" class="skip-to-content" data-i18n="skip.content">Saltar al contenido principal</a>
+
 <!-- HEADER -->
 <header class="topbar">
   <div class="container topbar-inner">
-    <a href="#" class="logo">
+    <a href="index.html" class="logo" aria-label="Certaro Home">
       <span class="logo-mark">C</span>
       certaro<span class="tld">.fitty.ar</span>
     </a>
-    <nav class="nav-links" aria-label="Navegación">
+    <nav class="nav-links" aria-label="Navegación principal">
       <a href="#problems" data-i18n="nav.benefits">Beneficios</a>
       <a href="#how" data-i18n="nav.how">Cómo funciona</a>
+      <a href="#gallery" data-i18n="nav.gallery">Capturas</a>
       <a href="changelog.html" data-i18n="nav.changelog">Novedades</a>
       <a href="#contact" data-i18n="nav.contact">Contacto</a>
     </nav>
     <div class="topbar-actions">
       <div class="lang-switch" role="group" aria-label="Idioma">
-        <button data-lang="es" class="active" onclick="setLocale('es')">ES</button>
-        <button data-lang="en" onclick="setLocale('en')">EN</button>
+        <button data-lang="es" class="active" onclick="setLocale('es')" aria-label="Español">ES</button>
+        <button data-lang="en" onclick="setLocale('en')" aria-label="English">EN</button>
       </div>
       <a class="btn btn-primary btn-sm" href="#contact" data-i18n="nav.cta">Solicitar demo</a>
+      <button class="hamburger" id="hamburgerBtn" aria-label="Menú" aria-expanded="false" onclick="toggleMobileNav()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </div>
   </div>
 </header>
 
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav-backdrop" id="mobileNavBackdrop" onclick="toggleMobileNav(false)"></div>
+<div class="mobile-nav" id="mobileNav" aria-hidden="true">
+  <nav class="mobile-nav-links" aria-label="Navegación móvil">
+    <a href="#problems" onclick="toggleMobileNav(false)" data-i18n="nav.benefits">Beneficios</a>
+    <a href="#how" onclick="toggleMobileNav(false)" data-i18n="nav.how">Cómo funciona</a>
+    <a href="#gallery" onclick="toggleMobileNav(false)" data-i18n="nav.gallery">Capturas</a>
+    <a href="changelog.html" onclick="toggleMobileNav(false)" data-i18n="nav.changelog">Novedades</a>
+    <a href="#contact" onclick="toggleMobileNav(false)" data-i18n="nav.contact">Contacto</a>
+  </nav>
+  <div class="mobile-nav-footer">
+    <div class="lang-switch" role="group" aria-label="Idioma">
+      <button data-lang="es" class="active" onclick="setLocale('es'); toggleMobileNav(false);">ES</button>
+      <button data-lang="en" onclick="setLocale('en'); toggleMobileNav(false);">EN</button>
+    </div>
+    <a class="btn btn-primary btn-sm" href="#contact" onclick="toggleMobileNav(false)" data-i18n="nav.cta">Solicitar demo</a>
+  </div>
+</div>
+
 <!-- HERO -->
-<section class="container hero reveal">
+<section id="hero" class="container hero reveal">
   <div class="hero-text">
     <span class="eyebrow" data-i18n="hero.badge">Para contratistas eléctricos</span>
     <h1 data-i18n="hero.title">Tu obra,<br>bajo control.</h1>
@@ -54,8 +82,9 @@
       <a class="btn btn-ghost" href="#how" data-i18n="hero.secondary">Ver cómo funciona</a>
     </div>
   </div>
-  <div class="hero-media">
-    <img src="assets/screen-dashboard.png" alt="Certaro — panel principal" data-i18n-alt="showcase.alt">
+  <div class="hero-media" onclick="openLightbox('assets/screen-dashboard.png', t('gallery.cap.dashboard'))" role="button" tabindex="0" aria-label="Ampliar imagen del panel principal" onkeydown="if(event.key==='Enter'||event.key===' ')openLightbox('assets/screen-dashboard.png', t('gallery.cap.dashboard'))">
+    <img src="assets/screen-dashboard.png" alt="Certaro — panel principal con balance y obras" data-i18n-alt="showcase.alt">
+    <div class="hero-media-badge" data-i18n="showcase.zoom">🔍 Clic para ampliar</div>
   </div>
 </section>
 
@@ -99,27 +128,27 @@
     <div class="feature-card">
       <div class="feature-icon">💳</div>
       <h3 data-i18n="benefits.b2.title">Sin suscripciones</h3>
-      <p data-i18n="benefits.b2.desc">Comprás una vez y es tuyo. Sin pagos mensuales, sin sorpresas.</p>
+      <p data-i18n="benefits.b2.desc">Comprás una vez y es tuyo para siempre. Sin pagos mensuales, sin sorpresas ni bloqueos.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon">🔒</div>
       <h3 data-i18n="benefits.b3.title">Tus datos, en tu máquina</h3>
-      <p data-i18n="benefits.b3.desc">Sin nube, sin depender de internet. Tu información siempre disponible.</p>
+      <p data-i18n="benefits.b3.desc">Sin nube, sin depender de internet. Tu información comercial siempre segura y disponible.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon">📊</div>
       <h3 data-i18n="benefits.b4.title">Reportes al instante</h3>
-      <p data-i18n="benefits.b4.desc">Balances, rentabilidad y listados listos para imprimir o enviar.</p>
+      <p data-i18n="benefits.b4.desc">Balances, rentabilidad y listados en PDF, Excel y Word listos para imprimir o enviar.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon">⚡</div>
       <h3 data-i18n="benefits.b5.title">Pensado para la obra</h3>
-      <p data-i18n="benefits.b5.desc">Categorías, UOCRA, feriados: todo lo que usás en el día a día, ya incluido.</p>
+      <p data-i18n="benefits.b5.desc">Categorías, UOCRA, feriados y cotización del dólar: todo lo que usás en el día a día, ya incluido.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon">🤝</div>
       <h3 data-i18n="benefits.b6.title">Soporte cercano</h3>
-      <p data-i18n="benefits.b6.desc">Hablás directo con quien lo hace. Sin tickets eternos ni call center.</p>
+      <p data-i18n="benefits.b6.desc">Hablás directo con quien lo hace. Sin tickets eternos ni call centers.</p>
     </div>
   </div>
 </section>
@@ -154,23 +183,36 @@
   <div class="section-header">
     <span class="eyebrow" data-i18n="gallery.eyebrow">Capturas reales</span>
     <h2 class="section-title" data-i18n="gallery.title">Así se ve Certaro</h2>
-    <p class="section-subtitle" data-i18n="gallery.subtitle">Interfaz clara, datos a la vista. Lo que necesitás, sin vueltas.</p>
+    <p class="section-subtitle" data-i18n="gallery.subtitle">Interfaz clara en modo oscuro, datos a la vista. Lo que necesitás, sin vueltas.</p>
   </div>
   <div class="gallery-wrap">
-    <div class="gallery-main" id="galleryMain">
-      <img id="galleryImg" src="assets/screen-dashboard.png" alt="Dashboard">
-      <div class="gallery-nav">
-        <button onclick="galleryPrev()" aria-label="Anterior">‹</button>
-        <button onclick="galleryNext()" aria-label="Siguiente">›</button>
+    <div class="gallery-main" id="galleryMain" onclick="openCurrentGalleryLightbox()" role="button" tabindex="0" aria-label="Ampliar captura actual" onkeydown="if(event.key==='Enter'||event.key===' ')openCurrentGalleryLightbox()">
+      <img id="galleryImg" src="assets/screen-dashboard.png" alt="Certaro Screenshot">
+      <div class="gallery-zoom-hint" data-i18n="gallery.zoom">🔍 Clic para ampliar</div>
+      <div class="gallery-nav" onclick="event.stopPropagation()">
+        <button type="button" onclick="galleryPrev()" aria-label="Imagen anterior" data-i18n-aria-label="gallery.prev">‹</button>
+        <button type="button" onclick="galleryNext()" aria-label="Imagen siguiente" data-i18n-aria-label="gallery.next">›</button>
       </div>
     </div>
-    <div class="gallery-strip" id="galleryStrip">
-      <button class="gallery-thumb active" onclick="galleryGo(0)"><img src="assets/screen-dashboard.png" alt="thumb"><span>Dashboard</span></button>
-      <button class="gallery-thumb" onclick="galleryGo(1)"><img src="assets/screen-movimientos.png" alt="thumb"><span>Movimientos</span></button>
-      <button class="gallery-thumb" onclick="galleryGo(2)"><img src="assets/screen-facturas.png" alt="thumb"><span>Facturas</span></button>
-      <button class="gallery-thumb" onclick="galleryGo(3)"><img src="assets/screen-asistencia.png" alt="thumb"><span>Asistencia</span></button>
+    <div class="gallery-strip" id="galleryStrip" role="tablist" aria-label="Galería de capturas">
+      <button class="gallery-thumb active" onclick="galleryGo(0)" role="tab" aria-selected="true" aria-label="Dashboard">
+        <img src="assets/screen-dashboard.png" alt="thumb dashboard">
+        <span data-i18n="gallery.thumb.dashboard">Dashboard</span>
+      </button>
+      <button class="gallery-thumb" onclick="galleryGo(1)" role="tab" aria-selected="false" aria-label="Movimientos">
+        <img src="assets/screen-movimientos.png" alt="thumb movimientos">
+        <span data-i18n="gallery.thumb.movimientos">Movimientos</span>
+      </button>
+      <button class="gallery-thumb" onclick="galleryGo(2)" role="tab" aria-selected="false" aria-label="Facturas">
+        <img src="assets/screen-facturas.png" alt="thumb facturas">
+        <span data-i18n="gallery.thumb.facturas">Facturas</span>
+      </button>
+      <button class="gallery-thumb" onclick="galleryGo(3)" role="tab" aria-selected="false" aria-label="Asistencia">
+        <img src="assets/screen-asistencia.png" alt="thumb asistencia">
+        <span data-i18n="gallery.thumb.asistencia">Asistencia</span>
+      </button>
     </div>
-    <div class="gallery-caption" id="galleryCaption" data-i18n="gallery.cap.dashboard">Panel — balance, alertas y ranking de obras</div>
+    <div class="gallery-caption" id="galleryCaption" data-i18n="gallery.cap.dashboard">Panel principal — balance en tiempo real, alertas de vencimiento y ranking de obras</div>
   </div>
 </section>
 
@@ -181,11 +223,14 @@
     <h2 data-i18n="contact.title">¿Querés verlo en acción?</h2>
     <p data-i18n="contact.subtitle">Escribinos y te mostramos cómo Certaro puede ordenar tu obra. Sin compromiso.</p>
     <div class="cta-actions">
-      <a class="btn btn-primary" href="mailto:contacto@fitty.ar?subject=Quiero%20probar%20Certaro" data-i18n="contact.cta">Contactar</a>
+      <a class="btn btn-primary" href="mailto:contacto@fitty.ar?subject=Quiero%20probar%20Certaro" data-i18n="contact.cta" data-i18n-mailto="true">Solicitar demo por mail</a>
+      <a class="btn btn-ghost" href="mailto:contacto@fitty.ar">contacto@fitty.ar</a>
     </div>
-    <p class="cta-note" data-i18n="contact.note">Te respondemos en 24 hs. También podés escribirnos desde fitty.ar.</p>
+    <p class="cta-note" data-i18n="contact.note">Te respondemos en menos de 24 hs. También podés escribirnos directo a contacto@fitty.ar.</p>
   </div>
-  <p class="changelog-teaser"><a href="changelog.html" data-i18n="nav.changelog">Ver novedades →</a></p>
+  <p class="changelog-teaser">
+    <a href="changelog.html" data-i18n="nav.changelog">Ver novedades →</a>
+  </p>
 </section>
 
 <!-- FOOTER -->
@@ -200,14 +245,17 @@
         <h4 data-i18n="footer.nav">Navegación</h4>
         <a href="#problems" data-i18n="nav.benefits">Beneficios</a>
         <a href="#how" data-i18n="nav.how">Cómo funciona</a>
-        <a href="#gallery" data-i18n="gallery.eyebrow">Capturas</a>
+        <a href="#gallery" data-i18n="nav.gallery">Capturas</a>
         <a href="changelog.html" data-i18n="nav.changelog">Novedades</a>
+        <a href="#contact" data-i18n="nav.contact">Contacto</a>
       </div>
       <div class="footer-col">
-        <h4 data-i18n="footer.product">Producto</h4>
-        <a href="#problems">Beneficios</a>
-        <a href="#gallery">Capturas</a>
-        <a href="changelog.html">Novedades</a>
+        <h4 data-i18n="footer.modules">Módulos</h4>
+        <a href="#gallery" onclick="galleryGo(0)" data-i18n="footer.mod.obras">Obras y Trabajos</a>
+        <a href="#gallery" onclick="galleryGo(1)" data-i18n="footer.mod.caja">Caja y Movimientos</a>
+        <a href="#gallery" onclick="galleryGo(2)" data-i18n="footer.mod.facturas">Facturación y Mora</a>
+        <a href="#gallery" onclick="galleryGo(0)" data-i18n="footer.mod.certificados">Certificados UOCRA</a>
+        <a href="#gallery" onclick="galleryGo(3)" data-i18n="footer.mod.asistencia">Asistencia y Sueldos</a>
       </div>
       <div class="footer-col">
         <h4 data-i18n="footer.contact">Contacto</h4>
@@ -217,36 +265,149 @@
     </div>
     <div class="footer-bottom">
       <span><span class="status-dot"></span> <span data-i18n="footer.version">v0.1 · JetBrains Mono · Amber phosphor</span></span>
-      <span>© 2026 FittyAr</span>
+      <span>© 2026 FittyAr · <a href="#hero" data-i18n="footer.top">Volver arriba ↑</a></span>
     </div>
   </div>
 </footer>
 
+<!-- LIGHTBOX MODAL -->
+<div class="lightbox-modal" id="lightboxModal" role="dialog" aria-modal="true" aria-label="Vista ampliada" onclick="closeLightbox(event)">
+  <button class="lightbox-close" aria-label="Cerrar vista" onclick="closeLightbox(event)">✕</button>
+  <div class="lightbox-content" onclick="event.stopPropagation()">
+    <img id="lightboxImg" class="lightbox-img" src="" alt="Vista ampliada de Certaro">
+    <div id="lightboxCap" class="lightbox-caption"></div>
+  </div>
+</div>
+
 <script src="js/translations.js"></script>
 <script>
-const galleryImages = ["assets/screen-dashboard.png","assets/screen-movimientos.png","assets/screen-facturas.png","assets/screen-asistencia.png"];
-const captions = ["gallery.cap.dashboard","gallery.cap.movimientos","gallery.cap.facturas","gallery.cap.asistencia"];
+const galleryImages = [
+  "assets/screen-dashboard.png",
+  "assets/screen-movimientos.png",
+  "assets/screen-facturas.png",
+  "assets/screen-asistencia.png"
+];
+const captions = [
+  "gallery.cap.dashboard",
+  "gallery.cap.movimientos",
+  "gallery.cap.facturas",
+  "gallery.cap.asistencia"
+];
 let gIdx = 0;
+
 function galleryGo(i) {
   gIdx = i;
-  document.getElementById("galleryImg").src = galleryImages[i];
-  document.querySelectorAll(".gallery-thumb").forEach((el,idx)=> el.classList.toggle("active", idx===i));
+  const img = document.getElementById("galleryImg");
+  if (img) {
+    img.style.opacity = "0.4";
+    setTimeout(() => {
+      img.src = galleryImages[i];
+      img.style.opacity = "1";
+    }, 120);
+  }
+  document.querySelectorAll(".gallery-thumb").forEach((el, idx) => {
+    const isActive = (idx === i);
+    el.classList.toggle("active", isActive);
+    el.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
   const cap = document.getElementById("galleryCaption");
-  if (cap) { cap.setAttribute("data-i18n", captions[i]); cap.textContent = t(captions[i]); }
+  if (cap) {
+    cap.setAttribute("data-i18n", captions[i]);
+    cap.textContent = t(captions[i]);
+  }
 }
-function galleryPrev(){ galleryGo((gIdx-1+4)%4); }
-function galleryNext(){ galleryGo((gIdx+1)%4); }
 
-const io = new IntersectionObserver((entries)=>{
-  entries.forEach(e=> { if(e.isIntersecting) e.target.classList.add("is-visible"); });
-}, { threshold: 0.12 });
-document.querySelectorAll(".reveal").forEach(el=> io.observe(el));
+function galleryPrev() { galleryGo((gIdx - 1 + galleryImages.length) % galleryImages.length); }
+function galleryNext() { galleryGo((gIdx + 1) % galleryImages.length); }
 
-const _setLocale = window.setLocale;
-window.setLocale = function(lang){
-  _setLocale(lang);
+function openCurrentGalleryLightbox() {
+  openLightbox(galleryImages[gIdx], t(captions[gIdx]));
+}
+
+function openLightbox(src, caption) {
+  const modal = document.getElementById("lightboxModal");
+  const img = document.getElementById("lightboxImg");
+  const cap = document.getElementById("lightboxCap");
+  if (!modal || !img) return;
+  img.src = src;
+  if (cap) cap.textContent = caption || "";
+  modal.classList.add("is-open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeLightbox(e) {
+  if (e) e.stopPropagation();
+  const modal = document.getElementById("lightboxModal");
+  if (modal) {
+    modal.classList.remove("is-open");
+    document.body.style.overflow = "";
+  }
+}
+
+function toggleMobileNav(force) {
+  const nav = document.getElementById("mobileNav");
+  const backdrop = document.getElementById("mobileNavBackdrop");
+  const btn = document.getElementById("hamburgerBtn");
+  if (!nav || !btn) return;
+  const willOpen = (typeof force === "boolean") ? force : !nav.classList.contains("is-open");
+  nav.classList.toggle("is-open", willOpen);
+  if (backdrop) backdrop.classList.toggle("is-open", willOpen);
+  btn.classList.toggle("is-open", willOpen);
+  btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+  nav.setAttribute("aria-hidden", willOpen ? "false" : "true");
+}
+
+// Keyboard controls
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeLightbox();
+    toggleMobileNav(false);
+  } else if (e.key === "ArrowLeft") {
+    const gallery = document.getElementById("gallery");
+    if (gallery) {
+      const rect = gallery.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) galleryPrev();
+    }
+  } else if (e.key === "ArrowRight") {
+    const gallery = document.getElementById("gallery");
+    if (gallery) {
+      const rect = gallery.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) galleryNext();
+    }
+  }
+});
+
+// Touch swipe support on gallery
+let touchStartX = 0;
+const galleryMain = document.getElementById("galleryMain");
+if (galleryMain) {
+  galleryMain.addEventListener("touchstart", e => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+  galleryMain.addEventListener("touchend", e => {
+    const touchEndX = e.changedTouches[0].screenX;
+    const diff = touchEndX - touchStartX;
+    if (Math.abs(diff) > 40) {
+      if (diff < 0) galleryNext();
+      else galleryPrev();
+    }
+  }, { passive: true });
+}
+
+// Intersection Observer for scroll reveal
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add("is-visible");
+  });
+}, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
+
+document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+// Listen for locale changes to refresh dynamic caption
+window.addEventListener("certaro:localechange", () => {
   galleryGo(gIdx);
-};
+});
 </script>
 </body>
 </html>
+
