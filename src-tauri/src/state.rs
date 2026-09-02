@@ -200,6 +200,10 @@ impl AppState {
         self.settings.snapshot()
     }
 
+    pub fn is_sqlite_mode(&self) -> bool {
+        self.config().database.provider == certaro_application::config::DatabaseProvider::Sqlite
+    }
+
     pub fn db(&self) -> Option<&certaro_infrastructure::persistence::DbHandle> {
         self.db.get()
     }

@@ -233,11 +233,15 @@ pub fn run() {
 /// cases so the commands can serve requests.
 async fn bootstrap(handle: &tauri::AppHandle) -> anyhow::Result<()> {
     let state = handle.state::<AppState>();
-    let db = certaro_infrastructure::persistence::open(&state.paths.database()).await?;
+    let config = state.config();
+    let db = certaro_infrastructure::persistence::open_from_config(
+        &config.database,
+        &state.paths.database(),
+    )
+    .await?;
     // Behind a handle so that restoring a backup can close the connection before the file under it
     // is replaced. See `docs/13-servicios-externos-y-archivos.md` §4.3.
     let db = certaro_infrastructure::persistence::DbHandle::new(db);
-    let config = state.config();
     let holidays = Arc::new(HttpHolidayProvider::new(&config.external_apis)?);
     let dolar = Arc::new(HttpExchangeRateProvider::new(&config.external_apis)?);
     let attachments = Arc::new(FsAttachmentStore::new(

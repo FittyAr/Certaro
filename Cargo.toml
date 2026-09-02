@@ -33,13 +33,25 @@ futures = "0.3"
 # Persistence
 sea-orm = { version = "1", features = [
     "sqlx-sqlite",
+    "sqlx-mysql",
+    "sqlx-postgres",
     "runtime-tokio-rustls",
     "macros",
     "with-uuid",
     "with-chrono",
 ] }
-sea-orm-migration = { version = "1", features = ["sqlx-sqlite", "runtime-tokio-rustls"] }
-sqlx = { version = "0.8", default-features = false, features = ["sqlite", "runtime-tokio-rustls"] }
+sea-orm-migration = { version = "1", features = [
+    "sqlx-sqlite",
+    "sqlx-mysql",
+    "sqlx-postgres",
+    "runtime-tokio-rustls",
+] }
+sqlx = { version = "0.8", default-features = false, features = [
+    "sqlite",
+    "mysql",
+    "postgres",
+    "runtime-tokio-rustls",
+] }
 
 # Serialization
 serde = { version = "1", features = ["derive"] }

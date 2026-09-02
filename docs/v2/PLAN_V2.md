@@ -23,13 +23,13 @@
 
 ## 2. Checklist General de Fases
 
-- [ ] **Fase 1: Soporte Multi-Base de Datos (SQLite / MySQL / PostgreSQL)**
-  - [ ] 1.1 Configuración de base de datos (`DatabaseConfig` en `certaro-application`)
-  - [ ] 1.2 Dependencias `Cargo.toml` (`sqlx-mysql`, `sqlx-postgres`)
-  - [ ] 1.3 Conexión dinámica en `certaro-infrastructure` (`connection.rs`)
-  - [ ] 1.4 Migraciones SeaORM portables en `certaro-migration` (compatibles SQLite / MySQL / PostgreSQL)
-  - [ ] 1.5 Adaptación de modelos y tipos de auditoría (soft-delete y unique indexes portables)
-  - [ ] 1.6 Tests de persistencia y verificación multi-dialecto
+- [x] **Fase 1: Soporte Multi-Base de Datos (SQLite / MySQL / PostgreSQL)**
+  - [x] 1.1 Configuración de base de datos (`DatabaseConfig` en `certaro-application`)
+  - [x] 1.2 Dependencias `Cargo.toml` (`sqlx-mysql`, `sqlx-postgres`)
+  - [x] 1.3 Conexión dinámica en `certaro-infrastructure` (`connection.rs`)
+  - [x] 1.4 Migraciones SeaORM portables en `certaro-migration` (compatibles SQLite / MySQL / PostgreSQL)
+  - [x] 1.5 Adaptación de modelos y tipos de auditoría (soft-delete y unique indexes portables)
+  - [x] 1.6 Tests de persistencia y verificación multi-dialecto
 
 - [ ] **Fase 2: Sistema de Autenticación, Usuarios, Roles y Permisos (RBAC)**
   - [ ] 2.1 Entidades de dominio (`Usuario`, `Rol`, `Permiso`, `Sesion`, `AuthExterno`)

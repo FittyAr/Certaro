@@ -30,9 +30,19 @@ pub struct AppConfig {
     pub logging: LoggingConfig,
     pub validation: ValidationConfig,
     pub report: ReportConfig,
+    pub database: DatabaseConfig,
 }
 
 // ---------------------------------------------------------------- enums
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum DatabaseProvider {
+    #[default]
+    Sqlite,
+    Mysql,
+    Postgres,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -444,6 +454,29 @@ impl Default for ReportConfig {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct DatabaseConfig {
+    pub provider: DatabaseProvider,
+    /// Connection URL or path. If None for SQLite, the default data_dir/certaro.db is used.
+    pub url: Option<String>,
+    pub max_connections: u32,
+    pub min_connections: u32,
+    pub acquire_timeout_seconds: u64,
+}
+
+impl Default for DatabaseConfig {
+    fn default() -> Self {
+        Self {
+            provider: DatabaseProvider::Sqlite,
+            url: None,
+            max_connections: 8,
+            min_connections: 1,
+            acquire_timeout_seconds: 10,
+        }
+    }
+}
+
 impl AppConfig {
     /// Development flips three defaults that would be wrong to ship enabled.
     #[must_use]
@@ -510,6 +543,12 @@ impl AppConfig {
         {
             errors.push(FieldError::new(
                 "attachments.maxSizeMb",
+                "Validation.Config.ValorNoPermitido",
+            ));
+        }
+        if self.database.max_connections == 0 {
+            errors.push(FieldError::new(
+                "database.maxConnections",
                 "Validation.Config.ValorNoPermitido",
             ));
         }

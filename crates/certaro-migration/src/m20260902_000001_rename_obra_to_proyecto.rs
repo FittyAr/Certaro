@@ -79,27 +79,28 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let db = manager.get_connection();
-        db.execute_unprepared("DROP INDEX IF EXISTS ux_proyectos_numero")
-            .await?;
-        db.execute_unprepared("CREATE UNIQUE INDEX ux_obras_numero ON obras (numero)")
-            .await?;
-        db.execute_unprepared("DROP INDEX IF EXISTS ix_proyectos_cliente_id")
-            .await?;
-        db.execute_unprepared("CREATE INDEX ix_obras_cliente_id ON obras (cliente_id)")
-            .await?;
-        db.execute_unprepared("DROP INDEX IF EXISTS ix_proyectos_estado")
-            .await?;
-        db.execute_unprepared("CREATE INDEX ix_obras_estado ON obras (estado)").await?;
-        db.execute_unprepared("DROP INDEX IF EXISTS ix_proyectos_is_deleted")
-            .await?;
-        db.execute_unprepared("CREATE INDEX ix_obras_is_deleted ON obras (is_deleted)")
-            .await?;
-        db.execute_unprepared("DROP INDEX IF EXISTS ix_trabajos_proyecto_id")
-            .await?;
-        db.execute_unprepared("CREATE INDEX ix_trabajos_obra_id ON trabajos (obra_id)").await?;
-        db.execute_unprepared("ALTER TABLE trabajos RENAME COLUMN proyecto_id TO obra_id")
-            .await?;
-        db.execute_unprepared("ALTER TABLE proyectos RENAME TO obras").await?;
+        let has_proyectos: bool = {
+            let stmt = sea_orm::Statement::from_string(
+                sea_orm::DatabaseBackend::Sqlite,
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='proyectos'".to_owned(),
+            );
+            let row = db.query_one(stmt).await?;
+            row.is_some()
+        };
+        if has_proyectos {
+            let _ = db.execute_unprepared("DROP INDEX IF EXISTS ux_proyectos_numero").await;
+            let _ = db.execute_unprepared("DROP INDEX IF EXISTS ix_proyectos_cliente_id").await;
+            let _ = db.execute_unprepared("DROP INDEX IF EXISTS ix_proyectos_estado").await;
+            let _ = db.execute_unprepared("DROP INDEX IF EXISTS ix_proyectos_is_deleted").await;
+            let _ = db.execute_unprepared("DROP INDEX IF EXISTS ix_trabajos_proyecto_id").await;
+            let _ = db.execute_unprepared("ALTER TABLE proyectos RENAME TO obras").await;
+            let _ = db.execute_unprepared("CREATE UNIQUE INDEX IF NOT EXISTS ux_obras_numero ON obras (numero)").await;
+            let _ = db.execute_unprepared("CREATE INDEX IF NOT EXISTS ix_obras_cliente_id ON obras (cliente_id)").await;
+            let _ = db.execute_unprepared("CREATE INDEX IF NOT EXISTS ix_obras_estado ON obras (estado)").await;
+            let _ = db.execute_unprepared("CREATE INDEX IF NOT EXISTS ix_obras_is_deleted ON obras (is_deleted)").await;
+            let _ = db.execute_unprepared("ALTER TABLE trabajos RENAME COLUMN proyecto_id TO obra_id").await;
+            let _ = db.execute_unprepared("CREATE INDEX IF NOT EXISTS ix_trabajos_obra_id ON trabajos (obra_id)").await;
+        }
         Ok(())
     }
 }

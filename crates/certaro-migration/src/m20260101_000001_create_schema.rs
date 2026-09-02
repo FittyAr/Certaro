@@ -476,6 +476,7 @@ DROP TABLE IF EXISTS orden_trabajo_items;
 DROP TABLE IF EXISTS ordenes_trabajo;
 DROP TABLE IF EXISTS trabajos;
 DROP TABLE IF EXISTS proyectos;
+DROP TABLE IF EXISTS obras;
 DROP TABLE IF EXISTS cliente_contactos;
 DROP TABLE IF EXISTS clientes;
 DROP TABLE IF EXISTS categorias;
