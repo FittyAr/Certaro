@@ -55,10 +55,10 @@
   - [x] 4.4 Comandos IPC Tauri para Calendario
   - [x] 4.5 Frontend: Vistas Día, Semana, Mes y vista Resources Day (por empleado / proyecto)
 
-- [ ] **Fase 5: Backup Unificado, Integración Final y Pulido**
-  - [ ] 5.1 Estrategia de backup/restore para SQLite / MySQL / PostgreSQL
-  - [ ] 5.2 Pruebas integrales de extremo a extremo y suites de tests
-  - [ ] 5.3 Actualización de documentación y changelog
+- [x] **Fase 5: Backup Unificado, Integración Final y Pulido**
+  - [x] 5.1 Estrategia de backup/restore para SQLite / MySQL / PostgreSQL
+  - [x] 5.2 Pruebas integrales de extremo a extremo y suites de tests
+  - [x] 5.3 Actualización de documentación y changelog
 
 ---
 
@@ -118,4 +118,6 @@ sistema:configuracion    sistema:backup           sistema:restore
 | 2026-09-02 | `001509b` | Creación de rama `feat/v2-enterprise-expansion` y documento `docs/v2/PLAN_V2.md` |
 | 2026-09-02 | `9957b1b` | feat: add multi-database support for MySQL and PostgreSQL (fase 1) |
 | 2026-09-02 | `8d969ce` | feat: implement enterprise authentication & RBAC system (fase 2) |
-| 2026-09-02 | `HEAD` | feat: implement Kanban board module with presets & sync (fase 3) |
+| 2026-09-02 | `fe563bf` | feat: implement Kanban board module with presets & sync (fase 3) |
+| 2026-09-02 | `3cce27f` | feat: implement Calendar and Scheduler module with resource view & virtual projection (fase 4) |
+| 2026-09-02 | `HEAD` | docs: update v2 documentation, unified backup and changelog (fase 5) |

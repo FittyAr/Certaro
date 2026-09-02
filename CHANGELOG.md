@@ -5,6 +5,33 @@ All notable changes to Certaro will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-09-02
+
+Major Enterprise Expansion.
+
+### Added
+
+- **Multi-Database Engine Support**:
+  - Native connection and pooling for SQLite (local desktop), PostgreSQL (enterprise server/Docker), and MySQL / MariaDB.
+  - Multi-dialect portable SeaORM migrations and cross-platform DDL.
+- **Enterprise Authentication & RBAC System**:
+  - 7 security tables: `usuarios`, `roles`, `permisos`, `usuario_roles`, `rol_permisos`, `sesiones`, `auth_externo`.
+  - Argon2id password hashing, JWT session management, and TOTP 2-factor authentication.
+  - 39 granular permissions covering every operational and commercial module.
+  - Initial Super Administrator account auto-seeded (`admin@certaro.local`).
+  - Transparent bypass mode for SQLite desktop deployments (no login required, full permissions).
+- **Kanban Board Module**:
+  - Custom boards with configurable columns, WIP limits, card priorities, markdown descriptions, and checklists.
+  - Preset boards for `Trabajos` and `Órdenes de Trabajo` with automatic bidirectional state synchronization.
+  - 21 Tauri IPC commands and reactive Pinia store.
+- **Calendar & Scheduler Module**:
+  - Month, Week, Day, and Resource Day views (columns per employee/vehicle/equipment).
+  - Virtual event projections: automatically renders national holidays, job start/deadlines, and invoice due dates.
+  - Resource groups ("Personal", "Vehículos", "Equipos") with automatic employee syncing.
+- **Unified Backup & Restore**:
+  - Universal JSON dump with strict topological dependency ordering across all 38 business tables.
+  - Atomic transactions and versioned schema validation.
+
 ## [0.1.0] - 2026-08-30
 
 First public release. Complete rewrite of __ElectroObraApp_PLACEHOLDER__ from C#/Avalonia to Rust/Tauri/Vue.
