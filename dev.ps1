@@ -59,6 +59,34 @@ function Get-Version {
     return "desconocida"
 }
 
+function Get-PrimeUiKey {
+    if ($env:VITE_PRIMEUI_LICENSE_KEY -and $env:VITE_PRIMEUI_LICENSE_KEY.Trim() -ne "") {
+        return
+    }
+    # Intenta leer desde .env si existe
+    if (Test-Path ".\.env") {
+        $envLine = Select-String -Path ".\.env" -Pattern "^\s*VITE_PRIMEUI_LICENSE_KEY\s*=\s*(.+)\s*$" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($envLine -and $envLine.Matches.Count -gt 0) {
+            $val = $envLine.Matches[0].Groups[1].Value.Trim().Trim('"').Trim("'")
+            if ($val -ne "") {
+                $env:VITE_PRIMEUI_LICENSE_KEY = $val
+                return
+            }
+        }
+    }
+    # Intenta via GitHub CLI (gh secret get) - no requiere .env y funciona en cualquier PC autenticada
+    try {
+        $ghKey = & gh secret get PRIMEUI_KEY 2>$null
+        if ($LASTEXITCODE -eq 0 -and $ghKey -and $ghKey.Trim() -ne "") {
+            $env:VITE_PRIMEUI_LICENSE_KEY = $ghKey.Trim()
+            Write-Ok "PrimeUI license key cargada desde GitHub secrets (PRIMEUI_KEY)."
+            return
+        }
+    } catch { }
+    Write-Host "    PrimeUI key no encontrada en env/.env/GitHub secrets - modal de licencia puede aparecer." -ForegroundColor Yellow
+    Write-Host "    Para solucionarlo: gh auth login && gh secret get PRIMEUI_KEY | Out-File -Encoding utf8 .env -NoNewline  o  echo 'VITE_PRIMEUI_LICENSE_KEY=<key>' > .env" -ForegroundColor Gray
+}
+
 # ── Comandos ────────────────────────────────────────────────────────────────
 
 switch ($Command) {
@@ -122,6 +150,7 @@ switch ($Command) {
         }
         if ($mode -in @("web", "dev:web")) {
             Write-Step "Arrancando solo web (Vite)"
+            Get-PrimeUiKey
             Write-Host "    Abre http://localhost:1420 en el navegador." -ForegroundColor Gray
             Write-Host "    Datos: mock en localStorage (electroobra_mock_db_v2), separado del SQLite de desktop." -ForegroundColor Yellow
             Write-Host "    Para ver los mismos datos que en desktop: en desktop Exportar JSON y en web Importar JSON (Configuración > Sistema)." -ForegroundColor Gray
@@ -129,6 +158,7 @@ switch ($Command) {
             pnpm dev --host 0.0.0.0
         } else {
             Write-Step "Arrancando desktop (Tauri + Vite)"
+            Get-PrimeUiKey
             Write-Host "    Ventana nativa + http://localhost:1420 con hot reload." -ForegroundColor Gray
             Write-Host "    Datos: SQLite en %LOCALAPPDATA%\ElectroObra\electroobra.db (real, no mock)." -ForegroundColor Gray
             Write-Host ""
@@ -138,16 +168,19 @@ switch ($Command) {
 
     { $_ -in @("web", "dev:web") } {
         Write-Step "Arrancando solo web (Vite)"
+        Get-PrimeUiKey
         pnpm dev --host 0.0.0.0
     }
 
     { $_ -in @("desktop", "dev:desktop") } {
         Write-Step "Arrancando desktop (Tauri + Vite)"
+        Get-PrimeUiKey
         pnpm tauri dev
     }
 
     "build" {
         Write-Step "Build de release"
+        Get-PrimeUiKey
         Invoke-OrFail "pnpm tauri build"
         Write-Ok "Build completado. Artefactos en src-tauri\target\release\bundle\"
     }

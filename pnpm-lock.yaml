@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@primeui/license-manager':
-        specifier: ^1.1.0
-        version: 1.1.0
       '@primeuix/themes':
         specifier: ^1.0.0
         version: 1.2.5
