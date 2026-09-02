@@ -75,6 +75,11 @@ impl KanbanService {
             let total_checklist = checklist.len();
             let completadas_checklist = checklist.iter().filter(|c| c.completada).count();
 
+            let proyecto_id = match t.trabajo_id {
+                Some(trabajo_id) => tx.trabajos().find_by_id(trabajo_id).await?.map(|tr| tr.proyecto_id),
+                None => None,
+            };
+
             tarjetas.push(KanbanTarjetaDto {
                 id: t.id,
                 columnaId: t.columna_id,
@@ -85,6 +90,7 @@ impl KanbanService {
                 orden: t.orden,
                 trabajoId: t.trabajo_id,
                 ordenTrabajoId: t.orden_trabajo_id,
+                proyectoId: proyecto_id,
                 archivada: t.archivada,
                 rowVersion: t.audit.row_version.to_hex(),
                 etiquetas: tags.into_iter().map(KanbanEtiquetaDto::from).collect(),
@@ -331,6 +337,10 @@ impl KanbanService {
         }
 
         let tags = tx.kanban_etiquetas().list_by_tarjeta(id).await?;
+        let proyecto_id = match tarjeta.trabajo_id {
+            Some(trabajo_id) => tx.trabajos().find_by_id(trabajo_id).await?.map(|tr| tr.proyecto_id),
+            None => None,
+        };
         tx.commit().await?;
 
         Ok(KanbanTarjetaDto {
@@ -343,6 +353,7 @@ impl KanbanService {
             orden: tarjeta.orden,
             trabajoId: tarjeta.trabajo_id,
             ordenTrabajoId: tarjeta.orden_trabajo_id,
+            proyectoId: proyecto_id,
             archivada: tarjeta.archivada,
             rowVersion: tarjeta.audit.row_version.to_hex(),
             etiquetas: tags.into_iter().map(KanbanEtiquetaDto::from).collect(),
@@ -408,6 +419,10 @@ impl KanbanService {
 
         let tags = tx.kanban_etiquetas().list_by_tarjeta(id).await?;
         let checklist = tx.kanban_checklists().list_by_tarjeta(id).await?;
+        let proyecto_id = match updated.trabajo_id {
+            Some(trabajo_id) => tx.trabajos().find_by_id(trabajo_id).await?.map(|tr| tr.proyecto_id),
+            None => None,
+        };
         tx.commit().await?;
 
         Ok(KanbanTarjetaDto {
@@ -420,6 +435,7 @@ impl KanbanService {
             orden: updated.orden,
             trabajoId: updated.trabajo_id,
             ordenTrabajoId: updated.orden_trabajo_id,
+            proyectoId: proyecto_id,
             archivada: updated.archivada,
             rowVersion: updated.audit.row_version.to_hex(),
             etiquetas: tags.into_iter().map(KanbanEtiquetaDto::from).collect(),

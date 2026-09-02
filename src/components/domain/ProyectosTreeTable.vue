@@ -201,6 +201,11 @@ const contextMenuModel = computed(() => {
         icon: 'pi pi-wallet',
         command: () => void router.push({ name: 'proyecto-caja', params: { proyectoId: p.id } }),
       },
+      {
+        label: t('Proyectos.VerKanban') || 'Ver en Kanban',
+        icon: 'pi pi-th-large',
+        command: () => void router.push({ path: '/kanban', query: { proyectoId: p.id } }),
+      },
     ]
   }
   if (data.isTrabajo && data.trabajo) {

@@ -121,6 +121,7 @@ pub struct KanbanTarjetaDto {
     pub orden: i32,
     pub trabajoId: Option<Uuid>,
     pub ordenTrabajoId: Option<Uuid>,
+    pub proyectoId: Option<Uuid>,
     pub archivada: bool,
     pub rowVersion: String,
     pub etiquetas: Vec<KanbanEtiquetaDto>,

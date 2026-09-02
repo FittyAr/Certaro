@@ -52,17 +52,33 @@ export type {
   Uuid,
 }
 
+import { useStorage } from '@vueuse/core'
+
 export const useKanbanStore = defineStore('kanban', () => {
   const tableros = ref<KanbanTableroDto[]>([])
   const currentTableroId = ref<Uuid | null>(null)
   const detalle = ref<KanbanTableroDetalleDto | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const showColumnMoveButtons = useStorage('certaro_kanban_show_column_buttons', false)
+  const showHiddenBoards = ref(false)
 
-  const activeTableros = computed(() => tableros.value.filter((t) => t.activo))
+  const activeTableros = computed(() =>
+    showHiddenBoards.value ? tableros.value : tableros.value.filter((t) => t.activo)
+  )
   const currentTablero = computed(() =>
     tableros.value.find((t) => t.id === currentTableroId.value) ?? null
   )
+
+  async function toggleTableroActivo(tablero: KanbanTableroDto) {
+    return updateTablero(tablero.id, {
+      nombre: tablero.nombre,
+      descripcion: tablero.descripcion,
+      color: tablero.color,
+      activo: !tablero.activo,
+      rowVersion: tablero.rowVersion,
+    })
+  }
 
   async function fetchTableros() {
     loading.value = true
@@ -386,5 +402,8 @@ export const useKanbanStore = defineStore('kanban', () => {
     addChecklistItem,
     updateChecklistItem,
     deleteChecklistItem,
+    showColumnMoveButtons,
+    showHiddenBoards,
+    toggleTableroActivo,
   }
 })

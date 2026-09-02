@@ -52,6 +52,7 @@ export interface KanbanTarjetaDto {
   orden: number
   trabajoId: Uuid | null
   ordenTrabajoId: Uuid | null
+  proyectoId?: Uuid | null
   archivada: boolean
   rowVersion: RowVersion
   etiquetas: KanbanEtiquetaDto[]

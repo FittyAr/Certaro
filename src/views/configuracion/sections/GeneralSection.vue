@@ -9,6 +9,7 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 import { Button } from '@/components/ui/button'
 import { useSistemaStore, type Cambios } from '@/stores/useSistemaStore'
 import { useUiStore } from '@/stores/useUiStore'
+import { useKanbanStore } from '@/stores/useKanbanStore'
 import { isSupportedLocale, setLocale } from '@/i18n'
 
 interface GeneralDraft {
@@ -22,6 +23,7 @@ interface GeneralDraft {
 
 const sistema = useSistemaStore()
 const ui = useUiStore()
+const kanbanStore = useKanbanStore()
 const toast = useToast()
 const { t } = useI18n()
 
@@ -147,6 +149,27 @@ watch(
         <label class="flex flex-col gap-1.5">
           <span class="text-xs font-medium text-foreground">{{ $t('Configuracion.SeparadorDecimal') }}</span>
           <InputText v-model="draft.separadorDecimal" class="w-full" />
+        </label>
+      </div>
+    </div>
+
+    <div class="rounded-lg border border-border bg-surface-card p-6 shadow-sm">
+      <div class="mb-4 flex items-center gap-2 border-b border-border pb-3">
+        <AppIcon name="columns" :size="18" class="text-primary" />
+        <h3 class="text-sm font-semibold text-foreground">Tablero Kanban</h3>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-0.5">
+          <span class="text-xs font-medium text-foreground">Botones de movimiento en columnas (◀ / ▶)</span>
+          <span class="text-xs text-muted-foreground">Muestra botones en la cabecera de las columnas para reordenar sin necesidad de arrastrar</span>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input
+            v-model="kanbanStore.showColumnMoveButtons"
+            type="checkbox"
+            class="rounded border-border text-primary"
+          />
         </label>
       </div>
     </div>
