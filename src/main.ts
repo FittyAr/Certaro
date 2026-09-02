@@ -1,6 +1,5 @@
 import { definePreset } from '@primeuix/themes'
 import Aura from '@primeuix/themes/aura'
-import { registerLicense } from '@primeui/license-manager'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import ConfirmationService from 'primevue/confirmationservice'
@@ -17,11 +16,6 @@ import './assets/main.css'
  * PrimeVue reads the same CSS variables as Tailwind, so a PrimeVue button and a Shadcn button
  * cannot end up different colours. See `docs/16-frontend.md` §3.4.
  */
-const primeUiKey = import.meta.env.VITE_PRIMEUI_LICENSE_KEY as string | undefined
-if (primeUiKey) {
-  registerLicense({ primeui: primeUiKey })
-}
-
 const preset = definePreset(Aura, {
   semantic: {
     primary: {
@@ -180,6 +174,9 @@ app.use(PrimeVue, {
       },
     },
   },
+  // PrimeUI license key (community or commercial). Injected via VITE_PRIMEUI_LICENSE_KEY
+  // from GitHub secret PRIMEUI_KEY. Missing/invalid key shows a dev-time overlay only.
+  license: (import.meta.env.VITE_PRIMEUI_LICENSE_KEY as string | undefined) ?? undefined,
   // A desktop application, not a touch app.
   ripple: false,
 })
