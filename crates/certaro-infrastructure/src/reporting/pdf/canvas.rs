@@ -9,11 +9,12 @@
 //! encoding covers every character Spanish and English paperwork uses. `Report.Font` stays in
 //! configuration so switching later changes one place.
 
+use std::cell::{Cell, RefCell};
+
 use certaro_application::result::AppResult;
-use printpdf::path::{PaintMode, WindingOrder};
 use printpdf::{
-    BuiltinFont, Color, IndirectFontRef, Line, Mm, PdfDocument, PdfDocumentReference,
-    PdfLayerIndex, PdfLayerReference, PdfPageIndex, Point, Polygon, Pt, Rgb as PdfRgb,
+    BuiltinFont, Color, Line, LinePoint, Mm, Op, PdfDocument, PdfFontHandle, PdfPage,
+    PdfSaveOptions, Point, Polygon, PolygonRing, Pt, Rgb as PdfRgb, TextItem, WindingOrder,
 };
 
 use super::theme::{self, Rgb};
@@ -93,58 +94,49 @@ impl TextSpec {
 }
 
 struct Fonts {
-    regular: IndirectFontRef,
-    bold: IndirectFontRef,
-    italic: IndirectFontRef,
+    regular: PdfFontHandle,
+    bold: PdfFontHandle,
+    italic: PdfFontHandle,
 }
 
 impl Fonts {
-    fn pick(&self, style: FontStyle) -> &IndirectFontRef {
+    fn pick(&self, style: FontStyle) -> PdfFontHandle {
         match style {
-            FontStyle::Regular => &self.regular,
-            FontStyle::Bold => &self.bold,
-            FontStyle::Italic => &self.italic,
+            FontStyle::Regular => self.regular.clone(),
+            FontStyle::Bold => self.bold.clone(),
+            FontStyle::Italic => self.italic.clone(),
         }
     }
 }
 
 pub struct Canvas {
-    doc: PdfDocumentReference,
-    pages: Vec<(PdfPageIndex, PdfLayerIndex)>,
+    doc: PdfDocument,
+    ops_per_page: RefCell<Vec<Vec<Op>>>,
     fonts: Fonts,
     width: f32,
     height: f32,
     margin: f32,
-    /// Distance from the top of the page to where the next block goes.
-    cursor: f32,
-    /// Reserved at the bottom for the footer, so no content lands on it.
+    cursor: Cell<f32>,
     footer_space: f32,
 }
 
 impl Canvas {
     /// A document of one page. Sizes in points; `A4` lives in [`theme::page`].
     pub fn new(title: &str, width: f32, height: f32, margin: f32) -> AppResult<Self> {
-        let (doc, page, layer) =
-            PdfDocument::new(title, Mm::from(Pt(width)), Mm::from(Pt(height)), "capa");
+        let doc = PdfDocument::new(title);
         let fonts = Fonts {
-            regular: doc
-                .add_builtin_font(BuiltinFont::Helvetica)
-                .map_err(|e| io_error("pdf.font.regular", e))?,
-            bold: doc
-                .add_builtin_font(BuiltinFont::HelveticaBold)
-                .map_err(|e| io_error("pdf.font.bold", e))?,
-            italic: doc
-                .add_builtin_font(BuiltinFont::HelveticaOblique)
-                .map_err(|e| io_error("pdf.font.italic", e))?,
+            regular: PdfFontHandle::Builtin(BuiltinFont::Helvetica),
+            bold: PdfFontHandle::Builtin(BuiltinFont::HelveticaBold),
+            italic: PdfFontHandle::Builtin(BuiltinFont::HelveticaOblique),
         };
         Ok(Self {
             doc,
-            pages: vec![(page, layer)],
+            ops_per_page: RefCell::new(vec![Vec::new()]),
             fonts,
             width,
             height,
             margin,
-            cursor: margin,
+            cursor: Cell::new(margin),
             footer_space: 28.0,
         })
     }
@@ -161,53 +153,40 @@ impl Canvas {
 
     #[must_use]
     pub fn cursor(&self) -> f32 {
-        self.cursor
+        self.cursor.get()
     }
 
-    pub fn set_cursor(&mut self, y: f32) {
-        self.cursor = y;
+    pub fn set_cursor(&self, y: f32) {
+        self.cursor.set(y);
     }
 
-    pub fn advance(&mut self, dy: f32) {
-        self.cursor += dy;
+    pub fn advance(&self, dy: f32) {
+        self.cursor.set(self.cursor.get() + dy);
     }
 
     /// Space left before the footer area.
     #[must_use]
     pub fn remaining(&self) -> f32 {
-        self.height - self.margin - self.footer_space - self.cursor
+        self.height - self.margin - self.footer_space - self.cursor.get()
     }
 
     #[must_use]
     pub fn page_count(&self) -> usize {
-        self.pages.len()
+        self.ops_per_page.borrow().len()
     }
 
-    pub fn new_page(&mut self) {
-        let (page, layer) =
-            self.doc
-                .add_page(Mm::from(Pt(self.width)), Mm::from(Pt(self.height)), "capa");
-        self.pages.push((page, layer));
-        self.cursor = self.margin;
+    pub fn new_page(&self) {
+        self.ops_per_page.borrow_mut().push(Vec::new());
+        self.cursor.set(self.margin);
     }
 
     /// Starts a page when `needed` points do not fit. Returns whether it broke.
-    pub fn ensure_space(&mut self, needed: f32) -> bool {
+    pub fn ensure_space(&self, needed: f32) -> bool {
         if self.remaining() >= needed {
             return false;
         }
         self.new_page();
         true
-    }
-
-    fn layer(&self) -> PdfLayerReference {
-        let (page, layer) = self.pages[self.pages.len() - 1];
-        self.doc.get_page(page).get_layer(layer)
-    }
-
-    fn layer_of(&self, index: usize) -> PdfLayerReference {
-        let (page, layer) = self.pages[index];
-        self.doc.get_page(page).get_layer(layer)
     }
 
     /// Height one line of this size occupies.
@@ -269,21 +248,32 @@ impl Canvas {
     }
 
     fn raw_text(&self, text: &str, spec: &TextSpec, x: f32, y_top: f32, page: Option<usize>) {
-        let layer = match page {
-            Some(index) => self.layer_of(index),
-            None => self.layer(),
+        let height = self.height;
+        let font = self.fonts.pick(spec.style);
+        let col = color_of(spec.color);
+        let size = spec.size;
+        let baseline = y_top + size;
+        let y = height - baseline;
+        let pos = point(x, y);
+        let items = vec![TextItem::Text(text.to_owned())];
+        let mut ops_ref = self.ops_per_page.borrow_mut();
+        let ops: &mut Vec<Op> = if let Some(index) = page {
+            &mut ops_ref[index]
+        } else {
+            ops_ref.last_mut().unwrap()
         };
-        layer.set_fill_color(color_of(spec.color));
-        // The baseline sits one font size below the top of the line box, which is what makes
-        // successive lines look evenly spaced.
-        let baseline = y_top + spec.size;
-        layer.use_text(
-            text,
-            spec.size,
-            Mm::from(Pt(x)),
-            Mm::from(Pt(self.height - baseline)),
-            self.fonts.pick(spec.style),
-        );
+        ops.extend([
+            Op::SetFillColor { col },
+            Op::StartTextSection,
+            Op::SetTextCursor { pos },
+            Op::SetLineHeight { lh: Pt(size) },
+            Op::SetFont {
+                font,
+                size: Pt(size),
+            },
+            Op::ShowText { items },
+            Op::EndTextSection,
+        ]);
     }
 
     pub fn rect(
@@ -295,8 +285,8 @@ impl Canvas {
         fill: Option<Rgb>,
         stroke: Option<(Rgb, f32)>,
     ) {
-        let layer = self.layer();
-        let top = self.height - y_top;
+        let h = self.height;
+        let top = h - y_top;
         let bottom = top - height;
         let ring = vec![
             (point(x, bottom), false),
@@ -304,45 +294,93 @@ impl Canvas {
             (point(x + width, top), false),
             (point(x + width, bottom), false),
         ];
-
+        let mut ops_ref = self.ops_per_page.borrow_mut();
+        let ops = ops_ref.last_mut().unwrap();
         if let Some(fill) = fill {
-            layer.set_fill_color(color_of(fill));
-            layer.add_polygon(Polygon {
-                rings: vec![ring.clone()],
-                mode: PaintMode::Fill,
-                winding_order: WindingOrder::NonZero,
+            ops.push(Op::SetFillColor {
+                col: color_of(fill),
+            });
+            ops.push(Op::DrawPolygon {
+                polygon: Polygon {
+                    rings: vec![PolygonRing {
+                        points: ring
+                            .clone()
+                            .into_iter()
+                            .map(|(p, bezier)| LinePoint { p, bezier })
+                            .collect(),
+                    }],
+                    mode: printpdf::PaintMode::Fill,
+                    winding_order: WindingOrder::NonZero,
+                },
             });
         }
         if let Some((color, thickness)) = stroke {
-            layer.set_outline_color(color_of(color));
-            layer.set_outline_thickness(thickness);
-            layer.add_polygon(Polygon {
-                rings: vec![ring],
-                mode: PaintMode::Stroke,
-                winding_order: WindingOrder::NonZero,
+            ops.push(Op::SetOutlineColor {
+                col: color_of(color),
+            });
+            ops.push(Op::SetOutlineThickness { pt: Pt(thickness) });
+            ops.push(Op::DrawPolygon {
+                polygon: Polygon {
+                    rings: vec![PolygonRing {
+                        points: ring
+                            .into_iter()
+                            .map(|(p, bezier)| LinePoint { p, bezier })
+                            .collect(),
+                    }],
+                    mode: printpdf::PaintMode::Stroke,
+                    winding_order: WindingOrder::NonZero,
+                },
             });
         }
     }
 
     pub fn hline(&self, x: f32, y_top: f32, width: f32, color: Rgb, thickness: f32) {
-        let layer = self.layer();
         let y = self.height - y_top;
-        layer.set_outline_color(color_of(color));
-        layer.set_outline_thickness(thickness);
-        layer.add_line(Line {
-            points: vec![(point(x, y), false), (point(x + width, y), false)],
-            is_closed: false,
+        let mut ops_ref = self.ops_per_page.borrow_mut();
+        let ops = ops_ref.last_mut().unwrap();
+        ops.push(Op::SetOutlineColor {
+            col: color_of(color),
+        });
+        ops.push(Op::SetOutlineThickness { pt: Pt(thickness) });
+        ops.push(Op::DrawLine {
+            line: Line {
+                points: vec![
+                    LinePoint {
+                        p: point(x, y),
+                        bezier: false,
+                    },
+                    LinePoint {
+                        p: point(x + width, y),
+                        bezier: false,
+                    },
+                ],
+                is_closed: false,
+            },
         });
     }
 
     pub fn vline(&self, x: f32, y_top: f32, height: f32, color: Rgb, thickness: f32) {
-        let layer = self.layer();
         let top = self.height - y_top;
-        layer.set_outline_color(color_of(color));
-        layer.set_outline_thickness(thickness);
-        layer.add_line(Line {
-            points: vec![(point(x, top), false), (point(x, top - height), false)],
-            is_closed: false,
+        let mut ops_ref = self.ops_per_page.borrow_mut();
+        let ops = ops_ref.last_mut().unwrap();
+        ops.push(Op::SetOutlineColor {
+            col: color_of(color),
+        });
+        ops.push(Op::SetOutlineThickness { pt: Pt(thickness) });
+        ops.push(Op::DrawLine {
+            line: Line {
+                points: vec![
+                    LinePoint {
+                        p: point(x, top),
+                        bezier: false,
+                    },
+                    LinePoint {
+                        p: point(x, top - height),
+                        bezier: false,
+                    },
+                ],
+                is_closed: false,
+            },
         });
     }
 
@@ -350,11 +388,12 @@ impl Canvas {
     ///
     /// It runs at the end because the total number of pages is not known until then, and a footer
     /// that says «page 3» without saying «of 7» is the legacy footer this replaces.
-    pub fn finish<F>(self, footer: F) -> AppResult<Vec<u8>>
+    pub fn finish<F>(mut self, footer: F) -> AppResult<Vec<u8>>
     where
         F: Fn(usize, usize) -> Option<TextSpec>,
     {
-        let total = self.pages.len();
+        let total = self.ops_per_page.borrow().len();
+        // Collect footer ops to avoid borrow conflicts: we need to push to each page
         for index in 0..total {
             if let Some(spec) = footer(index + 1, total) {
                 let y = self.height - self.margin - theme::size::FOOTER;
@@ -365,12 +404,48 @@ impl Canvas {
                     Align::Center => (self.width - drawn) / 2.0,
                     Align::Right => self.width - self.margin - drawn,
                 };
-                self.raw_text(&text, &spec, x, y, Some(index));
+                let spec_clone = TextSpec {
+                    text,
+                    size: spec.size,
+                    style: spec.style,
+                    color: spec.color,
+                    align: spec.align,
+                };
+                // raw_text needs &self, but we are in finish taking self; we can call helper directly
+                // Duplicate logic to avoid borrowing self.ops_per_page while iterating
+                let font = self.fonts.pick(spec_clone.style);
+                let col = color_of(spec_clone.color);
+                let size = spec_clone.size;
+                let baseline = y + size;
+                let yy = self.height - baseline;
+                let pos = point(x, yy);
+                let items = vec![TextItem::Text(spec_clone.text)];
+                self.ops_per_page.borrow_mut()[index].extend([
+                    Op::SetFillColor { col },
+                    Op::StartTextSection,
+                    Op::SetTextCursor { pos },
+                    Op::SetLineHeight { lh: Pt(size) },
+                    Op::SetFont {
+                        font,
+                        size: Pt(size),
+                    },
+                    Op::ShowText { items },
+                    Op::EndTextSection,
+                ]);
             }
         }
-        self.doc
-            .save_to_bytes()
-            .map_err(|e| io_error("pdf.save", e))
+        let pages: Vec<PdfPage> = self
+            .ops_per_page
+            .into_inner()
+            .into_iter()
+            .map(|ops| PdfPage::new(Mm::from(Pt(self.width)), Mm::from(Pt(self.height)), ops))
+            .collect();
+        let mut warnings = Vec::new();
+        let bytes = self
+            .doc
+            .with_pages(pages)
+            .save(&PdfSaveOptions::default(), &mut warnings);
+        Ok(bytes)
     }
 }
 
@@ -404,7 +479,7 @@ mod tests {
 
     #[test]
     fn pedir_mas_espacio_del_que_queda_abre_una_pagina() {
-        let mut c = canvas();
+        let c = canvas();
         assert!(!c.ensure_space(100.0));
         assert_eq!(c.page_count(), 1);
         assert!(c.ensure_space(10_000.0));
@@ -439,7 +514,7 @@ mod tests {
 
     #[test]
     fn el_documento_se_guarda_con_su_pie_en_cada_pagina() {
-        let mut c = canvas();
+        let c = canvas();
         c.text_at(&TextSpec::new("Hola", 10.0), c.left(), c.cursor());
         c.new_page();
         let bytes = c
