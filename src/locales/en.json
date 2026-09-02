@@ -542,6 +542,7 @@
     "Empleados": "Employees",
     "Facturas": "Invoices",
     "Feriados": "Holidays",
+    "Calendario": "Calendar",
     "Group": {
       "Comercial": "Commercial",
       "Operacion": "Operations",
@@ -1011,6 +1012,24 @@
     "Sync": "Sync",
     "Title": "Title",
     "WipLimit": "WIP Limit (max cards)"
+  },
+  "Calendario": {
+    "AllDay": "All day",
+    "Day": "Day",
+    "Description": "Description",
+    "EditEvent": "Edit Event",
+    "End": "End",
+    "ManageResources": "Manage Resources",
+    "Month": "Month",
+    "NewEvent": "New Event",
+    "NewResource": "New Resource",
+    "NoEvents": "No events",
+    "Resources": "Resources",
+    "Start": "Start",
+    "SyncEmployees": "Sync Employees",
+    "Title": "Title",
+    "Today": "Today",
+    "Week": "Week"
   },
   "Welcome": {
     "AllowOrphans": "Allow orphan references",

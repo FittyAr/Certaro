@@ -15,6 +15,7 @@ use certaro_application::ports::auth::{PasswordHasher, TokenPort, TotpPort};
 use certaro_application::use_cases::adjuntos::AdjuntosService;
 use certaro_application::use_cases::asistencias::AsistenciasService;
 use certaro_application::use_cases::auth::AuthService;
+use certaro_application::use_cases::calendario::CalendarioService;
 use certaro_application::use_cases::categorias::CategoriasService;
 use certaro_application::use_cases::certificados::CertificadosService;
 use certaro_application::use_cases::clientes::ClientesService;
@@ -64,6 +65,7 @@ pub struct Services {
     pub configuracion: ConfiguracionService,
     pub auth: AuthService,
     pub kanban: KanbanService,
+    pub calendario: CalendarioService,
 }
 
 impl Services {
@@ -185,6 +187,7 @@ impl Services {
                 totp,
             ),
             kanban: KanbanService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
+            calendario: CalendarioService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
             movimientos: MovimientosService::new(uow, clock, ids, settings),
         }
     }

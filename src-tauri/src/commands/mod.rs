@@ -4,6 +4,7 @@ pub mod adjuntos;
 pub mod app;
 pub mod asistencias;
 pub mod auth;
+pub mod calendario;
 pub mod categorias;
 pub mod certificados;
 pub mod clientes;

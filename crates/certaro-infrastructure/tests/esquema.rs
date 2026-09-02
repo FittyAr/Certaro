@@ -29,7 +29,7 @@ async fn count(db: &DatabaseConnection, sql: &str) -> i64 {
 }
 
 #[tokio::test]
-async fn las_migraciones_crean_las_treinta_y_cinco_tablas() {
+async fn las_migraciones_crean_las_treinta_y_nueve_tablas() {
     let db = open_in_memory().await.unwrap();
     let tablas = scalars(
         &db,
@@ -46,6 +46,10 @@ async fn las_migraciones_crean_las_treinta_y_cinco_tablas() {
             "app_metadata",
             "asistencias_empleado",
             "auth_externo",
+            "calendario_evento_recursos",
+            "calendario_eventos",
+            "calendario_grupos_recurso",
+            "calendario_recursos",
             "categorias",
             "certificado_items",
             "certificados",
@@ -92,6 +96,13 @@ async fn la_semilla_crea_tableros_kanban_preset() {
 
     let etiquetas_cnt = count(&db, "SELECT COUNT(*) as n FROM kanban_etiquetas").await;
     assert_eq!(etiquetas_cnt, 4);
+}
+
+#[tokio::test]
+async fn la_semilla_crea_grupos_de_recursos_iniciales() {
+    let db = open_in_memory().await.unwrap();
+    let grupos_cnt = count(&db, "SELECT COUNT(*) as n FROM calendario_grupos_recurso").await;
+    assert_eq!(grupos_cnt, 3);
 }
 
 #[tokio::test]

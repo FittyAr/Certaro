@@ -56,9 +56,9 @@ describe('menú y rutas', () => {
       'proyectos',
       'trabajos',
       'kanban',
+      'calendario',
       'certificados',
       'facturas',
-      'empleados',
     ])
   })
 

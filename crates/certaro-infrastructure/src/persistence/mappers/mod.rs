@@ -6,6 +6,7 @@
 pub mod adjunto;
 pub mod asistencia_empleado;
 pub mod auth;
+pub mod calendario;
 pub mod categoria;
 pub mod certificado;
 pub mod cliente;

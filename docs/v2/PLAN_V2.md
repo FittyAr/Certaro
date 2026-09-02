@@ -48,12 +48,12 @@
   - [x] 3.5 Comandos IPC Tauri para Kanban
   - [x] 3.6 Frontend: Componentes Kanban (Tablero, Columnas, Tarjetas, Drag & Drop, Filtros, Modal Detalle)
 
-- [ ] **Fase 4: Módulo Calendario / Scheduler**
-  - [ ] 4.1 Entidades de dominio (`CalendarioEvento`, `CalendarioRecurso`, `CalendarioGrupoRecurso`)
-  - [ ] 4.2 Migraciones y modelos de persistencia SeaORM (4 tablas)
-  - [ ] 4.3 Repositorios y casos de uso de calendario y proyección de eventos virtuales
-  - [ ] 4.4 Comandos IPC Tauri para Calendario
-  - [ ] 4.5 Frontend: Vistas Día, Semana, Mes y vista Resources Day (por empleado / proyecto)
+- [x] **Fase 4: Módulo Calendario / Scheduler**
+  - [x] 4.1 Entidades de dominio (`CalendarioEvento`, `CalendarioRecurso`, `CalendarioGrupoRecurso`)
+  - [x] 4.2 Migraciones y modelos de persistencia SeaORM (4 tablas)
+  - [x] 4.3 Repositorios y casos de uso de calendario y proyección de eventos virtuales
+  - [x] 4.4 Comandos IPC Tauri para Calendario
+  - [x] 4.5 Frontend: Vistas Día, Semana, Mes y vista Resources Day (por empleado / proyecto)
 
 - [ ] **Fase 5: Backup Unificado, Integración Final y Pulido**
   - [ ] 5.1 Estrategia de backup/restore para SQLite / MySQL / PostgreSQL

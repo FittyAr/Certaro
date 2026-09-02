@@ -4,7 +4,6 @@ use certaro_domain::entities::kanban::{
     PrioridadTarjeta, TipoPresetTablero,
 };
 use certaro_domain::time;
-use certaro_domain::entities::audit::Audit;
 use sea_orm::ActiveValue::Set;
 
 use crate::persistence::mappers;

@@ -7,12 +7,13 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use certaro_application::ports::repositories::{
-    AdjuntoRepository, AsistenciaRepository, AuthExternoRepository, CategoriaRepository,
-    CertificadoRepository, ClienteRepository, DashboardRepository, EmpleadoRepository,
-    FacturaRepository, FeriadoRepository, KanbanChecklistRepository, KanbanColumnaRepository,
-    KanbanEtiquetaRepository, KanbanTableroRepository, KanbanTarjetaRepository,
-    LiquidacionRepository, MetadataRepository, MovimientoRepository, OrdenTrabajoRepository,
-    PermisoRepository, ProyectoRepository, RolRepository, SesionRepository,
+    AdjuntoRepository, AsistenciaRepository, AuthExternoRepository,
+    CalendarioEventoRepository, CalendarioGrupoRecursoRepository, CalendarioRecursoRepository,
+    CategoriaRepository, CertificadoRepository, ClienteRepository, DashboardRepository,
+    EmpleadoRepository, FacturaRepository, FeriadoRepository, KanbanChecklistRepository,
+    KanbanColumnaRepository, KanbanEtiquetaRepository, KanbanTableroRepository,
+    KanbanTarjetaRepository, LiquidacionRepository, MetadataRepository, MovimientoRepository,
+    OrdenTrabajoRepository, PermisoRepository, ProyectoRepository, RolRepository, SesionRepository,
     TipoMovimientoRepository, TrabajoRepository, Transaction, UnitOfWork, UsuarioRepository,
 };
 use certaro_application::{AppError, AppResult};
@@ -24,6 +25,10 @@ use crate::persistence::repositories::asistencia::SeaOrmAsistenciaRepository;
 use crate::persistence::repositories::auth::{
     SeaOrmAuthExternoRepository, SeaOrmPermisoRepository, SeaOrmRolRepository,
     SeaOrmSesionRepository, SeaOrmUsuarioRepository,
+};
+use crate::persistence::repositories::calendario::{
+    SeaOrmCalendarioEventoRepository, SeaOrmCalendarioGrupoRecursoRepository,
+    SeaOrmCalendarioRecursoRepository,
 };
 use crate::persistence::repositories::categoria::SeaOrmCategoriaRepository;
 use crate::persistence::repositories::certificado::SeaOrmCertificadoRepository;
@@ -103,6 +108,9 @@ pub struct SeaOrmTransaction {
     kanban_tarjetas: SeaOrmKanbanTarjetaRepository,
     kanban_etiquetas: SeaOrmKanbanEtiquetaRepository,
     kanban_checklists: SeaOrmKanbanChecklistRepository,
+    calendario_grupos_recurso: SeaOrmCalendarioGrupoRecursoRepository,
+    calendario_recursos: SeaOrmCalendarioRecursoRepository,
+    calendario_eventos: SeaOrmCalendarioEventoRepository,
 }
 
 impl SeaOrmTransaction {
@@ -134,6 +142,9 @@ impl SeaOrmTransaction {
             kanban_tarjetas: SeaOrmKanbanTarjetaRepository::new(Arc::clone(&tx)),
             kanban_etiquetas: SeaOrmKanbanEtiquetaRepository::new(Arc::clone(&tx)),
             kanban_checklists: SeaOrmKanbanChecklistRepository::new(Arc::clone(&tx)),
+            calendario_grupos_recurso: SeaOrmCalendarioGrupoRecursoRepository::new(Arc::clone(&tx)),
+            calendario_recursos: SeaOrmCalendarioRecursoRepository::new(Arc::clone(&tx)),
+            calendario_eventos: SeaOrmCalendarioEventoRepository::new(Arc::clone(&tx)),
             tx,
         }
     }
@@ -170,6 +181,9 @@ impl SeaOrmTransaction {
             kanban_tarjetas,
             kanban_etiquetas,
             kanban_checklists,
+            calendario_grupos_recurso,
+            calendario_recursos,
+            calendario_eventos,
         } = self;
         drop(tipos_movimiento);
         drop(categorias);
@@ -197,6 +211,9 @@ impl SeaOrmTransaction {
         drop(kanban_tarjetas);
         drop(kanban_etiquetas);
         drop(kanban_checklists);
+        drop(calendario_grupos_recurso);
+        drop(calendario_recursos);
+        drop(calendario_eventos);
         Arc::try_unwrap(tx).map_err(|_| {
             AppError::unexpected(anyhow::anyhow!("transaction still borrowed when finishing"))
         })
@@ -307,6 +324,18 @@ impl Transaction for SeaOrmTransaction {
 
     fn kanban_checklists(&self) -> &dyn KanbanChecklistRepository {
         &self.kanban_checklists
+    }
+
+    fn calendario_grupos_recurso(&self) -> &dyn CalendarioGrupoRecursoRepository {
+        &self.calendario_grupos_recurso
+    }
+
+    fn calendario_recursos(&self) -> &dyn CalendarioRecursoRepository {
+        &self.calendario_recursos
+    }
+
+    fn calendario_eventos(&self) -> &dyn CalendarioEventoRepository {
+        &self.calendario_eventos
     }
 
     async fn commit(self: Box<Self>) -> AppResult<()> {

@@ -9,11 +9,12 @@
 use async_trait::async_trait;
 use chrono::{DateTime, NaiveDate, Utc};
 use certaro_domain::entities::{
-    Adjunto, AsistenciaEmpleado, AuthExterno, Categoria, Certificado, CertificadoItem, Cliente,
-    ClienteContacto, Empleado, EntidadAdjunto, Factura, Feriado, KanbanColumna, KanbanEtiqueta,
-    KanbanTablero, KanbanTarjeta, KanbanTarjetaChecklist, Liquidacion, LiquidacionAdelanto,
-    Movimiento, OrdenTrabajo, OrdenTrabajoItem, PagoFactura, Permiso, Proyecto, Rol, Sesion,
-    TipoMovimiento, Trabajo, Usuario,
+    Adjunto, AsistenciaEmpleado, AuthExterno, CalendarioEvento, CalendarioGrupoRecurso,
+    CalendarioRecurso, Categoria, Certificado, CertificadoItem, Cliente, ClienteContacto, Empleado,
+    EntidadAdjunto, Factura, Feriado, KanbanColumna, KanbanEtiqueta, KanbanTablero, KanbanTarjeta,
+    KanbanTarjetaChecklist, Liquidacion, LiquidacionAdelanto, Movimiento, OrdenTrabajo,
+    OrdenTrabajoItem, PagoFactura, Permiso, Proyecto, Rol, Sesion, TipoMovimiento, Trabajo,
+    Usuario,
 };
 use certaro_domain::{Decimal4, EstadoFactura, EstadoProyecto, EstadoTrabajo, Moneda, Money, RowVersion};
 use uuid::Uuid;
@@ -1081,6 +1082,39 @@ pub trait KanbanChecklistRepository: Send + Sync {
     async fn delete_by_id(&self, id: Uuid) -> AppResult<()>;
 }
 
+#[async_trait]
+pub trait CalendarioGrupoRecursoRepository: Send + Sync {
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<CalendarioGrupoRecurso>>;
+    async fn list_all(&self) -> AppResult<Vec<CalendarioGrupoRecurso>>;
+    async fn insert(&self, entity: &CalendarioGrupoRecurso) -> AppResult<()>;
+    async fn update(&self, entity: &CalendarioGrupoRecurso) -> AppResult<()>;
+    async fn delete(&self, id: Uuid, row_version: &RowVersion) -> AppResult<()>;
+}
+
+#[async_trait]
+pub trait CalendarioRecursoRepository: Send + Sync {
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<CalendarioRecurso>>;
+    async fn find_by_empleado_id(&self, empleado_id: Uuid) -> AppResult<Option<CalendarioRecurso>>;
+    async fn list_all(&self) -> AppResult<Vec<CalendarioRecurso>>;
+    async fn list_activos(&self) -> AppResult<Vec<CalendarioRecurso>>;
+    async fn insert(&self, entity: &CalendarioRecurso) -> AppResult<()>;
+    async fn update(&self, entity: &CalendarioRecurso) -> AppResult<()>;
+    async fn delete(&self, id: Uuid, row_version: &RowVersion) -> AppResult<()>;
+}
+
+#[async_trait]
+pub trait CalendarioEventoRepository: Send + Sync {
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<CalendarioEvento>>;
+    async fn list_en_rango(&self, desde: DateTime<Utc>, hasta: DateTime<Utc>) -> AppResult<Vec<CalendarioEvento>>;
+    async fn list_por_recurso(&self, recurso_id: Uuid, desde: DateTime<Utc>, hasta: DateTime<Utc>) -> AppResult<Vec<CalendarioEvento>>;
+    async fn insert(&self, entity: &CalendarioEvento) -> AppResult<()>;
+    async fn update(&self, entity: &CalendarioEvento) -> AppResult<()>;
+    async fn delete(&self, id: Uuid, row_version: &RowVersion) -> AppResult<()>;
+    async fn assign_recurso(&self, evento_id: Uuid, recurso_id: Uuid) -> AppResult<()>;
+    async fn unassign_recursos(&self, evento_id: Uuid) -> AppResult<()>;
+    async fn get_recursos_ids(&self, evento_id: Uuid) -> AppResult<Vec<Uuid>>;
+}
+
 /// The internal key/value store. Not a business record: no audit block, no soft delete.
 #[async_trait]
 pub trait MetadataRepository: Send + Sync {
@@ -1127,6 +1161,9 @@ pub trait Transaction: Send + Sync {
     fn kanban_tarjetas(&self) -> &dyn KanbanTarjetaRepository;
     fn kanban_etiquetas(&self) -> &dyn KanbanEtiquetaRepository;
     fn kanban_checklists(&self) -> &dyn KanbanChecklistRepository;
+    fn calendario_grupos_recurso(&self) -> &dyn CalendarioGrupoRecursoRepository;
+    fn calendario_recursos(&self) -> &dyn CalendarioRecursoRepository;
+    fn calendario_eventos(&self) -> &dyn CalendarioEventoRepository;
 
     async fn commit(self: Box<Self>) -> AppResult<()>;
     async fn rollback(self: Box<Self>) -> AppResult<()>;

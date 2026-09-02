@@ -4,6 +4,7 @@ pub mod adjunto;
 pub mod asistencia_empleado;
 pub mod audit;
 pub mod auth;
+pub mod calendario;
 pub mod categoria;
 pub mod certificado;
 pub mod cliente;
@@ -22,6 +23,10 @@ pub use adjunto::{Adjunto, EntidadAdjunto};
 pub use asistencia_empleado::{AsistenciaEmpleado, ResumenAsistencia};
 pub use audit::Audit;
 pub use auth::{AuthProvider, AuthExterno, Permiso, Rol, RolPermiso, Sesion, Usuario, UsuarioRol};
+pub use calendario::{
+    CalendarioEvento, CalendarioEventoRecurso, CalendarioGrupoRecurso, CalendarioRecurso,
+    TipoEvento, TipoRecurso,
+};
 pub use categoria::Categoria;
 pub use certificado::{Certificado, CertificadoItem};
 pub use cliente::{Cliente, ClienteContacto};

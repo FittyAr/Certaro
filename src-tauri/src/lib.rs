@@ -261,6 +261,20 @@ pub fn run() {
             commands::kanban::kanban_add_checklist_item,
             commands::kanban::kanban_update_checklist_item,
             commands::kanban::kanban_delete_checklist_item,
+            commands::calendario::calendario_list_grupos,
+            commands::calendario::calendario_create_grupo,
+            commands::calendario::calendario_update_grupo,
+            commands::calendario::calendario_delete_grupo,
+            commands::calendario::calendario_list_recursos,
+            commands::calendario::calendario_create_recurso,
+            commands::calendario::calendario_update_recurso,
+            commands::calendario::calendario_delete_recurso,
+            commands::calendario::calendario_sincronizar_empleados,
+            commands::calendario::calendario_list_eventos,
+            commands::calendario::calendario_create_evento,
+            commands::calendario::calendario_update_evento,
+            commands::calendario::calendario_mover_evento,
+            commands::calendario::calendario_delete_evento,
         ])
         .run(tauri::generate_context!())
         .unwrap_or_else(|e| {

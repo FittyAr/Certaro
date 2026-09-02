@@ -3,6 +3,7 @@
 pub mod adjuntos;
 pub mod asistencias;
 pub mod auth;
+pub mod calendario;
 pub mod categorias;
 pub mod certificados;
 pub mod clientes;
@@ -23,3 +24,5 @@ pub mod shared;
 pub mod sistema;
 pub mod tipos_movimiento;
 pub mod trabajos;
+
+pub use calendario::CalendarioService;

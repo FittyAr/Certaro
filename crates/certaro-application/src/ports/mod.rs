@@ -37,6 +37,7 @@ pub use repositories::{
     TrabajoRepository, Transaction, UnitOfWork, UsuarioRepository,
     KanbanChecklistRepository, KanbanColumnaRepository, KanbanEtiquetaRepository,
     KanbanTableroRepository, KanbanTarjetaRepository,
+    CalendarioEventoRepository, CalendarioGrupoRecursoRepository, CalendarioRecursoRepository,
 };
 pub use settings::SettingsStore;
 pub use translator::{MapTranslator, Translator};
