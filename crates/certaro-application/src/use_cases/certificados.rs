@@ -122,7 +122,7 @@ impl CertificadosService {
                 orden_titulo: row.orden.titulo.clone(),
                 numero_sugerido: numero,
                 trabajo_descripcion: row.trabajo_descripcion.clone(),
-                obra_nombre: row.obra_nombre.clone(),
+                proyecto_nombre: row.proyecto_nombre.clone(),
                 cliente_nombre: row.cliente_nombre.clone(),
                 ajuste_uocra_porcentaje: row.orden.ajuste_uocra_porcentaje,
                 otros_descuentos: row.orden.otros_descuentos,

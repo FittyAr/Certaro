@@ -1,17 +1,17 @@
-//! Use cases of `obras`. See `docs/09-modulos-funcionales.md` §3.4.
+//! Use cases of `proyectos`. See `docs/09-modulos-funcionales.md` §3.4.
 
 use std::sync::Arc;
 
-use certaro_domain::entities::{Audit, Obra};
-use certaro_domain::{EstadoObra, EstadoTrabajo, Money, StateMachine};
+use certaro_domain::entities::{Audit, Proyecto};
+use certaro_domain::{EstadoProyecto, EstadoTrabajo, Money, StateMachine};
 use tracing::info;
 use uuid::Uuid;
 
 use crate::dtos::common::{ListQuery, LookupItem};
-use crate::dtos::obras::{ObraDetalle, ObraFiltroDto, ObraInput, ObraListItem};
+use crate::dtos::proyectos::{ProyectoDetalle, ProyectoFiltroDto, ProyectoInput, ProyectoListItem};
 use crate::error::AppError;
 use crate::paging::PagedResult;
-use crate::ports::repositories::{ObraRepository, UnitOfWork};
+use crate::ports::repositories::{ProyectoRepository, UnitOfWork};
 use crate::ports::{ClockPort, IdGeneratorPort};
 use crate::result::AppResult;
 use crate::use_cases::shared::{
@@ -19,17 +19,17 @@ use crate::use_cases::shared::{
 };
 use crate::validation;
 
-const ENTITY: &str = "Obra";
+const ENTITY: &str = "Proyecto";
 
 const SORTABLE: [&str; 5] = ["numero", "nombre", "clienteNombre", "estado", "createdAt"];
 
-pub struct ObrasService {
+pub struct ProyectosService {
     uow: Arc<dyn UnitOfWork>,
     clock: Arc<dyn ClockPort>,
     ids: Arc<dyn IdGeneratorPort>,
 }
 
-impl ObrasService {
+impl ProyectosService {
     pub fn new(
         uow: Arc<dyn UnitOfWork>,
         clock: Arc<dyn ClockPort>,
@@ -40,8 +40,8 @@ impl ObrasService {
 
     pub async fn list(
         &self,
-        query: ListQuery<ObraFiltroDto>,
-    ) -> AppResult<PagedResult<ObraListItem>> {
+        query: ListQuery<ProyectoFiltroDto>,
+    ) -> AppResult<PagedResult<ProyectoListItem>> {
         let sort_by = checked_sort(query.sort_by.as_deref(), &SORTABLE)?;
         let page = query.page_request();
         page.validate()?;
@@ -49,16 +49,16 @@ impl ObrasService {
 
         let tx = self.uow.begin().await?;
         let result = tx
-            .obras()
+            .proyectos()
             .search(&filtro, page, sort_by, query.sort_dir)
             .await;
         let page = finish_read(tx, result).await?;
-        Ok(page.map(ObraListItem::from))
+        Ok(page.map(ProyectoListItem::from))
     }
 
-    pub async fn get(&self, id: Uuid) -> AppResult<ObraDetalle> {
+    pub async fn get(&self, id: Uuid) -> AppResult<ProyectoDetalle> {
         let tx = self.uow.begin().await?;
-        let loaded = load_detalle(tx.obras(), id).await;
+        let loaded = load_detalle(tx.proyectos(), id).await;
         finish_read(tx, loaded).await
     }
 
@@ -70,11 +70,11 @@ impl ObrasService {
     ) -> AppResult<Vec<LookupItem>> {
         let tx = self.uow.begin().await?;
         let result = tx
-            .obras()
+            .proyectos()
             .lookup(cliente_id, texto.as_deref(), limite.unwrap_or(50))
             .await;
-        let obras = finish_read(tx, result).await?;
-        Ok(obras
+        let proyectos = finish_read(tx, result).await?;
+        Ok(proyectos
             .into_iter()
             .map(|o| {
                 LookupItem::new(o.id, format!("{} - {}", o.numero, o.nombre))
@@ -89,54 +89,54 @@ impl ObrasService {
     /// proposed a number that was already taken.
     pub async fn siguiente_numero(&self) -> AppResult<i32> {
         let tx = self.uow.begin().await?;
-        let result = tx.obras().siguiente_numero().await;
+        let result = tx.proyectos().siguiente_numero().await;
         finish_read(tx, result).await
     }
 
-    pub async fn create(&self, input: ObraInput) -> AppResult<ObraDetalle> {
-        validation::obras::validate(&input)?;
+    pub async fn create(&self, input: ProyectoInput) -> AppResult<ProyectoDetalle> {
+        validation::proyectos::validate(&input)?;
 
         let now = self.clock.now_utc();
-        let entity = Obra {
+        let entity = Proyecto {
             id: self.ids.new_id(),
             numero: input.numero,
             nombre: input.nombre.trim().to_owned(),
             direccion: normalise(input.direccion),
             localidad: normalise(input.localidad),
             cliente_id: input.cliente_id,
-            estado: EstadoObra::Activa,
+            estado: EstadoProyecto::Activa,
             audit: Audit::new(now),
         };
 
         let tx = self.uow.begin().await?;
         let outcome = async {
-            let repo = tx.obras();
+            let repo = tx.proyectos();
             ensure_cliente_existe(&*tx, entity.cliente_id).await?;
             ensure_numero_libre(repo, entity.numero, None).await?;
             repo.insert(&entity).await?;
             let cliente_nombre = nombre_de_cliente(&*tx, entity.cliente_id).await?;
-            Ok(ObraDetalle::build(&entity, cliente_nombre, 0, Money::ZERO))
+            Ok(ProyectoDetalle::build(&entity, cliente_nombre, 0, Money::ZERO))
         }
         .await;
         let detalle = finish_write(tx, outcome).await?;
 
-        info!(id = %detalle.id, numero = detalle.numero, "obra creada");
+        info!(id = %detalle.id, numero = detalle.numero, "proyecto creada");
         Ok(detalle)
     }
 
     pub async fn update(
         &self,
         id: Uuid,
-        input: ObraInput,
+        input: ProyectoInput,
         row_version: &str,
-    ) -> AppResult<ObraDetalle> {
-        validation::obras::validate(&input)?;
+    ) -> AppResult<ProyectoDetalle> {
+        validation::proyectos::validate(&input)?;
         let esperado = parse_row_version(row_version)?;
         let now = self.clock.now_utc();
 
         let tx = self.uow.begin().await?;
         let outcome = async {
-            let repo = tx.obras();
+            let repo = tx.proyectos();
             let mut entity = repo
                 .find_by_id(id)
                 .await?
@@ -158,7 +158,7 @@ impl ObrasService {
         .await;
         let detalle = finish_write(tx, outcome).await?;
 
-        info!(id = %detalle.id, "obra actualizada");
+        info!(id = %detalle.id, "proyecto actualizada");
         Ok(detalle)
     }
 
@@ -167,22 +167,22 @@ impl ObrasService {
     pub async fn transition(
         &self,
         id: Uuid,
-        destino: EstadoObra,
+        destino: EstadoProyecto,
         row_version: &str,
         cascada: bool,
-    ) -> AppResult<ObraDetalle> {
+    ) -> AppResult<ProyectoDetalle> {
         let esperado = parse_row_version(row_version)?;
         let now = self.clock.now_utc();
 
         let tx = self.uow.begin().await?;
         let outcome = async {
-            let repo = tx.obras();
+            let repo = tx.proyectos();
             let mut entity = repo
                 .find_by_id(id)
                 .await?
                 .ok_or_else(|| AppError::not_found(ENTITY, id))?;
 
-            let cierre = matches!(destino, EstadoObra::Finalizada | EstadoObra::Cancelada);
+            let cierre = matches!(destino, EstadoProyecto::Finalizada | EstadoProyecto::Cancelada);
             let abiertos = if cierre {
                 repo.trabajos_abiertos(id).await?
             } else {
@@ -191,8 +191,8 @@ impl ObrasService {
 
             if !abiertos.is_empty() && !cascada {
                 return Err(AppError::Conflict {
-                    code: "OBRA_CON_TRABAJOS_ABIERTOS",
-                    message_key: "State.Obra.TieneTrabajosAbiertos",
+                    code: "PROYECTO_CON_TRABAJOS_ABIERTOS",
+                    message_key: "State.Proyecto.TieneTrabajosAbiertos",
                     params: [("count".to_owned(), abiertos.len().to_string())].into(),
                 });
             }
@@ -203,7 +203,7 @@ impl ObrasService {
 
             // Closing the site closes what is still open inside it, in the same transaction, so
             // there is no window where a finished site holds a job in progress.
-            let destino_trabajo = if destino == EstadoObra::Cancelada {
+            let destino_trabajo = if destino == EstadoProyecto::Cancelada {
                 EstadoTrabajo::Cancelado
             } else {
                 EstadoTrabajo::Finalizado
@@ -223,7 +223,7 @@ impl ObrasService {
         .await;
         let detalle = finish_write(tx, outcome).await?;
 
-        info!(id = %detalle.id, estado = %detalle.estado.actual, "obra transicionada");
+        info!(id = %detalle.id, estado = %detalle.estado.actual, "proyecto transicionada");
         Ok(detalle)
     }
 
@@ -233,7 +233,7 @@ impl ObrasService {
 
         let tx = self.uow.begin().await?;
         let outcome = async {
-            let repo = tx.obras();
+            let repo = tx.proyectos();
             repo.find_by_id(id)
                 .await?
                 .ok_or_else(|| AppError::not_found(ENTITY, id))?;
@@ -241,8 +241,8 @@ impl ObrasService {
             let trabajos = repo.count_trabajos(id).await?;
             if trabajos > 0 {
                 return Err(AppError::DependencyInUse {
-                    code: "OBRA_CON_TRABAJOS",
-                    message_key: "Conflict.Obra.ConTrabajos",
+                    code: "PROYECTO_CON_TRABAJOS",
+                    message_key: "Conflict.Proyecto.ConTrabajos",
                     params: [("count".to_owned(), trabajos.to_string())].into(),
                 });
             }
@@ -252,15 +252,15 @@ impl ObrasService {
         .await;
         finish_write(tx, outcome).await?;
 
-        info!(%id, "obra eliminada");
+        info!(%id, "proyecto eliminada");
         Ok(())
     }
 }
 
-async fn load_detalle(repo: &dyn ObraRepository, id: Uuid) -> AppResult<ObraDetalle> {
+async fn load_detalle(repo: &dyn ProyectoRepository, id: Uuid) -> AppResult<ProyectoDetalle> {
     repo.find_detalle(id)
         .await?
-        .map(ObraDetalle::from)
+        .map(ProyectoDetalle::from)
         .ok_or_else(|| AppError::not_found(ENTITY, id))
 }
 
@@ -283,14 +283,14 @@ async fn nombre_de_cliente(tx: &dyn crate::ports::Transaction, id: Uuid) -> AppR
 /// INV-06. A deleted site keeps its number reserved, which is why the unique index is not filtered
 /// by `is_deleted`; the message has to say so or the refusal looks like a bug.
 async fn ensure_numero_libre(
-    repo: &dyn ObraRepository,
+    repo: &dyn ProyectoRepository,
     numero: i32,
     excluir: Option<Uuid>,
 ) -> AppResult<()> {
     if repo.numero_ocupado(numero, excluir).await? {
         return Err(AppError::Conflict {
-            code: "OBRA_NUMERO_DUPLICADO",
-            message_key: "Validation.Obra.NumeroDuplicado",
+            code: "PROYECTO_NUMERO_DUPLICADO",
+            message_key: "Validation.Proyecto.NumeroDuplicado",
             params: [("numero".to_owned(), numero.to_string())].into(),
         });
     }

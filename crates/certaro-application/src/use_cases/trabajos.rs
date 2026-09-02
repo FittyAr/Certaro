@@ -7,7 +7,7 @@
 use std::sync::Arc;
 
 use certaro_domain::entities::{Audit, Trabajo};
-use certaro_domain::{EstadoObra, EstadoTrabajo, StateMachine};
+use certaro_domain::{EstadoProyecto, EstadoTrabajo, StateMachine};
 use tracing::info;
 use uuid::Uuid;
 
@@ -29,7 +29,7 @@ const SORTABLE: [&str; 6] = [
     "fechaFin",
     "presupuesto",
     "estado",
-    "obraNumero",
+    "proyectoNumero",
 ];
 
 pub struct TrabajosService {
@@ -73,20 +73,20 @@ impl TrabajosService {
 
     pub async fn lookup(
         &self,
-        obra_id: Option<Uuid>,
+        proyecto_id: Option<Uuid>,
         texto: Option<String>,
         limite: Option<u64>,
     ) -> AppResult<Vec<LookupItem>> {
         let tx = self.uow.begin().await?;
         let result = tx
             .trabajos()
-            .lookup(obra_id, texto.as_deref(), limite.unwrap_or(50))
+            .lookup(proyecto_id, texto.as_deref(), limite.unwrap_or(50))
             .await;
         let trabajos = finish_read(tx, result).await?;
         Ok(trabajos
             .into_iter()
             .map(|t| {
-                LookupItem::new(t.id, t.descripcion).with_meta("obraId", t.obra_id.to_string())
+                LookupItem::new(t.id, t.descripcion).with_meta("proyectoId", t.proyecto_id.to_string())
             })
             .collect())
     }
@@ -97,7 +97,7 @@ impl TrabajosService {
         let now = self.clock.now_utc();
         let entity = Trabajo {
             id: self.ids.new_id(),
-            obra_id: input.obra_id,
+            proyecto_id: input.proyecto_id,
             descripcion: input.descripcion.trim().to_owned(),
             fecha_inicio: input.fecha_inicio,
             fecha_fin: input.fecha_fin,
@@ -110,9 +110,9 @@ impl TrabajosService {
         let outcome = async {
             // T-T01: a cancelled site takes no new work. Everything else does, because quoting a
             // job on a paused site is how a site gets restarted.
-            let obra = cargar_obra(&*tx, entity.obra_id).await?;
-            if obra.estado == EstadoObra::Cancelada {
-                return Err(obra_no_disponible(obra.estado));
+            let proyecto = cargar_proyecto(&*tx, entity.proyecto_id).await?;
+            if proyecto.estado == EstadoProyecto::Cancelada {
+                return Err(proyecto_no_disponible(proyecto.estado));
             }
 
             tx.trabajos().insert(&entity).await?;
@@ -121,7 +121,7 @@ impl TrabajosService {
         .await;
         let detalle = finish_write(tx, outcome).await?;
 
-        info!(id = %detalle.id, obra = %detalle.obra_id, "trabajo creado");
+        info!(id = %detalle.id, proyecto = %detalle.proyecto_id, "trabajo creado");
         Ok(detalle)
     }
 
@@ -143,9 +143,9 @@ impl TrabajosService {
                 .await?
                 .ok_or_else(|| AppError::not_found(ENTITY, id))?;
 
-            cargar_obra(&*tx, input.obra_id).await?;
+            cargar_proyecto(&*tx, input.proyecto_id).await?;
 
-            entity.obra_id = input.obra_id;
+            entity.proyecto_id = input.proyecto_id;
             entity.descripcion = input.descripcion.trim().to_owned();
             entity.fecha_inicio = input.fecha_inicio;
             entity.fecha_fin = input.fecha_fin;
@@ -184,10 +184,10 @@ impl TrabajosService {
 
             // Starting, resuming and reopening need a running site; closing never does, because
             // shutting things down has to stay possible whatever state the site is in.
-            if EstadoTrabajo::exige_obra_activa(destino, entity.estado) {
-                let obra = cargar_obra(&*tx, entity.obra_id).await?;
-                if !obra.esta_activa() {
-                    return Err(obra_no_disponible(obra.estado));
+            if EstadoTrabajo::exige_proyecto_activo(destino, entity.estado) {
+                let proyecto = cargar_proyecto(&*tx, entity.proyecto_id).await?;
+                if !proyecto.esta_activa() {
+                    return Err(proyecto_no_disponible(proyecto.estado));
                 }
             }
 
@@ -267,18 +267,18 @@ async fn load_detalle(repo: &dyn TrabajoRepository, id: Uuid) -> AppResult<Traba
     Ok(TrabajoDetalle::build(&row, libre))
 }
 
-async fn cargar_obra(tx: &dyn Transaction, id: Uuid) -> AppResult<certaro_domain::entities::Obra> {
-    tx.obras()
+async fn cargar_proyecto(tx: &dyn Transaction, id: Uuid) -> AppResult<certaro_domain::entities::Proyecto> {
+    tx.proyectos()
         .find_by_id(id)
         .await?
-        .ok_or_else(|| AppError::not_found("Obra", id))
+        .ok_or_else(|| AppError::not_found("Proyecto", id))
 }
 
-fn obra_no_disponible(estado: EstadoObra) -> AppError {
+fn proyecto_no_disponible(estado: EstadoProyecto) -> AppError {
     AppError::Conflict {
-        code: "TRABAJO_OBRA_NO_ACTIVA",
-        message_key: "State.Trabajo.ObraNoActiva",
+        code: "TRABAJO_PROYECTO_NO_ACTIVO",
+        message_key: "State.Trabajo.ProyectoNoActivo",
         // The value is the state **key**, not text: the frontend translates before interpolating.
-        params: [("estadoObra".to_owned(), estado.as_key().to_owned())].into(),
+        params: [("estadoProyecto".to_owned(), estado.as_key().to_owned())].into(),
     }
 }

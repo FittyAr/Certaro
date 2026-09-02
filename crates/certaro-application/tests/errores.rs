@@ -21,9 +21,9 @@ fn cada_variante_tiene_codigo_y_clave() {
             "Error.NotFound",
         ),
         (
-            AppError::conflict("OBRA_NUMERO", "Validation.Obra.NumeroDuplicado"),
+            AppError::conflict("PROYECTO_NUMERO", "Validation.Proyecto.NumeroDuplicado"),
             "CONFLICT",
-            "Validation.Obra.NumeroDuplicado",
+            "Validation.Proyecto.NumeroDuplicado",
         ),
         (
             AppError::Concurrency { entity: "Factura" },
@@ -31,9 +31,9 @@ fn cada_variante_tiene_codigo_y_clave() {
             "Error.Concurrency",
         ),
         (
-            AppError::dependency_in_use("CLIENTE_CON_OBRAS", "Error.ClienteConObras"),
+            AppError::dependency_in_use("CLIENTE_CON_PROYECTOS", "Error.ClienteConProyectos"),
             "DEPENDENCY_IN_USE",
-            "Error.ClienteConObras",
+            "Error.ClienteConProyectos",
         ),
         (
             AppError::Domain(DomainError::MoneyOverflow),

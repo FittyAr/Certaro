@@ -98,8 +98,8 @@ async fn el_color_se_guarda_en_mayusculas_para_que_dos_grafias_no_se_vean_distin
 #[tokio::test]
 async fn el_nombre_es_unico_entre_hermanas_pero_no_entre_padres_distintos() {
     let (service, _db) = service().await;
-    let a = service.create(input("Obra A", None)).await.unwrap();
-    let b = service.create(input("Obra B", None)).await.unwrap();
+    let a = service.create(input("Proyecto A", None)).await.unwrap();
+    let b = service.create(input("Proyecto B", None)).await.unwrap();
 
     service
         .create(input("Materiales", Some(a.id)))
@@ -123,7 +123,7 @@ async fn el_nombre_es_unico_entre_hermanas_pero_no_entre_padres_distintos() {
 #[tokio::test]
 async fn el_listado_resuelve_el_nombre_del_padre() {
     let (service, _db) = service().await;
-    let padre = service.create(input("Obra", None)).await.unwrap();
+    let padre = service.create(input("Proyecto", None)).await.unwrap();
     service
         .create(input("Materiales", Some(padre.id)))
         .await
@@ -136,14 +136,14 @@ async fn el_listado_resuelve_el_nombre_del_padre() {
         .find(|i| i.nombre == "Materiales")
         .unwrap();
 
-    assert_eq!(hija.categoria_padre_nombre.as_deref(), Some("Obra"));
+    assert_eq!(hija.categoria_padre_nombre.as_deref(), Some("Proyecto"));
     assert_eq!(hija.hijas_count, 0);
 }
 
 #[tokio::test]
 async fn solo_raiz_deja_fuera_a_las_hijas() {
     let (service, _db) = service().await;
-    let padre = service.create(input("Obra", None)).await.unwrap();
+    let padre = service.create(input("Proyecto", None)).await.unwrap();
     service
         .create(input("Materiales", Some(padre.id)))
         .await
@@ -161,7 +161,7 @@ async fn solo_raiz_deja_fuera_a_las_hijas() {
         .unwrap();
 
     assert_eq!(page.total_count, 1);
-    assert_eq!(page.items[0].nombre, "Obra");
+    assert_eq!(page.items[0].nombre, "Proyecto");
     assert_eq!(page.items[0].hijas_count, 1);
 }
 
@@ -190,7 +190,7 @@ async fn una_categoria_no_puede_convertirse_en_su_propia_nieta() {
 #[tokio::test]
 async fn una_categoria_con_hijas_no_se_borra() {
     let (service, _db) = service().await;
-    let padre = service.create(input("Obra", None)).await.unwrap();
+    let padre = service.create(input("Proyecto", None)).await.unwrap();
     service
         .create(input("Materiales", Some(padre.id)))
         .await

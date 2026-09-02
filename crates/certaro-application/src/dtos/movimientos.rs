@@ -95,7 +95,7 @@ pub struct MovimientoListItem {
     pub trabajo_id: Option<Uuid>,
     pub trabajo_descripcion: Option<String>,
     /// The site of the job, resolved through it: a movement never points at a site directly.
-    pub obra_nombre: Option<String>,
+    pub proyecto_nombre: Option<String>,
     pub empleado_id: Option<Uuid>,
     pub factura_id: Option<Uuid>,
     pub tipo_concepto_pago_id: Option<Uuid>,
@@ -128,7 +128,7 @@ impl TryFrom<MovimientoConRelaciones> for MovimientoListItem {
             cliente_nombre: row.cliente_nombre,
             trabajo_id: m.trabajo_id,
             trabajo_descripcion: row.trabajo_descripcion,
-            obra_nombre: row.obra_nombre,
+            proyecto_nombre: row.proyecto_nombre,
             empleado_id: m.empleado_id,
             factura_id: m.factura_id,
             tipo_concepto_pago_id: m.tipo_concepto_pago_id,

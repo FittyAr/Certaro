@@ -18,7 +18,7 @@ use uuid::Uuid;
 use crate::persistence::mappers::certificado as mapper;
 use crate::persistence::mappers::{self as common};
 use crate::persistence::models::certificado::{self as model, Column, Entity};
-use crate::persistence::models::{certificado_item, cliente, obra, orden_trabajo, trabajo};
+use crate::persistence::models::{certificado_item, cliente, proyecto, orden_trabajo, trabajo};
 
 const ENTITY: &str = "Certificado";
 
@@ -66,9 +66,9 @@ struct RowConRelaciones {
     orden_titulo: String,
     trabajo_id: String,
     trabajo_descripcion: String,
-    obra_id: String,
-    obra_numero: i32,
-    obra_nombre: String,
+    proyecto_id: String,
+    proyecto_numero: i32,
+    proyecto_nombre: String,
     cliente_id: String,
     cliente_nombre: String,
     /// `MAX(numero)` of the order, deleted certificates included: a spent number still counts.
@@ -102,9 +102,9 @@ impl RowConRelaciones {
             orden_titulo: self.orden_titulo,
             trabajo_id: common::uuid(&self.trabajo_id)?,
             trabajo_descripcion: self.trabajo_descripcion,
-            obra_id: common::uuid(&self.obra_id)?,
-            obra_numero: self.obra_numero,
-            obra_nombre: self.obra_nombre,
+            proyecto_id: common::uuid(&self.proyecto_id)?,
+            proyecto_numero: self.proyecto_numero,
+            proyecto_nombre: self.proyecto_nombre,
             cliente_id: common::uuid(&self.cliente_id)?,
             cliente_nombre: self.cliente_nombre,
             es_ultimo,
@@ -130,16 +130,16 @@ fn trabajo_join() -> sea_orm::RelationDef {
         .into()
 }
 
-fn obra_join() -> sea_orm::RelationDef {
-    trabajo::Entity::belongs_to(obra::Entity)
-        .from(trabajo::Column::ObraId)
-        .to(obra::Column::Id)
+fn proyecto_join() -> sea_orm::RelationDef {
+    trabajo::Entity::belongs_to(proyecto::Entity)
+        .from(trabajo::Column::ProyectoId)
+        .to(proyecto::Column::Id)
         .into()
 }
 
 fn cliente_join() -> sea_orm::RelationDef {
-    obra::Entity::belongs_to(cliente::Entity)
-        .from(obra::Column::ClienteId)
+    proyecto::Entity::belongs_to(cliente::Entity)
+        .from(proyecto::Column::ClienteId)
         .to(cliente::Column::Id)
         .into()
 }
@@ -179,11 +179,11 @@ fn filtro_condition(filtro: &CertificadoFiltro) -> Condition {
             Expr::col((orden_trabajo::Entity, orden_trabajo::Column::TrabajoId)).eq(id.to_string()),
         );
     }
-    if let Some(id) = filtro.obra_id {
-        c = c.add(Expr::col((trabajo::Entity, trabajo::Column::ObraId)).eq(id.to_string()));
+    if let Some(id) = filtro.proyecto_id {
+        c = c.add(Expr::col((trabajo::Entity, trabajo::Column::ProyectoId)).eq(id.to_string()));
     }
     if let Some(id) = filtro.cliente_id {
-        c = c.add(Expr::col((obra::Entity, obra::Column::ClienteId)).eq(id.to_string()));
+        c = c.add(Expr::col((proyecto::Entity, proyecto::Column::ClienteId)).eq(id.to_string()));
     }
     // Civil dates compare as text: the stored format sorts chronologically.
     if let Some(date) = filtro.fecha_desde {
@@ -199,7 +199,7 @@ fn joined() -> sea_orm::Select<Entity> {
     Entity::find()
         .join(JoinType::InnerJoin, orden_join())
         .join(JoinType::InnerJoin, trabajo_join())
-        .join(JoinType::InnerJoin, obra_join())
+        .join(JoinType::InnerJoin, proyecto_join())
         .join(JoinType::InnerJoin, cliente_join())
 }
 
@@ -217,14 +217,14 @@ fn base_query() -> sea_orm::Select<Entity> {
             Expr::col((trabajo::Entity, trabajo::Column::Descripcion)),
             "trabajo_descripcion",
         )
-        .column_as(Expr::col((obra::Entity, obra::Column::Id)), "obra_id")
+        .column_as(Expr::col((proyecto::Entity, proyecto::Column::Id)), "proyecto_id")
         .column_as(
-            Expr::col((obra::Entity, obra::Column::Numero)),
-            "obra_numero",
+            Expr::col((proyecto::Entity, proyecto::Column::Numero)),
+            "proyecto_numero",
         )
         .column_as(
-            Expr::col((obra::Entity, obra::Column::Nombre)),
-            "obra_nombre",
+            Expr::col((proyecto::Entity, proyecto::Column::Nombre)),
+            "proyecto_nombre",
         )
         .column_as(
             Expr::col((cliente::Entity, cliente::Column::Id)),

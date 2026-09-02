@@ -35,28 +35,28 @@ pub async fn clientes_antiguedad_deuda(
 }
 
 #[tauri::command]
-pub async fn obras_rentabilidad(
+pub async fn proyectos_rentabilidad(
     state: State<'_, AppState>,
     limite: Option<u64>,
 ) -> ApiResult<Vec<RentabilidadItem>> {
     let outcome = match state.services() {
-        Ok(services) => services.comercial.rentabilidad_obras(limite).await,
+        Ok(services) => services.comercial.rentabilidad_proyectos(limite).await,
         Err(e) => Err(e),
     };
-    handle("obras_rentabilidad", outcome)
+    handle("proyectos_rentabilidad", outcome)
 }
 
 #[tauri::command]
 pub async fn trabajos_rentabilidad(
     state: State<'_, AppState>,
-    obra_id: Option<Uuid>,
+    proyecto_id: Option<Uuid>,
     limite: Option<u64>,
 ) -> ApiResult<Vec<RentabilidadItem>> {
     let outcome = match state.services() {
         Ok(services) => {
             services
                 .comercial
-                .rentabilidad_trabajos(obra_id, limite)
+                .rentabilidad_trabajos(proyecto_id, limite)
                 .await
         }
         Err(e) => Err(e),

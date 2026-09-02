@@ -15,7 +15,7 @@ use certaro_application::ports::repositories::{
     SortDir, TotalMensual, TotalPorNombre,
 };
 use certaro_application::{AppError, AppResult};
-use certaro_domain::{time, EstadoFactura, EstadoObra, EstadoTrabajo, Money};
+use certaro_domain::{time, EstadoFactura, EstadoProyecto, EstadoTrabajo, Money};
 use sea_orm::{DatabaseTransaction, DbBackend, FromQueryResult, Statement, Value};
 use uuid::Uuid;
 
@@ -214,10 +214,10 @@ impl DashboardRepository for SeaOrmDashboardRepository {
             .await
     }
 
-    async fn obras_pausadas(&self) -> AppResult<u64> {
-        let sql = "SELECT COUNT(id) AS total FROM obras
+    async fn proyectos_pausadas(&self) -> AppResult<u64> {
+        let sql = "SELECT COUNT(id) AS total FROM proyectos
                     WHERE is_deleted = 0 AND estado = ?1";
-        self.scalar(sql, vec![Value::from(EstadoObra::Pausada.as_i32())])
+        self.scalar(sql, vec![Value::from(EstadoProyecto::Pausada.as_i32())])
             .await
     }
 
@@ -410,7 +410,7 @@ impl DashboardRepository for SeaOrmDashboardRepository {
         Ok(serie)
     }
 
-    async fn rentabilidad_obras(
+    async fn rentabilidad_proyectos(
         &self,
         dir: SortDir,
         limite: u64,
@@ -429,8 +429,8 @@ impl DashboardRepository for SeaOrmDashboardRepository {
                                       THEN m.monto * m.cantidad END), 0) AS ingresos,
                     COALESCE(SUM(CASE WHEN tm.es_ingreso = 0
                                       THEN m.monto * m.cantidad END), 0) AS gastos
-               FROM obras o
-               LEFT JOIN trabajos t         ON t.obra_id = o.id AND t.is_deleted = 0
+               FROM proyectos o
+               LEFT JOIN trabajos t         ON t.proyecto_id = o.id AND t.is_deleted = 0
                LEFT JOIN movimientos m      ON m.trabajo_id = t.id AND m.is_deleted = 0
                LEFT JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
               WHERE o.is_deleted = 0
@@ -453,14 +453,14 @@ impl DashboardRepository for SeaOrmDashboardRepository {
 
     async fn rentabilidad_trabajos(
         &self,
-        obra_id: Option<Uuid>,
+        proyecto_id: Option<Uuid>,
         limite: u64,
     ) -> AppResult<Vec<RentabilidadFila>> {
         let mut values: Vec<Value> = Vec::new();
-        let filtro = match obra_id {
+        let filtro = match proyecto_id {
             Some(id) => {
                 values.push(Value::from(id.to_string()));
-                " AND t.obra_id = ?1"
+                " AND t.proyecto_id = ?1"
             }
             None => "",
         };
@@ -473,7 +473,7 @@ impl DashboardRepository for SeaOrmDashboardRepository {
                     COALESCE(SUM(CASE WHEN tm.es_ingreso = 0
                                       THEN m.monto * m.cantidad END), 0) AS gastos
                FROM trabajos t
-               JOIN obras o                  ON o.id = t.obra_id
+               JOIN proyectos o                  ON o.id = t.proyecto_id
                LEFT JOIN movimientos m       ON m.trabajo_id = t.id AND m.is_deleted = 0
                LEFT JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
               WHERE t.is_deleted = 0{filtro}

@@ -94,10 +94,10 @@ pub fn liquidacion(empleado: &str, hasta: NaiveDate) -> String {
 }
 
 #[must_use]
-pub fn certificado(obra: &str, numero: i32, fecha: NaiveDate) -> String {
+pub fn certificado(proyecto: &str, numero: i32, fecha: NaiveDate) -> String {
     format!(
         "Certificado_{}_{}_{}.pdf",
-        sanitize(obra, "obra"),
+        sanitize(proyecto, "proyecto"),
         numero,
         day(fecha)
     )
@@ -134,13 +134,13 @@ mod tests {
 
     #[test]
     fn los_separadores_repetidos_se_colapsan() {
-        assert_eq!(sanitize("Obra   ***   Norte", "x"), "Obra_Norte");
+        assert_eq!(sanitize("Proyecto   ***   Norte", "x"), "Proyecto_Norte");
     }
 
     #[test]
     fn un_nombre_que_queda_vacio_usa_el_respaldo() {
-        assert_eq!(sanitize("***", "obra"), "obra");
-        assert_eq!(sanitize("", "obra"), "obra");
+        assert_eq!(sanitize("***", "proyecto"), "proyecto");
+        assert_eq!(sanitize("", "proyecto"), "proyecto");
     }
 
     #[test]
@@ -150,7 +150,7 @@ mod tests {
     }
 
     #[test]
-    fn el_certificado_lleva_obra_numero_y_fecha() {
+    fn el_certificado_lleva_proyecto_numero_y_fecha() {
         assert_eq!(
             certificado(
                 "Edificio Sur",
@@ -163,6 +163,6 @@ mod tests {
 
     #[test]
     fn un_punto_al_final_no_sobrevive_y_no_deja_doble_extension() {
-        assert_eq!(sanitize("Obra Norte.", "x"), "Obra_Norte");
+        assert_eq!(sanitize("Proyecto Norte.", "x"), "Proyecto_Norte");
     }
 }

@@ -89,7 +89,7 @@ pub struct ClienteListItem {
     pub telefono: Option<String>,
     pub email: Option<String>,
     pub condicion_iva: Option<String>,
-    pub obras_count: u64,
+    pub proyectos_count: u64,
     pub facturas_count: u64,
     pub deuda: Money,
     pub puede_eliminarse: bool,
@@ -105,10 +105,10 @@ impl From<ClienteConResumen> for ClienteListItem {
             telefono: row.cliente.telefono,
             email: row.cliente.email,
             condicion_iva: row.cliente.condicion_iva,
-            obras_count: row.obras_count,
+            proyectos_count: row.proyectos_count,
             facturas_count: row.facturas_count,
             deuda: row.deuda,
-            puede_eliminarse: row.obras_count == 0 && row.facturas_count == 0,
+            puede_eliminarse: row.proyectos_count == 0 && row.facturas_count == 0,
             row_version: row.cliente.audit.row_version.to_hex(),
         }
     }
@@ -125,14 +125,14 @@ pub struct ClienteDetalle {
     pub email: Option<String>,
     pub condicion_iva: Option<String>,
     pub contactos: Vec<ClienteContactoDto>,
-    pub obras_count: u64,
+    pub proyectos_count: u64,
     pub facturas_count: u64,
     pub puede_eliminarse: bool,
     pub audit: AuditDto,
 }
 
 impl ClienteDetalle {
-    pub fn build(cliente: &Cliente, obras_count: u64, facturas_count: u64) -> Self {
+    pub fn build(cliente: &Cliente, proyectos_count: u64, facturas_count: u64) -> Self {
         Self {
             id: cliente.id,
             nombre: cliente.nombre.clone(),
@@ -147,9 +147,9 @@ impl ClienteDetalle {
                 .filter(|c| !c.audit.is_deleted)
                 .map(ClienteContactoDto::from)
                 .collect(),
-            obras_count,
+            proyectos_count,
             facturas_count,
-            puede_eliminarse: obras_count == 0 && facturas_count == 0,
+            puede_eliminarse: proyectos_count == 0 && facturas_count == 0,
             audit: AuditDto::from(&cliente.audit),
         }
     }

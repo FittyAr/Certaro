@@ -1,7 +1,7 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
-#[sea_orm(table_name = "obras")]
+#[sea_orm(table_name = "proyectos")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: String,
@@ -10,7 +10,7 @@ pub struct Model {
     pub direccion: Option<String>,
     pub localidad: Option<String>,
     pub cliente_id: String,
-    /// `EstadoObra` as its numeric value.
+    /// `EstadoProyecto` as its numeric value.
     pub estado: i32,
     pub created_at: String,
     pub updated_at: Option<String>,

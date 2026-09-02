@@ -18,7 +18,7 @@ use uuid::Uuid;
 use crate::persistence::mappers::trabajo as mapper;
 use crate::persistence::mappers::{self as common};
 use crate::persistence::models::trabajo::{self as model, Column, Entity};
-use crate::persistence::models::{cliente, movimiento, obra, orden_trabajo};
+use crate::persistence::models::{cliente, movimiento, proyecto, orden_trabajo};
 
 const ENTITY: &str = "Trabajo";
 
@@ -39,7 +39,7 @@ impl SeaOrmTrabajoRepository {
 #[derive(Debug, FromQueryResult)]
 struct RowConRelaciones {
     id: String,
-    obra_id: String,
+    proyecto_id: String,
     descripcion: String,
     fecha_inicio: String,
     fecha_fin: Option<String>,
@@ -50,8 +50,8 @@ struct RowConRelaciones {
     row_version: Vec<u8>,
     is_deleted: bool,
     deleted_at: Option<String>,
-    obra_numero: i32,
-    obra_nombre: String,
+    proyecto_numero: i32,
+    proyecto_nombre: String,
     cliente_id: String,
     cliente_nombre: String,
 }
@@ -62,7 +62,7 @@ impl TryFrom<RowConRelaciones> for TrabajoConRelaciones {
     fn try_from(row: RowConRelaciones) -> Result<Self, Self::Error> {
         let model = model::Model {
             id: row.id,
-            obra_id: row.obra_id,
+            proyecto_id: row.proyecto_id,
             descripcion: row.descripcion,
             fecha_inicio: row.fecha_inicio,
             fecha_fin: row.fecha_fin,
@@ -76,8 +76,8 @@ impl TryFrom<RowConRelaciones> for TrabajoConRelaciones {
         };
         Ok(Self {
             trabajo: mapper::to_domain(model)?,
-            obra_numero: row.obra_numero,
-            obra_nombre: row.obra_nombre,
+            proyecto_numero: row.proyecto_numero,
+            proyecto_nombre: row.proyecto_nombre,
             cliente_id: common::uuid(&row.cliente_id)?,
             cliente_nombre: row.cliente_nombre,
         })
@@ -92,16 +92,16 @@ fn lower(column: Column) -> SimpleExpr {
     Func::lower(Expr::col((Entity, column))).into()
 }
 
-fn obra_join() -> sea_orm::RelationDef {
-    Entity::belongs_to(obra::Entity)
-        .from(Column::ObraId)
-        .to(obra::Column::Id)
+fn proyecto_join() -> sea_orm::RelationDef {
+    Entity::belongs_to(proyecto::Entity)
+        .from(Column::ProyectoId)
+        .to(proyecto::Column::Id)
         .into()
 }
 
 fn cliente_join() -> sea_orm::RelationDef {
-    obra::Entity::belongs_to(cliente::Entity)
-        .from(obra::Column::ClienteId)
+    proyecto::Entity::belongs_to(cliente::Entity)
+        .from(proyecto::Column::ClienteId)
         .to(cliente::Column::Id)
         .into()
 }
@@ -111,13 +111,13 @@ fn filtro_condition(filtro: &TrabajoFiltro) -> Condition {
     if let Some(texto) = filtro.texto.as_deref() {
         c = c.add(lower(Column::Descripcion).like(format!("%{}%", texto.trim().to_lowercase())));
     }
-    if let Some(id) = filtro.obra_id {
-        c = c.add(Column::ObraId.eq(id.to_string()));
+    if let Some(id) = filtro.proyecto_id {
+        c = c.add(Column::ProyectoId.eq(id.to_string()));
     }
     // A job has no customer of its own: the filter goes through the site, which is exactly the
     // denormalised column the legacy schema got wrong.
     if let Some(id) = filtro.cliente_id {
-        c = c.add(Expr::col((obra::Entity, obra::Column::ClienteId)).eq(id.to_string()));
+        c = c.add(Expr::col((proyecto::Entity, proyecto::Column::ClienteId)).eq(id.to_string()));
     }
     if let Some(estado) = filtro.estado {
         c = c.add(Column::Estado.eq(estado.as_i32()));
@@ -134,15 +134,15 @@ fn filtro_condition(filtro: &TrabajoFiltro) -> Condition {
 
 fn base_query() -> sea_orm::Select<Entity> {
     Entity::find()
-        .join(JoinType::InnerJoin, obra_join())
+        .join(JoinType::InnerJoin, proyecto_join())
         .join(JoinType::InnerJoin, cliente_join())
         .column_as(
-            Expr::col((obra::Entity, obra::Column::Numero)),
-            "obra_numero",
+            Expr::col((proyecto::Entity, proyecto::Column::Numero)),
+            "proyecto_numero",
         )
         .column_as(
-            Expr::col((obra::Entity, obra::Column::Nombre)),
-            "obra_nombre",
+            Expr::col((proyecto::Entity, proyecto::Column::Nombre)),
+            "proyecto_nombre",
         )
         .column_as(
             Expr::col((cliente::Entity, cliente::Column::Id)),
@@ -156,7 +156,7 @@ fn base_query() -> sea_orm::Select<Entity> {
 
 /// The count query needs the site join too, because the customer filter lives on that table.
 fn count_query() -> sea_orm::Select<Entity> {
-    Entity::find().join(JoinType::InnerJoin, obra_join())
+    Entity::find().join(JoinType::InnerJoin, proyecto_join())
 }
 
 #[async_trait]
@@ -202,8 +202,8 @@ impl TrabajoRepository for SeaOrmTrabajoRepository {
             Some("descripcion") => query.order_by(lower(Column::Descripcion), order),
             Some("presupuesto") => query.order_by(Column::Presupuesto, order),
             Some("estado") => query.order_by(Column::Estado, order),
-            Some("obraNombre") => query.order_by(
-                SimpleExpr::from(Func::lower(Expr::col((obra::Entity, obra::Column::Nombre)))),
+            Some("proyectoNombre") => query.order_by(
+                SimpleExpr::from(Func::lower(Expr::col((proyecto::Entity, proyecto::Column::Nombre)))),
                 order,
             ),
             Some("clienteNombre") => query.order_by(
@@ -244,7 +244,7 @@ impl TrabajoRepository for SeaOrmTrabajoRepository {
 
     async fn lookup(
         &self,
-        obra_id: Option<Uuid>,
+        proyecto_id: Option<Uuid>,
         texto: Option<&str>,
         limite: u64,
     ) -> AppResult<Vec<Trabajo>> {
@@ -253,8 +253,8 @@ impl TrabajoRepository for SeaOrmTrabajoRepository {
             condition = condition
                 .add(lower(Column::Descripcion).like(format!("%{}%", texto.trim().to_lowercase())));
         }
-        if let Some(id) = obra_id {
-            condition = condition.add(Column::ObraId.eq(id.to_string()));
+        if let Some(id) = proyecto_id {
+            condition = condition.add(Column::ProyectoId.eq(id.to_string()));
         }
         let rows = Entity::find()
             .filter(condition)

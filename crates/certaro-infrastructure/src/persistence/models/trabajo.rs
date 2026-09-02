@@ -5,7 +5,7 @@ use sea_orm::entity::prelude::*;
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: String,
-    pub obra_id: String,
+    pub proyecto_id: String,
     pub descripcion: String,
     pub fecha_inicio: String,
     pub fecha_fin: Option<String>,
@@ -25,11 +25,11 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::obra::Entity",
-        from = "Column::ObraId",
-        to = "super::obra::Column::Id"
+        belongs_to = "super::proyecto::Entity",
+        from = "Column::ProyectoId",
+        to = "super::proyecto::Column::Id"
     )]
-    Obra,
+    Proyecto,
 }
 
 impl ActiveModelBehavior for ActiveModel {}

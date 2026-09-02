@@ -25,8 +25,8 @@ pub fn validate(input: &TrabajoInput) -> AppResult<()> {
 
     // The job hangs off the site, not off the customer: the customer is reached through the site.
     v.require(
-        input.obra_id != Uuid::nil(),
-        FieldError::new("obraId", "Validation.Trabajo.ObraRequired"),
+        input.proyecto_id != Uuid::nil(),
+        FieldError::new("proyectoId", "Validation.Trabajo.ProyectoRequired"),
     );
 
     if let Some(fin) = input.fecha_fin {
@@ -58,7 +58,7 @@ mod tests {
 
     fn input() -> TrabajoInput {
         TrabajoInput {
-            obra_id: Uuid::from_u128(1),
+            proyecto_id: Uuid::from_u128(1),
             descripcion: "Tendido de cañerías".into(),
             fecha_inicio: dia(1),
             fecha_fin: None,
@@ -123,14 +123,14 @@ mod tests {
     }
 
     #[test]
-    fn la_obra_es_obligatoria() {
+    fn el_proyecto_es_obligatorio() {
         let dto = TrabajoInput {
-            obra_id: Uuid::nil(),
+            proyecto_id: Uuid::nil(),
             ..input()
         };
         assert_eq!(
             keys(validate(&dto).unwrap_err()),
-            ["Validation.Trabajo.ObraRequired"]
+            ["Validation.Trabajo.ProyectoRequired"]
         );
     }
 }

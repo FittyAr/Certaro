@@ -12,7 +12,7 @@ use crate::ports::repositories::{TrabajoConRelaciones, TrabajoFiltro};
 #[serde(rename_all = "camelCase")]
 pub struct TrabajoFiltroDto {
     pub texto: Option<String>,
-    pub obra_id: Option<Uuid>,
+    pub proyecto_id: Option<Uuid>,
     /// Resolved through the site: the job carries no customer of its own, and the legacy
     /// denormalised column is exactly what made this filter return the wrong rows.
     pub cliente_id: Option<Uuid>,
@@ -25,7 +25,7 @@ impl From<TrabajoFiltroDto> for TrabajoFiltro {
     fn from(dto: TrabajoFiltroDto) -> Self {
         Self {
             texto: dto.texto.filter(|t| !t.trim().is_empty()),
-            obra_id: dto.obra_id,
+            proyecto_id: dto.proyecto_id,
             cliente_id: dto.cliente_id,
             estado: dto.estado,
             fecha_desde: dto.fecha_desde,
@@ -37,7 +37,7 @@ impl From<TrabajoFiltroDto> for TrabajoFiltro {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrabajoInput {
-    pub obra_id: Uuid,
+    pub proyecto_id: Uuid,
     pub descripcion: String,
     pub fecha_inicio: NaiveDate,
     pub fecha_fin: Option<NaiveDate>,
@@ -48,9 +48,9 @@ pub struct TrabajoInput {
 #[serde(rename_all = "camelCase")]
 pub struct TrabajoListItem {
     pub id: Uuid,
-    pub obra_id: Uuid,
-    pub obra_numero: i32,
-    pub obra_nombre: String,
+    pub proyecto_id: Uuid,
+    pub proyecto_numero: i32,
+    pub proyecto_nombre: String,
     pub cliente_id: Uuid,
     pub cliente_nombre: String,
     pub descripcion: String,
@@ -65,9 +65,9 @@ impl From<TrabajoConRelaciones> for TrabajoListItem {
     fn from(row: TrabajoConRelaciones) -> Self {
         Self {
             id: row.trabajo.id,
-            obra_id: row.trabajo.obra_id,
-            obra_numero: row.obra_numero,
-            obra_nombre: row.obra_nombre,
+            proyecto_id: row.trabajo.proyecto_id,
+            proyecto_numero: row.proyecto_numero,
+            proyecto_nombre: row.proyecto_nombre,
             cliente_id: row.cliente_id,
             cliente_nombre: row.cliente_nombre,
             descripcion: row.trabajo.descripcion,
@@ -84,9 +84,9 @@ impl From<TrabajoConRelaciones> for TrabajoListItem {
 #[serde(rename_all = "camelCase")]
 pub struct TrabajoDetalle {
     pub id: Uuid,
-    pub obra_id: Uuid,
-    pub obra_numero: i32,
-    pub obra_nombre: String,
+    pub proyecto_id: Uuid,
+    pub proyecto_numero: i32,
+    pub proyecto_nombre: String,
     pub cliente_id: Uuid,
     pub cliente_nombre: String,
     pub descripcion: String,
@@ -102,9 +102,9 @@ impl TrabajoDetalle {
     pub fn build(row: &TrabajoConRelaciones, puede_eliminarse: bool) -> Self {
         Self {
             id: row.trabajo.id,
-            obra_id: row.trabajo.obra_id,
-            obra_numero: row.obra_numero,
-            obra_nombre: row.obra_nombre.clone(),
+            proyecto_id: row.trabajo.proyecto_id,
+            proyecto_numero: row.proyecto_numero,
+            proyecto_nombre: row.proyecto_nombre.clone(),
             cliente_id: row.cliente_id,
             cliente_nombre: row.cliente_nombre.clone(),
             descripcion: row.trabajo.descripcion.clone(),

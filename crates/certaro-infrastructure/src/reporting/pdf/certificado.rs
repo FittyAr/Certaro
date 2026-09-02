@@ -54,7 +54,7 @@ pub fn generate(data: &CertificadoDetalle, ctx: &ReportContext) -> AppResult<Gen
     Ok(GeneratedReport {
         bytes,
         registros: data.items.len() as u64,
-        nombre_sugerido: filename::certificado(&data.obra_nombre, data.numero, data.fecha),
+        nombre_sugerido: filename::certificado(&data.proyecto_nombre, data.numero, data.fecha),
     })
 }
 
@@ -71,14 +71,14 @@ fn encabezado(canvas: &mut Canvas, data: &CertificadoDetalle, ctx: &ReportContex
     canvas.rect(left, top, width, alto, None, Some((theme::BLACK, 1.0)));
     canvas.vline(left + izquierda, top, alto, theme::BLACK, 1.0);
 
-    let obra = if data.obra_nombre.trim().is_empty() {
-        ctx.t("Report.Certificado.ObraGeneral")
+    let proyecto = if data.proyecto_nombre.trim().is_empty() {
+        ctx.t("Report.Certificado.ProyectoGeneral")
     } else {
-        data.obra_nombre.clone()
+        data.proyecto_nombre.clone()
     };
 
     let filas = [
-        ("Report.Certificado.Obra", obra),
+        ("Report.Certificado.Proyecto", proyecto),
         ("Report.Certificado.Ref", data.orden_titulo.clone()),
         (
             "Report.Certificado.Contratista",

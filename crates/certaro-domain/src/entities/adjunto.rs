@@ -62,7 +62,7 @@ impl Adjunto {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub enum EntidadAdjunto {
-    Obra,
+    Proyecto,
     Trabajo,
     Factura,
     #[default]
@@ -72,7 +72,7 @@ pub enum EntidadAdjunto {
 
 impl EntidadAdjunto {
     pub const ALL: [Self; 5] = [
-        Self::Obra,
+        Self::Proyecto,
         Self::Trabajo,
         Self::Factura,
         Self::Movimiento,
@@ -81,7 +81,7 @@ impl EntidadAdjunto {
 
     pub const fn as_str(self) -> &'static str {
         match self {
-            Self::Obra => "Obra",
+            Self::Proyecto => "Proyecto",
             Self::Trabajo => "Trabajo",
             Self::Factura => "Factura",
             Self::Movimiento => "Movimiento",

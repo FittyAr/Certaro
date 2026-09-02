@@ -1,20 +1,20 @@
 use certaro_application::AppError;
-use certaro_domain::entities::Obra;
-use certaro_domain::{time, EstadoObra};
+use certaro_domain::entities::Proyecto;
+use certaro_domain::{time, EstadoProyecto};
 use sea_orm::ActiveValue::Set;
 
 use crate::persistence::mappers;
-use crate::persistence::models::obra::{ActiveModel, Model};
+use crate::persistence::models::proyecto::{ActiveModel, Model};
 
-pub fn to_domain(model: Model) -> Result<Obra, AppError> {
-    Ok(Obra {
+pub fn to_domain(model: Model) -> Result<Proyecto, AppError> {
+    Ok(Proyecto {
         id: mappers::uuid(&model.id)?,
         numero: model.numero,
         nombre: model.nombre,
         direccion: model.direccion,
         localidad: model.localidad,
         cliente_id: mappers::uuid(&model.cliente_id)?,
-        estado: EstadoObra::from_i32(model.estado).map_err(|e| {
+        estado: EstadoProyecto::from_i32(model.estado).map_err(|e| {
             AppError::persistence(anyhow::anyhow!("invalid estado {}: {e}", model.estado))
         })?,
         audit: mappers::audit(
@@ -27,7 +27,7 @@ pub fn to_domain(model: Model) -> Result<Obra, AppError> {
     })
 }
 
-pub fn to_active(entity: &Obra) -> ActiveModel {
+pub fn to_active(entity: &Proyecto) -> ActiveModel {
     ActiveModel {
         id: Set(entity.id.to_string()),
         numero: Set(entity.numero),

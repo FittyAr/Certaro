@@ -10,7 +10,7 @@ use certaro_application::ports::repositories::{
     AdjuntoRepository, AsistenciaRepository, CategoriaRepository, CertificadoRepository,
     ClienteRepository, DashboardRepository, EmpleadoRepository, FacturaRepository,
     FeriadoRepository, LiquidacionRepository, MetadataRepository, MovimientoRepository,
-    ObraRepository, OrdenTrabajoRepository, TipoMovimientoRepository, TrabajoRepository,
+    ProyectoRepository, OrdenTrabajoRepository, TipoMovimientoRepository, TrabajoRepository,
     Transaction, UnitOfWork,
 };
 use certaro_application::{AppError, AppResult};
@@ -29,7 +29,7 @@ use crate::persistence::repositories::feriado::SeaOrmFeriadoRepository;
 use crate::persistence::repositories::liquidacion::SeaOrmLiquidacionRepository;
 use crate::persistence::repositories::metadata::SeaOrmMetadataRepository;
 use crate::persistence::repositories::movimiento::SeaOrmMovimientoRepository;
-use crate::persistence::repositories::obra::SeaOrmObraRepository;
+use crate::persistence::repositories::proyecto::SeaOrmProyectoRepository;
 use crate::persistence::repositories::orden_trabajo::SeaOrmOrdenTrabajoRepository;
 use crate::persistence::repositories::tipo_movimiento::SeaOrmTipoMovimientoRepository;
 use crate::persistence::repositories::trabajo::SeaOrmTrabajoRepository;
@@ -70,7 +70,7 @@ pub struct SeaOrmTransaction {
     categorias: SeaOrmCategoriaRepository,
     movimientos: SeaOrmMovimientoRepository,
     clientes: SeaOrmClienteRepository,
-    obras: SeaOrmObraRepository,
+    proyectos: SeaOrmProyectoRepository,
     trabajos: SeaOrmTrabajoRepository,
     facturas: SeaOrmFacturaRepository,
     ordenes_trabajo: SeaOrmOrdenTrabajoRepository,
@@ -91,7 +91,7 @@ impl SeaOrmTransaction {
             categorias: SeaOrmCategoriaRepository::new(Arc::clone(&tx)),
             movimientos: SeaOrmMovimientoRepository::new(Arc::clone(&tx)),
             clientes: SeaOrmClienteRepository::new(Arc::clone(&tx)),
-            obras: SeaOrmObraRepository::new(Arc::clone(&tx)),
+            proyectos: SeaOrmProyectoRepository::new(Arc::clone(&tx)),
             trabajos: SeaOrmTrabajoRepository::new(Arc::clone(&tx)),
             facturas: SeaOrmFacturaRepository::new(Arc::clone(&tx)),
             ordenes_trabajo: SeaOrmOrdenTrabajoRepository::new(Arc::clone(&tx)),
@@ -117,7 +117,7 @@ impl SeaOrmTransaction {
             categorias,
             movimientos,
             clientes,
-            obras,
+            proyectos,
             trabajos,
             facturas,
             ordenes_trabajo,
@@ -134,7 +134,7 @@ impl SeaOrmTransaction {
         drop(categorias);
         drop(movimientos);
         drop(clientes);
-        drop(obras);
+        drop(proyectos);
         drop(trabajos);
         drop(facturas);
         drop(ordenes_trabajo);
@@ -170,8 +170,8 @@ impl Transaction for SeaOrmTransaction {
         &self.clientes
     }
 
-    fn obras(&self) -> &dyn ObraRepository {
-        &self.obras
+    fn proyectos(&self) -> &dyn ProyectoRepository {
+        &self.proyectos
     }
 
     fn trabajos(&self) -> &dyn TrabajoRepository {

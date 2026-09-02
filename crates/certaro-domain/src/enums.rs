@@ -153,7 +153,7 @@ impl EstadoFactura {
 /// `docs/05-dominio-entidades.md` §3.3.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub enum EstadoObra {
+pub enum EstadoProyecto {
     #[default]
     Activa,
     Pausada,
@@ -161,7 +161,7 @@ pub enum EstadoObra {
     Cancelada,
 }
 
-impl EstadoObra {
+impl EstadoProyecto {
     pub const ALL: [Self; 4] = [
         Self::Activa,
         Self::Pausada,
@@ -185,7 +185,7 @@ impl EstadoObra {
             2 => Ok(Self::Finalizada),
             3 => Ok(Self::Cancelada),
             other => Err(DomainError::UnknownEnumValue {
-                enum_name: "EstadoObra",
+                enum_name: "EstadoProyecto",
                 value: other,
             }),
         }
@@ -406,8 +406,8 @@ mod tests {
         for estado in EstadoFactura::ALL {
             assert_eq!(EstadoFactura::from_i32(estado.as_i32()).unwrap(), estado);
         }
-        for estado in EstadoObra::ALL {
-            assert_eq!(EstadoObra::from_i32(estado.as_i32()).unwrap(), estado);
+        for estado in EstadoProyecto::ALL {
+            assert_eq!(EstadoProyecto::from_i32(estado.as_i32()).unwrap(), estado);
         }
         for estado in EstadoTrabajo::ALL {
             assert_eq!(EstadoTrabajo::from_i32(estado.as_i32()).unwrap(), estado);

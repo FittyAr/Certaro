@@ -2,10 +2,10 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use certaro_application::ports::repositories::{ObraConResumen, ObraFiltro, ObraRepository, SortDir};
+use certaro_application::ports::repositories::{ProyectoConResumen, ProyectoFiltro, ProyectoRepository, SortDir};
 use certaro_application::{AppError, AppResult, PageRequest, PagedResult};
-use certaro_domain::entities::{Obra, Trabajo};
-use certaro_domain::{time, EstadoObra, EstadoTrabajo, Money, RowVersion};
+use certaro_domain::entities::{Proyecto, Trabajo};
+use certaro_domain::{time, EstadoProyecto, EstadoTrabajo, Money, RowVersion};
 use sea_orm::sea_query::{Alias, Expr, Func, Query, SimpleExpr};
 use sea_orm::{
     ColumnTrait, Condition, DatabaseTransaction, EntityTrait, FromQueryResult, JoinType, Order,
@@ -13,18 +13,18 @@ use sea_orm::{
 };
 use uuid::Uuid;
 
-use crate::persistence::mappers::obra as mapper;
+use crate::persistence::mappers::proyecto as mapper;
 use crate::persistence::mappers::trabajo as trabajo_mapper;
-use crate::persistence::models::obra::{self as model, Column, Entity};
+use crate::persistence::models::proyecto::{self as model, Column, Entity};
 use crate::persistence::models::{cliente, movimiento, tipo_movimiento, trabajo};
 
-const ENTITY: &str = "Obra";
+const ENTITY: &str = "Proyecto";
 
-pub struct SeaOrmObraRepository {
+pub struct SeaOrmProyectoRepository {
     tx: Arc<DatabaseTransaction>,
 }
 
-impl SeaOrmObraRepository {
+impl SeaOrmProyectoRepository {
     pub fn new(tx: Arc<DatabaseTransaction>) -> Self {
         Self { tx }
     }
@@ -53,7 +53,7 @@ struct RowConResumen {
     rentabilidad: i64,
 }
 
-impl TryFrom<RowConResumen> for ObraConResumen {
+impl TryFrom<RowConResumen> for ProyectoConResumen {
     type Error = AppError;
 
     fn try_from(row: RowConResumen) -> Result<Self, Self::Error> {
@@ -72,7 +72,7 @@ impl TryFrom<RowConResumen> for ObraConResumen {
             deleted_at: row.deleted_at,
         };
         Ok(Self {
-            obra: mapper::to_domain(model)?,
+            proyecto: mapper::to_domain(model)?,
             cliente_nombre: row.cliente_nombre,
             trabajos_count: row.trabajos_count.max(0) as u64,
             // The subquery already sums the product of two scaled values, so it comes back at
@@ -98,7 +98,7 @@ fn cliente_join() -> sea_orm::RelationDef {
         .into()
 }
 
-fn filtro_condition(filtro: &ObraFiltro) -> Condition {
+fn filtro_condition(filtro: &ProyectoFiltro) -> Condition {
     let mut c = alive();
     if let Some(texto) = filtro.texto.as_deref() {
         let limpio = texto.trim();
@@ -124,7 +124,7 @@ fn filtro_condition(filtro: &ObraFiltro) -> Condition {
         // "Active" here means "still going on", which includes a paused site: the shorthand
         // exists to hide what is finished or cancelled, not to hide what is on hold.
         c = c
-            .add(Column::Estado.is_in([EstadoObra::Activa.as_i32(), EstadoObra::Pausada.as_i32()]));
+            .add(Column::Estado.is_in([EstadoProyecto::Activa.as_i32(), EstadoProyecto::Pausada.as_i32()]));
     }
     c
 }
@@ -137,7 +137,7 @@ fn trabajos_count_expr() -> SimpleExpr {
                 .expr(Expr::col(trabajo::Column::Id).count())
                 .from(trabajo::Entity)
                 .and_where(
-                    Expr::col((trabajo::Entity, trabajo::Column::ObraId))
+                    Expr::col((trabajo::Entity, trabajo::Column::ProyectoId))
                         .equals((Entity, Column::Id)),
                 )
                 .and_where(Expr::col((trabajo::Entity, trabajo::Column::IsDeleted)).eq(false))
@@ -171,7 +171,7 @@ fn suma_movimientos_expr(es_ingreso: bool) -> SimpleExpr {
                             .equals((movimiento::Entity, movimiento::Column::TipoMovimientoId)),
                     )
                     .and_where(
-                        Expr::col((trabajo::Entity, trabajo::Column::ObraId))
+                        Expr::col((trabajo::Entity, trabajo::Column::ProyectoId))
                             .equals((Entity, Column::Id)),
                     )
                     .and_where(
@@ -211,8 +211,8 @@ fn base_query() -> sea_orm::Select<Entity> {
 }
 
 #[async_trait]
-impl ObraRepository for SeaOrmObraRepository {
-    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<Obra>> {
+impl ProyectoRepository for SeaOrmProyectoRepository {
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<Proyecto>> {
         let found = Entity::find_by_id(id.to_string())
             .filter(alive())
             .one(self.conn())
@@ -221,7 +221,7 @@ impl ObraRepository for SeaOrmObraRepository {
         found.map(mapper::to_domain).transpose()
     }
 
-    async fn find_detalle(&self, id: Uuid) -> AppResult<Option<ObraConResumen>> {
+    async fn find_detalle(&self, id: Uuid) -> AppResult<Option<ProyectoConResumen>> {
         let found = base_query()
             .filter(alive())
             .filter(Column::Id.eq(id.to_string()))
@@ -229,16 +229,16 @@ impl ObraRepository for SeaOrmObraRepository {
             .one(self.conn())
             .await
             .map_err(AppError::persistence)?;
-        found.map(ObraConResumen::try_from).transpose()
+        found.map(ProyectoConResumen::try_from).transpose()
     }
 
     async fn search(
         &self,
-        filtro: &ObraFiltro,
+        filtro: &ProyectoFiltro,
         page: PageRequest,
         sort_by: Option<&str>,
         sort_dir: SortDir,
-    ) -> AppResult<PagedResult<ObraConResumen>> {
+    ) -> AppResult<PagedResult<ProyectoConResumen>> {
         let condition = filtro_condition(filtro);
         let order = match sort_dir {
             SortDir::Asc => Order::Asc,
@@ -290,7 +290,7 @@ impl ObraRepository for SeaOrmObraRepository {
 
         let items = rows
             .into_iter()
-            .map(ObraConResumen::try_from)
+            .map(ProyectoConResumen::try_from)
             .collect::<Result<Vec<_>, _>>()?;
 
         Ok(PagedResult::new(items, total, page))
@@ -301,11 +301,11 @@ impl ObraRepository for SeaOrmObraRepository {
         cliente_id: Option<Uuid>,
         texto: Option<&str>,
         limite: u64,
-    ) -> AppResult<Vec<Obra>> {
-        let filtro = ObraFiltro {
+    ) -> AppResult<Vec<Proyecto>> {
+        let filtro = ProyectoFiltro {
             texto: texto.map(str::to_owned),
             cliente_id,
-            ..ObraFiltro::default()
+            ..ProyectoFiltro::default()
         };
         let rows = Entity::find()
             .filter(filtro_condition(&filtro))
@@ -350,7 +350,7 @@ impl ObraRepository for SeaOrmObraRepository {
         Ok(row.and_then(|r| r.maximo).unwrap_or(0) + 1)
     }
 
-    async fn insert(&self, entity: &Obra) -> AppResult<()> {
+    async fn insert(&self, entity: &Proyecto) -> AppResult<()> {
         Entity::insert(mapper::to_active(entity))
             .exec(self.conn())
             .await
@@ -358,7 +358,7 @@ impl ObraRepository for SeaOrmObraRepository {
         Ok(())
     }
 
-    async fn update(&self, entity: &Obra, esperado: RowVersion) -> AppResult<()> {
+    async fn update(&self, entity: &Proyecto, esperado: RowVersion) -> AppResult<()> {
         let result = Entity::update_many()
             .set(mapper::to_active(entity))
             .filter(Column::Id.eq(entity.id.to_string()))
@@ -402,7 +402,7 @@ impl ObraRepository for SeaOrmObraRepository {
 
     async fn count_trabajos(&self, id: Uuid) -> AppResult<u64> {
         trabajo::Entity::find()
-            .filter(trabajo::Column::ObraId.eq(id.to_string()))
+            .filter(trabajo::Column::ProyectoId.eq(id.to_string()))
             .filter(trabajo::Column::IsDeleted.eq(false))
             .count(self.conn())
             .await
@@ -417,7 +417,7 @@ impl ObraRepository for SeaOrmObraRepository {
             .collect();
 
         let rows = trabajo::Entity::find()
-            .filter(trabajo::Column::ObraId.eq(id.to_string()))
+            .filter(trabajo::Column::ProyectoId.eq(id.to_string()))
             .filter(trabajo::Column::IsDeleted.eq(false))
             .filter(trabajo::Column::Estado.is_in(abiertos))
             .order_by_asc(trabajo::Column::FechaInicio)

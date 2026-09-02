@@ -76,7 +76,7 @@ pub const COLUMNS: &[Column] = &[
         narrow: false,
     },
     Column {
-        key: "Report.Col.Obra",
+        key: "Report.Col.Proyecto",
         align: Align::Left,
         width: 3,
         narrow: false,
@@ -140,7 +140,7 @@ pub fn row(item: &MovimientoListItem, layout: Layout) -> Vec<Cell> {
         Cell::Text(item.tipo_movimiento_nombre.clone()),
         Cell::Text(item.categoria_nombre.clone().unwrap_or_default()),
         Cell::Text(item.cliente_nombre.clone().unwrap_or_default()),
-        Cell::Text(item.obra_nombre.clone().unwrap_or_default()),
+        Cell::Text(item.proyecto_nombre.clone().unwrap_or_default()),
         Cell::Text(item.trabajo_descripcion.clone().unwrap_or_default()),
         Cell::Text(item.moneda.iso().to_owned()),
         Cell::Money(item.monto),

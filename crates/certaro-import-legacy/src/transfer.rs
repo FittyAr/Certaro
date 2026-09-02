@@ -44,7 +44,7 @@ pub async fn transfer_all(
     transfer_categorias(db, legacy, report).await?;
     transfer_clientes(db, legacy, report).await?;
     transfer_cliente_contactos(db, legacy, report).await?;
-    transfer_obras(db, legacy, report).await?;
+    transfer_proyectos(db, legacy, report).await?;
     transfer_trabajos(db, legacy, scale, report).await?;
     // TODO: remaining tables
     transfer_ordenes_trabajo(db, legacy, scale, tz, report).await?;
@@ -393,7 +393,7 @@ async fn transfer_cliente_contactos(
     Ok(())
 }
 
-async fn transfer_obras(
+async fn transfer_proyectos(
     db: &DatabaseTransaction,
     legacy: &SqlitePool,
     report: &mut ImportReport,
@@ -420,7 +420,7 @@ async fn transfer_obras(
         let is_deleted: i64 = row.try_get("IsDeleted").unwrap_or(0);
 
         let sql = format!(
-            "INSERT INTO obras (id, numero, nombre, direccion, localidad, cliente_id, estado, \
+            "INSERT INTO proyectos (id, numero, nombre, direccion, localidad, cliente_id, estado, \
              created_at, updated_at, deleted_at, row_version, is_deleted) \
              VALUES ('{}', {}, '{}', {}, {}, '{}', {}, '{}', '{}', {}, X'{}', {})",
             id.replace('\'', "''"),
@@ -440,15 +440,15 @@ async fn transfer_obras(
         match exec(db, &sql).await {
             Ok(_) => {}
             Err(e) => {
-                report.block(format!("obra {id} (numero={numero}): {e}"));
-                return Err(e).context("inserting obra");
+                report.block(format!("proyecto {id} (numero={numero}): {e}"));
+                return Err(e).context("inserting proyecto");
             }
         }
     }
 
     report.tables.push(TableReport {
         source: "Obras".to_owned(),
-        target: "obras".to_owned(),
+        target: "proyectos".to_owned(),
         source_rows: source_count,
         target_rows: source_count,
         skipped: 0,
@@ -474,7 +474,7 @@ async fn transfer_trabajos(
 
     for row in &rows {
         let id: String = row.try_get("Id").unwrap_or_default();
-        let obra_id: String = row.try_get("ObraId").unwrap_or_default();
+        let proyecto_id: String = row.try_get("ObraId").unwrap_or_default();
         let descripcion: String = row.try_get("Descripcion").unwrap_or_default();
         let presupuesto =
             money::scale_value(row.try_get::<i64, _>("Presupuesto").unwrap_or(0), scale);
@@ -495,11 +495,11 @@ async fn transfer_trabajos(
         sum_presupuesto += presupuesto;
 
         let sql = format!(
-            "INSERT INTO trabajos (id, obra_id, descripcion, presupuesto, fecha_inicio, fecha_fin, \
+            "INSERT INTO trabajos (id, proyecto_id, descripcion, presupuesto, fecha_inicio, fecha_fin, \
              estado, created_at, updated_at, deleted_at, row_version, is_deleted) \
              VALUES ('{}', '{}', '{}', {}, '{}', {}, {}, '{}', '{}', {}, X'{}', {})",
             id.replace('\'', "''"),
-            obra_id.replace('\'', "''"),
+            proyecto_id.replace('\'', "''"),
             descripcion.replace('\'', "''"),
             presupuesto,
             fecha_inicio.to_rfc3339(),

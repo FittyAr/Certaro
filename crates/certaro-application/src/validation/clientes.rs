@@ -156,7 +156,7 @@ mod tests {
         ClienteContactoInput {
             id: None,
             etiqueta: "Oficina".into(),
-            email: "obra@example.com".into(),
+            email: "proyecto@example.com".into(),
             nombre: None,
             telefono: None,
             es_principal: false,
@@ -297,7 +297,7 @@ mod tests {
             contactos: vec![
                 contacto(),
                 ClienteContactoInput {
-                    email: "OBRA@example.com".into(),
+                    email: "PROYECTO@example.com".into(),
                     ..contacto()
                 },
             ],

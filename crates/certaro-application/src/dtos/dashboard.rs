@@ -163,15 +163,15 @@ pub struct DashboardStats {
     pub variacion_balance: Option<Decimal4>,
     pub clientes_activos: u64,
     pub trabajos_pendientes: u64,
-    pub obras_pausadas: u64,
+    pub proyectos_pausadas: u64,
     pub facturas_vencidas: u64,
     pub liquidaciones_pendientes: u64,
     /// The calendar year in progress, not the selected period (doc 06 §9.8).
     pub serie_mensual: Vec<PuntoSerie>,
     pub top_clientes: Vec<TopCliente>,
     pub gastos_por_categoria: Vec<TopCliente>,
-    pub mejores_obras: Vec<RentabilidadItem>,
-    pub peores_obras: Vec<RentabilidadItem>,
+    pub mejores_proyectos: Vec<RentabilidadItem>,
+    pub peores_proyectos: Vec<RentabilidadItem>,
     pub ultimos_movimientos: Vec<MovimientoListItem>,
     pub estado_sistema: EstadoSistema,
 }
@@ -212,7 +212,7 @@ pub enum SeveridadAlerta {
 pub enum TipoAlerta {
     FacturasVencidas,
     BalanceNegativo,
-    ObrasPausadas,
+    ProyectosPausados,
     LiquidacionesPendientes,
     CaidaIngresos,
 }

@@ -9,7 +9,7 @@ use crate::persistence::models::trabajo::{ActiveModel, Model};
 pub fn to_domain(model: Model) -> Result<Trabajo, AppError> {
     Ok(Trabajo {
         id: mappers::uuid(&model.id)?,
-        obra_id: mappers::uuid(&model.obra_id)?,
+        proyecto_id: mappers::uuid(&model.proyecto_id)?,
         descripcion: model.descripcion,
         fecha_inicio: mappers::civil(&model.fecha_inicio)?,
         fecha_fin: mappers::civil_opt(model.fecha_fin.as_deref())?,
@@ -30,7 +30,7 @@ pub fn to_domain(model: Model) -> Result<Trabajo, AppError> {
 pub fn to_active(entity: &Trabajo) -> ActiveModel {
     ActiveModel {
         id: Set(entity.id.to_string()),
-        obra_id: Set(entity.obra_id.to_string()),
+        proyecto_id: Set(entity.proyecto_id.to_string()),
         descripcion: Set(entity.descripcion.clone()),
         fecha_inicio: Set(mappers::civil_to_storage(entity.fecha_inicio)),
         fecha_fin: Set(entity.fecha_fin.map(mappers::civil_to_storage)),

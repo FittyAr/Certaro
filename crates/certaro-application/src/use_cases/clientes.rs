@@ -146,9 +146,9 @@ impl ClientesService {
                 .sync_contactos(repo, id, &input.contactos, &existente.contactos, now)
                 .await?;
 
-            let obras = repo.count_obras(id).await?;
+            let proyectos = repo.count_proyectos(id).await?;
             let facturas = repo.count_facturas(id).await?;
-            Ok(ClienteDetalle::build(&cliente, obras, facturas))
+            Ok(ClienteDetalle::build(&cliente, proyectos, facturas))
         }
         .await;
         let detalle = finish_write(tx, outcome).await?;
@@ -172,9 +172,9 @@ impl ClientesService {
             // first turns a constraint violation into a message that names the obstacle.
             for (count, code, key) in [
                 (
-                    repo.count_obras(id).await?,
-                    "CLIENTE_CON_OBRAS",
-                    "Conflict.Cliente.ConObras",
+                    repo.count_proyectos(id).await?,
+                    "CLIENTE_CON_PROYECTOS",
+                    "Conflict.Cliente.ConProyectos",
                 ),
                 (
                     repo.count_facturas(id).await?,
@@ -288,7 +288,7 @@ async fn load_detalle(repo: &dyn ClienteRepository, id: Uuid) -> AppResult<Clien
         .find_con_contactos(id)
         .await?
         .ok_or_else(|| AppError::not_found(ENTITY, id))?;
-    let obras = repo.count_obras(id).await?;
+    let proyectos = repo.count_proyectos(id).await?;
     let facturas = repo.count_facturas(id).await?;
-    Ok(ClienteDetalle::build(&cliente, obras, facturas))
+    Ok(ClienteDetalle::build(&cliente, proyectos, facturas))
 }

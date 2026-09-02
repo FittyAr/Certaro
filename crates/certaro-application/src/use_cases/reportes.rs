@@ -227,7 +227,7 @@ mod tests {
             cliente_nombre: Some("Acme".to_owned()),
             trabajo_id: Some(Uuid::from_u128(5)),
             trabajo_descripcion: Some("Tablero".to_owned()),
-            obra_nombre: Some("Edificio Sur".to_owned()),
+            proyecto_nombre: Some("Edificio Sur".to_owned()),
             empleado_id: None,
             factura_id: None,
             tipo_concepto_pago_id: None,

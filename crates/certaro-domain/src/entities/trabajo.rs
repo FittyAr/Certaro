@@ -14,7 +14,7 @@ use crate::money::Money;
 #[serde(rename_all = "camelCase")]
 pub struct Trabajo {
     pub id: Uuid,
-    pub obra_id: Uuid,
+    pub proyecto_id: Uuid,
     pub descripcion: String,
     /// Civil dates: what matters is the day, not the instant.
     pub fecha_inicio: NaiveDate,

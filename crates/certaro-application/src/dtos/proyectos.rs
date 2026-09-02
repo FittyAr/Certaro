@@ -1,25 +1,25 @@
-//! Contract of the `obras` module. See `docs/11-contratos-tauri.md` §5.3.
+//! Contract of the `proyectos` module. See `docs/11-contratos-tauri.md` §5.3.
 
-use certaro_domain::entities::Obra;
-use certaro_domain::{EstadoObra, Money};
+use certaro_domain::entities::Proyecto;
+use certaro_domain::{EstadoProyecto, Money};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::dtos::common::{AuditDto, EstadoInfo};
-use crate::ports::repositories::{ObraConResumen, ObraFiltro};
+use crate::ports::repositories::{ProyectoConResumen, ProyectoFiltro};
 
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ObraFiltroDto {
+pub struct ProyectoFiltroDto {
     pub texto: Option<String>,
     pub cliente_id: Option<Uuid>,
-    pub estado: Option<EstadoObra>,
+    pub estado: Option<EstadoProyecto>,
     #[serde(default)]
     pub solo_activas: bool,
 }
 
-impl From<ObraFiltroDto> for ObraFiltro {
-    fn from(dto: ObraFiltroDto) -> Self {
+impl From<ProyectoFiltroDto> for ProyectoFiltro {
+    fn from(dto: ProyectoFiltroDto) -> Self {
         Self {
             texto: dto.texto.filter(|t| !t.trim().is_empty()),
             cliente_id: dto.cliente_id,
@@ -29,11 +29,11 @@ impl From<ObraFiltroDto> for ObraFiltro {
     }
 }
 
-/// The state is absent on purpose: it only ever changes through `obras_transition`, so accepting
+/// The state is absent on purpose: it only ever changes through `proyectos_transition`, so accepting
 /// it here would give the form a second, unguarded way in.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ObraInput {
+pub struct ProyectoInput {
     pub numero: i32,
     pub nombre: String,
     pub direccion: Option<String>,
@@ -43,7 +43,7 @@ pub struct ObraInput {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ObraListItem {
+pub struct ProyectoListItem {
     pub id: Uuid,
     pub numero: i32,
     pub nombre: String,
@@ -51,35 +51,35 @@ pub struct ObraListItem {
     pub localidad: Option<String>,
     pub cliente_id: Uuid,
     pub cliente_nombre: String,
-    pub estado: EstadoObra,
+    pub estado: EstadoProyecto,
     pub trabajos_count: u64,
     pub rentabilidad: Money,
     pub puede_eliminarse: bool,
     pub row_version: String,
 }
 
-impl From<ObraConResumen> for ObraListItem {
-    fn from(row: ObraConResumen) -> Self {
+impl From<ProyectoConResumen> for ProyectoListItem {
+    fn from(row: ProyectoConResumen) -> Self {
         Self {
-            id: row.obra.id,
-            numero: row.obra.numero,
-            nombre: row.obra.nombre,
-            direccion: row.obra.direccion,
-            localidad: row.obra.localidad,
-            cliente_id: row.obra.cliente_id,
+            id: row.proyecto.id,
+            numero: row.proyecto.numero,
+            nombre: row.proyecto.nombre,
+            direccion: row.proyecto.direccion,
+            localidad: row.proyecto.localidad,
+            cliente_id: row.proyecto.cliente_id,
             cliente_nombre: row.cliente_nombre,
-            estado: row.obra.estado,
+            estado: row.proyecto.estado,
             trabajos_count: row.trabajos_count,
             rentabilidad: row.rentabilidad,
             puede_eliminarse: row.trabajos_count == 0,
-            row_version: row.obra.audit.row_version.to_hex(),
+            row_version: row.proyecto.audit.row_version.to_hex(),
         }
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ObraDetalle {
+pub struct ProyectoDetalle {
     pub id: Uuid,
     pub numero: i32,
     pub nombre: String,
@@ -94,34 +94,34 @@ pub struct ObraDetalle {
     pub audit: AuditDto,
 }
 
-impl ObraDetalle {
+impl ProyectoDetalle {
     pub fn build(
-        obra: &Obra,
+        proyecto: &Proyecto,
         cliente_nombre: String,
         trabajos_count: u64,
         rentabilidad: Money,
     ) -> Self {
         Self {
-            id: obra.id,
-            numero: obra.numero,
-            nombre: obra.nombre.clone(),
-            direccion: obra.direccion.clone(),
-            localidad: obra.localidad.clone(),
-            cliente_id: obra.cliente_id,
+            id: proyecto.id,
+            numero: proyecto.numero,
+            nombre: proyecto.nombre.clone(),
+            direccion: proyecto.direccion.clone(),
+            localidad: proyecto.localidad.clone(),
+            cliente_id: proyecto.cliente_id,
             cliente_nombre,
-            estado: EstadoInfo::build(obra.estado, EstadoObra::requiere_confirmacion_desde),
+            estado: EstadoInfo::build(proyecto.estado, EstadoProyecto::requiere_confirmacion_desde),
             trabajos_count,
             rentabilidad,
             puede_eliminarse: trabajos_count == 0,
-            audit: AuditDto::from(&obra.audit),
+            audit: AuditDto::from(&proyecto.audit),
         }
     }
 }
 
-impl From<ObraConResumen> for ObraDetalle {
-    fn from(row: ObraConResumen) -> Self {
+impl From<ProyectoConResumen> for ProyectoDetalle {
+    fn from(row: ProyectoConResumen) -> Self {
         Self::build(
-            &row.obra,
+            &row.proyecto,
             row.cliente_nombre,
             row.trabajos_count,
             row.rentabilidad,

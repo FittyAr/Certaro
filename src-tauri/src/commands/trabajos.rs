@@ -95,12 +95,12 @@ pub async fn trabajos_delete(
 #[tauri::command]
 pub async fn trabajos_lookup(
     state: State<'_, AppState>,
-    obra_id: Option<Uuid>,
+    proyecto_id: Option<Uuid>,
     texto: Option<String>,
     limite: Option<u64>,
 ) -> ApiResult<Vec<LookupItem>> {
     let outcome = match state.services() {
-        Ok(services) => services.trabajos.lookup(obra_id, texto, limite).await,
+        Ok(services) => services.trabajos.lookup(proyecto_id, texto, limite).await,
         Err(e) => Err(e),
     };
     handle("trabajos_lookup", outcome)

@@ -27,7 +27,7 @@ pub use repositories::{
     EmpleadoRepository, EstadoBase, FacturaConResumen, FacturaFiltro, FacturaPendiente,
     FacturaRepository, FeriadoRepository, LiquidacionConRelaciones, LiquidacionFiltro,
     LiquidacionRepository, MetadataRepository, MovimientoConRelaciones, MovimientoFiltro,
-    MovimientoRepository, MovimientoResumen, ObraConResumen, ObraFiltro, ObraRepository,
+    MovimientoRepository, MovimientoResumen, ProyectoConResumen, ProyectoFiltro, ProyectoRepository,
     OrdenTrabajoConRelaciones, OrdenTrabajoRepository, ReferenciaTabla, RentabilidadFila, SortDir,
     TipoMovimientoConUso, TipoMovimientoFiltro, TipoMovimientoRepository, TotalMensual,
     TotalPorNombre, TrabajoConRelaciones, TrabajoFiltro, TrabajoRepository, Transaction,

@@ -94,7 +94,7 @@ impl DashboardService {
         let ultimos = u32::from(config.dashboard.ultimos_movimientos_cantidad.max(1));
         let top_clientes = u64::from(config.dashboard.top_clientes_cantidad.max(1));
         let top_categorias = u64::from(config.dashboard.top_categorias_cantidad.max(1));
-        let ranking_obras = u64::from(config.dashboard.obras_ranking_cantidad.max(1));
+        let ranking_proyectos = u64::from(config.dashboard.proyectos_ranking_cantidad.max(1));
 
         let tx = self.uow.begin().await?;
         let outcome = async {
@@ -117,9 +117,9 @@ impl DashboardService {
                 .gastos_por_categoria(ventanas.desde, ventanas.hasta, top_categorias)
                 .await?;
             let mejores = repo
-                .rentabilidad_obras(SortDir::Desc, ranking_obras)
+                .rentabilidad_proyectos(SortDir::Desc, ranking_proyectos)
                 .await?;
-            let peores = repo.rentabilidad_obras(SortDir::Asc, ranking_obras).await?;
+            let peores = repo.rentabilidad_proyectos(SortDir::Asc, ranking_proyectos).await?;
             let base = repo.estado_base().await?;
 
             let filtro: crate::ports::repositories::MovimientoFiltro =
@@ -169,7 +169,7 @@ impl DashboardService {
                     .clientes_activos(ventanas.desde, ventanas.hasta)
                     .await?,
                 trabajos_pendientes: repo.trabajos_pendientes().await?,
-                obras_pausadas: repo.obras_pausadas().await?,
+                proyectos_pausadas: repo.proyectos_pausadas().await?,
                 facturas_vencidas: repo.facturas_vencidas(umbral).await?,
                 liquidaciones_pendientes: repo
                     .liquidaciones_pendientes(hoy.year(), hoy.month())
@@ -177,8 +177,8 @@ impl DashboardService {
                 serie_mensual: serie.into_iter().map(PuntoSerie::from).collect(),
                 top_clientes: clientes.into_iter().map(TopCliente::from).collect(),
                 gastos_por_categoria: categorias.into_iter().map(TopCliente::from).collect(),
-                mejores_obras: mejores.into_iter().map(RentabilidadItem::from).collect(),
-                peores_obras: peores.into_iter().map(RentabilidadItem::from).collect(),
+                mejores_proyectos: mejores.into_iter().map(RentabilidadItem::from).collect(),
+                peores_proyectos: peores.into_iter().map(RentabilidadItem::from).collect(),
                 ultimos_movimientos,
                 estado_sistema: EstadoSistema {
                     version: env!("CARGO_PKG_VERSION").to_owned(),
@@ -211,7 +211,7 @@ impl DashboardService {
         let outcome = async {
             let repo = tx.dashboard();
             let vencidas = repo.facturas_vencidas(umbral).await?;
-            let pausadas = repo.obras_pausadas().await?;
+            let pausadas = repo.proyectos_pausadas().await?;
             let liquidaciones = repo
                 .liquidaciones_pendientes(hoy.year(), hoy.month())
                 .await?;
@@ -250,12 +250,12 @@ impl DashboardService {
         }
         if pausadas > 0 {
             alertas.push(Alerta {
-                tipo: TipoAlerta::ObrasPausadas,
-                clave: "Dashboard.Alerta.ObrasPausadas".to_owned(),
+                tipo: TipoAlerta::ProyectosPausados,
+                clave: "Dashboard.Alerta.ProyectosPausados".to_owned(),
                 cantidad: pausadas,
                 monto: None,
                 severidad: SeveridadAlerta::Info,
-                destino: "/obras?estado=pausada".to_owned(),
+                destino: "/proyectos?estado=pausada".to_owned(),
             });
         }
         if liquidaciones > 0 {

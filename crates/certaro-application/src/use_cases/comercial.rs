@@ -169,7 +169,7 @@ impl ComercialService {
     }
 
     /// Sites ranked by profitability, best first. `limite` of zero means every site.
-    pub async fn rentabilidad_obras(
+    pub async fn rentabilidad_proyectos(
         &self,
         limite: Option<u64>,
     ) -> AppResult<Vec<RentabilidadItem>> {
@@ -177,7 +177,7 @@ impl ComercialService {
         let tx = self.uow.begin().await?;
         let result = tx
             .dashboard()
-            .rentabilidad_obras(SortDir::Desc, limite)
+            .rentabilidad_proyectos(SortDir::Desc, limite)
             .await;
         let filas = finish_read(tx, result).await?;
         Ok(filas.into_iter().map(RentabilidadItem::from).collect())
@@ -187,12 +187,12 @@ impl ComercialService {
     /// had no such report, and the imputation chain is the same one the site ranking uses.
     pub async fn rentabilidad_trabajos(
         &self,
-        obra_id: Option<Uuid>,
+        proyecto_id: Option<Uuid>,
         limite: Option<u64>,
     ) -> AppResult<Vec<RentabilidadItem>> {
         let limite = limite.unwrap_or(0);
         let tx = self.uow.begin().await?;
-        let result = tx.dashboard().rentabilidad_trabajos(obra_id, limite).await;
+        let result = tx.dashboard().rentabilidad_trabajos(proyecto_id, limite).await;
         let filas = finish_read(tx, result).await?;
         Ok(filas.into_iter().map(RentabilidadItem::from).collect())
     }

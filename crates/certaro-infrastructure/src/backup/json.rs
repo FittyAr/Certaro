@@ -29,7 +29,7 @@ pub const TABLAS: [&str; 20] = [
     "tipos_concepto_pago",
     "clientes",
     "cliente_contactos",
-    "obras",
+    "proyectos",
     "trabajos",
     "facturas",
     "pagos_factura",
@@ -393,8 +393,8 @@ mod tests {
     #[test]
     fn las_dependencias_van_antes_que_quienes_las_usan() {
         let posicion = |tabla: &str| TABLAS.iter().position(|t| *t == tabla).unwrap();
-        assert!(posicion("clientes") < posicion("obras"));
-        assert!(posicion("obras") < posicion("trabajos"));
+        assert!(posicion("clientes") < posicion("proyectos"));
+        assert!(posicion("proyectos") < posicion("trabajos"));
         assert!(posicion("trabajos") < posicion("facturas"));
         assert!(posicion("facturas") < posicion("pagos_factura"));
         assert!(posicion("ordenes_trabajo") < posicion("certificados"));

@@ -12,7 +12,7 @@ use certaro_application::dtos::comercial::{AntiguedadDeudaQuery, CuentaCorriente
 use certaro_application::dtos::dashboard::PeriodoDashboard;
 use certaro_application::dtos::facturas::{FacturaInput, PagoFacturaInput};
 use certaro_application::dtos::movimientos::MovimientoInput;
-use certaro_application::dtos::obras::ObraInput;
+use certaro_application::dtos::proyectos::ProyectoInput;
 use certaro_application::dtos::trabajos::TrabajoInput;
 use certaro_application::ports::repositories::UnitOfWork;
 use certaro_application::ports::{ClockPort, IdGeneratorPort, SettingsStore};
@@ -22,7 +22,7 @@ use certaro_application::use_cases::comercial::ComercialService;
 use certaro_application::use_cases::dashboard::DashboardService;
 use certaro_application::use_cases::facturas::FacturasService;
 use certaro_application::use_cases::movimientos::MovimientosService;
-use certaro_application::use_cases::obras::ObrasService;
+use certaro_application::use_cases::proyectos::ProyectosService;
 use certaro_application::use_cases::trabajos::TrabajosService;
 use certaro_domain::clock::FixedClock;
 use certaro_domain::constants::tipos_movimiento;
@@ -60,7 +60,7 @@ struct Fixture {
     movimientos: MovimientosService,
     categorias: CategoriasService,
     clientes: ClientesService,
-    obras: ObrasService,
+    proyectos: ProyectosService,
     trabajos: TrabajosService,
     facturas: FacturasService,
 }
@@ -88,7 +88,7 @@ async fn fixture() -> Fixture {
         ),
         categorias: CategoriasService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
         clientes: ClientesService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
-        obras: ObrasService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
+        proyectos: ProyectosService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
         trabajos: TrabajosService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
         facturas: FacturasService::new(
             Arc::clone(&uow),
@@ -131,9 +131,9 @@ impl Fixture {
             .id
     }
 
-    async fn obra(&self, numero: i32, nombre: &str, cliente_id: Uuid) -> Uuid {
-        self.obras
-            .create(ObraInput {
+    async fn proyecto(&self, numero: i32, nombre: &str, cliente_id: Uuid) -> Uuid {
+        self.proyectos
+            .create(ProyectoInput {
                 numero,
                 nombre: nombre.to_owned(),
                 direccion: None,
@@ -145,10 +145,10 @@ impl Fixture {
             .id
     }
 
-    async fn trabajo(&self, obra_id: Uuid, descripcion: &str) -> Uuid {
+    async fn trabajo(&self, proyecto_id: Uuid, descripcion: &str) -> Uuid {
         self.trabajos
             .create(TrabajoInput {
-                obra_id,
+                proyecto_id,
                 descripcion: descripcion.to_owned(),
                 fecha_inicio: hace(90),
                 fecha_fin: None,
@@ -497,12 +497,12 @@ async fn los_gastos_por_categoria_ordenan_de_mayor_a_menor() {
 }
 
 #[tokio::test]
-async fn la_rentabilidad_por_obra_imputa_a_traves_del_trabajo() {
+async fn la_rentabilidad_por_proyecto_imputa_a_traves_del_trabajo() {
     let f = fixture().await;
     let categoria = f.categoria("Materiales").await;
     let cliente = f.cliente("Cliente").await;
-    let obra = f.obra(1, "Edificio Norte", cliente).await;
-    let trabajo = f.trabajo(obra, "Tablero").await;
+    let proyecto = f.proyecto(1, "Edificio Norte", cliente).await;
+    let trabajo = f.trabajo(proyecto, "Tablero").await;
 
     f.movimiento(
         "Cobro",
@@ -539,7 +539,7 @@ async fn la_rentabilidad_por_obra_imputa_a_traves_del_trabajo() {
     )
     .await;
 
-    let ranking = f.comercial.rentabilidad_obras(None).await.unwrap();
+    let ranking = f.comercial.rentabilidad_proyectos(None).await.unwrap();
 
     assert_eq!(ranking.len(), 1);
     let fila = &ranking[0];
@@ -550,12 +550,12 @@ async fn la_rentabilidad_por_obra_imputa_a_traves_del_trabajo() {
 }
 
 #[tokio::test]
-async fn una_obra_sin_ingresos_da_margen_cero_y_no_divide_por_cero() {
+async fn un_proyecto_sin_ingresos_da_margen_cero_y_no_divide_por_cero() {
     let f = fixture().await;
     let categoria = f.categoria("Materiales").await;
     let cliente = f.cliente("Cliente").await;
-    let obra = f.obra(1, "Solo gastos", cliente).await;
-    let trabajo = f.trabajo(obra, "Zanjeo").await;
+    let proyecto = f.proyecto(1, "Solo gastos", cliente).await;
+    let trabajo = f.trabajo(proyecto, "Zanjeo").await;
 
     f.movimiento(
         "Gasto",
@@ -569,21 +569,21 @@ async fn una_obra_sin_ingresos_da_margen_cero_y_no_divide_por_cero() {
     )
     .await;
 
-    let ranking = f.comercial.rentabilidad_obras(None).await.unwrap();
+    let ranking = f.comercial.rentabilidad_proyectos(None).await.unwrap();
 
     assert_eq!(ranking[0].rentabilidad.to_decimal_string(), "-1500.0000");
     assert_eq!(ranking[0].margen_porcentaje, Decimal4::ZERO);
 }
 
 #[tokio::test]
-async fn la_rentabilidad_por_trabajo_se_puede_filtrar_por_obra() {
+async fn la_rentabilidad_por_trabajo_se_puede_filtrar_por_proyecto() {
     let f = fixture().await;
     let categoria = f.categoria("Materiales").await;
     let cliente = f.cliente("Cliente").await;
-    let obra_a = f.obra(1, "Obra A", cliente).await;
-    let obra_b = f.obra(2, "Obra B", cliente).await;
-    let trabajo_a = f.trabajo(obra_a, "Tablero A").await;
-    let trabajo_b = f.trabajo(obra_b, "Tablero B").await;
+    let proyecto_a = f.proyecto(1, "Proyecto A", cliente).await;
+    let proyecto_b = f.proyecto(2, "Proyecto B", cliente).await;
+    let trabajo_a = f.trabajo(proyecto_a, "Tablero A").await;
+    let trabajo_b = f.trabajo(proyecto_b, "Tablero B").await;
 
     f.movimiento(
         "Cobro A",
@@ -611,11 +611,11 @@ async fn la_rentabilidad_por_trabajo_se_puede_filtrar_por_obra() {
     let todos = f.comercial.rentabilidad_trabajos(None, None).await.unwrap();
     assert_eq!(todos.len(), 2);
     assert_eq!(todos[0].nombre, "Tablero B");
-    assert_eq!(todos[0].contexto, "Obra B");
+    assert_eq!(todos[0].contexto, "Proyecto B");
 
     let solo_a = f
         .comercial
-        .rentabilidad_trabajos(Some(obra_a), None)
+        .rentabilidad_trabajos(Some(proyecto_a), None)
         .await
         .unwrap();
     assert_eq!(solo_a.len(), 1);

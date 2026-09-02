@@ -10,10 +10,10 @@ use async_trait::async_trait;
 use chrono::{DateTime, NaiveDate, Utc};
 use certaro_domain::entities::{
     Adjunto, AsistenciaEmpleado, Categoria, Certificado, CertificadoItem, Cliente, ClienteContacto,
-    Empleado, EntidadAdjunto, Factura, Feriado, Liquidacion, LiquidacionAdelanto, Movimiento, Obra,
+    Empleado, EntidadAdjunto, Factura, Feriado, Liquidacion, LiquidacionAdelanto, Movimiento, Proyecto,
     OrdenTrabajo, OrdenTrabajoItem, PagoFactura, TipoMovimiento, Trabajo,
 };
-use certaro_domain::{Decimal4, EstadoFactura, EstadoObra, EstadoTrabajo, Moneda, Money, RowVersion};
+use certaro_domain::{Decimal4, EstadoFactura, EstadoProyecto, EstadoTrabajo, Moneda, Money, RowVersion};
 use uuid::Uuid;
 
 use crate::paging::{PageRequest, PagedResult};
@@ -169,7 +169,7 @@ pub struct MovimientoConRelaciones {
     pub trabajo_descripcion: Option<String>,
     /// The site the job belongs to. Resolved through the job, which is the only path a movement
     /// has to a site, and needed by the export columns (doc 12 §2.2).
-    pub obra_nombre: Option<String>,
+    pub proyecto_nombre: Option<String>,
     /// True when an advance was already consumed by a payroll run and so cannot be edited.
     pub bloqueado_por_liquidacion: bool,
 }
@@ -269,7 +269,7 @@ pub struct ClienteFiltro {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ClienteConResumen {
     pub cliente: Cliente,
-    pub obras_count: u64,
+    pub proyectos_count: u64,
     pub facturas_count: u64,
     /// Sum of the outstanding balance of every invoice that counts as debt. Computed in SQL
     /// because the column is sortable and paging on a value computed in Rust would be wrong.
@@ -310,25 +310,25 @@ pub trait ClienteRepository: Send + Sync {
         at: DateTime<Utc>,
     ) -> AppResult<()>;
 
-    async fn count_obras(&self, id: Uuid) -> AppResult<u64>;
+    async fn count_proyectos(&self, id: Uuid) -> AppResult<u64>;
     async fn count_facturas(&self, id: Uuid) -> AppResult<u64>;
     async fn count_movimientos(&self, id: Uuid) -> AppResult<u64>;
 }
 
-/// Filter of `obras`. See `docs/09-modulos-funcionales.md` §3.4.
+/// Filter of `proyectos`. See `docs/09-modulos-funcionales.md` §3.4.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct ObraFiltro {
+pub struct ProyectoFiltro {
     /// Case-insensitive match against name, number, address and locality.
     pub texto: Option<String>,
     pub cliente_id: Option<Uuid>,
-    pub estado: Option<EstadoObra>,
+    pub estado: Option<EstadoProyecto>,
     /// Shorthand for `estado in (Activa, Pausada)`.
     pub solo_activas: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ObraConResumen {
-    pub obra: Obra,
+pub struct ProyectoConResumen {
+    pub proyecto: Proyecto,
     pub cliente_nombre: String,
     pub trabajos_count: u64,
     /// Income minus expenses of every movement imputed through one of the site's jobs.
@@ -336,24 +336,24 @@ pub struct ObraConResumen {
 }
 
 #[async_trait]
-pub trait ObraRepository: Send + Sync {
-    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<Obra>>;
-    async fn find_detalle(&self, id: Uuid) -> AppResult<Option<ObraConResumen>>;
+pub trait ProyectoRepository: Send + Sync {
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<Proyecto>>;
+    async fn find_detalle(&self, id: Uuid) -> AppResult<Option<ProyectoConResumen>>;
 
     async fn search(
         &self,
-        filtro: &ObraFiltro,
+        filtro: &ProyectoFiltro,
         page: PageRequest,
         sort_by: Option<&str>,
         sort_dir: SortDir,
-    ) -> AppResult<PagedResult<ObraConResumen>>;
+    ) -> AppResult<PagedResult<ProyectoConResumen>>;
 
     async fn lookup(
         &self,
         cliente_id: Option<Uuid>,
         texto: Option<&str>,
         limite: u64,
-    ) -> AppResult<Vec<Obra>>;
+    ) -> AppResult<Vec<Proyecto>>;
 
     /// Whether the number is taken. Deleted sites count: the number stays reserved (INV-06), and
     /// the unique index is not filtered by `is_deleted`.
@@ -362,8 +362,8 @@ pub trait ObraRepository: Send + Sync {
     /// `MAX(numero) + 1` over every row, deleted ones included.
     async fn siguiente_numero(&self) -> AppResult<i32>;
 
-    async fn insert(&self, entity: &Obra) -> AppResult<()>;
-    async fn update(&self, entity: &Obra, esperado: RowVersion) -> AppResult<()>;
+    async fn insert(&self, entity: &Proyecto) -> AppResult<()>;
+    async fn update(&self, entity: &Proyecto, esperado: RowVersion) -> AppResult<()>;
     async fn soft_delete(&self, id: Uuid, esperado: RowVersion, at: DateTime<Utc>)
         -> AppResult<()>;
 
@@ -376,7 +376,7 @@ pub trait ObraRepository: Send + Sync {
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct TrabajoFiltro {
     pub texto: Option<String>,
-    pub obra_id: Option<Uuid>,
+    pub proyecto_id: Option<Uuid>,
     /// Resolved through the site, because a job has no customer of its own.
     pub cliente_id: Option<Uuid>,
     pub estado: Option<EstadoTrabajo>,
@@ -387,8 +387,8 @@ pub struct TrabajoFiltro {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TrabajoConRelaciones {
     pub trabajo: Trabajo,
-    pub obra_numero: i32,
-    pub obra_nombre: String,
+    pub proyecto_numero: i32,
+    pub proyecto_nombre: String,
     pub cliente_id: Uuid,
     pub cliente_nombre: String,
 }
@@ -408,7 +408,7 @@ pub trait TrabajoRepository: Send + Sync {
 
     async fn lookup(
         &self,
-        obra_id: Option<Uuid>,
+        proyecto_id: Option<Uuid>,
         texto: Option<&str>,
         limite: u64,
     ) -> AppResult<Vec<Trabajo>>;
@@ -508,9 +508,9 @@ pub struct OrdenTrabajoConRelaciones {
     /// an order shows its sheet.
     pub orden: OrdenTrabajo,
     pub trabajo_descripcion: String,
-    pub obra_id: Uuid,
-    pub obra_numero: i32,
-    pub obra_nombre: String,
+    pub proyecto_id: Uuid,
+    pub proyecto_numero: i32,
+    pub proyecto_nombre: String,
     pub cliente_id: Uuid,
     pub cliente_nombre: String,
     pub certificados_count: u64,
@@ -570,7 +570,7 @@ pub trait OrdenTrabajoRepository: Send + Sync {
 /// Filter of `certificados`. See `docs/09-modulos-funcionales.md` §3.7.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct CertificadoFiltro {
-    pub obra_id: Option<Uuid>,
+    pub proyecto_id: Option<Uuid>,
     pub trabajo_id: Option<Uuid>,
     pub cliente_id: Option<Uuid>,
     pub fecha_desde: Option<NaiveDate>,
@@ -584,9 +584,9 @@ pub struct CertificadoConRelaciones {
     pub orden_titulo: String,
     pub trabajo_id: Uuid,
     pub trabajo_descripcion: String,
-    pub obra_id: Uuid,
-    pub obra_numero: i32,
-    pub obra_nombre: String,
+    pub proyecto_id: Uuid,
+    pub proyecto_numero: i32,
+    pub proyecto_nombre: String,
     pub cliente_id: Uuid,
     pub cliente_nombre: String,
     /// Whether this is the highest-numbered certificate of its order, which is the only one that
@@ -925,7 +925,7 @@ pub trait DashboardRepository: Send + Sync {
     /// Jobs whose state is neither `Finalizado` nor `Cancelado`.
     async fn trabajos_pendientes(&self) -> AppResult<u64>;
 
-    async fn obras_pausadas(&self) -> AppResult<u64>;
+    async fn proyectos_pausadas(&self) -> AppResult<u64>;
 
     /// Invoices past due: explicitly `Vencida`, or issued on or before `umbral`. Both arms also
     /// require an outstanding balance, so a paid invoice never shows up as overdue (doc 06 §9.3).
@@ -954,7 +954,7 @@ pub trait DashboardRepository: Send + Sync {
     async fn serie_mensual(&self, anio: i32) -> AppResult<Vec<TotalMensual>>;
 
     /// Sites ranked by profitability. `dir` picks the best or the worst ones.
-    async fn rentabilidad_obras(
+    async fn rentabilidad_proyectos(
         &self,
         dir: SortDir,
         limite: u64,
@@ -963,7 +963,7 @@ pub trait DashboardRepository: Send + Sync {
     /// Jobs ranked by profitability, optionally restricted to one site.
     async fn rentabilidad_trabajos(
         &self,
-        obra_id: Option<Uuid>,
+        proyecto_id: Option<Uuid>,
         limite: u64,
     ) -> AppResult<Vec<RentabilidadFila>>;
 
@@ -1002,7 +1002,7 @@ pub trait Transaction: Send + Sync {
     fn categorias(&self) -> &dyn CategoriaRepository;
     fn movimientos(&self) -> &dyn MovimientoRepository;
     fn clientes(&self) -> &dyn ClienteRepository;
-    fn obras(&self) -> &dyn ObraRepository;
+    fn proyectos(&self) -> &dyn ProyectoRepository;
     fn trabajos(&self) -> &dyn TrabajoRepository;
     fn facturas(&self) -> &dyn FacturaRepository;
     fn ordenes_trabajo(&self) -> &dyn OrdenTrabajoRepository;

@@ -35,13 +35,13 @@ pub mod tipos_concepto_pago {
 /// Accepted values of `adjuntos.entidad_tipo`. The relation is polymorphic and has no foreign
 /// key, so this list is the only thing keeping a typo from creating an unreachable attachment.
 pub mod entidad_adjunto {
-    pub const OBRA: &str = "Obra";
+    pub const PROYECTO: &str = "Proyecto";
     pub const TRABAJO: &str = "Trabajo";
     pub const FACTURA: &str = "Factura";
     pub const MOVIMIENTO: &str = "Movimiento";
     pub const EMPLEADO: &str = "Empleado";
 
-    pub const TODOS: [&str; 5] = [OBRA, TRABAJO, FACTURA, MOVIMIENTO, EMPLEADO];
+    pub const TODOS: [&str; 5] = [PROYECTO, TRABAJO, FACTURA, MOVIMIENTO, EMPLEADO];
 
     pub fn es_valido(valor: &str) -> bool {
         TODOS.contains(&valor)

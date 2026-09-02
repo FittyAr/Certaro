@@ -25,7 +25,7 @@ use certaro_application::use_cases::facturas::FacturasService;
 use certaro_application::use_cases::feriados::FeriadosService;
 use certaro_application::use_cases::liquidaciones::LiquidacionesService;
 use certaro_application::use_cases::movimientos::MovimientosService;
-use certaro_application::use_cases::obras::ObrasService;
+use certaro_application::use_cases::proyectos::ProyectosService;
 use certaro_application::use_cases::ordenes_trabajo::OrdenesTrabajoService;
 use certaro_application::use_cases::reportes::ReportesService;
 use certaro_application::use_cases::sistema::SistemaService;
@@ -43,7 +43,7 @@ pub struct Services {
     pub categorias: CategoriasService,
     pub movimientos: MovimientosService,
     pub clientes: ClientesService,
-    pub obras: ObrasService,
+    pub proyectos: ProyectosService,
     pub trabajos: TrabajosService,
     pub facturas: FacturasService,
     pub ordenes_trabajo: OrdenesTrabajoService,
@@ -86,7 +86,7 @@ impl Services {
                 Arc::clone(&ids),
             ),
             clientes: ClientesService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
-            obras: ObrasService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
+            proyectos: ProyectosService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
             trabajos: TrabajosService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
             facturas: FacturasService::new(
                 Arc::clone(&uow),

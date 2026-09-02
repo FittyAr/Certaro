@@ -9,7 +9,7 @@ use std::collections::HashSet;
 use chrono::NaiveDate;
 use certaro_domain::entities::{Factura, PagoFactura};
 use certaro_domain::{
-    recalcular_estado_factura, Audit, DomainError, EstadoFactura, EstadoObra, EstadoTrabajo, Money,
+    recalcular_estado_factura, Audit, DomainError, EstadoFactura, EstadoProyecto, EstadoTrabajo, Money,
     StateMachine,
 };
 use uuid::Uuid;
@@ -82,8 +82,8 @@ fn transiciones_legales_e_ilegales_de_factura() {
 }
 
 #[test]
-fn transiciones_legales_e_ilegales_de_obra() {
-    transiciones_exhaustivas(&EstadoObra::ALL);
+fn transiciones_legales_e_ilegales_de_proyecto() {
+    transiciones_exhaustivas(&EstadoProyecto::ALL);
 }
 
 #[test]
@@ -97,7 +97,7 @@ fn transicion_a_si_mismo_es_ok() {
     for estado in EstadoFactura::ALL {
         assert_eq!(estado.transition_to(estado).unwrap(), estado);
     }
-    for estado in EstadoObra::ALL {
+    for estado in EstadoProyecto::ALL {
         assert_eq!(estado.transition_to(estado).unwrap(), estado);
     }
     for estado in EstadoTrabajo::ALL {
@@ -116,7 +116,7 @@ fn los_unicos_terminales_son_los_de_factura() {
         vec![EstadoFactura::Pagada, EstadoFactura::Anulada]
     );
 
-    assert!(EstadoObra::ALL.into_iter().all(|e| !e.is_terminal()));
+    assert!(EstadoProyecto::ALL.into_iter().all(|e| !e.is_terminal()));
     assert!(EstadoTrabajo::ALL.into_iter().all(|e| !e.is_terminal()));
 }
 
@@ -127,7 +127,7 @@ fn as_key_es_unico_y_estable() {
         assert_eq!(claves.len(), todos.len());
     }
     unicas(&EstadoFactura::ALL);
-    unicas(&EstadoObra::ALL);
+    unicas(&EstadoProyecto::ALL);
     unicas(&EstadoTrabajo::ALL);
 
     // Stable: the keys are the last segment of an i18n key and of the wire contract.

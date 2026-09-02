@@ -34,7 +34,7 @@ impl StateMachine for EstadoTrabajo {
 impl EstadoTrabajo {
     /// Starting, resuming and reopening all require a running site (T-T02, T-T05, T-T10).
     /// Closing a job never does: shutting things down is always allowed.
-    pub const fn exige_obra_activa(destino: Self, origen: Self) -> bool {
+    pub const fn exige_proyecto_activo(destino: Self, origen: Self) -> bool {
         matches!(destino, Self::EnProceso)
             && matches!(
                 origen,

@@ -18,7 +18,7 @@ use uuid::Uuid;
 
 use crate::persistence::mappers::movimiento as mapper;
 use crate::persistence::models::{
-    categoria, cliente, empleado, factura, liquidacion_adelanto, movimiento as model, obra,
+    categoria, cliente, empleado, factura, liquidacion_adelanto, movimiento as model, proyecto,
     tipo_concepto_pago, tipo_movimiento, trabajo,
 };
 
@@ -68,7 +68,7 @@ struct RowConRelaciones {
     categoria_color: Option<String>,
     cliente_nombre: Option<String>,
     trabajo_descripcion: Option<String>,
-    obra_nombre: Option<String>,
+    proyecto_nombre: Option<String>,
     adelantos_count: i64,
 }
 
@@ -105,7 +105,7 @@ impl TryFrom<RowConRelaciones> for MovimientoConRelaciones {
             categoria_color: row.categoria_color,
             cliente_nombre: row.cliente_nombre,
             trabajo_descripcion: row.trabajo_descripcion,
-            obra_nombre: row.obra_nombre,
+            proyecto_nombre: row.proyecto_nombre,
             bloqueado_por_liquidacion: row.adelantos_count > 0,
         })
     }
@@ -204,7 +204,7 @@ fn base_query() -> sea_orm::Select<Entity> {
         .join(JoinType::LeftJoin, model::Relation::Categoria.def())
         .join(JoinType::LeftJoin, model::Relation::Cliente.def())
         .join(JoinType::LeftJoin, model::Relation::Trabajo.def())
-        .join(JoinType::LeftJoin, trabajo::Relation::Obra.def())
+        .join(JoinType::LeftJoin, trabajo::Relation::Proyecto.def())
         .column_as(
             Expr::col((cliente::Entity, cliente::Column::Nombre)),
             "cliente_nombre",
@@ -214,8 +214,8 @@ fn base_query() -> sea_orm::Select<Entity> {
             "trabajo_descripcion",
         )
         .column_as(
-            Expr::col((obra::Entity, obra::Column::Nombre)),
-            "obra_nombre",
+            Expr::col((proyecto::Entity, proyecto::Column::Nombre)),
+            "proyecto_nombre",
         )
         .column_as(
             Expr::col((tipo_movimiento::Entity, tipo_movimiento::Column::Nombre)),

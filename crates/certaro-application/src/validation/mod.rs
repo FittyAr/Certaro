@@ -10,7 +10,7 @@ pub mod empleados;
 pub mod facturas;
 pub mod liquidaciones;
 pub mod movimientos;
-pub mod obras;
+pub mod proyectos;
 pub mod ordenes_trabajo;
 pub mod tipos_movimiento;
 pub mod trabajos;

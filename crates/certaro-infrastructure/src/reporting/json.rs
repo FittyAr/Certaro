@@ -52,7 +52,7 @@ struct Item {
     #[serde(skip_serializing_if = "Option::is_none")]
     cliente: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    obra: Option<String>,
+    proyecto: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     trabajo: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -73,7 +73,7 @@ impl From<&MovimientoListItem> for Item {
             moneda: m.moneda.iso(),
             categoria: m.categoria_nombre.clone(),
             cliente: m.cliente_nombre.clone(),
-            obra: m.obra_nombre.clone(),
+            proyecto: m.proyecto_nombre.clone(),
             trabajo: m.trabajo_descripcion.clone(),
             cotizacion_aplicada: m.cotizacion_aplicada.map(|c| c.to_decimal_string()),
         }

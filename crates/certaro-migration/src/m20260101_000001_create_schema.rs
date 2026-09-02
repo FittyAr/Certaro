@@ -98,7 +98,7 @@ CREATE UNIQUE INDEX ux_cliente_contactos_cliente_email
     ON cliente_contactos (cliente_id, email) WHERE is_deleted = 0;
 CREATE INDEX ix_cliente_contactos_is_deleted ON cliente_contactos (is_deleted);
 
-CREATE TABLE obras (
+CREATE TABLE proyectos (
     id          TEXT    NOT NULL PRIMARY KEY,
     numero      INTEGER NOT NULL,
     nombre      TEXT    NOT NULL,
@@ -111,17 +111,17 @@ CREATE TABLE obras (
     row_version BLOB    NOT NULL DEFAULT X'0000000000000001',
     is_deleted  INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0,1)),
     deleted_at  TEXT        NULL,
-    CONSTRAINT fk_obras_cliente FOREIGN KEY (cliente_id)
+    CONSTRAINT fk_proyectos_cliente FOREIGN KEY (cliente_id)
         REFERENCES clientes (id) ON DELETE RESTRICT
 );
-CREATE UNIQUE INDEX ux_obras_numero ON obras (numero);
-CREATE INDEX ix_obras_cliente_id ON obras (cliente_id);
-CREATE INDEX ix_obras_estado ON obras (estado);
-CREATE INDEX ix_obras_is_deleted ON obras (is_deleted);
+CREATE UNIQUE INDEX ux_proyectos_numero ON proyectos (numero);
+CREATE INDEX ix_proyectos_cliente_id ON proyectos (cliente_id);
+CREATE INDEX ix_proyectos_estado ON proyectos (estado);
+CREATE INDEX ix_proyectos_is_deleted ON proyectos (is_deleted);
 
 CREATE TABLE trabajos (
     id           TEXT    NOT NULL PRIMARY KEY,
-    obra_id      TEXT    NOT NULL,
+    proyecto_id      TEXT    NOT NULL,
     descripcion  TEXT    NOT NULL,
     fecha_inicio TEXT    NOT NULL,
     fecha_fin    TEXT        NULL,
@@ -132,10 +132,10 @@ CREATE TABLE trabajos (
     row_version  BLOB    NOT NULL DEFAULT X'0000000000000001',
     is_deleted   INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0,1)),
     deleted_at   TEXT        NULL,
-    CONSTRAINT fk_trabajos_obra FOREIGN KEY (obra_id)
-        REFERENCES obras (id) ON DELETE RESTRICT
+    CONSTRAINT fk_trabajos_proyecto FOREIGN KEY (proyecto_id)
+        REFERENCES proyectos (id) ON DELETE RESTRICT
 );
-CREATE INDEX ix_trabajos_obra_id ON trabajos (obra_id);
+CREATE INDEX ix_trabajos_proyecto_id ON trabajos (proyecto_id);
 CREATE INDEX ix_trabajos_estado ON trabajos (estado);
 CREATE INDEX ix_trabajos_fecha_inicio ON trabajos (fecha_inicio);
 CREATE INDEX ix_trabajos_is_deleted ON trabajos (is_deleted);
@@ -475,7 +475,7 @@ DROP TABLE IF EXISTS facturas;
 DROP TABLE IF EXISTS orden_trabajo_items;
 DROP TABLE IF EXISTS ordenes_trabajo;
 DROP TABLE IF EXISTS trabajos;
-DROP TABLE IF EXISTS obras;
+DROP TABLE IF EXISTS proyectos;
 DROP TABLE IF EXISTS cliente_contactos;
 DROP TABLE IF EXISTS clientes;
 DROP TABLE IF EXISTS categorias;

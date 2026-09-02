@@ -6,7 +6,7 @@
 //! targets instead of listing the enum.
 
 mod factura;
-mod obra;
+mod proyecto;
 mod trabajo;
 
 pub use factura::recalcular_estado_factura;

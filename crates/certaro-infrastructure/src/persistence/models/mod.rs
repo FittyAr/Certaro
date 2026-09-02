@@ -25,7 +25,7 @@ pub mod feriado;
 pub mod liquidacion;
 pub mod liquidacion_adelanto;
 pub mod movimiento;
-pub mod obra;
+pub mod proyecto;
 pub mod orden_trabajo;
 pub mod orden_trabajo_item;
 pub mod pago_factura;

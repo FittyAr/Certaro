@@ -17,7 +17,7 @@ use uuid::Uuid;
 
 use crate::persistence::mappers::cliente as mapper;
 use crate::persistence::models::cliente::{self as model, Column, Entity};
-use crate::persistence::models::{cliente_contacto, factura, movimiento, obra, pago_factura};
+use crate::persistence::models::{cliente_contacto, factura, movimiento, proyecto, pago_factura};
 
 use super::estado_deuda_ids;
 
@@ -66,7 +66,7 @@ struct RowConResumen {
     row_version: Vec<u8>,
     is_deleted: bool,
     deleted_at: Option<String>,
-    obras_count: i64,
+    proyectos_count: i64,
     facturas_count: i64,
     deuda: i64,
 }
@@ -91,7 +91,7 @@ impl TryFrom<RowConResumen> for ClienteConResumen {
         };
         Ok(Self {
             cliente: mapper::to_domain(model)?,
-            obras_count: row.obras_count.max(0) as u64,
+            proyectos_count: row.proyectos_count.max(0) as u64,
             facturas_count: row.facturas_count.max(0) as u64,
             deuda: Money::from_raw(row.deuda),
         })
@@ -126,17 +126,17 @@ fn filtro_condition(filtro: &ClienteFiltro) -> Condition {
     c
 }
 
-fn obras_count_expr() -> SimpleExpr {
+fn proyectos_count_expr() -> SimpleExpr {
     SimpleExpr::SubQuery(
         None,
         Box::new(
             Query::select()
-                .expr(Expr::col(obra::Column::Id).count())
-                .from(obra::Entity)
+                .expr(Expr::col(proyecto::Column::Id).count())
+                .from(proyecto::Entity)
                 .and_where(
-                    Expr::col((obra::Entity, obra::Column::ClienteId)).equals((Entity, Column::Id)),
+                    Expr::col((proyecto::Entity, proyecto::Column::ClienteId)).equals((Entity, Column::Id)),
                 )
-                .and_where(Expr::col((obra::Entity, obra::Column::IsDeleted)).eq(false))
+                .and_where(Expr::col((proyecto::Entity, proyecto::Column::IsDeleted)).eq(false))
                 .take()
                 .into_sub_query_statement(),
         ),
@@ -248,14 +248,14 @@ impl ClienteRepository for SeaOrmClienteRepository {
 
         let mut query = Entity::find()
             .filter(condition.clone())
-            .column_as(obras_count_expr(), "obras_count")
+            .column_as(proyectos_count_expr(), "proyectos_count")
             .column_as(facturas_count_expr(), "facturas_count")
             .column_as(deuda_expr(), "deuda");
 
         query = match sort_by {
             Some("cuit") => query.order_by(lower(Column::Cuit), order),
             Some("deuda") => query.order_by(Expr::col(Alias::new("deuda")), order),
-            Some("obrasCount") => query.order_by(Expr::col(Alias::new("obras_count")), order),
+            Some("proyectosCount") => query.order_by(Expr::col(Alias::new("proyectos_count")), order),
             Some("facturasCount") => query.order_by(Expr::col(Alias::new("facturas_count")), order),
             Some("createdAt") => query.order_by(Column::CreatedAt, order),
             _ => query.order_by(lower(Column::Nombre), order),
@@ -408,10 +408,10 @@ impl ClienteRepository for SeaOrmClienteRepository {
         Ok(())
     }
 
-    async fn count_obras(&self, id: Uuid) -> AppResult<u64> {
-        obra::Entity::find()
-            .filter(obra::Column::ClienteId.eq(id.to_string()))
-            .filter(obra::Column::IsDeleted.eq(false))
+    async fn count_proyectos(&self, id: Uuid) -> AppResult<u64> {
+        proyecto::Entity::find()
+            .filter(proyecto::Column::ClienteId.eq(id.to_string()))
+            .filter(proyecto::Column::IsDeleted.eq(false))
             .count(self.conn())
             .await
             .map_err(AppError::persistence)

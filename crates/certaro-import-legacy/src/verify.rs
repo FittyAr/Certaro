@@ -115,7 +115,7 @@ async fn verify_invariants(db: &DatabaseTransaction, report: &mut ImportReport) 
         "movimientos",
         "facturas",
         "clientes",
-        "obras",
+        "proyectos",
         "trabajos",
         "empleados",
     ] {

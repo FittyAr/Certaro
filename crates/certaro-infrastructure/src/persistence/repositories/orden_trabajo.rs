@@ -17,7 +17,7 @@ use crate::persistence::mappers::orden_trabajo as mapper;
 use crate::persistence::mappers::{self as common};
 use crate::persistence::models::orden_trabajo::{self as model, Column, Entity};
 use crate::persistence::models::{
-    certificado, certificado_item, cliente, obra, orden_trabajo_item, trabajo,
+    certificado, certificado_item, cliente, proyecto, orden_trabajo_item, trabajo,
 };
 
 const ENTITY: &str = "OrdenTrabajo";
@@ -65,9 +65,9 @@ struct RowConRelaciones {
     is_deleted: bool,
     deleted_at: Option<String>,
     trabajo_descripcion: String,
-    obra_id: String,
-    obra_numero: i32,
-    obra_nombre: String,
+    proyecto_id: String,
+    proyecto_numero: i32,
+    proyecto_nombre: String,
     cliente_id: String,
     cliente_nombre: String,
 }
@@ -94,9 +94,9 @@ impl RowConRelaciones {
         Ok(OrdenTrabajoConRelaciones {
             orden,
             trabajo_descripcion: self.trabajo_descripcion,
-            obra_id: common::uuid(&self.obra_id)?,
-            obra_numero: self.obra_numero,
-            obra_nombre: self.obra_nombre,
+            proyecto_id: common::uuid(&self.proyecto_id)?,
+            proyecto_numero: self.proyecto_numero,
+            proyecto_nombre: self.proyecto_nombre,
             cliente_id: common::uuid(&self.cliente_id)?,
             cliente_nombre: self.cliente_nombre,
             certificados_count: 0,
@@ -119,16 +119,16 @@ fn trabajo_join() -> sea_orm::RelationDef {
         .into()
 }
 
-fn obra_join() -> sea_orm::RelationDef {
-    trabajo::Entity::belongs_to(obra::Entity)
-        .from(trabajo::Column::ObraId)
-        .to(obra::Column::Id)
+fn proyecto_join() -> sea_orm::RelationDef {
+    trabajo::Entity::belongs_to(proyecto::Entity)
+        .from(trabajo::Column::ProyectoId)
+        .to(proyecto::Column::Id)
         .into()
 }
 
 fn cliente_join() -> sea_orm::RelationDef {
-    obra::Entity::belongs_to(cliente::Entity)
-        .from(obra::Column::ClienteId)
+    proyecto::Entity::belongs_to(cliente::Entity)
+        .from(proyecto::Column::ClienteId)
         .to(cliente::Column::Id)
         .into()
 }
@@ -136,20 +136,20 @@ fn cliente_join() -> sea_orm::RelationDef {
 fn base_query() -> sea_orm::Select<Entity> {
     Entity::find()
         .join(JoinType::InnerJoin, trabajo_join())
-        .join(JoinType::InnerJoin, obra_join())
+        .join(JoinType::InnerJoin, proyecto_join())
         .join(JoinType::InnerJoin, cliente_join())
         .column_as(
             Expr::col((trabajo::Entity, trabajo::Column::Descripcion)),
             "trabajo_descripcion",
         )
-        .column_as(Expr::col((obra::Entity, obra::Column::Id)), "obra_id")
+        .column_as(Expr::col((proyecto::Entity, proyecto::Column::Id)), "proyecto_id")
         .column_as(
-            Expr::col((obra::Entity, obra::Column::Numero)),
-            "obra_numero",
+            Expr::col((proyecto::Entity, proyecto::Column::Numero)),
+            "proyecto_numero",
         )
         .column_as(
-            Expr::col((obra::Entity, obra::Column::Nombre)),
-            "obra_nombre",
+            Expr::col((proyecto::Entity, proyecto::Column::Nombre)),
+            "proyecto_nombre",
         )
         .column_as(
             Expr::col((cliente::Entity, cliente::Column::Id)),

@@ -56,7 +56,7 @@ async fn las_migraciones_crean_las_veintiuna_tablas() {
             "liquidacion_adelantos",
             "liquidaciones",
             "movimientos",
-            "obras",
+            "proyectos",
             "orden_trabajo_items",
             "ordenes_trabajo",
             "pagos_factura",
@@ -106,8 +106,8 @@ async fn todo_on_delete_coincide_con_el_documento() {
     let esperado: BTreeMap<(&str, &str), &str> = BTreeMap::from([
         (("categorias", "categoria_padre_id"), "RESTRICT"),
         (("cliente_contactos", "cliente_id"), "CASCADE"),
-        (("obras", "cliente_id"), "RESTRICT"),
-        (("trabajos", "obra_id"), "RESTRICT"),
+        (("proyectos", "cliente_id"), "RESTRICT"),
+        (("trabajos", "proyecto_id"), "RESTRICT"),
         (("ordenes_trabajo", "trabajo_id"), "CASCADE"),
         (("orden_trabajo_items", "orden_trabajo_id"), "CASCADE"),
         (("certificados", "orden_trabajo_id"), "CASCADE"),
@@ -221,20 +221,20 @@ async fn no_se_puede_borrar_un_tipo_de_movimiento_en_uso() {
 }
 
 #[tokio::test]
-async fn un_numero_de_obra_borrado_sigue_reservado() {
+async fn un_numero_de_proyecto_borrado_sigue_reservado() {
     let db = open_in_memory().await.unwrap();
     db.execute_unprepared(
         "INSERT INTO clientes (id, nombre, created_at) VALUES ('cl1','Acme','2026-01-01T00:00:00.000Z');
-         INSERT INTO obras (id, numero, nombre, cliente_id, created_at, is_deleted) \
-             VALUES ('o1', 7, 'Obra vieja', 'cl1', '2026-01-01T00:00:00.000Z', 1);",
+         INSERT INTO proyectos (id, numero, nombre, cliente_id, created_at, is_deleted) \
+             VALUES ('o1', 7, 'Proyecto vieja', 'cl1', '2026-01-01T00:00:00.000Z', 1);",
     )
     .await
     .unwrap();
 
     let error = db
         .execute_unprepared(
-            "INSERT INTO obras (id, numero, nombre, cliente_id, created_at) \
-             VALUES ('o2', 7, 'Obra nueva', 'cl1', '2026-01-01T00:00:00.000Z')",
+            "INSERT INTO proyectos (id, numero, nombre, cliente_id, created_at) \
+             VALUES ('o2', 7, 'Proyecto nueva', 'cl1', '2026-01-01T00:00:00.000Z')",
         )
         .await
         .unwrap_err();

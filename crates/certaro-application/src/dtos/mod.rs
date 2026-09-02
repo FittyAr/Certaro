@@ -14,7 +14,7 @@ pub mod facturas;
 pub mod feriados;
 pub mod liquidaciones;
 pub mod movimientos;
-pub mod obras;
+pub mod proyectos;
 pub mod ordenes_trabajo;
 pub mod reportes;
 pub mod tipos_movimiento;

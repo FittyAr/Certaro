@@ -112,8 +112,8 @@ mod tests {
     fn un_nombre_normal_no_se_toca() {
         assert_eq!(sanitize("factura_luz.pdf"), "factura_luz.pdf");
         assert_eq!(
-            sanitize("Presupuesto Obra Sur.xlsx"),
-            "Presupuesto Obra Sur.xlsx"
+            sanitize("Presupuesto Proyecto Sur.xlsx"),
+            "Presupuesto Proyecto Sur.xlsx"
         );
     }
 

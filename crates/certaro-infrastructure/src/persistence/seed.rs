@@ -1,7 +1,7 @@
 //! Seeding engine for development and testing demo data.
 //!
 //! Generates a rich, realistic dataset including categories, custom movement types,
-//! employees, attendance records, clients with contacts, sites (obras), jobs (trabajos),
+//! employees, attendance records, clients with contacts, sites (proyectos), jobs (trabajos),
 //! work orders, items, certificates, invoices, invoice payments, cash ledger movements,
 //! payroll settlements, settlement advance links, holidays, and sample attachments.
 
@@ -19,7 +19,7 @@ use uuid::Uuid;
 use crate::persistence::models::{
     adjunto, asistencia_empleado, categoria, certificado, certificado_item, cliente,
     cliente_contacto, empleado, factura, feriado, liquidacion, liquidacion_adelanto, movimiento,
-    obra, orden_trabajo, orden_trabajo_item, pago_factura, tipo_movimiento, trabajo,
+    proyecto, orden_trabajo, orden_trabajo_item, pago_factura, tipo_movimiento, trabajo,
 };
 
 #[derive(Debug, Clone, Serialize)]
@@ -31,7 +31,7 @@ pub struct SeedSummary {
     pub asistencias: usize,
     pub clientes: usize,
     pub contactos: usize,
-    pub obras: usize,
+    pub proyectos: usize,
     pub trabajos: usize,
     pub ordenes_trabajo: usize,
     pub orden_trabajo_items: usize,
@@ -51,9 +51,9 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
     let now = Utc::now().to_rfc3339();
 
     // Idempotency: if seed data already exists, no-op (avoids UNIQUE violations on re-run).
-    // We check `obras.numero = 1` which is the first seeded obra.
-    let already_seeded = obra::Entity::find()
-        .filter(obra::Column::Numero.eq(1_i32))
+    // We check `proyectos.numero = 1` which is the first seeded proyecto.
+    let already_seeded = proyecto::Entity::find()
+        .filter(proyecto::Column::Numero.eq(1_i32))
         .one(&tx)
         .await
         .map_err(AppError::persistence)?;
@@ -66,7 +66,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             asistencias: 0,
             clientes: 0,
             contactos: 0,
-            obras: 0,
+            proyectos: 0,
             trabajos: 0,
             ordenes_trabajo: 0,
             orden_trabajo_items: 0,
@@ -146,11 +146,11 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
 
     // 3. Empleados (valores Money en escala 4: $450.000 = 4_500_000_000)
     let empleados_data = [
-        ("Ricardo Darín", "20.123.456", "Operario Electricista", 4_500_000_000_i64, 450_000_000_i64, "1145678901", "ricardo.darin@obra.com"),
-        ("Guillermo Francella", "22.345.678", "Capataz de Obra", 5_500_000_000_i64, 550_000_000_i64, "1145678902", "guillermo.francella@obra.com"),
-        ("Natalia Oreiro", "25.678.901", "Técnica Instaladora", 4_800_000_000_i64, 480_000_000_i64, "1145678903", "natalia.oreiro@obra.com"),
-        ("Diego Peretti", "18.901.234", "Ayudante Práctico", 3_800_000_000_i64, 380_000_000_i64, "1145678904", "diego.peretti@obra.com"),
-        ("Érica Rivas", "27.234.567", "Administrativa de Obra", 4_200_000_000_i64, 420_000_000_i64, "1145678905", "erica.rivas@obra.com"),
+        ("Ricardo Darín", "20.123.456", "Operario Electricista", 4_500_000_000_i64, 450_000_000_i64, "1145678901", "ricardo.darin@proyecto.com"),
+        ("Guillermo Francella", "22.345.678", "Capataz de Proyecto", 5_500_000_000_i64, 550_000_000_i64, "1145678902", "guillermo.francella@proyecto.com"),
+        ("Natalia Oreiro", "25.678.901", "Técnica Instaladora", 4_800_000_000_i64, 480_000_000_i64, "1145678903", "natalia.oreiro@proyecto.com"),
+        ("Diego Peretti", "18.901.234", "Ayudante Práctico", 3_800_000_000_i64, 380_000_000_i64, "1145678904", "diego.peretti@proyecto.com"),
+        ("Érica Rivas", "27.234.567", "Administrativa de Proyecto", 4_200_000_000_i64, 420_000_000_i64, "1145678905", "erica.rivas@proyecto.com"),
     ];
 
     let mut empleados_ids = Vec::new();
@@ -231,18 +231,18 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
         clientes_ids.push(id);
     }
 
-    // 5. Obras
-    let obras_data = [
+    // 5. Proyectos
+    let proyectos_data = [
         ("Instalación Eléctrica Integral Torre Alvear", "Av. Alvear 1890", "CABA", &clientes_ids[2], 1, 1), // Activa
         ("Iluminación y Fuerza Motriz Planta del Plata", "Parque Industrial Norte", "Tigre", &clientes_ids[0], 2, 1), // Activa
         ("Cableado Estructurado Oficinas Centro", "San Martín 567", "Rosario", &clientes_ids[1], 3, 3), // Finalizada
         ("Refacción y Tablero Eléctrico Domiciliario", "Belgrano 432", "San Isidro", &clientes_ids[3], 4, 1), // Activa
     ];
 
-    let mut obras_ids = Vec::new();
-    for (nombre, dir, loc, cli_id, num, estado) in obras_data {
+    let mut proyectos_ids = Vec::new();
+    for (nombre, dir, loc, cli_id, num, estado) in proyectos_data {
         let id = Uuid::now_v7().to_string();
-        let ob = obra::ActiveModel {
+        let ob = proyecto::ActiveModel {
             id: Set(id.clone()),
             numero: Set(num),
             nombre: Set(nombre.to_string()),
@@ -257,24 +257,24 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             deleted_at: Set(None),
         };
         ob.insert(&tx).await.map_err(AppError::persistence)?;
-        obras_ids.push(id);
+        proyectos_ids.push(id);
     }
 
     // 6. Trabajos
     let trabajos_data = [
-        (&obras_ids[0], "Tendido de bandejas portacables en subsuelos", "2025-02-01", 18_500_000_000_i64, 2), // EnProceso
-        (&obras_ids[0], "Montaje de tableros seccionales por piso", "2025-02-10", 32_000_000_000_i64, 2), // EnProceso
-        (&obras_ids[1], "Iluminación perimetral LED alta potencia", "2025-01-20", 9_500_000_000_i64, 3), // Finalizado
-        (&obras_ids[2], "Puestos de red Cat6 y rack central", "2025-01-10", 14_000_000_000_i64, 3), // Finalizado
-        (&obras_ids[3], "Recableado completo y disyuntor diferencial", "2025-02-15", 6_500_000_000_i64, 2), // EnProceso
+        (&proyectos_ids[0], "Tendido de bandejas portacables en subsuelos", "2025-02-01", 18_500_000_000_i64, 2), // EnProceso
+        (&proyectos_ids[0], "Montaje de tableros seccionales por piso", "2025-02-10", 32_000_000_000_i64, 2), // EnProceso
+        (&proyectos_ids[1], "Iluminación perimetral LED alta potencia", "2025-01-20", 9_500_000_000_i64, 3), // Finalizado
+        (&proyectos_ids[2], "Puestos de red Cat6 y rack central", "2025-01-10", 14_000_000_000_i64, 3), // Finalizado
+        (&proyectos_ids[3], "Recableado completo y disyuntor diferencial", "2025-02-15", 6_500_000_000_i64, 2), // EnProceso
     ];
 
     let mut trabajos_ids = Vec::new();
-    for (obra_id, desc, fecha_ini, presup, estado) in trabajos_data {
+    for (proyecto_id, desc, fecha_ini, presup, estado) in trabajos_data {
         let id = Uuid::now_v7().to_string();
         let trab = trabajo::ActiveModel {
             id: Set(id.clone()),
-            obra_id: Set(obra_id.clone()),
+            proyecto_id: Set(proyecto_id.clone()),
             descripcion: Set(desc.to_string()),
             fecha_inicio: Set(fecha_ini.to_string()),
             fecha_fin: Set(if estado == 3 { Some("2025-02-25".to_string()) } else { None }),
@@ -332,7 +332,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
                 fecha: Set(fecha_asist),
                 tipo_jornada: Set(tipo_jornada),
                 trabajo_id: Set(Some(trabajos_ids[emp_idx % trabajos_ids.len()].clone())),
-                observaciones: Set(Some("Jornada cumplida en obra".to_string())),
+                observaciones: Set(Some("Jornada cumplida en proyecto".to_string())),
                 created_at: Set(now.clone()),
                 updated_at: Set(None),
                 row_version: Set(RowVersion::INITIAL.as_bytes().to_vec()),
@@ -356,7 +356,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             titulo: Set(format!("Certificación de Avance Etapa {}", i + 1)),
             numero_certificado: Set(Some(format!("CERT-{:03}", i + 1))),
             fecha: Set("2025-02-20".to_string()),
-            observaciones: Set(Some("Avance verificado en obra con dirección facultativa".to_string())),
+            observaciones: Set(Some("Avance verificado en proyecto con dirección facultativa".to_string())),
             ajuste_uocra_porcentaje: Set(80_000), // 8.0%
             otros_descuentos: Set(0),
             created_at: Set(now.clone()),
@@ -424,7 +424,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             orden_trabajo_id: Set(ot_id.clone()),
             numero: Set((i + 1) as i32),
             fecha: Set("2025-02-22".to_string()),
-            observaciones: Set(Some("Certificado de obra aprobado".to_string())),
+            observaciones: Set(Some("Certificado de proyecto aprobado".to_string())),
             total_certificado: Set(18_500_000_000),
             ajuste_uocra: Set(1_480_000_000),
             otros_descuentos: Set(0),
@@ -513,7 +513,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
     let movimientos_data = [
         // Ingresos
         ("Cobro Certificado N.º 1 Torre Alvear", 14_520_000_000_i64, 10_000_i64, &ingreso_sistema, Some(&categorias_ids[4]), Some(&clientes_ids[2]), Some(&trabajos_ids[0]), None, Some(&facturas_ids[1])),
-        ("Anticipo Obra Planta del Plata", 5_000_000_000_i64, 10_000_i64, &ingreso_sistema, Some(&categorias_ids[4]), Some(&clientes_ids[0]), Some(&trabajos_ids[2]), None, None),
+        ("Anticipo Proyecto Planta del Plata", 5_000_000_000_i64, 10_000_i64, &ingreso_sistema, Some(&categorias_ids[4]), Some(&clientes_ids[0]), Some(&trabajos_ids[2]), None, None),
         ("Venta de cables sobrantes de cobre", 850_000_000_i64, 10_000_i64, &tipos_ids[0], Some(&categorias_ids[0]), None, None, None, None),
         // Gastos
         ("Compra de cables sintetizados y termomagnéticas", 3_400_000_000_i64, 10_000_i64, &egreso_sistema, Some(&categorias_ids[1]), None, Some(&trabajos_ids[0]), None, None),
@@ -637,7 +637,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
 
     // 14. Adjuntos de Prueba
     let adjuntos_data = [
-        ("Obra", &obras_ids[0], "plano_unifilar_torre_alvear.pdf", "obras/plano_unifilar.pdf", "application/pdf", 1_048_576),
+        ("Proyecto", &proyectos_ids[0], "plano_unifilar_torre_alvear.pdf", "proyectos/plano_unifilar.pdf", "application/pdf", 1_048_576),
         ("Factura", &facturas_ids[1], "comprobante_transferencia_102.pdf", "facturas/comprobante_102.pdf", "application/pdf", 256_000),
         ("Empleado", &empleados_ids[0], "constancia_alta_afip_darin.pdf", "empleados/alta_afip_darin.pdf", "application/pdf", 512_000),
     ];
@@ -671,7 +671,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
         asistencias: asistencias_count,
         clientes: clientes_ids.len(),
         contactos: contactos_count,
-        obras: obras_ids.len(),
+        proyectos: proyectos_ids.len(),
         trabajos: trabajos_ids.len(),
         ordenes_trabajo: ordenes_ids.len(),
         orden_trabajo_items: items_ids.len(),

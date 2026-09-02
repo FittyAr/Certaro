@@ -74,15 +74,15 @@ async fn populate_legacy(pool: &sqlx::SqlitePool, scaled: bool) {
          VALUES ('e0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', 'ventas@acme.com', 'Ventas', '2026-01-05 09:00:00', '2026-01-05 09:00:00', X'0000000000000001', 0)"
     ).execute(pool).await.unwrap();
 
-    // Obras.
+    // Proyectos.
     sqlx::query(
-        "INSERT INTO Obras (Id, Numero, Nombre, Direccion, Localidad, ClienteId, Estado, CreatedAt, UpdatedAt, RowVersion, IsDeleted) \
+        "INSERT INTO Proyectos (Id, Numero, Nombre, Direccion, Localidad, ClienteId, Estado, CreatedAt, UpdatedAt, RowVersion, IsDeleted) \
          VALUES ('f0000000-0000-0000-0000-000000000001', 1, 'Edificio Sur', 'Calle Falsa 123', 'CABA', 'd0000000-0000-0000-0000-000000000001', 0, '2026-01-10 10:00:00', '2026-01-10 10:00:00', X'0000000000000001', 0)"
     ).execute(pool).await.unwrap();
 
     // Trabajos.
     sqlx::query(&format!(
-        "INSERT INTO Trabajos (Id, ObraId, Descripcion, Presupuesto, FechaInicio, FechaFin, Estado, CreatedAt, UpdatedAt, RowVersion, IsDeleted) \
+        "INSERT INTO Trabajos (Id, ProyectoId, Descripcion, Presupuesto, FechaInicio, FechaFin, Estado, CreatedAt, UpdatedAt, RowVersion, IsDeleted) \
          VALUES ('11000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', 'Tablero eléctrico', {}, '2026-02-01 00:00:00', NULL, 0, '2026-01-15 11:00:00', '2026-01-15 11:00:00', X'0000000000000001', 0)",
         500_000 * factor
     )).execute(pool).await.unwrap();
@@ -650,7 +650,7 @@ CREATE TABLE IF NOT EXISTS ClienteContactos (
     IsDeleted INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE TABLE IF NOT EXISTS Obras (
+CREATE TABLE IF NOT EXISTS Proyectos (
     Id TEXT PRIMARY KEY,
     Numero INTEGER NOT NULL,
     Nombre TEXT NOT NULL,
@@ -667,7 +667,7 @@ CREATE TABLE IF NOT EXISTS Obras (
 
 CREATE TABLE IF NOT EXISTS Trabajos (
     Id TEXT PRIMARY KEY,
-    ObraId TEXT NOT NULL,
+    ProyectoId TEXT NOT NULL,
     Descripcion TEXT NOT NULL,
     Presupuesto INTEGER NOT NULL DEFAULT 0,
     FechaInicio TEXT NOT NULL,
