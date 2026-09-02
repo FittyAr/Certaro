@@ -38,7 +38,7 @@ sea-orm = { version = "1", features = [
     "with-uuid",
     "with-chrono",
 ] }
-sea-orm-migration = { version = "1", features = ["sqlx-sqlite", "runtime-tokio-rustls"] }
+sea-orm-migration = { version = "2", features = ["sqlx-sqlite", "runtime-tokio-rustls"] }
 sqlx = { version = "0.8", default-features = false, features = ["sqlite", "runtime-tokio-rustls"] }
 
 # Serialization
