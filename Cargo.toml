@@ -87,8 +87,8 @@ tauri-plugin-opener = "2"
 
 # Testing
 tokio-test = "0.4"
-mockall = "0.13"
-rstest = "0.23"
+mockall = "0.15"
+rstest = "0.26"
 proptest = "1"
 wiremock = "0.6"
 insta = { version = "1", features = ["json"] }
