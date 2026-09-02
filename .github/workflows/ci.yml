@@ -53,6 +53,8 @@ jobs:
       # A separate step from lint so the failure names the missing key and the file.
       - run: pnpm i18n:check
       - run: pnpm test
+        env:
+          VITE_PRIMEUI_LICENSE_KEY: ${{ secrets.PRIMEUI_KEY }}
 
   build:
     needs: [rust, frontend]
