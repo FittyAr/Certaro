@@ -18,7 +18,6 @@ use printpdf::{
 };
 
 use super::theme::{self, Rgb};
-use crate::reporting::io_error;
 
 /// Multiplier from font size to line height. 1.2 is the usual typographic default and matches the
 /// spacing of the tables in the paper forms these reports reproduce.
