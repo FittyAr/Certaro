@@ -55,10 +55,10 @@ describe('menú y rutas', () => {
       'clientes',
       'proyectos',
       'trabajos',
+      'kanban',
       'certificados',
       'facturas',
       'empleados',
-      'asistencia',
     ])
   })
 

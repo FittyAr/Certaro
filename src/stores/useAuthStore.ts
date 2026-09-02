@@ -25,7 +25,6 @@ import {
   type UsuarioConDetalleDto,
   type RolConPermisosDto,
   type LoginRequest,
-  type LoginResponse,
   type CrearUsuarioInput,
   type ActualizarUsuarioInput,
   type CrearRolInput,
@@ -33,7 +32,7 @@ import {
   type Configurar2faResponse,
   type Verificar2faInput,
 } from '@/api/auth'
-import type { RowVersion, Uuid } from '@/api/types'
+import type { Uuid } from '@/api/types'
 
 export type {
   UsuarioDto,

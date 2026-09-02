@@ -25,6 +25,7 @@ use certaro_application::use_cases::dashboard::DashboardService;
 use certaro_application::use_cases::empleados::EmpleadosService;
 use certaro_application::use_cases::facturas::FacturasService;
 use certaro_application::use_cases::feriados::FeriadosService;
+use certaro_application::use_cases::kanban::KanbanService;
 use certaro_application::use_cases::liquidaciones::LiquidacionesService;
 use certaro_application::use_cases::movimientos::MovimientosService;
 use certaro_application::use_cases::proyectos::ProyectosService;
@@ -62,6 +63,7 @@ pub struct Services {
     pub sistema: SistemaService,
     pub configuracion: ConfiguracionService,
     pub auth: AuthService,
+    pub kanban: KanbanService,
 }
 
 impl Services {
@@ -182,6 +184,7 @@ impl Services {
                 tokens,
                 totp,
             ),
+            kanban: KanbanService::new(Arc::clone(&uow), Arc::clone(&clock), Arc::clone(&ids)),
             movimientos: MovimientosService::new(uow, clock, ids, settings),
         }
     }

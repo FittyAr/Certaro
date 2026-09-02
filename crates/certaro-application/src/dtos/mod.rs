@@ -13,6 +13,7 @@ pub mod dashboard;
 pub mod empleados;
 pub mod facturas;
 pub mod feriados;
+pub mod kanban;
 pub mod liquidaciones;
 pub mod movimientos;
 pub mod proyectos;

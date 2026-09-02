@@ -12,6 +12,7 @@ pub mod cliente;
 pub mod empleado;
 pub mod factura;
 pub mod feriado;
+pub mod kanban;
 pub mod liquidacion;
 pub mod movimiento;
 pub mod proyecto;

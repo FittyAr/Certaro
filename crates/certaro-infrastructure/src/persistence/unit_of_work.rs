@@ -9,10 +9,11 @@ use async_trait::async_trait;
 use certaro_application::ports::repositories::{
     AdjuntoRepository, AsistenciaRepository, AuthExternoRepository, CategoriaRepository,
     CertificadoRepository, ClienteRepository, DashboardRepository, EmpleadoRepository,
-    FacturaRepository, FeriadoRepository, LiquidacionRepository, MetadataRepository,
-    MovimientoRepository, OrdenTrabajoRepository, PermisoRepository, ProyectoRepository,
-    RolRepository, SesionRepository, TipoMovimientoRepository, TrabajoRepository, Transaction,
-    UnitOfWork, UsuarioRepository,
+    FacturaRepository, FeriadoRepository, KanbanChecklistRepository, KanbanColumnaRepository,
+    KanbanEtiquetaRepository, KanbanTableroRepository, KanbanTarjetaRepository,
+    LiquidacionRepository, MetadataRepository, MovimientoRepository, OrdenTrabajoRepository,
+    PermisoRepository, ProyectoRepository, RolRepository, SesionRepository,
+    TipoMovimientoRepository, TrabajoRepository, Transaction, UnitOfWork, UsuarioRepository,
 };
 use certaro_application::{AppError, AppResult};
 use sea_orm::{DatabaseTransaction, TransactionTrait};
@@ -31,6 +32,11 @@ use crate::persistence::repositories::dashboard::SeaOrmDashboardRepository;
 use crate::persistence::repositories::empleado::SeaOrmEmpleadoRepository;
 use crate::persistence::repositories::factura::SeaOrmFacturaRepository;
 use crate::persistence::repositories::feriado::SeaOrmFeriadoRepository;
+use crate::persistence::repositories::kanban::{
+    SeaOrmKanbanChecklistRepository, SeaOrmKanbanColumnaRepository,
+    SeaOrmKanbanEtiquetaRepository, SeaOrmKanbanTableroRepository,
+    SeaOrmKanbanTarjetaRepository,
+};
 use crate::persistence::repositories::liquidacion::SeaOrmLiquidacionRepository;
 use crate::persistence::repositories::metadata::SeaOrmMetadataRepository;
 use crate::persistence::repositories::movimiento::SeaOrmMovimientoRepository;
@@ -92,6 +98,11 @@ pub struct SeaOrmTransaction {
     permisos: SeaOrmPermisoRepository,
     sesiones: SeaOrmSesionRepository,
     auth_externo: SeaOrmAuthExternoRepository,
+    kanban_tableros: SeaOrmKanbanTableroRepository,
+    kanban_columnas: SeaOrmKanbanColumnaRepository,
+    kanban_tarjetas: SeaOrmKanbanTarjetaRepository,
+    kanban_etiquetas: SeaOrmKanbanEtiquetaRepository,
+    kanban_checklists: SeaOrmKanbanChecklistRepository,
 }
 
 impl SeaOrmTransaction {
@@ -118,6 +129,11 @@ impl SeaOrmTransaction {
             permisos: SeaOrmPermisoRepository::new(Arc::clone(&tx)),
             sesiones: SeaOrmSesionRepository::new(Arc::clone(&tx)),
             auth_externo: SeaOrmAuthExternoRepository::new(Arc::clone(&tx)),
+            kanban_tableros: SeaOrmKanbanTableroRepository::new(Arc::clone(&tx)),
+            kanban_columnas: SeaOrmKanbanColumnaRepository::new(Arc::clone(&tx)),
+            kanban_tarjetas: SeaOrmKanbanTarjetaRepository::new(Arc::clone(&tx)),
+            kanban_etiquetas: SeaOrmKanbanEtiquetaRepository::new(Arc::clone(&tx)),
+            kanban_checklists: SeaOrmKanbanChecklistRepository::new(Arc::clone(&tx)),
             tx,
         }
     }
@@ -149,6 +165,11 @@ impl SeaOrmTransaction {
             permisos,
             sesiones,
             auth_externo,
+            kanban_tableros,
+            kanban_columnas,
+            kanban_tarjetas,
+            kanban_etiquetas,
+            kanban_checklists,
         } = self;
         drop(tipos_movimiento);
         drop(categorias);
@@ -171,6 +192,11 @@ impl SeaOrmTransaction {
         drop(permisos);
         drop(sesiones);
         drop(auth_externo);
+        drop(kanban_tableros);
+        drop(kanban_columnas);
+        drop(kanban_tarjetas);
+        drop(kanban_etiquetas);
+        drop(kanban_checklists);
         Arc::try_unwrap(tx).map_err(|_| {
             AppError::unexpected(anyhow::anyhow!("transaction still borrowed when finishing"))
         })
@@ -261,6 +287,26 @@ impl Transaction for SeaOrmTransaction {
 
     fn auth_externo(&self) -> &dyn AuthExternoRepository {
         &self.auth_externo
+    }
+
+    fn kanban_tableros(&self) -> &dyn KanbanTableroRepository {
+        &self.kanban_tableros
+    }
+
+    fn kanban_columnas(&self) -> &dyn KanbanColumnaRepository {
+        &self.kanban_columnas
+    }
+
+    fn kanban_tarjetas(&self) -> &dyn KanbanTarjetaRepository {
+        &self.kanban_tarjetas
+    }
+
+    fn kanban_etiquetas(&self) -> &dyn KanbanEtiquetaRepository {
+        &self.kanban_etiquetas
+    }
+
+    fn kanban_checklists(&self) -> &dyn KanbanChecklistRepository {
+        &self.kanban_checklists
     }
 
     async fn commit(self: Box<Self>) -> AppResult<()> {

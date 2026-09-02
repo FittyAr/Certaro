@@ -124,6 +124,12 @@ export const routes: RouteRecordRaw[] = [
     meta: { titleKey: 'Ordenes.Title', breadcrumb: ['trabajos'], idParam: 'ordenId' },
   },
   {
+    path: '/kanban',
+    name: 'kanban',
+    component: () => import('@/views/kanban/KanbanView.vue'),
+    meta: { titleKey: 'Menu.Kanban', requiredPermission: 'kanban:ver' },
+  },
+  {
     path: '/certificados',
     name: 'certificados',
     component: () => import('@/views/certificados/CertificadosView.vue'),

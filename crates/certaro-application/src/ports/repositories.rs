@@ -10,7 +10,8 @@ use async_trait::async_trait;
 use chrono::{DateTime, NaiveDate, Utc};
 use certaro_domain::entities::{
     Adjunto, AsistenciaEmpleado, AuthExterno, Categoria, Certificado, CertificadoItem, Cliente,
-    ClienteContacto, Empleado, EntidadAdjunto, Factura, Feriado, Liquidacion, LiquidacionAdelanto,
+    ClienteContacto, Empleado, EntidadAdjunto, Factura, Feriado, KanbanColumna, KanbanEtiqueta,
+    KanbanTablero, KanbanTarjeta, KanbanTarjetaChecklist, Liquidacion, LiquidacionAdelanto,
     Movimiento, OrdenTrabajo, OrdenTrabajoItem, PagoFactura, Permiso, Proyecto, Rol, Sesion,
     TipoMovimiento, Trabajo, Usuario,
 };
@@ -1030,6 +1031,56 @@ pub trait AuthExternoRepository: Send + Sync {
     async fn delete_by_id(&self, id: Uuid) -> AppResult<()>;
 }
 
+#[async_trait]
+pub trait KanbanTableroRepository: Send + Sync {
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<KanbanTablero>>;
+    async fn list_all(&self) -> AppResult<Vec<KanbanTablero>>;
+    async fn insert(&self, entity: &KanbanTablero) -> AppResult<()>;
+    async fn update(&self, entity: &KanbanTablero) -> AppResult<()>;
+    async fn delete(&self, id: Uuid, row_version: &RowVersion) -> AppResult<()>;
+}
+
+#[async_trait]
+pub trait KanbanColumnaRepository: Send + Sync {
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<KanbanColumna>>;
+    async fn list_by_tablero(&self, tablero_id: Uuid) -> AppResult<Vec<KanbanColumna>>;
+    async fn insert(&self, entity: &KanbanColumna) -> AppResult<()>;
+    async fn update(&self, entity: &KanbanColumna) -> AppResult<()>;
+    async fn delete(&self, id: Uuid, row_version: &RowVersion) -> AppResult<()>;
+}
+
+#[async_trait]
+pub trait KanbanTarjetaRepository: Send + Sync {
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<KanbanTarjeta>>;
+    async fn list_by_tablero(&self, tablero_id: Uuid) -> AppResult<Vec<KanbanTarjeta>>;
+    async fn list_by_columna(&self, columna_id: Uuid) -> AppResult<Vec<KanbanTarjeta>>;
+    async fn find_by_trabajo_id(&self, trabajo_id: Uuid) -> AppResult<Option<KanbanTarjeta>>;
+    async fn find_by_orden_trabajo_id(&self, orden_id: Uuid) -> AppResult<Option<KanbanTarjeta>>;
+    async fn insert(&self, entity: &KanbanTarjeta) -> AppResult<()>;
+    async fn update(&self, entity: &KanbanTarjeta) -> AppResult<()>;
+    async fn delete(&self, id: Uuid, row_version: &RowVersion) -> AppResult<()>;
+}
+
+#[async_trait]
+pub trait KanbanEtiquetaRepository: Send + Sync {
+    async fn find_by_id(&self, id: Uuid) -> AppResult<Option<KanbanEtiqueta>>;
+    async fn list_all(&self) -> AppResult<Vec<KanbanEtiqueta>>;
+    async fn list_by_tarjeta(&self, tarjeta_id: Uuid) -> AppResult<Vec<KanbanEtiqueta>>;
+    async fn assign(&self, tarjeta_id: Uuid, etiqueta_id: Uuid) -> AppResult<()>;
+    async fn unassign(&self, tarjeta_id: Uuid, etiqueta_id: Uuid) -> AppResult<()>;
+    async fn insert(&self, entity: &KanbanEtiqueta) -> AppResult<()>;
+    async fn update(&self, entity: &KanbanEtiqueta) -> AppResult<()>;
+    async fn delete(&self, id: Uuid, row_version: &RowVersion) -> AppResult<()>;
+}
+
+#[async_trait]
+pub trait KanbanChecklistRepository: Send + Sync {
+    async fn list_by_tarjeta(&self, tarjeta_id: Uuid) -> AppResult<Vec<KanbanTarjetaChecklist>>;
+    async fn insert(&self, entity: &KanbanTarjetaChecklist) -> AppResult<()>;
+    async fn update(&self, entity: &KanbanTarjetaChecklist) -> AppResult<()>;
+    async fn delete_by_id(&self, id: Uuid) -> AppResult<()>;
+}
+
 /// The internal key/value store. Not a business record: no audit block, no soft delete.
 #[async_trait]
 pub trait MetadataRepository: Send + Sync {
@@ -1071,6 +1122,11 @@ pub trait Transaction: Send + Sync {
     fn permisos(&self) -> &dyn PermisoRepository;
     fn sesiones(&self) -> &dyn SesionRepository;
     fn auth_externo(&self) -> &dyn AuthExternoRepository;
+    fn kanban_tableros(&self) -> &dyn KanbanTableroRepository;
+    fn kanban_columnas(&self) -> &dyn KanbanColumnaRepository;
+    fn kanban_tarjetas(&self) -> &dyn KanbanTarjetaRepository;
+    fn kanban_etiquetas(&self) -> &dyn KanbanEtiquetaRepository;
+    fn kanban_checklists(&self) -> &dyn KanbanChecklistRepository;
 
     async fn commit(self: Box<Self>) -> AppResult<()>;
     async fn rollback(self: Box<Self>) -> AppResult<()>;

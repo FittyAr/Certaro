@@ -51,6 +51,7 @@ export const MENU: MenuGroup[] = [
       { route: 'clientes', labelKey: 'Menu.Clientes', icon: 'users' },
       { route: 'proyectos', labelKey: 'Menu.Proyectos', icon: 'building-2' },
       { route: 'trabajos', labelKey: 'Menu.Trabajos', icon: 'hammer' },
+      { route: 'kanban', labelKey: 'Menu.Kanban', icon: 'kanban', permission: 'kanban:ver' },
       { route: 'certificados', labelKey: 'Menu.Certificados', icon: 'file-badge' },
       {
         route: 'facturas',

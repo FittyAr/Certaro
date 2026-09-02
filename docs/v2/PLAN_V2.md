@@ -40,13 +40,13 @@
   - [x] 2.6 Middleware/Guard de permisos en Tauri (bypass transparente en modo SQLite)
   - [x] 2.7 Frontend: Store de Auth (`useAuthStore`), vistas de Login, Usuarios y Roles, composable `usePermission`
 
-- [ ] **Fase 3: Módulo Tablero Kanban**
-  - [ ] 3.1 Entidades de dominio (`KanbanTablero`, `KanbanColumna`, `KanbanTarjeta`, `KanbanEtiqueta`, etc.)
-  - [ ] 3.2 Migraciones y modelos de persistencia SeaORM (7 tablas)
-  - [ ] 3.3 Repositorios y casos de uso en `certaro-application`
-  - [ ] 3.4 Sincronización bidireccional `KanbanTarjeta` ↔ `Trabajo` / `OrdenTrabajo`
-  - [ ] 3.5 Comandos IPC Tauri para Kanban
-  - [ ] 3.6 Frontend: Componentes Kanban (Tablero, Columnas, Tarjetas, Drag & Drop, Filtros, Modal Detalle)
+- [x] **Fase 3: Módulo Tablero Kanban**
+  - [x] 3.1 Entidades de dominio (`KanbanTablero`, `KanbanColumna`, `KanbanTarjeta`, `KanbanEtiqueta`, etc.)
+  - [x] 3.2 Migraciones y modelos de persistencia SeaORM (7 tablas)
+  - [x] 3.3 Repositorios y casos de uso en `certaro-application`
+  - [x] 3.4 Sincronización bidireccional `KanbanTarjeta` ↔ `Trabajo` / `OrdenTrabajo`
+  - [x] 3.5 Comandos IPC Tauri para Kanban
+  - [x] 3.6 Frontend: Componentes Kanban (Tablero, Columnas, Tarjetas, Drag & Drop, Filtros, Modal Detalle)
 
 - [ ] **Fase 4: Módulo Calendario / Scheduler**
   - [ ] 4.1 Entidades de dominio (`CalendarioEvento`, `CalendarioRecurso`, `CalendarioGrupoRecurso`)
@@ -117,4 +117,5 @@ sistema:configuracion    sistema:backup           sistema:restore
 |---|---|---|
 | 2026-09-02 | `001509b` | Creación de rama `feat/v2-enterprise-expansion` y documento `docs/v2/PLAN_V2.md` |
 | 2026-09-02 | `9957b1b` | feat: add multi-database support for MySQL and PostgreSQL (fase 1) |
-| 2026-09-02 | `HEAD` | feat: implement enterprise authentication & RBAC system (fase 2) |
+| 2026-09-02 | `8d969ce` | feat: implement enterprise authentication & RBAC system (fase 2) |
+| 2026-09-02 | `HEAD` | feat: implement Kanban board module with presets & sync (fase 3) |

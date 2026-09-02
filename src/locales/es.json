@@ -548,6 +548,7 @@
       "Personal": "Personal",
       "Sistema": "Sistema"
     },
+    "Kanban": "Tablero Kanban",
     "Liquidaciones": "Liquidaciones",
     "MovementTypes": "Tipos de movimiento",
     "Movimientos": "Movimientos",
@@ -981,6 +982,35 @@
       "NombreMaxLength": "El nombre no puede superar los {max} caracteres",
       "NombreRequired": "El nombre es obligatorio"
     }
+  },
+  "Kanban": {
+    "Add": "Agregar",
+    "All": "Todas",
+    "BoardName": "Nombre del Tablero",
+    "Checklist": "Lista de Tareas",
+    "Color": "Color",
+    "ColumnName": "Nombre de la Columna",
+    "ConfirmDeleteCard": "¿Estás seguro de eliminar esta tarjeta?",
+    "ConfirmDeleteColumn": "¿Estás seguro de eliminar esta columna?",
+    "DeleteColumn": "Borrar Columna",
+    "Description": "Descripción",
+    "DueDate": "Fecha de Vencimiento",
+    "EditCard": "Editar Tarjeta",
+    "EditColumn": "Editar Columna",
+    "EmptyChecklist": "No hay tareas en el checklist",
+    "NewBoard": "Nuevo Tablero",
+    "NewCard": "Nueva Tarjeta",
+    "NewChecklistItem": "Nueva tarea...",
+    "NewColumn": "Nueva Columna",
+    "Priority": "Prioridad",
+    "PriorityHigh": "Alta",
+    "PriorityLow": "Baja",
+    "PriorityNormal": "Normal",
+    "PriorityUrgent": "Urgente",
+    "SearchCards": "Buscar tarjetas...",
+    "Sync": "Sincronizar",
+    "Title": "Título",
+    "WipLimit": "Límite WIP (máx tarjetas)"
   },
   "Welcome": {
     "AllowOrphans": "Permitir referencias huérfanas",

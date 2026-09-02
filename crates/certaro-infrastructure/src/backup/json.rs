@@ -23,7 +23,7 @@ pub const FORMAT_VERSION: u32 = 2;
 ///
 /// Taken from the model rather than from `sqlite_master`, so the migration bookkeeping tables never
 /// take part and an unknown name in a file is caught by comparing against this.
-pub const TABLAS: [&str; 27] = [
+pub const TABLAS: [&str; 34] = [
     "roles",
     "permisos",
     "usuarios",
@@ -51,6 +51,13 @@ pub const TABLAS: [&str; 27] = [
     "movimientos",
     "adjuntos",
     "feriados",
+    "kanban_tableros",
+    "kanban_columnas",
+    "kanban_tarjetas",
+    "kanban_etiquetas",
+    "kanban_tarjeta_etiquetas",
+    "kanban_tarjeta_checklist",
+    "kanban_tarjeta_asignados",
 ];
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -35,6 +35,8 @@ pub use repositories::{
     SesionRepository, SortDir, TipoMovimientoConUso, TipoMovimientoFiltro,
     TipoMovimientoRepository, TotalMensual, TotalPorNombre, TrabajoConRelaciones, TrabajoFiltro,
     TrabajoRepository, Transaction, UnitOfWork, UsuarioRepository,
+    KanbanChecklistRepository, KanbanColumnaRepository, KanbanEtiquetaRepository,
+    KanbanTableroRepository, KanbanTarjetaRepository,
 };
 pub use settings::SettingsStore;
 pub use translator::{MapTranslator, Translator};

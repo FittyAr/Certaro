@@ -29,7 +29,7 @@ async fn count(db: &DatabaseConnection, sql: &str) -> i64 {
 }
 
 #[tokio::test]
-async fn las_migraciones_crean_las_veintiocho_tablas() {
+async fn las_migraciones_crean_las_treinta_y_cinco_tablas() {
     let db = open_in_memory().await.unwrap();
     let tablas = scalars(
         &db,
@@ -54,6 +54,13 @@ async fn las_migraciones_crean_las_veintiocho_tablas() {
             "empleados",
             "facturas",
             "feriados",
+            "kanban_columnas",
+            "kanban_etiquetas",
+            "kanban_tableros",
+            "kanban_tarjeta_asignados",
+            "kanban_tarjeta_checklist",
+            "kanban_tarjeta_etiquetas",
+            "kanban_tarjetas",
             "liquidacion_adelantos",
             "liquidaciones",
             "movimientos",
@@ -72,6 +79,19 @@ async fn las_migraciones_crean_las_veintiocho_tablas() {
             "usuarios",
         ]
     );
+}
+
+#[tokio::test]
+async fn la_semilla_crea_tableros_kanban_preset() {
+    let db = open_in_memory().await.unwrap();
+    let tableros_cnt = count(&db, "SELECT COUNT(*) as n FROM kanban_tableros WHERE es_preset = 1").await;
+    assert_eq!(tableros_cnt, 2);
+
+    let columnas_cnt = count(&db, "SELECT COUNT(*) as n FROM kanban_columnas").await;
+    assert_eq!(columnas_cnt, 9);
+
+    let etiquetas_cnt = count(&db, "SELECT COUNT(*) as n FROM kanban_etiquetas").await;
+    assert_eq!(etiquetas_cnt, 4);
 }
 
 #[tokio::test]
