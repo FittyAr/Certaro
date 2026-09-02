@@ -23,14 +23,20 @@ const canMove = computed(() => can('kanban:mover_tarjeta'))
 const searchText = ref('')
 const selectedPrioridad = ref<string>('all')
 
-// Drag & Drop State
+// Pointer-based Drag & Drop State
 type DragType = 'card' | 'column' | null
 const dragType = ref<DragType>(null)
-const draggedCard = ref<KanbanTarjetaDto | null>(null)
-const draggedColumn = ref<KanbanColumnaDto | null>(null)
-const dragOverColumnaId = ref<Uuid | null>(null)
-const dragOverCardId = ref<Uuid | null>(null)
-const justFinishedDrag = ref(false)
+const draggingCard = ref<KanbanTarjetaDto | null>(null)
+const draggingColumn = ref<KanbanColumnaDto | null>(null)
+const dragPosition = ref({ x: 0, y: 0 })
+const dragHoverColumnaId = ref<Uuid | null>(null)
+const dragHoverCardId = ref<Uuid | null>(null)
+
+let startX = 0
+let startY = 0
+let activeCard: KanbanTarjetaDto | null = null
+let activeColumn: KanbanColumnaDto | null = null
+let hasMovedEnough = false
 
 // Modals
 const showCardModal = ref(false)
@@ -104,65 +110,170 @@ function getPriorityClass(p: PrioridadTarjeta) {
 }
 
 // -------------------------------------------------------------
-// Drag & Drop: COLUMNS
+// Pointer Dragging for CARDS
 // -------------------------------------------------------------
-function onColumnDragStart(e: DragEvent, col: KanbanColumnaDto) {
-  if (!canManage.value) return
-  dragType.value = 'column'
-  draggedColumn.value = col
-  if (e.dataTransfer) {
-    e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('text/plain', `col:${col.id}`)
-  }
-}
+function onCardPointerDown(e: PointerEvent, card: KanbanTarjetaDto) {
+  if (!canMove.value || e.button !== 0) return
+  const target = e.target as HTMLElement | null
+  if (target && target.closest('button, input, select, textarea, a')) return
 
-function onColumnDragOver(e: DragEvent, targetColId: Uuid) {
-  if (dragType.value !== 'column' || !draggedColumn.value) return
-  e.preventDefault()
-  if (e.dataTransfer) {
-    e.dataTransfer.dropEffect = 'move'
-  }
-  dragOverColumnaId.value = targetColId
-}
-
-async function onColumnDrop(e: DragEvent, targetColId: Uuid) {
-  e.preventDefault()
-  e.stopPropagation()
-  if (dragType.value !== 'column' || !draggedColumn.value || !store.currentTableroId) return
-  const sourceCol = draggedColumn.value
+  startX = e.clientX
+  startY = e.clientY
+  activeCard = card
+  activeColumn = null
+  hasMovedEnough = false
   dragType.value = null
-  draggedColumn.value = null
-  dragOverColumnaId.value = null
 
-  if (sourceCol.id === targetColId) return
+  window.addEventListener('pointermove', onGlobalPointerMove)
+  window.addEventListener('pointerup', onGlobalPointerUp)
+}
 
-  const cols = [...sortedColumnas.value]
-  const fromIdx = cols.findIndex((c) => c.id === sourceCol.id)
-  const toIdx = cols.findIndex((c) => c.id === targetColId)
-  if (fromIdx === -1 || toIdx === -1) return
+// -------------------------------------------------------------
+// Pointer Dragging for COLUMNS
+// -------------------------------------------------------------
+function onColumnPointerDown(e: PointerEvent, col: KanbanColumnaDto) {
+  if (!canManage.value || e.button !== 0) return
+  const target = e.target as HTMLElement | null
+  if (target && target.closest('button, input, select, textarea, a')) return
 
-  const [moved] = cols.splice(fromIdx, 1)
-  if (!moved) return
-  cols.splice(toIdx, 0, moved)
+  startX = e.clientX
+  startY = e.clientY
+  activeColumn = col
+  activeCard = null
+  hasMovedEnough = false
+  dragType.value = null
 
-  const newColumnaIds = cols.map((c) => c.id)
+  window.addEventListener('pointermove', onGlobalPointerMove)
+  window.addEventListener('pointerup', onGlobalPointerUp)
+}
 
-  try {
-    await store.reordenarColumnas({
-      tableroId: store.currentTableroId,
-      columnaIds: newColumnaIds,
-    })
-  } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al reordenar columnas')
+function onGlobalPointerMove(e: PointerEvent) {
+  const dx = e.clientX - startX
+  const dy = e.clientY - startY
+  const dist = Math.sqrt(dx * dx + dy * dy)
+
+  if (!hasMovedEnough && dist > 5) {
+    hasMovedEnough = true
+    if (activeCard) {
+      dragType.value = 'card'
+      draggingCard.value = activeCard
+    } else if (activeColumn) {
+      dragType.value = 'column'
+      draggingColumn.value = activeColumn
+    }
+  }
+
+  if (hasMovedEnough) {
+    dragPosition.value = { x: e.clientX, y: e.clientY }
+
+    const el = document.elementFromPoint(e.clientX, e.clientY)
+    const colEl = el?.closest('[data-columna-id]') as HTMLElement | null
+    if (colEl) {
+      const colId = colEl.getAttribute('data-columna-id') as Uuid
+      dragHoverColumnaId.value = colId
+
+      if (dragType.value === 'card') {
+        const cardEl = el?.closest('[data-card-id]') as HTMLElement | null
+        if (cardEl && cardEl.getAttribute('data-card-id') !== activeCard?.id) {
+          dragHoverCardId.value = cardEl.getAttribute('data-card-id') as Uuid
+        } else {
+          dragHoverCardId.value = null
+        }
+      }
+    } else {
+      dragHoverColumnaId.value = null
+      dragHoverCardId.value = null
+    }
   }
 }
 
-function onColumnDragEnd() {
+async function onGlobalPointerUp(_e: PointerEvent) {
+  window.removeEventListener('pointermove', onGlobalPointerMove)
+  window.removeEventListener('pointerup', onGlobalPointerUp)
+
+  if (hasMovedEnough) {
+    // 1. Dropping a CARD
+    if (dragType.value === 'card' && draggingCard.value && dragHoverColumnaId.value) {
+      const card = draggingCard.value
+      const targetColId = dragHoverColumnaId.value
+      const targetCardId = dragHoverCardId.value
+      const origenColumnaId = card.columnaId
+
+      const colCards = getTarjetasPorColumna(targetColId).filter((c) => c.id !== card.id)
+
+      let nuevoOrden = colCards.length
+      if (targetCardId) {
+        const targetIdx = colCards.findIndex((c) => c.id === targetCardId)
+        if (targetIdx !== -1) {
+          colCards.splice(targetIdx, 0, card)
+          nuevoOrden = targetIdx
+        } else {
+          colCards.push(card)
+        }
+      } else {
+        colCards.push(card)
+      }
+
+      const tarjetaIdsEnDestino = colCards.map((c) => c.id)
+
+      try {
+        await store.reordenarTarjetas({
+          tarjetaId: card.id,
+          origenColumnaId,
+          destinoColumnaId: targetColId,
+          nuevoOrden,
+          tarjetaIdsEnDestino,
+        })
+      } catch (err: unknown) {
+        alert(err instanceof Error ? err.message : 'Error al mover tarjeta')
+      }
+    }
+
+    // 2. Dropping a COLUMN
+    if (dragType.value === 'column' && draggingColumn.value && dragHoverColumnaId.value && store.currentTableroId) {
+      const sourceCol = draggingColumn.value
+      const targetColId = dragHoverColumnaId.value
+
+      if (sourceCol.id !== targetColId) {
+        const cols = [...sortedColumnas.value]
+        const fromIdx = cols.findIndex((c) => c.id === sourceCol.id)
+        const toIdx = cols.findIndex((c) => c.id === targetColId)
+
+        if (fromIdx !== -1 && toIdx !== -1) {
+          const [moved] = cols.splice(fromIdx, 1)
+          if (moved) {
+            cols.splice(toIdx, 0, moved)
+            const newColumnaIds = cols.map((c) => c.id)
+            try {
+              await store.reordenarColumnas({
+                tableroId: store.currentTableroId,
+                columnaIds: newColumnaIds,
+              })
+            } catch (err: unknown) {
+              alert(err instanceof Error ? err.message : 'Error al reordenar columnas')
+            }
+          }
+        }
+      }
+    }
+  } else if (activeCard) {
+    // It was a simple click: open edit modal
+    openEditCard(activeCard)
+  }
+
+  activeCard = null
+  activeColumn = null
+  draggingCard.value = null
+  draggingColumn.value = null
+  dragHoverColumnaId.value = null
+  dragHoverCardId.value = null
+  hasMovedEnough = false
   dragType.value = null
-  draggedColumn.value = null
-  dragOverColumnaId.value = null
 }
 
+// -------------------------------------------------------------
+// Quick Button Column reordering
+// -------------------------------------------------------------
 async function moverColumna(col: KanbanColumnaDto, direccion: 'izq' | 'der') {
   if (!canManage.value || !store.detalle || !store.currentTableroId) return
   const cols = [...sortedColumnas.value]
@@ -186,100 +297,6 @@ async function moverColumna(col: KanbanColumnaDto, direccion: 'izq' | 'der') {
   } catch (err: unknown) {
     alert(err instanceof Error ? err.message : 'Error al reordenar columnas')
   }
-}
-
-// -------------------------------------------------------------
-// Drag & Drop: CARDS
-// -------------------------------------------------------------
-function onCardDragStart(e: DragEvent, card: KanbanTarjetaDto) {
-  if (!canMove.value) return
-  dragType.value = 'card'
-  draggedCard.value = card
-  justFinishedDrag.value = true
-  if (e.dataTransfer) {
-    e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('text/plain', `card:${card.id}`)
-  }
-}
-
-function onCardDragOver(e: DragEvent, columnaId: Uuid) {
-  if (dragType.value !== 'card' || !draggedCard.value) return
-  e.preventDefault()
-  if (e.dataTransfer) {
-    e.dataTransfer.dropEffect = 'move'
-  }
-  dragOverColumnaId.value = columnaId
-}
-
-function onCardDragOverCard(e: DragEvent, targetCard: KanbanTarjetaDto, columnaId: Uuid) {
-  if (dragType.value !== 'card' || !draggedCard.value) return
-  e.preventDefault()
-  e.stopPropagation()
-  if (e.dataTransfer) {
-    e.dataTransfer.dropEffect = 'move'
-  }
-  dragOverColumnaId.value = columnaId
-  dragOverCardId.value = targetCard.id
-}
-
-async function onCardDrop(e: DragEvent, targetColumnaId: Uuid, targetCardId?: Uuid) {
-  e.preventDefault()
-  e.stopPropagation()
-  if (dragType.value !== 'card' || !draggedCard.value) return
-  const card = draggedCard.value
-  const origenColumnaId = card.columnaId
-
-  dragType.value = null
-  draggedCard.value = null
-  dragOverColumnaId.value = null
-  dragOverCardId.value = null
-  setTimeout(() => {
-    justFinishedDrag.value = false
-  }, 100)
-
-  const colCards = getTarjetasPorColumna(targetColumnaId).filter((c) => c.id !== card.id)
-
-  let nuevoOrden = colCards.length
-  if (targetCardId) {
-    const targetIdx = colCards.findIndex((c) => c.id === targetCardId)
-    if (targetIdx !== -1) {
-      colCards.splice(targetIdx, 0, card)
-      nuevoOrden = targetIdx
-    } else {
-      colCards.push(card)
-    }
-  } else {
-    colCards.push(card)
-  }
-
-  const tarjetaIdsEnDestino = colCards.map((c) => c.id)
-
-  try {
-    await store.reordenarTarjetas({
-      tarjetaId: card.id,
-      origenColumnaId,
-      destinoColumnaId: targetColumnaId,
-      nuevoOrden,
-      tarjetaIdsEnDestino,
-    })
-  } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al mover la tarjeta')
-  }
-}
-
-function onCardDragEnd() {
-  dragType.value = null
-  draggedCard.value = null
-  dragOverColumnaId.value = null
-  dragOverCardId.value = null
-  setTimeout(() => {
-    justFinishedDrag.value = false
-  }, 100)
-}
-
-function handleCardClick(card: KanbanTarjetaDto) {
-  if (justFinishedDrag.value) return
-  openEditCard(card)
 }
 
 // -------------------------------------------------------------
@@ -476,7 +493,44 @@ async function removeChecklist(item: any) {
 </script>
 
 <template>
-  <div class="h-full flex flex-col gap-4 p-4 md:p-6 overflow-hidden bg-background text-foreground">
+  <div class="h-full flex flex-col gap-4 p-4 md:p-6 overflow-hidden bg-background text-foreground select-none">
+    <!-- Floating Drag Ghost for Card -->
+    <div
+      v-if="draggingCard"
+      class="fixed pointer-events-none z-50 p-3 rounded-lg bg-surface-elevated border-2 border-primary shadow-2xl opacity-95 w-72"
+      :style="{
+        left: `${dragPosition.x - 140}px`,
+        top: `${dragPosition.y - 30}px`,
+      }"
+    >
+      <div class="flex items-center justify-between mb-1">
+        <span
+          class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border"
+          :class="getPriorityClass(draggingCard.prioridad)"
+        >
+          {{ draggingCard.prioridad }}
+        </span>
+      </div>
+      <h4 class="text-xs font-semibold text-foreground truncate">
+        {{ draggingCard.titulo }}
+      </h4>
+    </div>
+
+    <!-- Floating Drag Ghost for Column -->
+    <div
+      v-if="draggingColumn"
+      class="fixed pointer-events-none z-50 p-3 rounded-xl bg-surface-card border-2 border-primary shadow-2xl opacity-95 w-72"
+      :style="{
+        left: `${dragPosition.x - 140}px`,
+        top: `${dragPosition.y - 25}px`,
+      }"
+    >
+      <h3 class="text-sm font-semibold text-foreground truncate flex items-center gap-2">
+        <span>⋮⋮</span>
+        <span>{{ draggingColumn.nombre }}</span>
+      </h3>
+    </div>
+
     <!-- Top Header: Board Switcher & Actions -->
     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
       <div class="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
@@ -576,32 +630,29 @@ async function removeChecklist(item: any) {
     <!-- Kanban Columns Horizontal Board -->
     <div
       v-else-if="store.detalle"
-      class="flex-1 flex gap-4 overflow-x-auto pb-4 items-start select-none"
-      @dragover.prevent
+      class="flex-1 flex gap-4 overflow-x-auto pb-4 items-start"
     >
       <div
         v-for="(col, index) in sortedColumnas"
         :key="col.id"
+        :data-columna-id="col.id"
         :class="[
           'w-80 shrink-0 flex flex-col max-h-full rounded-xl bg-surface-card border transition-all duration-150 shadow-xs overflow-hidden',
-          dragOverColumnaId === col.id ? 'border-primary ring-2 ring-primary/40 bg-primary/5' : 'border-border'
+          dragHoverColumnaId === col.id ? 'border-primary ring-2 ring-primary/40 bg-primary/5' : 'border-border',
+          draggingColumn?.id === col.id ? 'opacity-30 border-dashed' : ''
         ]"
         :style="{
           borderTopColor: col.color || 'var(--color-primary, currentColor)',
           borderTopWidth: '4px'
         }"
-        @dragover="dragType === 'column' ? onColumnDragOver($event, col.id) : onCardDragOver($event, col.id)"
-        @drop="dragType === 'column' ? onColumnDrop($event, col.id) : onCardDrop($event, col.id)"
       >
-        <!-- Column Header: Draggable for reordering columns -->
+        <!-- Column Header: Click & drag to reorder columns -->
         <div
           class="p-3 border-b border-border flex items-center justify-between gap-2 bg-muted/20 select-none"
           :class="canManage ? 'cursor-grab active:cursor-grabbing' : ''"
-          :draggable="canManage"
-          @dragstart="onColumnDragStart($event, col)"
-          @dragend="onColumnDragEnd"
+          @pointerdown="onColumnPointerDown($event, col)"
         >
-          <div class="flex items-center gap-2 min-w-0 pointer-events-none">
+          <div class="flex items-center gap-2 min-w-0">
             <!-- Drag Handle icon for column -->
             <span v-if="canManage" class="text-muted-foreground text-xs leading-none">⋮⋮</span>
             <!-- Column colored dot indicator -->
@@ -669,28 +720,20 @@ async function removeChecklist(item: any) {
         </div>
 
         <!-- Cards Container -->
-        <div
-          class="flex-1 overflow-y-auto p-2.5 flex flex-col gap-2.5 min-h-30"
-          @dragover.prevent="onCardDragOver($event, col.id)"
-          @drop="onCardDrop($event, col.id)"
-        >
+        <div class="flex-1 overflow-y-auto p-2.5 flex flex-col gap-2.5 min-h-30">
           <div
             v-for="card in getTarjetasPorColumna(col.id)"
             :key="card.id"
+            :data-card-id="card.id"
             class="p-3 rounded-lg bg-surface-elevated border shadow-xs hover:border-primary/50 transition-all cursor-grab active:cursor-grabbing flex flex-col gap-2 select-none"
             :class="[
-              dragOverCardId === card.id ? 'border-primary ring-2 ring-primary/50' : 'border-border',
-              draggedCard?.id === card.id ? 'opacity-40' : ''
+              dragHoverCardId === card.id ? 'border-primary ring-2 ring-primary/50' : 'border-border',
+              draggingCard?.id === card.id ? 'opacity-30 border-dashed' : ''
             ]"
-            :draggable="canMove"
-            @dragstart="onCardDragStart($event, card)"
-            @dragend="onCardDragEnd"
-            @dragover.prevent="onCardDragOverCard($event, card, col.id)"
-            @drop="onCardDrop($event, col.id, card.id)"
-            @click="handleCardClick(card)"
+            @pointerdown="onCardPointerDown($event, card)"
           >
             <!-- Card Meta: Priority & Tags -->
-            <div class="flex flex-wrap items-center justify-between gap-1.5 pointer-events-none">
+            <div class="flex flex-wrap items-center justify-between gap-1.5">
               <span
                 class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border"
                 :class="getPriorityClass(card.prioridad)"
@@ -710,7 +753,7 @@ async function removeChecklist(item: any) {
             </div>
 
             <!-- Title & Description -->
-            <div class="pointer-events-none">
+            <div>
               <h4 class="text-xs font-semibold text-foreground leading-snug">
                 {{ card.titulo }}
               </h4>
@@ -725,7 +768,7 @@ async function removeChecklist(item: any) {
             <!-- Footer: Due date, Checklist & Actions -->
             <div class="flex items-center justify-between border-t border-border pt-2 text-[11px] text-muted-foreground">
               <div class="flex items-center gap-2">
-                <span v-if="card.fechaVencimiento" class="flex items-center gap-1 font-mono pointer-events-none">
+                <span v-if="card.fechaVencimiento" class="flex items-center gap-1 font-mono">
                   📅 {{ card.fechaVencimiento }}
                 </span>
                 <button
