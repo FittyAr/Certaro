@@ -302,6 +302,11 @@ const boardMenuItems = computed(() => {
 
   return [
     {
+      label: store.isTableroPinned(b.id) ? 'Desfijar del inicio' : 'Fijar tablero al inicio',
+      icon: 'pi pi-thumbtack',
+      command: () => store.togglePinTablero(b.id),
+    },
+    {
       label: 'Editar tablero',
       icon: 'pi pi-pencil',
       disabled: !canManage.value,
@@ -855,22 +860,28 @@ async function removeChecklist(item: any) {
 
           <span>{{ b.nombre }}</span>
 
+          <!-- Pinned Indicator -->
+          <span
+            v-if="store.isTableroPinned(b.id)"
+            class="text-[11px] leading-none text-primary"
+            title="Tablero fijado al inicio"
+          >
+            📌
+          </span>
+
           <span
             v-if="!b.activo"
             class="text-[9px] px-1 py-0.2 rounded font-mono bg-warning/20 text-warning"
           >
             OCULTO
           </span>
+          <!-- Lock Icon for preset boards instead of text 'PRESET' -->
           <span
             v-else-if="b.esPreset"
-            class="text-[10px] px-1.5 py-0.2 rounded font-mono font-semibold"
-            :class="
-              store.currentTableroId === b.id
-                ? 'bg-primary/15 text-primary'
-                : 'bg-muted text-muted-foreground'
-            "
+            class="text-xs leading-none text-muted-foreground"
+            title="Tablero del sistema (protegido)"
           >
-            PRESET
+            🔒
           </span>
         </button>
 
@@ -1554,10 +1565,18 @@ async function removeChecklist(item: any) {
               />
               <span class="font-medium text-foreground truncate">{{ b.nombre }}</span>
               <span
-                v-if="b.esPreset"
-                class="text-[9px] px-1.5 py-0.2 rounded font-mono font-semibold bg-muted text-muted-foreground"
+                v-if="store.isTableroPinned(b.id)"
+                class="text-xs text-primary"
+                title="Fijado al inicio"
               >
-                PRESET
+                📌
+              </span>
+              <span
+                v-if="b.esPreset"
+                class="text-xs text-muted-foreground"
+                title="Tablero preestablecido del sistema (protegido)"
+              >
+                🔒
               </span>
               <span
                 v-if="!b.activo"
@@ -1568,6 +1587,16 @@ async function removeChecklist(item: any) {
             </div>
 
             <div class="flex items-center gap-1.5 shrink-0">
+              <!-- Pin / Unpin button -->
+              <button
+                type="button"
+                class="p-1 rounded text-xs border border-border hover:bg-muted"
+                :class="store.isTableroPinned(b.id) ? 'text-primary bg-primary/10' : 'text-muted-foreground'"
+                :title="store.isTableroPinned(b.id) ? 'Desfijar del inicio' : 'Fijar al inicio de la lista'"
+                @click="store.togglePinTablero(b.id)"
+              >
+                📌
+              </button>
               <!-- Toggle visibility -->
               <button
                 type="button"

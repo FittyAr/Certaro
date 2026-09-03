@@ -62,10 +62,34 @@ export const useKanbanStore = defineStore('kanban', () => {
   const error = ref<string | null>(null)
   const showColumnMoveButtons = useStorage('certaro_kanban_show_column_buttons', false)
   const showHiddenBoards = ref(false)
+  const pinnedTableroIds = useStorage<string[]>('certaro_kanban_pinned_tableros', [])
 
-  const activeTableros = computed(() =>
-    showHiddenBoards.value ? tableros.value : tableros.value.filter((t) => t.activo)
-  )
+  function isTableroPinned(id: Uuid): boolean {
+    return pinnedTableroIds.value.includes(id)
+  }
+
+  function togglePinTablero(id: Uuid) {
+    const idx = pinnedTableroIds.value.indexOf(id)
+    if (idx !== -1) {
+      pinnedTableroIds.value.splice(idx, 1)
+    } else {
+      pinnedTableroIds.value.push(id)
+    }
+  }
+
+  const activeTableros = computed(() => {
+    const list = showHiddenBoards.value
+      ? [...tableros.value]
+      : tableros.value.filter((t) => t.activo)
+
+    return list.sort((a, b) => {
+      const aPinned = pinnedTableroIds.value.includes(a.id)
+      const bPinned = pinnedTableroIds.value.includes(b.id)
+      if (aPinned && !bPinned) return -1
+      if (!aPinned && bPinned) return 1
+      return 0
+    })
+  })
   const currentTablero = computed(() =>
     tableros.value.find((t) => t.id === currentTableroId.value) ?? null
   )
@@ -407,5 +431,8 @@ export const useKanbanStore = defineStore('kanban', () => {
     showColumnMoveButtons,
     showHiddenBoards,
     toggleTableroActivo,
+    pinnedTableroIds,
+    isTableroPinned,
+    togglePinTablero,
   }
 })
