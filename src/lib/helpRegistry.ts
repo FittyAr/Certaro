@@ -243,4 +243,55 @@ export const HELP_REGISTRY: Record<string, HelpTopic> = {
       'Puedes usar las teclas de flecha para recorrer las páginas de la grilla velozmente.',
     ],
   },
+
+  'clientes-overview': {
+    id: 'clientes-overview',
+    title: 'Gestión de Clientes y Directorio Comercial',
+    subtitle: 'Administración integral de clientes, contactos y saldo consolidado',
+    purpose:
+      'Permite gestionar la información fiscal, comercial y de contacto de tus clientes, así como auditar en tiempo real su saldo pendiente y proyectos contratados.',
+    workflow: [
+      'Crea un cliente nuevo con "+ Nuevo" (o Ctrl+N) completando su razón social, CUIT y datos de contacto.',
+      'Añade múltiples contactos por cliente (administración, compras, jefes de obra) especificando el contacto principal.',
+      'Filtra por nombre o activa el interruptor "Solo con deuda" para visualizar quiénes tienen saldos pendientes.',
+      'Haz clic en el saldo o en el botón de cuenta para acceder al historial de comprobantes del cliente.',
+    ],
+    strengths: [
+      'Validación automática de formato CUIT y coherencia de contactos.',
+      'Soporte para múltiples personas de contacto dentro de la misma ficha comercial.',
+      'Cálculo en tiempo real de deuda y saldo acumulado.',
+      'Exportación rápida del padrón de clientes a hojas de cálculo o Word.',
+    ],
+    limitations: [
+      'Un cliente que tenga proyectos, trabajos o facturas asociadas no puede ser eliminado del sistema.',
+    ],
+    tips: [
+      'Carga con exactitud la condición de IVA y dirección fiscal para agilizar la emisión posterior de comprobantes.',
+    ],
+  },
+
+  'clientes-cuenta-corriente': {
+    id: 'clientes-cuenta-corriente',
+    title: 'Cuenta Corriente y Estado de Deuda',
+    subtitle: 'Auditoría de facturación, cobros imputados y días de mora',
+    purpose:
+      'Brinda un desglose cronológico de todas las facturas emitidas al cliente, los pagos recibidos (totales o parciales) y los días de mora de comprobantes impagos.',
+    workflow: [
+      'Observa las métricas principales: Total Facturado, Total Cobrado y Saldo Pendiente de cobro.',
+      'Por defecto se listan solo las facturas con saldo deudor; activa "Incluir pagadas" para ver el historial completo.',
+      'Identifica las facturas en rojo con mora vencida para coordinar reclamos de pago.',
+      'Registra nuevos pagos directamente sobre los comprobantes pendientes.',
+    ],
+    strengths: [
+      'Monitoreo exacto de atrasos: cálculo diario de mora por comprobante.',
+      'Trazabilidad de pagos parciales con saldo remanente individual.',
+      'Conciliación contable inmediata con el libro de caja.',
+    ],
+    limitations: [
+      'El saldo se deriva exclusivamente de facturas emitidas y sus respectivos pagos registrados en el sistema.',
+    ],
+    tips: [
+      'Revisa la cuenta corriente antes de autorizar certificaciones o despachos a clientes con atrasos reiterados.',
+    ],
+  },
 }

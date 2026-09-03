@@ -14,6 +14,7 @@ import FilterBar from '@/components/domain/FilterBar.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
 import { useCrudDrawer } from '@/composables/useCrudDrawer'
@@ -159,6 +160,7 @@ onMounted(() => table.start())
           <AppIcon name="plus" :size="16" />
           {{ $t('General.New') }}
         </Button>
+        <HelpButton topic-id="clientes-overview" title="Ayuda sobre el Módulo de Clientes" />
       </template>
     </PageHeader>
 

@@ -11,6 +11,7 @@ import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import StatePill from '@/components/domain/StatePill.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import {
@@ -112,6 +113,7 @@ onMounted(cargar)
           <AppIcon name="arrow-left" :size="16" />
           {{ $t('General.Back') }}
         </Button>
+        <HelpButton topic-id="clientes-cuenta-corriente" title="Ayuda sobre Cuentas Corrientes" />
       </template>
     </PageHeader>
 
