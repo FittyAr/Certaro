@@ -6,6 +6,7 @@ import type { FormatoExport } from '@/stores/useReportesStore'
 import DateInput from '@/components/domain/DateInput.vue'
 import ExportMenu from '@/components/domain/ExportMenu.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { useCertificadosStore } from '@/stores/useCertificadosStore'
 import { useLiquidacionesStore } from '@/stores/useLiquidacionesStore'
 import type { MovimientoFiltro } from '@/stores/useMovimientosStore'
@@ -57,7 +58,11 @@ onMounted(() => void cargarSelectores())
 
 <template>
   <section class="flex h-full flex-col gap-4 overflow-auto p-6">
-    <PageHeader :title="$t('Reportes.Title')" :subtitle="$t('Reportes.Subtitle')" />
+    <PageHeader :title="$t('Reportes.Title')" :subtitle="$t('Reportes.Subtitle')">
+      <template #actions>
+        <HelpButton topic-id="reportes-overview" title="Ayuda sobre Reportes y Exportación" />
+      </template>
+    </PageHeader>
 
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       <article class="flex flex-col gap-3 rounded-md border border-border bg-surface-raised p-4">

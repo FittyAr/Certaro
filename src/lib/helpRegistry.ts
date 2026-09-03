@@ -622,4 +622,29 @@ export const HELP_REGISTRY: Record<string, HelpTopic> = {
       'Imprime el recibo detallado para entregarlo al operario junto con el pago correspondiente.',
     ],
   },
+
+  'reportes-overview': {
+    id: 'reportes-overview',
+    title: 'Centro de Reportes y Exportación Documental',
+    subtitle: 'Generación de planillas contables, recibos y actas en Excel y Word',
+    purpose:
+      'Permite consolidar la información del sistema y exportarla en formatos abiertos (CSV/Excel y DOCX/Word) para balances de caja, entrega a comitentes o archivo fiscal.',
+    workflow: [
+      'Ubica la tarjeta del reporte que necesitas (Movimientos de caja, Recibo de liquidación o Certificado).',
+      'Configura los parámetros: intervalo de fechas o selección del comprobante en el desplegable.',
+      'Haz clic en el botón "Exportar" y elige el formato de salida deseado.',
+      'Elige en tu equipo la carpeta donde guardar el documento generado.',
+    ],
+    strengths: [
+      'Generación nativa ultrarrápida sin requerir tener instalado Microsoft Office.',
+      'Maquetación prolija y profesional lista para presentar o imprimir.',
+      'Privacidad total: el archivo se descarga directo a tu almacenamiento local.',
+    ],
+    limitations: [
+      'Para exportar un recibo o certificado específico, dicho comprobante debe estar emitido previamente en el sistema.',
+    ],
+    tips: [
+      'Para auditorías contables o balances de fin de año, exporta el Libro de Movimientos fijando el ejercicio fiscal completo.',
+    ],
+  },
 }
