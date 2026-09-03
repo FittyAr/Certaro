@@ -22,6 +22,7 @@ import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import StatePill from '@/components/domain/StatePill.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
@@ -227,6 +228,7 @@ onMounted(async () => {
           <AppIcon name="plus" :size="16" />
           {{ $t('General.New') }}
         </Button>
+        <HelpButton topic-id="facturas-overview" title="Ayuda sobre Facturas y Cobranzas" />
       </template>
     </PageHeader>
 

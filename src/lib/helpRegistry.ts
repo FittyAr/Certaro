@@ -446,4 +446,31 @@ export const HELP_REGISTRY: Record<string, HelpTopic> = {
       'Recuerda que solo se puede anular el último certificado emitido de una orden si requieres corregir una medición.',
     ],
   },
+
+  'facturas-overview': {
+    id: 'facturas-overview',
+    title: 'Facturación, Cobranzas y Registro de Pagos',
+    subtitle: 'Control de cuentas a cobrar, medios de pago y cobranzas parciales',
+    purpose:
+      'Gestiona el ciclo de facturación comercial: emisión de facturas a clientes, vinculación con certificados de obra aprobados, control de mora y cobros parciales o totales.',
+    workflow: [
+      'Crea una factura con "+ Nuevo" (o Ctrl+N) seleccionando el cliente, número de comprobante y fechas.',
+      'Carga los montos gravados, el IVA correspondiente y vincula los certificados facturados si aplica.',
+      'Supervisa los estados: Borrador ➔ Emitida ➔ Pago Parcial ➔ Pagada (o Vencida si pasó el vencimiento).',
+      'Registra pagos haciendo clic en el ícono de pago de la fila, eligiendo medio (Transferencia, Cheque, Efectivo).',
+      'Si una factura debe dejarse sin efecto comercial, utiliza la acción de Anulación.',
+    ],
+    strengths: [
+      'Cálculo automático de mora y actualización inmediata de la Cuenta Corriente.',
+      'Filtros rápidos de alta visibilidad para aislar comprobantes impagos o vencidos.',
+      'Trazabilidad completa de cobranzas fraccionadas en distintos medios de pago.',
+    ],
+    limitations: [
+      'Una factura cancelada en su totalidad o anulada no admite nuevos pagos.',
+      'La fecha de vencimiento debe ser igual o posterior a la fecha de emisión.',
+    ],
+    tips: [
+      'Activa el filtro "Solo vencidas" a primera hora para priorizar las gestiones de cobranza del día.',
+    ],
+  },
 }
