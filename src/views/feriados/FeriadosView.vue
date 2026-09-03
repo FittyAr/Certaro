@@ -10,6 +10,7 @@ import DateText from '@/components/domain/DateText.vue'
 import ListState from '@/components/domain/ListState.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
@@ -98,6 +99,7 @@ onMounted(cargar)
           <AppIcon name="refresh-cw" :size="16" />
           {{ $t('Feriados.Sincronizar') }}
         </Button>
+        <HelpButton topic-id="feriados-overview" title="Ayuda sobre Calendario de Feriados" />
       </template>
     </PageHeader>
 

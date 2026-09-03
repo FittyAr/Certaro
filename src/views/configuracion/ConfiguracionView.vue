@@ -8,6 +8,7 @@ import { onMounted, ref } from 'vue'
 
 import PageHeader from '@/components/domain/PageHeader.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { useSistemaStore } from '@/stores/useSistemaStore'
 
 import GeneralSection from './sections/GeneralSection.vue'
@@ -32,7 +33,11 @@ onMounted(() => void sistema.loadConfig())
 
 <template>
   <section class="flex h-full flex-col gap-6 overflow-auto p-6">
-    <PageHeader :title="$t('Configuracion.Title')" />
+    <PageHeader :title="$t('Configuracion.Title')">
+      <template #actions>
+        <HelpButton topic-id="configuracion-overview" title="Ayuda sobre Configuración General" />
+      </template>
+    </PageHeader>
 
     <Tabs v-model:value="activeTab" lazy class="flex-1">
       <TabList class="border-b border-border">

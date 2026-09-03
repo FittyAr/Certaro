@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
@@ -13,6 +13,7 @@ import FieldError from '@/components/domain/FieldError.vue'
 import FilterBar from '@/components/domain/FilterBar.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
 import { useCrudDrawer } from '@/composables/useCrudDrawer'
@@ -91,6 +92,7 @@ onMounted(() => table.start())
           <AppIcon name="plus" :size="16" />
           {{ $t('General.New') }}
         </Button>
+        <HelpButton topic-id="tipos-movimiento-overview" title="Ayuda sobre Tipos de Movimiento de Caja" />
       </template>
     </PageHeader>
 
