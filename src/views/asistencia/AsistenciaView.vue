@@ -8,6 +8,7 @@ import DateInput from '@/components/domain/DateInput.vue'
 import ListState from '@/components/domain/ListState.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useShortcuts } from '@/composables/useShortcuts'
@@ -149,6 +150,7 @@ onMounted(cargar)
           <AppIcon name="calendar-plus" :size="16" />
           {{ $t('Asistencia.CargaMasiva') }}
         </Button>
+        <HelpButton topic-id="asistencia-overview" title="Ayuda sobre Asistencia en Obra" />
       </template>
     </PageHeader>
 

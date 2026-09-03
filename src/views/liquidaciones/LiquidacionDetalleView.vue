@@ -8,6 +8,7 @@ import ListState from '@/components/domain/ListState.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
@@ -109,6 +110,7 @@ onMounted(cargar)
           <AppIcon name="trash-2" :size="16" />
           {{ $t('Liquidaciones.Anular') }}
         </Button>
+        <HelpButton topic-id="liquidaciones-detalle" title="Ayuda sobre Recibo de Liquidación" />
       </template>
     </PageHeader>
 

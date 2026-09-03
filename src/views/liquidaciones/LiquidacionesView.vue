@@ -17,6 +17,7 @@ import MoneyInput from '@/components/domain/MoneyInput.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
@@ -245,6 +246,7 @@ onMounted(() => {
           <AppIcon name="plus" :size="16" />
           {{ $t('Liquidaciones.Nueva') }}
         </Button>
+        <HelpButton topic-id="liquidaciones-overview" title="Ayuda sobre Liquidaciones y Sueldos" />
       </template>
     </PageHeader>
 
