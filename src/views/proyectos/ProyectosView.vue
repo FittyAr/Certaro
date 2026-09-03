@@ -16,6 +16,7 @@ import PageHeader from '@/components/domain/PageHeader.vue'
 import ProyectosTreeTable from '@/components/domain/ProyectosTreeTable.vue'
 import NuevoTrabajoModal from './components/NuevoTrabajoModal.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
@@ -179,6 +180,7 @@ onMounted(async () => {
             <AppIcon name="plus" :size="16" />
             {{ $t('General.New') }}
           </Button>
+          <HelpButton topic-id="proyectos-overview" title="Ayuda sobre Proyectos y Obras" />
         </div>
       </template>
     </PageHeader>

@@ -294,4 +294,56 @@ export const HELP_REGISTRY: Record<string, HelpTopic> = {
       'Revisa la cuenta corriente antes de autorizar certificaciones o despachos a clientes con atrasos reiterados.',
     ],
   },
+
+  'proyectos-overview': {
+    id: 'proyectos-overview',
+    title: 'Proyectos, Obras y Estructura Jerárquica',
+    subtitle: 'Gestión global de contratos, estados y rentabilidad por cliente',
+    purpose:
+      'Un Proyecto agrupa todas las obras o frentes contratados con un cliente. Permite supervisar el estado general, la rentabilidad global acumulada y acceder velozmente a sus trabajos y tableros Kanban.',
+    workflow: [
+      'Crea un proyecto con "+ Nuevo Proyecto" seleccionando el cliente e ingresando nombre y ubicación.',
+      'Crea los Trabajos presupuestados dentro de cada obra usando "+ Nuevo Trabajo" o desde el menú contextual de la fila.',
+      'Haz clic en la flecha de la fila para desplegar los trabajos que pertenecen al proyecto.',
+      'Gestiona los estados del proyecto (Activa, Pausada, Finalizada o Cancelada) desde las acciones directas.',
+      'Haz clic derecho para saltar a la "Caja" del proyecto o para abrir su tablero en el "Kanban".',
+    ],
+    strengths: [
+      'Árbol jerárquico (Proyecto ➔ Trabajos ➔ Órdenes) con cómputo consolidado de rentabilidad y montos.',
+      'Cierre y transición en cascada respetando las reglas contables y de avance físico.',
+      'Filtros rápidos por cliente, estado y texto en tiempo real.',
+      'Columna "Número" configurable y centrada según preferencias del usuario.',
+    ],
+    limitations: [
+      'Un proyecto que tiene trabajos asociados no puede eliminarse sin antes dar de baja sus obras hijas.',
+      'Para finalizar un proyecto con trabajos abiertos se requiere resolución de dichos trabajos.',
+    ],
+    tips: [
+      'Puedes ocultar o activar la columna "Número" en cualquier momento desde Configuración > General.',
+      'Aprovecha el botón "+ Trabajo" en cada fila para cargar tareas sin salir de la vista general.',
+    ],
+  },
+
+  'proyectos-caja': {
+    id: 'proyectos-caja',
+    title: 'Caja y Rentabilidad Específica de la Obra',
+    subtitle: 'Flujo de fondos e imputación analítica del proyecto',
+    purpose:
+      'Permite aislar todos los ingresos (certificaciones cobradas) y egresos (materiales, combustible, viáticos) asignados exclusivamente a este proyecto.',
+    workflow: [
+      'Accede desde el menú contextual de cualquier proyecto seleccionando "Ver Caja".',
+      'Revisa los movimientos imputados específicamente a los trabajos de esta obra.',
+      'Controla que los gastos acumulados no desvíen el margen de rentabilidad previsto.',
+    ],
+    strengths: [
+      'Visión analítica pura: aísla los números de la obra sin mezclar con la caja central de la empresa.',
+      'Trazabilidad directa con el libro diario general.',
+    ],
+    limitations: [
+      'Solo computa movimientos que hayan sido vinculados a este proyecto al registrarse en Caja.',
+    ],
+    tips: [
+      'Recuerda seleccionar siempre el Proyecto en el formulario de Movimientos para mantener la caja de obra al día.',
+    ],
+  },
 }

@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import DataTable from 'primevue/datatable'
@@ -6,6 +6,7 @@ import Column from 'primevue/column'
 import ListState from '@/components/domain/ListState.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useMovimientosStore, type MovimientoListItem } from '@/stores/useMovimientosStore'
 const route = useRoute()
@@ -38,7 +39,11 @@ onMounted(cargar)
 </script>
 <template>
   <section class="flex h-full flex-col gap-4 p-6">
-    <PageHeader :title="$t('Menu.Movimientos')" subtitle="Caja de proyecto" />
+    <PageHeader :title="$t('Menu.Movimientos')" subtitle="Caja de proyecto">
+      <template #actions>
+        <HelpButton topic-id="proyectos-caja" title="Ayuda sobre Caja de Proyecto" />
+      </template>
+    </PageHeader>
     <ListState
       :loading="loading"
       :first-load="firstLoad"
