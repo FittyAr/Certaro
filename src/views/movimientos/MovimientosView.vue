@@ -18,6 +18,7 @@ import MoneyInput from '@/components/domain/MoneyInput.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
 import { useCrudDrawer } from '@/composables/useCrudDrawer'
@@ -180,6 +181,7 @@ onMounted(() => {
           <AppIcon name="plus" :size="16" />
           {{ $t('General.New') }}
         </Button>
+        <HelpButton topic-id="movimientos-overview" title="Ayuda sobre el Libro de Movimientos y Caja" />
       </template>
     </PageHeader>
 

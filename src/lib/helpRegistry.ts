@@ -212,4 +212,35 @@ export const HELP_REGISTRY: Record<string, HelpTopic> = {
       'En Configuración > Integraciones puedes personalizar qué tipos de dólar deseas consultar.',
     ],
   },
+
+  'movimientos-overview': {
+    id: 'movimientos-overview',
+    title: 'Libro de Caja y Movimientos Diarios',
+    subtitle: 'Registro de ingresos, egresos y adelantos con imputación analítica',
+    purpose:
+      'Permite asentar cada movimiento de dinero (efectivo, transferencias o divisas), imputándolo a su tipo, categoría jerárquica y, opcionalmente, a una obra o proyecto para control de costos.',
+    workflow: [
+      'Haz clic en "+ Nuevo" o presiona Ctrl+N para desplegar el formulario de carga rápida.',
+      'Elige la fecha, el concepto descriptivo y el Tipo de Movimiento (Ingreso o Egreso).',
+      'Asigna la Categoría correspondiente para alimentar los reportes y desgloses de gastos.',
+      'Si el gasto o ingreso pertenece a una obra específica, selecciónala en la imputación de Proyecto/Trabajo.',
+      'Si el movimiento es en Dólares (USD), ingresa el importe y la cotización aplicada.',
+      'Para filtrar el historial, utiliza los selectores de fechas, categorías y buscador de texto.',
+      'Exporta la vista filtrada en cualquier momento usando el menú "Exportar" (CSV o DOCX).',
+    ],
+    strengths: [
+      'Cálculo de totales del servidor: la barra inferior muestra el balance exacto de todo el filtro seleccionado, sin importar la paginación.',
+      'Imputación directa a obras para conocer la rentabilidad neta real de cada trabajo.',
+      'Soporte bimonetario nativo (Pesos / Dólares con cotización congelada al asentar).',
+      'Paginación de alto rendimiento optimizada para bases con decenas de miles de registros.',
+    ],
+    limitations: [
+      'Los movimientos que correspondan a adelantos de sueldo ya liquidados quedan protegidos para preservar la consistencia laboral.',
+      'La eliminación de un movimiento es permanente y descuenta su valor inmediatamente del saldo de caja.',
+    ],
+    tips: [
+      'Para revisar exclusivamente la caja de una obra, ve a Proyectos, haz clic derecho sobre la fila y elige "Ver Caja".',
+      'Puedes usar las teclas de flecha para recorrer las páginas de la grilla velozmente.',
+    ],
+  },
 }
