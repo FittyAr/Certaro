@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
@@ -19,6 +19,7 @@ import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import StatePill from '@/components/domain/StatePill.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
@@ -177,6 +178,7 @@ onMounted(async () => {
           <AppIcon name="plus" :size="16" />
           {{ $t('General.New') }}
         </Button>
+        <HelpButton topic-id="trabajos-overview" title="Ayuda sobre Trabajos y Tareas de Obra" />
       </template>
     </PageHeader>
 

@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ListState from '@/components/domain/ListState.vue'
@@ -7,6 +7,7 @@ import StatePill from '@/components/domain/StatePill.vue'
 import Divider from 'primevue/divider'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useTrabajosStore, type TrabajoDetalle } from '@/stores/useTrabajosStore'
@@ -49,6 +50,7 @@ onMounted(cargar)
         >
           Ordenes
         </Button>
+        <HelpButton topic-id="trabajos-detalle" title="Ayuda sobre Detalle de Trabajo" />
       </template>
     </PageHeader>
 

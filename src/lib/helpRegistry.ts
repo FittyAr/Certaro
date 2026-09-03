@@ -346,4 +346,54 @@ export const HELP_REGISTRY: Record<string, HelpTopic> = {
       'Recuerda seleccionar siempre el Proyecto en el formulario de Movimientos para mantener la caja de obra al día.',
     ],
   },
+
+  'trabajos-overview': {
+    id: 'trabajos-overview',
+    title: 'Gestión de Trabajos y Tareas de Obra',
+    subtitle: 'Contratos operativos, presupuestos y control de avance físico',
+    purpose:
+      'Un Trabajo representa la unidad técnica de ejecución dentro de un Proyecto (ej: tendido eléctrico, montaje de tableros). Define fechas de ejecución, presupuesto asignado y contiene las Órdenes de Trabajo.',
+    workflow: [
+      'Crea un nuevo trabajo pulsando "+ Nuevo" o directamente desde la vista de Proyectos.',
+      'Asigna el Proyecto padre, la descripción técnica de la tarea y el presupuesto convenido.',
+      'Define la fecha de inicio y la fecha estimada o real de finalización.',
+      'Supervisa la transición de estados: Presupuestado ➔ En Proceso ➔ Pausado ➔ Finalizado.',
+      'Haz clic en la fila para abrir la ficha integral del trabajo y gestionar sus órdenes asociadas.',
+    ],
+    strengths: [
+      'Vinculación garantizada al Proyecto padre: previene imputaciones huérfanas sin cliente.',
+      'Sincronización automática con la columna correspondiente del tablero Kanban.',
+      'Control cruzado entre presupuesto estimado e ingresos reales de certificados.',
+    ],
+    limitations: [
+      'Un trabajo presupuestado que nunca inició no puede saltar directo a "Finalizado" (debe cancelarse o pasar a "En Proceso").',
+      'No es posible eliminar un trabajo si contiene órdenes de trabajo, certificados o movimientos de caja.',
+    ],
+    tips: [
+      'Revisa el tablero Kanban de Trabajos para gestionar visualmente las prioridades del personal en obra.',
+    ],
+  },
+
+  'trabajos-detalle': {
+    id: 'trabajos-detalle',
+    title: 'Ficha Integral del Trabajo',
+    subtitle: 'Seguimiento de órdenes de trabajo, certificados y rentabilidad',
+    purpose:
+      'Muestra la información técnica, fechas, cliente, estado actual y métricas consolidadas del trabajo en ejecución.',
+    workflow: [
+      'Comprueba las fechas pactadas y el estado de avance del trabajo.',
+      'Accede a las órdenes de trabajo vinculadas para auditar tareas de cuadrillas.',
+      'Cambia el estado de avance conforme avance la ejecución en campo.',
+    ],
+    strengths: [
+      'Visión integral de avance físico y contractual en un solo panel.',
+      'Navegación fluida hacia el proyecto contenedor.',
+    ],
+    limitations: [
+      'Los cambios de estado deben respetar la máquina de estados del dominio.',
+    ],
+    tips: [
+      'Finaliza el trabajo una vez que todos los certificados de avance hayan sido aprobados por el cliente.',
+    ],
+  },
 }
