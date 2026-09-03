@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import ContextMenu from 'primevue/contextmenu'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import {
   useKanbanStore,
   type KanbanColumnaDto,
@@ -80,8 +81,14 @@ const boardFormColor = ref('')
 
 const showManageBoardsModal = ref(false)
 
+// Delete Column confirmation
 const showDeleteColModal = ref(false)
 const colToDelete = ref<KanbanColumnaDto | null>(null)
+
+// Strict Delete Board confirmation (requires typing name if not empty)
+const showStrictDeleteBoardModal = ref(false)
+const boardToDelete = ref<KanbanTableroDto | null>(null)
+const confirmBoardNameInput = ref('')
 
 const showChecklistModal = ref(false)
 const checklistCard = ref<KanbanTarjetaDto | null>(null)
@@ -317,7 +324,7 @@ const boardMenuItems = computed(() => {
       label: 'Eliminar tablero',
       icon: 'pi pi-trash',
       disabled: !canManage.value || Boolean(b.esPreset),
-      command: () => confirmDeleteBoard(b),
+      command: () => handleDeleteBoardPrompt(b),
     },
   ]
 })
@@ -639,7 +646,7 @@ async function executeDeleteColumn() {
 }
 
 // -------------------------------------------------------------
-// Board CRUD & Manage Boards
+// Board CRUD & Strict Deletion logic
 // -------------------------------------------------------------
 function openCreateBoard() {
   editingBoard.value = null
@@ -681,16 +688,43 @@ async function saveBoard() {
   }
 }
 
-async function confirmDeleteBoard(board: KanbanTableroDto) {
+async function handleDeleteBoardPrompt(board: KanbanTableroDto) {
   if (board.esPreset) {
     alert('Los tableros presets del sistema no se pueden eliminar. Puedes ocultarlo usando la opción Ocultar.')
     return
   }
-  if (!confirm(`¿Estás seguro de que deseas eliminar permanentemente el tablero "${board.nombre}" y todas sus columnas y tarjetas?`)) {
+
+  // Check card count in this board
+  let cardCount = 0
+  if (store.currentTableroId === board.id && store.detalle) {
+    cardCount = store.detalle.tarjetas.length
+  }
+
+  // If board is empty, delete immediately without requiring typing
+  if (cardCount === 0) {
+    try {
+      await store.deleteTablero(board.id, board.rowVersion)
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Error al eliminar tablero')
+    }
     return
   }
+
+  // If board has cards, open strict confirmation modal requiring typing board name
+  boardToDelete.value = board
+  confirmBoardNameInput.value = ''
+  showStrictDeleteBoardModal.value = true
+}
+
+async function executeStrictDeleteBoard() {
+  if (!boardToDelete.value) return
+  if (confirmBoardNameInput.value.trim().toLowerCase() !== boardToDelete.value.nombre.trim().toLowerCase()) {
+    return
+  }
+  const b = boardToDelete.value
+  showStrictDeleteBoardModal.value = false
   try {
-    await store.deleteTablero(board.id, board.rowVersion)
+    await store.deleteTablero(b.id, b.rowVersion)
   } catch (err: unknown) {
     alert(err instanceof Error ? err.message : 'Error al eliminar tablero')
   }
@@ -790,24 +824,37 @@ async function removeChecklist(item: any) {
       </h3>
     </div>
 
-    <!-- Top Header: Board Switcher & Actions -->
+    <!-- Top Header: Board Switcher, Actions & Help -->
     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
       <div class="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
+        <!-- Board Tab Button with visible chromatic color reflection -->
         <button
           v-for="b in store.activeTableros"
           :key="b.id"
-          class="px-3.5 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap flex items-center gap-1.5"
+          class="px-3.5 py-1.5 rounded-md text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2 relative border"
           :class="[
             store.currentTableroId === b.id
-              ? 'bg-primary text-primary-foreground shadow-xs'
-              : 'bg-surface-card hover:bg-muted text-muted-foreground border border-border',
+              ? 'bg-surface-elevated text-foreground shadow-xs font-semibold'
+              : 'bg-surface-card hover:bg-muted text-muted-foreground border-border',
             !b.activo ? 'opacity-50 border-dashed' : ''
+          ]"
+          :style="[
+            store.currentTableroId === b.id
+              ? { borderBottomColor: b.color || 'var(--color-primary, currentColor)', borderBottomWidth: '3px', borderTopColor: 'transparent' }
+              : { borderBottomColor: 'transparent' }
           ]"
           :title="b.activo ? 'Clic derecho para opciones del tablero' : 'Tablero oculto'"
           @click="store.selectTablero(b.id)"
           @contextmenu.prevent="onBoardContextMenu($event, b)"
         >
+          <!-- Board Color Dot -->
+          <span
+            class="w-2.5 h-2.5 rounded-full shrink-0 border border-border shadow-2xs"
+            :style="{ backgroundColor: b.color || 'var(--color-primary, currentColor)' }"
+          />
+
           <span>{{ b.nombre }}</span>
+
           <span
             v-if="!b.activo"
             class="text-[9px] px-1 py-0.2 rounded font-mono bg-warning/20 text-warning"
@@ -819,7 +866,7 @@ async function removeChecklist(item: any) {
             class="text-[10px] px-1.5 py-0.2 rounded font-mono font-semibold"
             :class="
               store.currentTableroId === b.id
-                ? 'bg-primary-foreground/20 text-primary-foreground'
+                ? 'bg-primary/15 text-primary'
                 : 'bg-muted text-muted-foreground'
             "
           >
@@ -844,17 +891,23 @@ async function removeChecklist(item: any) {
         >
           ⚙ Tableros
         </button>
+
+        <!-- Help for Kanban Boards -->
+        <HelpButton topic-id="kanban-overview" title="Ayuda sobre el funcionamiento de los tableros Kanban" />
       </div>
 
       <div class="flex items-center gap-2">
-        <button
-          v-if="store.currentTablero?.esPreset"
-          class="px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-foreground flex items-center gap-1.5"
-          @click="store.syncPreset(store.currentTablero.id)"
-        >
-          <span>↻</span>
-          <span>{{ t('Kanban.Sync') }}</span>
-        </button>
+        <div v-if="store.currentTablero?.esPreset" class="flex items-center gap-1">
+          <button
+            class="px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-foreground flex items-center gap-1.5"
+            title="Reconcilia manualmente las entidades con la base de datos"
+            @click="store.syncPreset(store.currentTablero.id)"
+          >
+            <span>↻</span>
+            <span>{{ t('Kanban.Sync') }}</span>
+          </button>
+          <HelpButton topic-id="kanban-sync" title="¿Qué hace la sincronización?" />
+        </div>
 
         <button
           v-if="canManage && store.currentTableroId"
@@ -863,10 +916,38 @@ async function removeChecklist(item: any) {
         >
           + {{ t('Kanban.NewColumn') }}
         </button>
+
+        <HelpButton topic-id="kanban-columns" title="Ayuda sobre columnas y límites WIP" />
       </div>
     </div>
 
-    <!-- Filter Bar -->
+    <!-- Active Board Context Bar with Color Accent -->
+    <div
+      v-if="store.currentTablero"
+      class="flex items-center justify-between px-3.5 py-2 rounded-lg bg-surface-card border text-xs"
+      :style="{
+        borderLeftColor: store.currentTablero.color || 'var(--color-primary, currentColor)',
+        borderLeftWidth: '4px'
+      }"
+    >
+      <div class="flex items-center gap-2.5">
+        <span
+          class="w-3 h-3 rounded-full shrink-0 border border-border"
+          :style="{ backgroundColor: store.currentTablero.color || 'var(--color-primary, currentColor)' }"
+        />
+        <span class="font-bold text-foreground">{{ store.currentTablero.nombre }}</span>
+        <span v-if="store.currentTablero.descripcion" class="text-muted-foreground">
+          — {{ store.currentTablero.descripcion }}
+        </span>
+      </div>
+      <div class="flex items-center gap-2 text-muted-foreground">
+        <span>{{ sortedColumnas.length }} columnas</span>
+        <span>•</span>
+        <span>{{ filteredTarjetas.length }} tarjetas visibles</span>
+      </div>
+    </div>
+
+    <!-- Filter Bar (Cleaned up, no toggle checkbox here) -->
     <div class="flex flex-wrap items-center gap-3 bg-surface-card border border-border p-2.5 rounded-lg">
       <div class="relative flex-1 min-w-50">
         <input
@@ -897,24 +978,12 @@ async function removeChecklist(item: any) {
         <span>Proyecto:</span>
         <select
           v-model="selectedProyectoId"
-          class="px-2.5 py-1 text-xs rounded-md bg-background border border-border text-foreground focus:outline-hidden max-w-48 truncate"
+          class="px-2.5 py-1 text-xs rounded-md bg-background border border-border text-foreground focus:outline-hidden max-w-52 truncate"
         >
           <option v-for="opt in proyectosOptions" :key="opt.value" :value="opt.value">
             {{ opt.label }}
           </option>
         </select>
-      </div>
-
-      <!-- Toggle manual column buttons -->
-      <div class="flex items-center gap-1.5 text-xs text-muted-foreground border-l border-border pl-3">
-        <label class="flex items-center gap-1.5 cursor-pointer select-none" title="Muestra botones ◀ y ▶ en las cabeceras de columnas">
-          <input
-            v-model="store.showColumnMoveButtons"
-            type="checkbox"
-            class="rounded border-border text-primary"
-          />
-          <span>Botones ◀ ▶</span>
-        </label>
       </div>
     </div>
 
@@ -974,7 +1043,7 @@ async function removeChecklist(item: any) {
           </div>
 
           <div class="flex items-center gap-1">
-            <!-- Reorder column buttons (configured via store.showColumnMoveButtons) -->
+            <!-- Reorder column buttons (only rendered when activated in Settings > General) -->
             <div v-if="store.showColumnMoveButtons && canManage && sortedColumnas.length > 1" class="flex items-center">
               <button
                 v-if="index > 0"
@@ -1319,6 +1388,63 @@ async function removeChecklist(item: any) {
       </div>
     </div>
 
+    <!-- Modal: Strict Delete Board Confirmation (requires typing name if board contains cards) -->
+    <div
+      v-if="showStrictDeleteBoardModal && boardToDelete"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4"
+    >
+      <div class="w-full max-w-md rounded-xl bg-surface-card border-2 border-destructive/50 p-5 shadow-2xl flex flex-col gap-4">
+        <div class="flex items-center justify-between border-b border-border pb-2">
+          <h3 class="text-sm font-bold text-destructive flex items-center gap-1.5">
+            <span>⚠</span>
+            <span>Confirmación Crítica: Eliminar Tablero</span>
+          </h3>
+          <button type="button" class="text-muted-foreground hover:text-foreground" @click="showStrictDeleteBoardModal = false">✕</button>
+        </div>
+
+        <div class="text-xs text-foreground flex flex-col gap-3">
+          <div class="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive leading-relaxed">
+            <p class="font-semibold mb-1">Este tablero contiene tarjetas y datos activos.</p>
+            <p>
+              Si continúas, el tablero <strong>"{{ boardToDelete.nombre }}"</strong> y todas sus columnas y tarjetas serán eliminados permanentemente.
+            </p>
+          </div>
+
+          <div>
+            <label class="block font-medium text-foreground mb-1.5">
+              Para confirmar, escribe exactamente el nombre del tablero:
+              <strong class="font-mono text-primary select-all">{{ boardToDelete.nombre }}</strong>
+            </label>
+            <input
+              v-model="confirmBoardNameInput"
+              type="text"
+              :placeholder="boardToDelete.nombre"
+              class="w-full px-3 py-2 rounded-md bg-background border border-border text-foreground font-mono focus:outline-hidden focus:ring-2 focus:ring-destructive"
+              @keyup.enter="executeStrictDeleteBoard"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 border-t border-border pt-3">
+          <button
+            type="button"
+            class="px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground"
+            @click="showStrictDeleteBoardModal = false"
+          >
+            {{ t('General.Cancel') }}
+          </button>
+          <button
+            type="button"
+            class="px-4 py-1.5 rounded-md text-xs font-semibold bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
+            :disabled="confirmBoardNameInput.trim().toLowerCase() !== boardToDelete.nombre.trim().toLowerCase()"
+            @click="executeStrictDeleteBoard"
+          >
+            Eliminar permanentemente
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal: Board Create / Edit -->
     <div
       v-if="showBoardModal"
@@ -1353,11 +1479,26 @@ async function removeChecklist(item: any) {
 
           <div>
             <label class="block font-medium text-foreground mb-1">{{ t('Kanban.Color') }}</label>
-            <input
-              v-model="boardFormColor"
-              type="color"
-              class="w-full h-8 p-1 rounded-md bg-background border border-border cursor-pointer"
-            />
+            <div class="flex items-center gap-2">
+              <input
+                v-model="boardFormColor"
+                type="color"
+                class="w-10 h-8 p-1 rounded-md bg-background border border-border cursor-pointer"
+              />
+              <span class="text-xs font-mono text-muted-foreground">{{ boardFormColor || 'Predeterminado' }}</span>
+            </div>
+            <!-- Quick preset swatches -->
+            <div class="flex items-center gap-1.5 mt-2">
+              <button
+                v-for="c in KANBAN_PRESET_COLORS"
+                :key="c"
+                type="button"
+                class="w-5 h-5 rounded-full border border-border transition-transform hover:scale-110"
+                :style="{ backgroundColor: c }"
+                :title="c"
+                @click="boardFormColor = c"
+              />
+            </div>
           </div>
         </div>
 
@@ -1387,11 +1528,14 @@ async function removeChecklist(item: any) {
     >
       <div class="w-full max-w-lg rounded-xl bg-surface-card border border-border p-5 shadow-lg flex flex-col gap-4">
         <div class="flex items-center justify-between border-b border-border pb-2">
-          <div>
-            <h3 class="text-sm font-semibold text-foreground">Gestionar Tableros</h3>
-            <p class="text-xs text-muted-foreground mt-0.5">
-              Oculta o muestra tableros de la barra superior. Los tableros personalizados pueden eliminarse.
-            </p>
+          <div class="flex items-center gap-2">
+            <div>
+              <h3 class="text-sm font-semibold text-foreground">Gestionar Tableros</h3>
+              <p class="text-xs text-muted-foreground mt-0.5">
+                Oculta o muestra tableros de la barra superior. Los tableros personalizados pueden eliminarse.
+              </p>
+            </div>
+            <HelpButton topic-id="kanban-boards-management" title="Guía sobre gestión y ciclo de vida de tableros" />
           </div>
           <button type="button" class="text-muted-foreground hover:text-foreground" @click="showManageBoardsModal = false">✕</button>
         </div>
@@ -1405,7 +1549,7 @@ async function removeChecklist(item: any) {
           >
             <div class="flex items-center gap-2 min-w-0">
               <span
-                class="w-2.5 h-2.5 rounded-full shrink-0"
+                class="w-3 h-3 rounded-full shrink-0 border border-border"
                 :style="{ backgroundColor: b.color || 'var(--color-primary, currentColor)' }"
               />
               <span class="font-medium text-foreground truncate">{{ b.nombre }}</span>
@@ -1450,8 +1594,8 @@ async function removeChecklist(item: any) {
                 v-if="!b.esPreset"
                 type="button"
                 class="p-1 rounded hover:bg-muted text-destructive"
-                title="Eliminar tablero permanentemente"
-                @click="confirmDeleteBoard(b)"
+                title="Eliminar tablero"
+                @click="handleDeleteBoardPrompt(b)"
               >
                 ✕
               </button>
@@ -1472,7 +1616,7 @@ async function removeChecklist(item: any) {
             class="px-4 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90"
             @click="showManageBoardsModal = false"
           >
-            {{ t('General.Close') || 'Cerrar' }}
+            {{ t('General.Close') }}
           </button>
         </div>
       </div>

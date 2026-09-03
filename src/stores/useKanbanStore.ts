@@ -86,7 +86,9 @@ export const useKanbanStore = defineStore('kanban', () => {
     try {
       const list = await kanbanApi.listTableros()
       tableros.value = list
-      if (!currentTableroId.value && list.length > 0 && list[0]) {
+      if (currentTableroId.value && list.some((t) => t.id === currentTableroId.value)) {
+        await fetchDetalle(currentTableroId.value)
+      } else if (list.length > 0 && list[0]) {
         currentTableroId.value = list[0].id
         await fetchDetalle(list[0].id)
       }

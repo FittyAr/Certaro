@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { useSistemaStore, type Cambios } from '@/stores/useSistemaStore'
 import { useUiStore } from '@/stores/useUiStore'
 import { useKanbanStore } from '@/stores/useKanbanStore'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { isSupportedLocale, setLocale } from '@/i18n'
 
 interface GeneralDraft {
@@ -154,9 +155,12 @@ watch(
     </div>
 
     <div class="rounded-lg border border-border bg-surface-card p-6 shadow-sm">
-      <div class="mb-4 flex items-center gap-2 border-b border-border pb-3">
-        <AppIcon name="columns" :size="18" class="text-primary" />
-        <h3 class="text-sm font-semibold text-foreground">Tablero Kanban</h3>
+      <div class="mb-4 flex items-center justify-between border-b border-border pb-3">
+        <div class="flex items-center gap-2">
+          <AppIcon name="columns" :size="18" class="text-primary" />
+          <h3 class="text-sm font-semibold text-foreground">Tablero Kanban</h3>
+        </div>
+        <HelpButton topic-id="kanban-buttons-config" title="Ayuda sobre botones manuales de columnas" />
       </div>
 
       <div class="flex items-center justify-between">
