@@ -12,6 +12,7 @@ import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import PercentBar from '@/components/domain/PercentBar.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useMoney } from '@/composables/useMoney'
@@ -177,6 +178,7 @@ onMounted(() => {
           <AppIcon name="refresh-cw" :size="16" />
           {{ $t('General.Refresh') }}
         </Button>
+        <HelpButton topic-id="dashboard-overview" title="Ayuda sobre el Panel de Control" />
       </template>
     </PageHeader>
 
@@ -191,46 +193,58 @@ onMounted(() => {
     >
       <div v-if="stats" class="space-y-6">
         <!-- Quotes. Absent, not failed, when the service is unreachable. -->
-        <div v-if="store.cotizaciones?.length" class="flex flex-wrap gap-3">
-          <article
-            v-for="cotizacion in store.cotizaciones"
-            :key="cotizacion.casa"
-            class="rounded-md border border-border bg-surface-card px-3 py-2 text-sm"
-          >
-            <p class="text-xs text-muted-foreground">{{ cotizacion.nombre }}</p>
-            <p class="flex items-center gap-3">
-              <span>
-                {{ $t('Cotizaciones.Compra') }} <MoneyText :value="cotizacion.compra" />
-              </span>
-              <span>
-                {{ $t('Cotizaciones.Venta') }} <MoneyText :value="cotizacion.venta" />
-              </span>
-            </p>
-            <p v-if="cotizacion.desactualizada" class="text-xs text-muted-foreground">
-              {{ $t('Cotizaciones.Desactualizada') }}
-              <DateText :value="cotizacion.fechaActualizacion" />
-            </p>
-          </article>
+        <div v-if="store.cotizaciones?.length" class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Mercado Cambiario</span>
+            <HelpButton topic-id="dashboard-cotizaciones" title="Ayuda sobre cotizaciones de dólar" />
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <article
+              v-for="cotizacion in store.cotizaciones"
+              :key="cotizacion.casa"
+              class="rounded-md border border-border bg-surface-card px-3 py-2 text-sm"
+            >
+              <p class="text-xs text-muted-foreground">{{ cotizacion.nombre }}</p>
+              <p class="flex items-center gap-3">
+                <span>
+                  {{ $t('Cotizaciones.Compra') }} <MoneyText :value="cotizacion.compra" />
+                </span>
+                <span>
+                  {{ $t('Cotizaciones.Venta') }} <MoneyText :value="cotizacion.venta" />
+                </span>
+              </p>
+              <p v-if="cotizacion.desactualizada" class="text-xs text-muted-foreground">
+                {{ $t('Cotizaciones.Desactualizada') }}
+                <DateText :value="cotizacion.fechaActualizacion" />
+              </p>
+            </article>
+          </div>
         </div>
 
         <!-- Alerts. Each one navigates to its module with the filter already applied. -->
-        <div v-if="store.alertas?.length" class="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-          <button
-            v-for="alerta in store.alertas"
-            :key="alerta.tipo"
-            type="button"
-            class="flex items-center gap-2 rounded-md border border-border border-l-4 bg-surface-card px-3 py-2 text-left text-sm hover:bg-muted"
-            :class="severidadClase[alerta.severidad]"
-            @click="irA(alerta.destino)"
-          >
-            <AppIcon name="triangle-alert" :size="16" />
-            <!-- The amount goes through MoneyText so privacy mode covers it as well. -->
-            <span class="flex-1">
-              {{ $t(alerta.clave, { cantidad: alerta.cantidad }) }}
-              <MoneyText v-if="alerta.monto" :value="alerta.monto" colored />
-            </span>
-            <AppIcon name="chevron-right" :size="16" />
-          </button>
+        <div v-if="store.alertas?.length" class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Alertas Operativas</span>
+            <HelpButton topic-id="dashboard-alertas" title="Ayuda sobre alertas automáticas" />
+          </div>
+          <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            <button
+              v-for="alerta in store.alertas"
+              :key="alerta.tipo"
+              type="button"
+              class="flex items-center gap-2 rounded-md border border-border border-l-4 bg-surface-card px-3 py-2 text-left text-sm hover:bg-muted"
+              :class="severidadClase[alerta.severidad]"
+              @click="irA(alerta.destino)"
+            >
+              <AppIcon name="triangle-alert" :size="16" />
+              <!-- The amount goes through MoneyText so privacy mode covers it as well. -->
+              <span class="flex-1">
+                {{ $t(alerta.clave, { cantidad: alerta.cantidad }) }}
+                <MoneyText v-if="alerta.monto" :value="alerta.monto" colored />
+              </span>
+              <AppIcon name="chevron-right" :size="16" />
+            </button>
+          </div>
         </div>
 
         <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
