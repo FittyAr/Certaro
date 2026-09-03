@@ -473,4 +473,54 @@ export const HELP_REGISTRY: Record<string, HelpTopic> = {
       'Activa el filtro "Solo vencidas" a primera hora para priorizar las gestiones de cobranza del día.',
     ],
   },
+
+  'certificados-overview': {
+    id: 'certificados-overview',
+    title: 'Historial de Certificados de Obra',
+    subtitle: 'Comprobantes oficiales de avance físico para facturación',
+    purpose:
+      'Registra todas las actas de avance emitidas contra órdenes de trabajo. Cada certificado congela la medición de los ítems de obra y fundamenta la emisión de las facturas de cobro al comitente.',
+    workflow: [
+      'Los certificados no se crean de cero en esta pantalla: se emiten desde el detalle de cada Orden de Trabajo.',
+      'Filtra el historial por Cliente, Proyecto o fechas de emisión para auditorías.',
+      'Haz clic en "Ver" sobre cualquier fila para acceder a la copia congelada del acta.',
+      'Si existió un error de cómputo, el sistema permite anular únicamente el último certificado emitido de esa orden.',
+    ],
+    strengths: [
+      'Inmutabilidad legal y contractual: guarda copia fiel de precios y porcentajes vigentes al emitir.',
+      'Numeración correlativa automática por orden de trabajo.',
+      'Vínculo directo con facturas y órdenes.',
+    ],
+    limitations: [
+      'Para emitir un nuevo certificado se debe acceder desde Órdenes de Trabajo.',
+      'Solo se puede anular el último certificado de una orden (principio de correlatividad física).',
+    ],
+    tips: [
+      'Utiliza el número de certificado al facturar para que el cliente identifique rápidamente qué avance está pagando.',
+    ],
+  },
+
+  'certificados-detalle': {
+    id: 'certificados-detalle',
+    title: 'Detalle y Acta del Certificado de Obra',
+    subtitle: 'Medición porcentual congelada y montos certificados del período',
+    purpose:
+      'Muestra el desglose de los ítems certificados en esta acta, el monto neto devengado, el ajuste UOCRA aplicado y permite editar observaciones técnicas.',
+    workflow: [
+      'Revisa los importes certificados del período y el porcentaje acumulado.',
+      'Modifica o agrega observaciones de inspección si es necesario.',
+      'Haz clic en "Ver Orden" para inspeccionar la planilla madre de cómputo.',
+      'Si se trata del último certificado de la orden y hubo un error, puedes presionar "Anular" para recuperar el cupo.',
+    ],
+    strengths: [
+      'Cálculo inmutable protegido contra modificaciones posteriores de la orden de trabajo.',
+      'Edición ágil de notas técnicas sin riesgo de corromper la contabilidad.',
+    ],
+    limitations: [
+      'Los montos y porcentajes no se pueden alterar una vez emitido el documento.',
+    ],
+    tips: [
+      'Guarda o imprime el detalle del certificado para acompañarlo con la firma del inspector técnico.',
+    ],
+  },
 }

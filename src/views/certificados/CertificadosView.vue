@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Column from 'primevue/column'
 import Select from 'primevue/select'
 import { computed, onMounted, ref, watch } from 'vue'
@@ -12,6 +12,7 @@ import FilterBar from '@/components/domain/FilterBar.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
@@ -114,7 +115,11 @@ onMounted(async () => {
 
 <template>
   <section class="flex h-full flex-col gap-4 p-6">
-    <PageHeader :title="$t('Menu.Certificados')" :subtitle="$t('Certificados.Subtitle')" />
+    <PageHeader :title="$t('Menu.Certificados')" :subtitle="$t('Certificados.Subtitle')">
+      <template #actions>
+        <HelpButton topic-id="certificados-overview" title="Ayuda sobre Certificados de Obra" />
+      </template>
+    </PageHeader>
 
     <FilterBar :active="filtrosActivos" @clear="table.resetFilter()">
       <label class="flex flex-col gap-1">
