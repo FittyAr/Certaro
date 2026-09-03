@@ -371,6 +371,7 @@
     "Concurrency": "Alguien más modificó este registro. Recargá y volvé a intentar.",
     "Domain": "La operación no cumple una regla del sistema",
     "ExternalUnavailable": "El servicio {service} no está disponible",
+    "InvalidStateTransition": "No se puede cambiar el estado de {entity} de \"{from}\" a \"{to}\". Esta transición no está permitida por las reglas del sistema.",
     "Io": "No se pudo leer o escribir un archivo",
     "NotFound": "No se encontró el registro",
     "Persistence": "No se pudo acceder a los datos",
@@ -488,6 +489,7 @@
     "Save": "Guardar",
     "Saved": "Registro guardado",
     "Search": "Buscar",
+    "Select": "Seleccionar",
     "Success": "Listo",
     "Theme": "Cambiar tema",
     "To": "Hasta",
@@ -859,7 +861,8 @@
       "Activa": "Activa",
       "Cancelada": "Cancelada",
       "Finalizada": "Finalizada",
-      "Pausada": "Pausada"
+      "Pausada": "Pausada",
+      "TieneTrabajosAbiertos": "El proyecto tiene {count} trabajo(s) abierto(s). No se puede finalizar sin cerrar o cancelar previamente sus trabajos."
     },
     "Trabajo": {
       "Cancelado": "Cancelado",
@@ -898,12 +901,14 @@
   "Trabajos": {
     "Cliente": "Cliente",
     "Descripcion": "Descripción",
+    "DescripcionHint": "Descripción del trabajo o tarea a realizar",
     "Desde": "Desde",
     "Empty": "Todavía no hay trabajos",
     "Estado": "Estado",
     "FechaFin": "Fecha de fin",
     "FechaInicio": "Fecha de inicio",
     "Hasta": "Hasta",
+    "New": "Nuevo trabajo",
     "Presupuesto": "Presupuesto",
     "Proyecto": "Proyecto",
     "Subtitle": "Trabajos contratados dentro de cada proyecto"
@@ -1030,6 +1035,13 @@
     "TipoMovimiento": {
       "NombreMaxLength": "El nombre no puede superar los {max} caracteres",
       "NombreRequired": "El nombre es obligatorio"
+    },
+    "Trabajo": {
+      "DescripcionMaxLength": "La descripción no puede superar los {max} caracteres.",
+      "DescripcionRequired": "La descripción es obligatoria.",
+      "FechaFinInvalid": "La fecha final no puede ser anterior a la inicial.",
+      "PresupuestoNegative": "El presupuesto no puede ser negativo.",
+      "ProyectoRequired": "El proyecto es obligatorio."
     }
   },
   "Welcome": {

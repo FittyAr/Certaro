@@ -371,6 +371,7 @@
     "Concurrency": "Someone else changed this record. Reload and try again.",
     "Domain": "The operation breaks a rule of the system",
     "ExternalUnavailable": "The {service} service is unavailable",
+    "InvalidStateTransition": "Cannot change the state of {entity} from \"{from}\" to \"{to}\". This transition is not allowed by system rules.",
     "Io": "A file could not be read or written",
     "NotFound": "Record not found",
     "Persistence": "The data could not be reached",
@@ -488,6 +489,7 @@
     "Save": "Save",
     "Saved": "Record saved",
     "Search": "Search",
+    "Select": "Select",
     "Success": "Done",
     "Theme": "Toggle theme",
     "To": "To",
@@ -859,7 +861,8 @@
       "Activa": "Active",
       "Cancelada": "Cancelled",
       "Finalizada": "Finished",
-      "Pausada": "Paused"
+      "Pausada": "Paused",
+      "TieneTrabajosAbiertos": "The project has {count} open job(s). It cannot be finalized without closing or cancelling its jobs."
     },
     "Trabajo": {
       "Cancelado": "Cancelled",
@@ -898,12 +901,14 @@
   "Trabajos": {
     "Cliente": "Customer",
     "Descripcion": "Description",
+    "DescripcionHint": "Description of the job or task to perform",
     "Desde": "From",
     "Empty": "No jobs yet",
     "Estado": "State",
     "FechaFin": "End date",
     "FechaInicio": "Start date",
     "Hasta": "To",
+    "New": "New job",
     "Presupuesto": "Budget",
     "Proyecto": "Project",
     "Subtitle": "Jobs contracted inside each project"
@@ -1030,6 +1035,13 @@
     "TipoMovimiento": {
       "NombreMaxLength": "The name cannot exceed {max} characters",
       "NombreRequired": "The name is required"
+    },
+    "Trabajo": {
+      "DescripcionMaxLength": "The description cannot exceed {max} characters.",
+      "DescripcionRequired": "The description is required.",
+      "FechaFinInvalid": "The end date cannot be earlier than the start date.",
+      "PresupuestoNegative": "The budget cannot be negative.",
+      "ProyectoRequired": "The project is required."
     }
   },
   "Welcome": {

@@ -178,6 +178,29 @@ watch(
       </div>
     </div>
 
+    <div class="rounded-lg border border-border bg-surface-card p-6 shadow-sm">
+      <div class="mb-4 flex items-center justify-between border-b border-border pb-3">
+        <div class="flex items-center gap-2">
+          <AppIcon name="briefcase" :size="18" class="text-primary" />
+          <h3 class="text-sm font-semibold text-foreground">Proyectos</h3>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-0.5">
+          <span class="text-xs font-medium text-foreground">Mostrar columna Número</span>
+          <span class="text-xs text-muted-foreground">Muestra la columna del número identificador de proyecto en la grilla jerárquica</span>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input
+            v-model="sistema.mostrarColumnaNumeroProyectos"
+            type="checkbox"
+            class="rounded border-border text-primary"
+          />
+        </label>
+      </div>
+    </div>
+
     <div class="flex justify-end gap-3">
       <Button :disabled="!isDirty || saving" class="flex items-center gap-2" @click="apply">
         <AppIcon name="save" :size="16" />

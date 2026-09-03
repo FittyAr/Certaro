@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import ToggleSwitch from 'primevue/toggleswitch'
@@ -104,9 +104,9 @@ onMounted(cargar)
       :subtitle="cuenta?.clienteNombre || undefined"
     >
       <template #actions>
-        <label class="flex items-center gap-2 text-sm">
+        <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
           <ToggleSwitch v-model="incluirPagadas" />
-          <span>{{ $t('Comercial.CuentaCorriente.IncluirPagadas') }}</span>
+          <span class="font-medium text-foreground/90">{{ $t('Comercial.CuentaCorriente.IncluirPagadas') }}</span>
         </label>
         <Button variant="outline" @click="router.back()">
           <AppIcon name="arrow-left" :size="16" />

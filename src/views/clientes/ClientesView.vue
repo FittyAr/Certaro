@@ -171,9 +171,9 @@ onMounted(() => table.start())
         <span class="text-xs text-muted-foreground">{{ $t('Clientes.CondicionIva') }}</span>
         <InputText v-model="table.filter.value.condicionIva" :placeholder="$t('General.All')" />
       </label>
-      <label class="flex items-center gap-2 self-end pb-2">
+      <label class="flex items-center gap-2 self-end pb-2 cursor-pointer select-none">
         <ToggleSwitch v-model="table.filter.value.soloConDeuda" />
-        <span class="text-xs text-muted-foreground">{{ $t('Clientes.SoloConDeuda') }}</span>
+        <span class="text-xs font-medium text-foreground/90">{{ $t('Clientes.SoloConDeuda') }}</span>
       </label>
     </FilterBar>
 

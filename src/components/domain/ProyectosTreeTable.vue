@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
 import type { useServerTable } from '@/composables/useServerTable'
 import { useTrabajosStore, type TrabajoListItem } from '@/stores/useTrabajosStore'
+import { useSistemaStore } from '@/stores/useSistemaStore'
 import type { ProyectoListItem } from '@/stores/useProyectosStore'
 
 const props = defineProps<{
@@ -27,6 +28,7 @@ const emit = defineEmits<{
   proyectoEdit: [row: ProyectoListItem]
   proyectoDelete: [row: ProyectoListItem]
   proyectoTransition: [row: ProyectoListItem, estado: string]
+  proyectoCreateTrabajo: [row: ProyectoListItem]
   trabajoNavigate: [row: TrabajoListItem]
 }>()
 
@@ -34,6 +36,7 @@ const { t } = useI18n()
 const router = useRouter()
 const { notify } = useApiError()
 const trabajosStore = useTrabajosStore()
+const sistemaStore = useSistemaStore()
 
 const contextMenu = ref<InstanceType<typeof ContextMenu> | null>(null)
 const contextNode = ref<TreeNode | null>(null)
@@ -192,6 +195,12 @@ const contextMenuModel = computed(() => {
       },
       { separator: true },
       {
+        label: 'Agregar Trabajo',
+        icon: 'pi pi-plus',
+        disabled: p.estado === 'Finalizada' || p.estado === 'Cancelada',
+        command: () => emit('proyectoCreateTrabajo', p),
+      },
+      {
         label: t('Proyectos.VerTrabajos'),
         icon: 'pi pi-hammer',
         command: () => void router.push({ name: 'proyecto-trabajos', params: { proyectoId: p.id } }),
@@ -274,11 +283,19 @@ function onPage(event: PageState): void {
           @node-collapse="handleCollapse"
           @row-contextmenu="onRowContextMenu"
         >
-          <Column field="numero" :header="$t('Proyectos.Numero')" sortable :style="{ width: '6rem' }">
+          <Column
+            v-if="sistemaStore.mostrarColumnaNumeroProyectos"
+            field="numero"
+            :header="$t('Proyectos.Numero')"
+            sortable
+            header-class="text-center justify-center"
+            class="text-center"
+            :style="{ width: '6rem', textAlign: 'center' }"
+          >
             <template #body="{ node }">
               <span v-if="node.data.isLoading" class="text-muted-foreground">...</span>
               <span v-else-if="node.data.isEmpty" class="text-muted-foreground text-xs">— sin trabajos —</span>
-              <span v-else class="tabular-nums">{{ node.data.numero }}</span>
+              <div v-else class="tabular-nums text-center font-mono font-medium">{{ node.data.numero }}</div>
             </template>
           </Column>
 
@@ -337,6 +354,15 @@ function onPage(event: PageState): void {
           <Column :header="$t('General.Actions')" :style="{ width: '8rem' }">
             <template #body="{ node }">
               <div v-if="node.data.isProyecto" class="flex gap-1">
+                <Button
+                  v-if="node.data.proyecto.estado !== 'Finalizada' && node.data.proyecto.estado !== 'Cancelada'"
+                  variant="ghost"
+                  size="sm"
+                  title="Agregar Trabajo a este Proyecto"
+                  @click="emit('proyectoCreateTrabajo', node.data.proyecto)"
+                >
+                  <AppIcon name="plus" :size="14" />
+                </Button>
                 <Button
                   v-if="node.data.proyecto.estado !== 'Finalizada' && node.data.proyecto.estado !== 'Cancelada'"
                   variant="ghost"

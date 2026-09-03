@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
@@ -277,9 +277,9 @@ onMounted(cargar)
             :option-label="(o: TipoJornada) => $t(`TipoJornada.${o}`)"
           />
         </label>
-        <label class="flex items-center gap-2">
+        <label class="flex items-center gap-2 cursor-pointer select-none">
           <ToggleSwitch v-model="rango.soloDiasHabiles" />
-          <span class="text-sm">{{ $t('Asistencia.SoloDiasHabiles') }}</span>
+          <span class="text-sm font-medium text-foreground/90">{{ $t('Asistencia.SoloDiasHabiles') }}</span>
         </label>
       </div>
 

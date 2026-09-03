@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
@@ -158,9 +158,9 @@ onMounted(async () => {
           show-clear
         />
       </label>
-      <label class="flex items-center gap-2 self-end pb-2">
+      <label class="flex items-center gap-2 self-end pb-2 cursor-pointer select-none">
         <ToggleSwitch v-model="table.filter.value.activo" />
-        <span class="text-xs text-muted-foreground">{{ $t('Empleados.SoloActivos') }}</span>
+        <span class="text-xs font-medium text-foreground/90">{{ $t('Empleados.SoloActivos') }}</span>
       </label>
     </FilterBar>
 

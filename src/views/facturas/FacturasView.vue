@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
@@ -265,13 +265,13 @@ onMounted(async () => {
         <span class="text-xs text-muted-foreground">{{ $t('Facturas.Hasta') }}</span>
         <DateInput v-model="table.filter.value.fechaHasta" />
       </label>
-      <label class="flex items-center gap-2 self-end pb-2">
+      <label class="flex items-center gap-2 self-end pb-2 cursor-pointer select-none">
         <ToggleSwitch v-model="table.filter.value.soloImpagas" />
-        <span class="text-xs text-muted-foreground">{{ $t('Facturas.SoloImpagas') }}</span>
+        <span class="text-xs font-medium text-foreground/90">{{ $t('Facturas.SoloImpagas') }}</span>
       </label>
-      <label class="flex items-center gap-2 self-end pb-2">
+      <label class="flex items-center gap-2 self-end pb-2 cursor-pointer select-none">
         <ToggleSwitch v-model="table.filter.value.soloVencidas" />
-        <span class="text-xs text-muted-foreground">{{ $t('Facturas.SoloVencidas') }}</span>
+        <span class="text-xs font-medium text-foreground/90">{{ $t('Facturas.SoloVencidas') }}</span>
       </label>
     </FilterBar>
 

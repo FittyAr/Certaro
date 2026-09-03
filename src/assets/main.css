@@ -46,4 +46,36 @@
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-muted-foreground/50;
   }
+
+  /* High-contrast accessible styling for PrimeVue ToggleSwitch in all themes */
+  .p-toggleswitch {
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .p-toggleswitch .p-toggleswitch-slider {
+    background-color: hsl(var(--muted-foreground) / 0.25) !important;
+    border: 1.5px solid hsl(var(--border)) !important;
+    transition: all 0.15s ease-in-out;
+  }
+
+  .p-toggleswitch:hover .p-toggleswitch-slider {
+    background-color: hsl(var(--muted-foreground) / 0.4) !important;
+    border-color: hsl(var(--accent)) !important;
+  }
+
+  .p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider {
+    background-color: hsl(var(--accent)) !important;
+    border-color: hsl(var(--accent)) !important;
+  }
+
+  .p-toggleswitch .p-toggleswitch-handle {
+    background-color: hsl(var(--foreground)) !important;
+  }
+
+  .p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-handle {
+    background-color: hsl(var(--accent-foreground)) !important;
+  }
 }
+

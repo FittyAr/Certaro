@@ -201,14 +201,14 @@ impl ProyectosService {
             entity.audit.touch(now);
             repo.update(&entity, esperado).await?;
 
-            // Closing the site closes what is still open inside it, in the same transaction, so
-            // there is no window where a finished site holds a job in progress.
-            let destino_trabajo = if destino == EstadoProyecto::Cancelada {
-                EstadoTrabajo::Cancelado
-            } else {
-                EstadoTrabajo::Finalizado
-            };
             for mut trabajo in abiertos {
+                let destino_trabajo = if destino == EstadoProyecto::Cancelada
+                    || trabajo.estado == EstadoTrabajo::Presupuestado
+                {
+                    EstadoTrabajo::Cancelado
+                } else {
+                    EstadoTrabajo::Finalizado
+                };
                 trabajo.estado = trabajo.estado.transition_to(destino_trabajo)?;
                 if trabajo.fecha_fin.is_none() {
                     trabajo.fecha_fin = Some(now.date_naive());

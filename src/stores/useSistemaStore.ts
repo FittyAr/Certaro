@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useStorage } from '@vueuse/core'
 
 import {
   backupCreate,
@@ -49,6 +50,7 @@ export const useSistemaStore = defineStore('sistema', () => {
   const sistema = ref<EstadoSistema | null>(null)
   const backups = ref<BackupItem[]>([])
   const loading = ref(false)
+  const mostrarColumnaNumeroProyectos = useStorage('certaro_mostrar_columna_numero_proyectos', false)
 
   // ── Config ──────────────────────────────────────────────────────────────
 
@@ -170,5 +172,6 @@ export const useSistemaStore = defineStore('sistema', () => {
     detectLegacyDb,
     runLegacyImport,
     seedDemoData,
+    mostrarColumnaNumeroProyectos,
   }
 })

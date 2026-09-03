@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Divider from 'primevue/divider'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
@@ -14,6 +14,7 @@ import FieldError from '@/components/domain/FieldError.vue'
 import FilterBar from '@/components/domain/FilterBar.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import ProyectosTreeTable from '@/components/domain/ProyectosTreeTable.vue'
+import NuevoTrabajoModal from './components/NuevoTrabajoModal.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
@@ -54,6 +55,14 @@ const table = useServerTable<ProyectoFiltro, ProyectoListItem>({
 })
 
 const opcionesCliente = ref<LookupItem[]>([])
+const opcionesProyecto = ref<LookupItem[]>([])
+const showTrabajoModal = ref(false)
+const selectedProyectoIdForTrabajo = ref<string | null>(null)
+
+function abrirCreateTrabajo(proyecto?: ProyectoListItem): void {
+  selectedProyectoIdForTrabajo.value = proyecto ? proyecto.id : null
+  showTrabajoModal.value = true
+}
 
 const estadoOptions = computed<{ label: string; value: EstadoProyecto }[]>(() =>
   (['Activa', 'Pausada', 'Finalizada', 'Cancelada'] as const).map((value) => ({
@@ -150,6 +159,7 @@ onMounted(async () => {
   table.start()
   try {
     opcionesCliente.value = await clientes.lookup(undefined, 200)
+    opcionesProyecto.value = await store.lookup()
   } catch (e) {
     notify(e)
   }
@@ -160,10 +170,16 @@ onMounted(async () => {
   <section class="flex h-full flex-col gap-4 p-6">
     <PageHeader :title="$t('Menu.Proyectos')" :subtitle="$t('Proyectos.Subtitle')">
       <template #actions>
-        <Button @click="abrirCreate()">
-          <AppIcon name="plus" :size="16" />
-          {{ $t('General.New') }}
-        </Button>
+        <div class="flex items-center gap-2">
+          <Button variant="outline" class="flex items-center gap-2" @click="abrirCreateTrabajo()">
+            <AppIcon name="briefcase" :size="16" />
+            + {{ $t('Entity.Trabajo') || 'Nuevo Trabajo' }}
+          </Button>
+          <Button class="flex items-center gap-2" @click="abrirCreate()">
+            <AppIcon name="plus" :size="16" />
+            {{ $t('General.New') }}
+          </Button>
+        </div>
       </template>
     </PageHeader>
 
@@ -195,9 +211,9 @@ onMounted(async () => {
           :placeholder="$t('General.All')"
         />
       </label>
-      <label class="flex items-center gap-2 self-end pb-2">
+      <label class="flex items-center gap-2 self-end pb-2 cursor-pointer select-none">
         <ToggleSwitch v-model="table.filter.value.soloActivas" />
-        <span class="text-xs text-muted-foreground">{{ $t('Proyectos.SoloActivas') }}</span>
+        <span class="text-xs font-medium text-foreground/90">{{ $t('Proyectos.SoloActivas') }}</span>
       </label>
     </FilterBar>
 
@@ -209,7 +225,16 @@ onMounted(async () => {
       @proyecto-edit="(row) => drawer.openEdit(row.id)"
       @proyecto-delete="onDelete"
       @proyecto-transition="(row, destino) => cambiarEstado(row, destino as EstadoProyecto)"
+      @proyecto-create-trabajo="abrirCreateTrabajo"
       @trabajo-navigate="onTrabajoNavigate"
+    />
+
+    <NuevoTrabajoModal
+      :show="showTrabajoModal"
+      :proyecto-id="selectedProyectoIdForTrabajo"
+      :proyectos="opcionesProyecto"
+      @close="showTrabajoModal = false"
+      @saved="table.reload()"
     />
 
     <CrudDrawer :drawer="drawer" title-key="Entity.Proyecto">

@@ -103,7 +103,10 @@ impl AppError {
             AppError::Conflict { message_key, .. }
             | AppError::DependencyInUse { message_key, .. } => message_key,
             AppError::Concurrency { .. } => "Error.Concurrency",
-            AppError::Domain(_) => "Error.Domain",
+            AppError::Domain(domain_err) => match domain_err {
+                DomainError::InvalidStateTransition { .. } => "Error.InvalidStateTransition",
+                _ => "Error.Domain",
+            },
             AppError::Persistence(_) => "Error.Persistence",
             AppError::ExternalUnavailable { .. } => "Error.ExternalUnavailable",
             AppError::Io(_) => "Error.Io",
@@ -127,6 +130,13 @@ impl AppError {
             }
             AppError::Conflict { params, .. } | AppError::DependencyInUse { params, .. } => {
                 params.clone()
+            }
+            AppError::Domain(DomainError::InvalidStateTransition { entity, from, to }) => {
+                BTreeMap::from([
+                    ("entity".to_owned(), (*entity).to_owned()),
+                    ("from".to_owned(), (*from).to_owned()),
+                    ("to".to_owned(), (*to).to_owned()),
+                ])
             }
             _ => BTreeMap::new(),
         }
