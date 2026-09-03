@@ -137,3 +137,14 @@ Rules:
 - Dev choice is explicit: `\dev.ps1 dev:web` (Vite mock) vs `\dev.ps1 dev:desktop` (Tauri SQLite real). Data is separate by design (`localStorage` vs `%LOCALAPPDATA%\FittyAr\Certaro\certaro.db`); share via `Configuracion > Sistema > Exportar/Importar JSON`.
 
 This keeps `main` shippable and client branches cheap to maintain.
+
+## 12. Modular Frontend Architecture - No Monolithic Files
+
+- **Never create monolithic Vue views or components**: Any file growing beyond ~400-500 lines MUST be modularized into focused, cohesive sub-components.
+- Structure complex views into dedicated subdirectories:
+  - src/views/<feature>/components/: Sub-components, dialogs, drawers, cards, headers, specialized widgets.
+  - src/views/<feature>/composables/: Local UI state, drag-and-drop engines, filter logic.
+- Separate concerns clearly:
+  - Extract modals and dialogs into their own .vue files (e.g. CardModal.vue, ColumnModal.vue, ManageBoardsModal.vue, DeleteBoardModal.vue, ChecklistModal.vue).
+  - Extract visual sections (e.g. KanbanHeader.vue, KanbanFilterBar.vue, KanbanColumn.vue, KanbanCard.vue).
+  - Keep the parent view lean as an orchestrator component.

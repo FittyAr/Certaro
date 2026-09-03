@@ -3,7 +3,6 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import ContextMenu from 'primevue/contextmenu'
-import HelpButton from '@/components/ui/HelpButton.vue'
 import {
   useKanbanStore,
   type KanbanColumnaDto,
@@ -14,7 +13,17 @@ import {
 } from '@/stores/useKanbanStore'
 import { useProyectosStore } from '@/stores/useProyectosStore'
 import { usePermission } from '@/composables/usePermission'
-import { KANBAN_PRESET_COLORS } from '@/lib/kanbanColors'
+
+import KanbanHeader from './components/KanbanHeader.vue'
+import KanbanFilterBar from './components/KanbanFilterBar.vue'
+import KanbanColumn from './components/KanbanColumn.vue'
+import CardModal from './components/CardModal.vue'
+import ColumnModal from './components/ColumnModal.vue'
+import BoardModal from './components/BoardModal.vue'
+import ManageBoardsModal from './components/ManageBoardsModal.vue'
+import DeleteColumnModal from './components/DeleteColumnModal.vue'
+import StrictDeleteBoardModal from './components/StrictDeleteBoardModal.vue'
+import ChecklistModal from './components/ChecklistModal.vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -56,44 +65,28 @@ const contextCard = ref<KanbanTarjetaDto | null>(null)
 const contextColumn = ref<KanbanColumnaDto | null>(null)
 const contextBoard = ref<KanbanTableroDto | null>(null)
 
-// Modals
+// Modals State
 const showCardModal = ref(false)
 const editingCard = ref<KanbanTarjetaDto | null>(null)
 const cardFormColumnaId = ref<Uuid>('')
-const cardFormTitulo = ref('')
-const cardFormDescripcion = ref('')
-const cardFormPrioridad = ref<PrioridadTarjeta>('Normal')
-const cardFormFechaVencimiento = ref('')
-const cardFormEtiquetas = ref<Uuid[]>([])
 
 const showColumnModal = ref(false)
 const editingColumn = ref<KanbanColumnaDto | null>(null)
-const columnFormNombre = ref('')
-const columnFormColor = ref('')
-const columnFormOrden = ref<number>(0)
-const columnFormLimiteWip = ref<number | null>(null)
 
 const showBoardModal = ref(false)
 const editingBoard = ref<KanbanTableroDto | null>(null)
-const boardFormNombre = ref('')
-const boardFormDescripcion = ref('')
-const boardFormColor = ref('')
 
 const showManageBoardsModal = ref(false)
 
-// Delete Column confirmation
 const showDeleteColModal = ref(false)
 const colToDelete = ref<KanbanColumnaDto | null>(null)
 
-// Strict Delete Board confirmation (requires typing name if not empty)
 const showStrictDeleteBoardModal = ref(false)
 const boardToDelete = ref<KanbanTableroDto | null>(null)
-const confirmBoardNameInput = ref('')
 
 const showChecklistModal = ref(false)
 const checklistCard = ref<KanbanTarjetaDto | null>(null)
 const checklistItems = ref<any[]>([])
-const newChecklistTitle = ref('')
 
 onMounted(async () => {
   await store.fetchTableros()
@@ -335,7 +328,7 @@ const boardMenuItems = computed(() => {
 })
 
 // -------------------------------------------------------------
-// Pointer Dragging for CARDS
+// Pointer Dragging for CARDS & COLUMNS
 // -------------------------------------------------------------
 function onCardPointerDown(e: PointerEvent, card: KanbanTarjetaDto) {
   if (!canMove.value || e.button !== 0) return
@@ -353,9 +346,6 @@ function onCardPointerDown(e: PointerEvent, card: KanbanTarjetaDto) {
   window.addEventListener('pointerup', onGlobalPointerUp)
 }
 
-// -------------------------------------------------------------
-// Pointer Dragging for COLUMNS
-// -------------------------------------------------------------
 function onColumnPointerDown(e: PointerEvent, col: KanbanColumnaDto) {
   if (!canManage.value || e.button !== 0) return
   const target = e.target as HTMLElement | null
@@ -482,7 +472,6 @@ async function onGlobalPointerUp(_e: PointerEvent) {
       }
     }
   } else if (activeCard) {
-    // It was a simple click: open edit modal
     openEditCard(activeCard)
   }
 
@@ -525,51 +514,37 @@ async function moverColumna(col: KanbanColumnaDto, direccion: 'izq' | 'der') {
 }
 
 // -------------------------------------------------------------
-// Card CRUD
+// Card CRUD Handlers
 // -------------------------------------------------------------
 function openCreateCard(columnaId: Uuid) {
   editingCard.value = null
   cardFormColumnaId.value = columnaId
-  cardFormTitulo.value = ''
-  cardFormDescripcion.value = ''
-  cardFormPrioridad.value = 'Normal'
-  cardFormFechaVencimiento.value = ''
-  cardFormEtiquetas.value = []
   showCardModal.value = true
 }
 
 function openEditCard(card: KanbanTarjetaDto) {
   editingCard.value = card
   cardFormColumnaId.value = card.columnaId
-  cardFormTitulo.value = card.titulo
-  cardFormDescripcion.value = card.descripcion ?? ''
-  cardFormPrioridad.value = card.prioridad
-  cardFormFechaVencimiento.value = card.fechaVencimiento ?? ''
-  cardFormEtiquetas.value = card.etiquetas.map((e) => e.id)
   showCardModal.value = true
 }
 
-async function saveCard() {
-  if (!cardFormTitulo.value.trim()) return
-
+async function handleSaveCard(data: {
+  titulo: string
+  descripcion: string | null
+  prioridad: PrioridadTarjeta
+  fechaVencimiento: string | null
+  etiquetaIds: Uuid[]
+}) {
   try {
     if (editingCard.value) {
       await store.updateTarjeta(editingCard.value.id, {
-        titulo: cardFormTitulo.value.trim(),
-        descripcion: cardFormDescripcion.value.trim() || null,
-        prioridad: cardFormPrioridad.value,
-        fechaVencimiento: cardFormFechaVencimiento.value || null,
-        etiquetaIds: cardFormEtiquetas.value,
+        ...data,
         rowVersion: editingCard.value.rowVersion,
       })
     } else {
       await store.createTarjeta({
         columnaId: cardFormColumnaId.value,
-        titulo: cardFormTitulo.value.trim(),
-        descripcion: cardFormDescripcion.value.trim() || null,
-        prioridad: cardFormPrioridad.value,
-        fechaVencimiento: cardFormFechaVencimiento.value || null,
-        etiquetaIds: cardFormEtiquetas.value,
+        ...data,
       })
     }
     showCardModal.value = false
@@ -588,44 +563,35 @@ async function removeCard(card: KanbanTarjetaDto) {
 }
 
 // -------------------------------------------------------------
-// Column CRUD & Delete confirmation
+// Column CRUD Handlers
 // -------------------------------------------------------------
 function openCreateColumn() {
   editingColumn.value = null
-  columnFormNombre.value = ''
-  columnFormColor.value = ''
-  columnFormOrden.value = store.detalle?.columnas.length ?? 0
-  columnFormLimiteWip.value = null
   showColumnModal.value = true
 }
 
 function openEditColumn(col: KanbanColumnaDto) {
   editingColumn.value = col
-  columnFormNombre.value = col.nombre
-  columnFormColor.value = col.color ?? ''
-  columnFormOrden.value = col.orden
-  columnFormLimiteWip.value = col.limiteWip
   showColumnModal.value = true
 }
 
-async function saveColumn() {
-  if (!columnFormNombre.value.trim() || !store.currentTableroId) return
-
+async function handleSaveColumn(data: {
+  nombre: string
+  color: string | null
+  orden: number
+  limiteWip: number | null
+}) {
+  if (!store.currentTableroId) return
   try {
     if (editingColumn.value) {
       await store.updateColumna(editingColumn.value.id, {
-        nombre: columnFormNombre.value.trim(),
-        color: columnFormColor.value || null,
-        orden: columnFormOrden.value ?? editingColumn.value.orden,
-        limiteWip: columnFormLimiteWip.value,
+        ...data,
         rowVersion: editingColumn.value.rowVersion,
       })
     } else {
       await store.createColumna({
         tableroId: store.currentTableroId,
-        nombre: columnFormNombre.value.trim(),
-        color: columnFormColor.value || null,
-        limiteWip: columnFormLimiteWip.value,
+        ...data,
       })
     }
     showColumnModal.value = false
@@ -651,41 +617,32 @@ async function executeDeleteColumn() {
 }
 
 // -------------------------------------------------------------
-// Board CRUD & Strict Deletion logic
+// Board CRUD Handlers
 // -------------------------------------------------------------
 function openCreateBoard() {
   editingBoard.value = null
-  boardFormNombre.value = ''
-  boardFormDescripcion.value = ''
-  boardFormColor.value = ''
   showBoardModal.value = true
 }
 
 function openEditBoard(b: KanbanTableroDto) {
   editingBoard.value = b
-  boardFormNombre.value = b.nombre
-  boardFormDescripcion.value = b.descripcion ?? ''
-  boardFormColor.value = b.color ?? ''
   showBoardModal.value = true
 }
 
-async function saveBoard() {
-  if (!boardFormNombre.value.trim()) return
+async function handleSaveBoard(data: {
+  nombre: string
+  descripcion: string | null
+  color: string | null
+}) {
   try {
     if (editingBoard.value) {
       await store.updateTablero(editingBoard.value.id, {
-        nombre: boardFormNombre.value.trim(),
-        descripcion: boardFormDescripcion.value.trim() || null,
-        color: boardFormColor.value || null,
+        ...data,
         activo: editingBoard.value.activo,
         rowVersion: editingBoard.value.rowVersion,
       })
     } else {
-      await store.createTablero({
-        nombre: boardFormNombre.value.trim(),
-        descripcion: boardFormDescripcion.value.trim() || null,
-        color: boardFormColor.value || null,
-      })
+      await store.createTablero(data)
     }
     showBoardModal.value = false
   } catch (err: unknown) {
@@ -699,13 +656,11 @@ async function handleDeleteBoardPrompt(board: KanbanTableroDto) {
     return
   }
 
-  // Check card count in this board
   let cardCount = 0
   if (store.currentTableroId === board.id && store.detalle) {
     cardCount = store.detalle.tarjetas.length
   }
 
-  // If board is empty, delete immediately without requiring typing
   if (cardCount === 0) {
     try {
       await store.deleteTablero(board.id, board.rowVersion)
@@ -715,17 +670,12 @@ async function handleDeleteBoardPrompt(board: KanbanTableroDto) {
     return
   }
 
-  // If board has cards, open strict confirmation modal requiring typing board name
   boardToDelete.value = board
-  confirmBoardNameInput.value = ''
   showStrictDeleteBoardModal.value = true
 }
 
 async function executeStrictDeleteBoard() {
   if (!boardToDelete.value) return
-  if (confirmBoardNameInput.value.trim().toLowerCase() !== boardToDelete.value.nombre.trim().toLowerCase()) {
-    return
-  }
   const b = boardToDelete.value
   showStrictDeleteBoardModal.value = false
   try {
@@ -736,30 +686,28 @@ async function executeStrictDeleteBoard() {
 }
 
 // -------------------------------------------------------------
-// Checklist modal
+// Checklist Handlers
 // -------------------------------------------------------------
 async function openChecklist(card: KanbanTarjetaDto) {
   checklistCard.value = card
   checklistItems.value = await store.listChecklist(card.id)
-  newChecklistTitle.value = ''
   showChecklistModal.value = true
 }
 
-async function addChecklist() {
-  if (!newChecklistTitle.value.trim() || !checklistCard.value) return
+async function handleAddChecklist(titulo: string) {
+  if (!checklistCard.value) return
   try {
     const item = await store.addChecklistItem({
       tarjetaId: checklistCard.value.id,
-      titulo: newChecklistTitle.value.trim(),
+      titulo,
     })
     checklistItems.value.push(item)
-    newChecklistTitle.value = ''
   } catch (err: unknown) {
     alert(err instanceof Error ? err.message : 'Error al agregar item al checklist')
   }
 }
 
-async function toggleChecklist(item: any) {
+async function handleToggleChecklist(item: any) {
   item.completada = !item.completada
   try {
     await store.updateChecklistItem(item.id, {
@@ -774,7 +722,7 @@ async function toggleChecklist(item: any) {
   }
 }
 
-async function removeChecklist(item: any) {
+async function handleRemoveChecklist(item: any) {
   if (!checklistCard.value) return
   try {
     await store.deleteChecklistItem(item.id, checklistCard.value.id, item.completada)
@@ -829,174 +777,29 @@ async function removeChecklist(item: any) {
       </h3>
     </div>
 
-    <!-- Top Header: Board Switcher, Actions & Help -->
-    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
-      <div class="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
-        <!-- Board Tab Button with visible chromatic color reflection -->
-        <button
-          v-for="b in store.activeTableros"
-          :key="b.id"
-          class="px-3.5 py-1.5 rounded-md text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2 relative border"
-          :class="[
-            store.currentTableroId === b.id
-              ? 'bg-surface-elevated text-foreground shadow-xs font-semibold'
-              : 'bg-surface-card hover:bg-muted text-muted-foreground border-border',
-            !b.activo ? 'opacity-50 border-dashed' : ''
-          ]"
-          :style="[
-            store.currentTableroId === b.id
-              ? { borderBottomColor: b.color || 'var(--color-primary, currentColor)', borderBottomWidth: '3px', borderTopColor: 'transparent' }
-              : { borderBottomColor: 'transparent' }
-          ]"
-          :title="b.activo ? 'Clic derecho para opciones del tablero' : 'Tablero oculto'"
-          @click="store.selectTablero(b.id)"
-          @contextmenu.prevent="onBoardContextMenu($event, b)"
-        >
-          <!-- Board Color Dot -->
-          <span
-            class="w-2.5 h-2.5 rounded-full shrink-0 border border-border shadow-2xs"
-            :style="{ backgroundColor: b.color || 'var(--color-primary, currentColor)' }"
-          />
+    <!-- Top Header: Board Switcher, Info Bar, Actions & Help -->
+    <KanbanHeader
+      :active-tableros="store.activeTableros"
+      :current-tablero="store.currentTablero"
+      :current-tablero-id="store.currentTableroId"
+      :can-manage="canManage"
+      :column-count="sortedColumnas.length"
+      :card-count="filteredTarjetas.length"
+      @select-tablero="store.selectTablero"
+      @open-create-board="openCreateBoard"
+      @open-manage-boards="showManageBoardsModal = true"
+      @open-create-column="openCreateColumn"
+      @sync-preset="store.syncPreset"
+      @board-context-menu="onBoardContextMenu"
+    />
 
-          <span>{{ b.nombre }}</span>
-
-          <!-- Pinned Indicator -->
-          <span
-            v-if="store.isTableroPinned(b.id)"
-            class="text-[11px] leading-none text-primary"
-            title="Tablero fijado al inicio"
-          >
-            📌
-          </span>
-
-          <span
-            v-if="!b.activo"
-            class="text-[9px] px-1 py-0.2 rounded font-mono bg-warning/20 text-warning"
-          >
-            OCULTO
-          </span>
-          <!-- Lock Icon for preset boards instead of text 'PRESET' -->
-          <span
-            v-else-if="b.esPreset"
-            class="text-xs leading-none text-muted-foreground"
-            title="Tablero del sistema (protegido)"
-          >
-            🔒
-          </span>
-        </button>
-
-        <button
-          v-if="canManage"
-          class="px-2.5 py-1.5 rounded-md text-sm font-medium border border-dashed border-border hover:bg-muted text-muted-foreground whitespace-nowrap"
-          :title="t('Kanban.NewBoard')"
-          @click="openCreateBoard"
-        >
-          + {{ t('Kanban.NewBoard') }}
-        </button>
-
-        <button
-          v-if="canManage"
-          class="px-2.5 py-1.5 rounded-md text-sm font-medium border border-border hover:bg-muted text-muted-foreground whitespace-nowrap"
-          title="Gestionar tableros activos y ocultos"
-          @click="showManageBoardsModal = true"
-        >
-          ⚙ Tableros
-        </button>
-
-        <!-- Help for Kanban Boards -->
-        <HelpButton topic-id="kanban-overview" title="Ayuda sobre el funcionamiento de los tableros Kanban" />
-      </div>
-
-      <div class="flex items-center gap-2">
-        <div v-if="store.currentTablero?.esPreset" class="flex items-center gap-1">
-          <button
-            class="px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-foreground flex items-center gap-1.5"
-            title="Reconcilia manualmente las entidades con la base de datos"
-            @click="store.syncPreset(store.currentTablero.id)"
-          >
-            <span>↻</span>
-            <span>{{ t('Kanban.Sync') }}</span>
-          </button>
-          <HelpButton topic-id="kanban-sync" title="¿Qué hace la sincronización?" />
-        </div>
-
-        <button
-          v-if="canManage && store.currentTableroId"
-          class="px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-foreground"
-          @click="openCreateColumn"
-        >
-          + {{ t('Kanban.NewColumn') }}
-        </button>
-
-        <HelpButton topic-id="kanban-columns" title="Ayuda sobre columnas y límites WIP" />
-      </div>
-    </div>
-
-    <!-- Active Board Context Bar with Color Accent -->
-    <div
-      v-if="store.currentTablero"
-      class="flex items-center justify-between px-3.5 py-2 rounded-lg bg-surface-card border text-xs"
-      :style="{
-        borderLeftColor: store.currentTablero.color || 'var(--color-primary, currentColor)',
-        borderLeftWidth: '4px'
-      }"
-    >
-      <div class="flex items-center gap-2.5">
-        <span
-          class="w-3 h-3 rounded-full shrink-0 border border-border"
-          :style="{ backgroundColor: store.currentTablero.color || 'var(--color-primary, currentColor)' }"
-        />
-        <span class="font-bold text-foreground">{{ store.currentTablero.nombre }}</span>
-        <span v-if="store.currentTablero.descripcion" class="text-muted-foreground">
-          — {{ store.currentTablero.descripcion }}
-        </span>
-      </div>
-      <div class="flex items-center gap-2 text-muted-foreground">
-        <span>{{ sortedColumnas.length }} columnas</span>
-        <span>•</span>
-        <span>{{ filteredTarjetas.length }} tarjetas visibles</span>
-      </div>
-    </div>
-
-    <!-- Filter Bar (Cleaned up, no toggle checkbox here) -->
-    <div class="flex flex-wrap items-center gap-3 bg-surface-card border border-border p-2.5 rounded-lg">
-      <div class="relative flex-1 min-w-50">
-        <input
-          v-model="searchText"
-          type="text"
-          :placeholder="t('Kanban.SearchCards')"
-          class="w-full px-3 py-1.5 text-xs rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
-        />
-      </div>
-
-      <!-- Priority filter -->
-      <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <span>{{ t('Kanban.Priority') }}:</span>
-        <select
-          v-model="selectedPrioridad"
-          class="px-2.5 py-1 text-xs rounded-md bg-background border border-border text-foreground focus:outline-hidden"
-        >
-          <option value="all">{{ t('Kanban.All') }}</option>
-          <option value="Baja">{{ t('Kanban.PriorityLow') }}</option>
-          <option value="Normal">{{ t('Kanban.PriorityNormal') }}</option>
-          <option value="Alta">{{ t('Kanban.PriorityHigh') }}</option>
-          <option value="Urgente">{{ t('Kanban.PriorityUrgent') }}</option>
-        </select>
-      </div>
-
-      <!-- Project filter -->
-      <div v-if="proyectosOptions.length > 1" class="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <span>Proyecto:</span>
-        <select
-          v-model="selectedProyectoId"
-          class="px-2.5 py-1 text-xs rounded-md bg-background border border-border text-foreground focus:outline-hidden max-w-52 truncate"
-        >
-          <option v-for="opt in proyectosOptions" :key="opt.value" :value="opt.value">
-            {{ opt.label }}
-          </option>
-        </select>
-      </div>
-    </div>
+    <!-- Filter Bar -->
+    <KanbanFilterBar
+      v-model:search-text="searchText"
+      v-model:selected-prioridad="selectedPrioridad"
+      v-model:selected-proyecto-id="selectedProyectoId"
+      :proyectos-options="proyectosOptions"
+    />
 
     <!-- Loading / Error states -->
     <div v-if="store.loading && !store.detalle" class="py-12 text-center text-sm text-muted-foreground">
@@ -1015,705 +818,91 @@ async function removeChecklist(item: any) {
       v-else-if="store.detalle"
       class="flex-1 flex gap-4 overflow-x-auto pb-4 items-start"
     >
-      <div
+      <KanbanColumn
         v-for="(col, index) in sortedColumnas"
         :key="col.id"
-        :data-columna-id="col.id"
-        :class="[
-          'w-80 shrink-0 flex flex-col max-h-full rounded-xl bg-surface-card border transition-all duration-150 shadow-xs overflow-hidden',
-          dragHoverColumnaId === col.id ? 'border-primary ring-2 ring-primary/40 bg-primary/5' : 'border-border',
-          draggingColumn?.id === col.id ? 'opacity-30 border-dashed' : ''
-        ]"
-        :style="{
-          borderTopColor: col.color || 'var(--color-primary, currentColor)',
-          borderTopWidth: '4px'
-        }"
-      >
-        <!-- Column Header: Click & drag to reorder columns, Right-click for context menu -->
-        <div
-          class="p-3 border-b border-border flex items-center justify-between gap-2 bg-muted/20 select-none"
-          :class="canManage ? 'cursor-grab active:cursor-grabbing' : ''"
-          @pointerdown="onColumnPointerDown($event, col)"
-          @contextmenu.prevent="onColumnContextMenu($event, col)"
-        >
-          <div class="flex items-center gap-2 min-w-0">
-            <!-- Drag Handle icon for column -->
-            <span v-if="canManage" class="text-muted-foreground text-xs leading-none">⋮⋮</span>
-            <!-- Column colored dot indicator -->
-            <span
-              class="w-3 h-3 rounded-full shrink-0 border border-border shadow-xs"
-              :style="{ backgroundColor: col.color || 'var(--color-primary, currentColor)' }"
-            />
-            <h3 class="text-sm font-semibold text-foreground truncate" :title="col.nombre">
-              {{ col.nombre }}
-            </h3>
-            <span class="text-xs text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded">
-              {{ getTarjetasPorColumna(col.id).length }}
-              <template v-if="col.limiteWip"> / {{ col.limiteWip }}</template>
-            </span>
-          </div>
-
-          <div class="flex items-center gap-1">
-            <!-- Reorder column buttons (only rendered when activated in Settings > General) -->
-            <div v-if="store.showColumnMoveButtons && canManage && sortedColumnas.length > 1" class="flex items-center">
-              <button
-                v-if="index > 0"
-                type="button"
-                class="p-1 rounded-sm hover:bg-muted text-muted-foreground hover:text-foreground text-[10px] leading-none"
-                title="Mover columna a la izquierda"
-                @click.stop="moverColumna(col, 'izq')"
-              >
-                ◀
-              </button>
-              <button
-                v-if="index < sortedColumnas.length - 1"
-                type="button"
-                class="p-1 rounded-sm hover:bg-muted text-muted-foreground hover:text-foreground text-[10px] leading-none"
-                title="Mover columna a la derecha"
-                @click.stop="moverColumna(col, 'der')"
-              >
-                ▶
-              </button>
-            </div>
-
-            <button
-              v-if="canCreate"
-              class="p-1 rounded-sm hover:bg-muted text-muted-foreground hover:text-foreground text-sm"
-              :title="t('Kanban.NewCard')"
-              @click.stop="openCreateCard(col.id)"
-            >
-              +
-            </button>
-            <button
-              v-if="canManage"
-              class="p-1 rounded-sm hover:bg-muted text-muted-foreground hover:text-foreground text-xs"
-              :title="t('Kanban.EditColumn')"
-              @click.stop="openEditColumn(col)"
-            >
-              ✎
-            </button>
-            <button
-              v-if="canManage && !store.currentTablero?.esPreset"
-              class="p-1 rounded-sm hover:bg-muted text-destructive text-xs"
-              :title="t('Kanban.DeleteColumn')"
-              @click.stop="confirmDeleteColumna(col)"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-
-        <!-- Cards Container -->
-        <div class="flex-1 overflow-y-auto p-2.5 flex flex-col gap-2.5 min-h-30">
-          <div
-            v-for="card in getTarjetasPorColumna(col.id)"
-            :key="card.id"
-            :data-card-id="card.id"
-            class="p-3 rounded-lg bg-surface-elevated border shadow-xs hover:border-primary/50 transition-all cursor-grab active:cursor-grabbing flex flex-col gap-2 select-none"
-            :class="[
-              dragHoverCardId === card.id ? 'border-primary ring-2 ring-primary/50' : 'border-border',
-              draggingCard?.id === card.id ? 'opacity-30 border-dashed' : ''
-            ]"
-            @pointerdown="onCardPointerDown($event, card)"
-            @contextmenu.prevent="onCardContextMenu($event, card)"
-          >
-            <!-- Card Meta: Priority & Tags -->
-            <div class="flex flex-wrap items-center justify-between gap-1.5">
-              <span
-                class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border"
-                :class="getPriorityClass(card.prioridad)"
-              >
-                {{ card.prioridad }}
-              </span>
-
-              <div class="flex flex-wrap gap-1">
-                <span
-                  v-for="tag in card.etiquetas"
-                  :key="tag.id"
-                  class="text-[10px] px-1.5 py-0.5 rounded font-medium border border-border bg-muted text-foreground"
-                >
-                  {{ tag.nombre }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Title & Description -->
-            <div>
-              <h4 class="text-xs font-semibold text-foreground leading-snug">
-                {{ card.titulo }}
-              </h4>
-              <p
-                v-if="card.descripcion"
-                class="text-[11px] text-muted-foreground line-clamp-2 mt-1"
-              >
-                {{ card.descripcion }}
-              </p>
-            </div>
-
-            <!-- Footer: Due date, Checklist & Actions -->
-            <div class="flex items-center justify-between border-t border-border pt-2 text-[11px] text-muted-foreground">
-              <div class="flex items-center gap-2">
-                <span v-if="card.fechaVencimiento" class="flex items-center gap-1 font-mono">
-                  📅 {{ card.fechaVencimiento }}
-                </span>
-                <button
-                  type="button"
-                  class="hover:text-foreground flex items-center gap-1"
-                  @click.stop="openChecklist(card)"
-                >
-                  ☑ {{ card.completadasChecklist }}/{{ card.totalChecklist }}
-                </button>
-              </div>
-
-              <div class="flex items-center gap-1">
-                <button
-                  type="button"
-                  class="p-1 rounded-sm hover:bg-muted text-muted-foreground hover:text-foreground"
-                  :title="t('General.Edit')"
-                  @click.stop="openEditCard(card)"
-                >
-                  ✎
-                </button>
-                <button
-                  type="button"
-                  class="p-1 rounded-sm hover:bg-muted text-destructive"
-                  :title="t('General.Delete')"
-                  @click.stop="removeCard(card)"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        :col="col"
+        :index="index"
+        :total-columns="sortedColumnas.length"
+        :cards="getTarjetasPorColumna(col.id)"
+        :can-manage="canManage"
+        :can-create="canCreate"
+        :show-manual-move-buttons="store.showColumnMoveButtons"
+        :is-preset-board="Boolean(store.currentTablero?.esPreset)"
+        :drag-hover-columna-id="dragHoverColumnaId"
+        :dragging-column-id="draggingColumn?.id ?? null"
+        :drag-hover-card-id="dragHoverCardId"
+        :dragging-card-id="draggingCard?.id ?? null"
+        @column-pointer-down="onColumnPointerDown($event, col)"
+        @column-context-menu="onColumnContextMenu($event, col)"
+        @card-pointer-down="onCardPointerDown"
+        @card-context-menu="onCardContextMenu"
+        @move-column="moverColumna(col, $event)"
+        @create-card="openCreateCard(col.id)"
+        @edit-column="openEditColumn(col)"
+        @delete-column="confirmDeleteColumna(col)"
+        @edit-card="openEditCard"
+        @delete-card="removeCard"
+        @open-checklist="openChecklist"
+      />
     </div>
 
-    <!-- Modal: Card Create / Edit -->
-    <div
-      v-if="showCardModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4"
-    >
-      <div class="w-full max-w-md rounded-xl bg-surface-card border border-border p-5 shadow-lg flex flex-col gap-4">
-        <div class="flex items-center justify-between border-b border-border pb-2">
-          <h3 class="text-sm font-semibold text-foreground">
-            {{ editingCard ? t('Kanban.EditCard') : t('Kanban.NewCard') }}
-          </h3>
-          <button type="button" class="text-muted-foreground hover:text-foreground" @click="showCardModal = false">✕</button>
-        </div>
+    <!-- Modals -->
+    <CardModal
+      :show="showCardModal"
+      :editing-card="editingCard"
+      :columna-id="cardFormColumnaId"
+      @close="showCardModal = false"
+      @save="handleSaveCard"
+    />
 
-        <div class="flex flex-col gap-3 text-xs">
-          <div>
-            <label class="block font-medium text-foreground mb-1">{{ t('Kanban.Title') }} *</label>
-            <input
-              v-model="cardFormTitulo"
-              type="text"
-              class="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
-            />
-          </div>
+    <ColumnModal
+      :show="showColumnModal"
+      :editing-column="editingColumn"
+      :default-orden="store.detalle?.columnas.length ?? 0"
+      @close="showColumnModal = false"
+      @save="handleSaveColumn"
+    />
 
-          <div>
-            <label class="block font-medium text-foreground mb-1">{{ t('Kanban.Description') }}</label>
-            <textarea
-              v-model="cardFormDescripcion"
-              rows="3"
-              class="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
-            />
-          </div>
+    <BoardModal
+      :show="showBoardModal"
+      :editing-board="editingBoard"
+      @close="showBoardModal = false"
+      @save="handleSaveBoard"
+    />
 
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block font-medium text-foreground mb-1">{{ t('Kanban.Priority') }}</label>
-              <select
-                v-model="cardFormPrioridad"
-                class="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground focus:outline-hidden"
-              >
-                <option value="Baja">{{ t('Kanban.PriorityLow') }}</option>
-                <option value="Normal">{{ t('Kanban.PriorityNormal') }}</option>
-                <option value="Alta">{{ t('Kanban.PriorityHigh') }}</option>
-                <option value="Urgente">{{ t('Kanban.PriorityUrgent') }}</option>
-              </select>
-            </div>
+    <ManageBoardsModal
+      :show="showManageBoardsModal"
+      :tableros="store.tableros"
+      @close="showManageBoardsModal = false"
+      @create-board="openCreateBoard"
+      @edit-board="openEditBoard"
+      @delete-board="handleDeleteBoardPrompt"
+    />
 
-            <div>
-              <label class="block font-medium text-foreground mb-1">{{ t('Kanban.DueDate') }}</label>
-              <input
-                v-model="cardFormFechaVencimiento"
-                type="date"
-                class="w-full px-2.5 py-1.5 rounded-md bg-background border border-border text-foreground focus:outline-hidden"
-              />
-            </div>
-          </div>
-        </div>
+    <DeleteColumnModal
+      :show="showDeleteColModal"
+      :column="colToDelete"
+      :card-count="colToDelete ? getTarjetasPorColumna(colToDelete.id).length : 0"
+      @close="showDeleteColModal = false"
+      @confirm="executeDeleteColumn"
+    />
 
-        <div class="flex justify-end gap-2 border-t border-border pt-3">
-          <button
-            type="button"
-            class="px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground"
-            @click="showCardModal = false"
-          >
-            {{ t('General.Cancel') }}
-          </button>
-          <button
-            type="button"
-            class="px-4 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90"
-            @click="saveCard"
-          >
-            {{ t('General.Save') }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <StrictDeleteBoardModal
+      :show="showStrictDeleteBoardModal"
+      :board="boardToDelete"
+      @close="showStrictDeleteBoardModal = false"
+      @confirm="executeStrictDeleteBoard"
+    />
 
-    <!-- Modal: Column Create / Edit -->
-    <div
-      v-if="showColumnModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4"
-    >
-      <div class="w-full max-w-sm rounded-xl bg-surface-card border border-border p-5 shadow-lg flex flex-col gap-4">
-        <div class="flex items-center justify-between border-b border-border pb-2">
-          <h3 class="text-sm font-semibold text-foreground">
-            {{ editingColumn ? t('Kanban.EditColumn') : t('Kanban.NewColumn') }}
-          </h3>
-          <button type="button" class="text-muted-foreground hover:text-foreground" @click="showColumnModal = false">✕</button>
-        </div>
-
-        <div class="flex flex-col gap-3 text-xs">
-          <div>
-            <label class="block font-medium text-foreground mb-1">{{ t('Kanban.ColumnName') }} *</label>
-            <input
-              v-model="columnFormNombre"
-              type="text"
-              class="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
-            />
-          </div>
-
-          <!-- Color selection with picker and palette swatches -->
-          <div>
-            <label class="block font-medium text-foreground mb-1">{{ t('Kanban.Color') }}</label>
-            <div class="flex items-center gap-2">
-              <input
-                v-model="columnFormColor"
-                type="color"
-                class="w-10 h-8 p-1 rounded-md bg-background border border-border cursor-pointer"
-              />
-              <span class="text-xs font-mono text-muted-foreground">{{ columnFormColor || 'Predeterminado' }}</span>
-            </div>
-            <!-- Quick preset swatches -->
-            <div class="flex items-center gap-1.5 mt-2">
-              <button
-                v-for="c in KANBAN_PRESET_COLORS"
-                :key="c"
-                type="button"
-                class="w-5 h-5 rounded-full border border-border transition-transform hover:scale-110"
-                :style="{ backgroundColor: c }"
-                :title="c"
-                @click="columnFormColor = c"
-              />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block font-medium text-foreground mb-1">Orden</label>
-              <input
-                v-model.number="columnFormOrden"
-                type="number"
-                min="0"
-                class="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground focus:outline-hidden"
-              />
-            </div>
-            <div>
-              <label class="block font-medium text-foreground mb-1">{{ t('Kanban.WipLimit') }}</label>
-              <input
-                v-model.number="columnFormLimiteWip"
-                type="number"
-                min="1"
-                class="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground focus:outline-hidden"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-2 border-t border-border pt-3">
-          <button
-            type="button"
-            class="px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground"
-            @click="showColumnModal = false"
-          >
-            {{ t('General.Cancel') }}
-          </button>
-          <button
-            type="button"
-            class="px-4 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90"
-            @click="saveColumn"
-          >
-            {{ t('General.Save') }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal: Delete Column Confirmation -->
-    <div
-      v-if="showDeleteColModal && colToDelete"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4"
-    >
-      <div class="w-full max-w-sm rounded-xl bg-surface-card border border-destructive/40 p-5 shadow-lg flex flex-col gap-4">
-        <div class="flex items-center justify-between border-b border-border pb-2">
-          <h3 class="text-sm font-semibold text-destructive flex items-center gap-1.5">
-            <span>⚠</span>
-            <span>Eliminar Columna</span>
-          </h3>
-          <button type="button" class="text-muted-foreground hover:text-foreground" @click="showDeleteColModal = false">✕</button>
-        </div>
-
-        <div class="text-xs text-foreground flex flex-col gap-2">
-          <p>
-            ¿Estás seguro de que deseas eliminar la columna <strong>"{{ colToDelete.nombre }}"</strong>?
-          </p>
-          <p
-            v-if="getTarjetasPorColumna(colToDelete.id).length > 0"
-            class="p-2 rounded bg-destructive/10 border border-destructive/20 text-destructive"
-          >
-            Esta columna contiene <strong>{{ getTarjetasPorColumna(colToDelete.id).length }} tarjetas</strong> que también serán eliminadas permanentemente.
-          </p>
-        </div>
-
-        <div class="flex justify-end gap-2 border-t border-border pt-3">
-          <button
-            type="button"
-            class="px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground"
-            @click="showDeleteColModal = false"
-          >
-            {{ t('General.Cancel') }}
-          </button>
-          <button
-            type="button"
-            class="px-4 py-1.5 rounded-md text-xs font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            @click="executeDeleteColumn"
-          >
-            {{ t('General.Delete') }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal: Strict Delete Board Confirmation (requires typing name if board contains cards) -->
-    <div
-      v-if="showStrictDeleteBoardModal && boardToDelete"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4"
-    >
-      <div class="w-full max-w-md rounded-xl bg-surface-card border-2 border-destructive/50 p-5 shadow-2xl flex flex-col gap-4">
-        <div class="flex items-center justify-between border-b border-border pb-2">
-          <h3 class="text-sm font-bold text-destructive flex items-center gap-1.5">
-            <span>⚠</span>
-            <span>Confirmación Crítica: Eliminar Tablero</span>
-          </h3>
-          <button type="button" class="text-muted-foreground hover:text-foreground" @click="showStrictDeleteBoardModal = false">✕</button>
-        </div>
-
-        <div class="text-xs text-foreground flex flex-col gap-3">
-          <div class="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive leading-relaxed">
-            <p class="font-semibold mb-1">Este tablero contiene tarjetas y datos activos.</p>
-            <p>
-              Si continúas, el tablero <strong>"{{ boardToDelete.nombre }}"</strong> y todas sus columnas y tarjetas serán eliminados permanentemente.
-            </p>
-          </div>
-
-          <div>
-            <label class="block font-medium text-foreground mb-1.5">
-              Para confirmar, escribe exactamente el nombre del tablero:
-              <strong class="font-mono text-primary select-all">{{ boardToDelete.nombre }}</strong>
-            </label>
-            <input
-              v-model="confirmBoardNameInput"
-              type="text"
-              :placeholder="boardToDelete.nombre"
-              class="w-full px-3 py-2 rounded-md bg-background border border-border text-foreground font-mono focus:outline-hidden focus:ring-2 focus:ring-destructive"
-              @keyup.enter="executeStrictDeleteBoard"
-            />
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-2 border-t border-border pt-3">
-          <button
-            type="button"
-            class="px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground"
-            @click="showStrictDeleteBoardModal = false"
-          >
-            {{ t('General.Cancel') }}
-          </button>
-          <button
-            type="button"
-            class="px-4 py-1.5 rounded-md text-xs font-semibold bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
-            :disabled="confirmBoardNameInput.trim().toLowerCase() !== boardToDelete.nombre.trim().toLowerCase()"
-            @click="executeStrictDeleteBoard"
-          >
-            Eliminar permanentemente
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal: Board Create / Edit -->
-    <div
-      v-if="showBoardModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4"
-    >
-      <div class="w-full max-w-sm rounded-xl bg-surface-card border border-border p-5 shadow-lg flex flex-col gap-4">
-        <div class="flex items-center justify-between border-b border-border pb-2">
-          <h3 class="text-sm font-semibold text-foreground">
-            {{ editingBoard ? 'Editar Tablero' : t('Kanban.NewBoard') }}
-          </h3>
-          <button type="button" class="text-muted-foreground hover:text-foreground" @click="showBoardModal = false">✕</button>
-        </div>
-
-        <div class="flex flex-col gap-3 text-xs">
-          <div>
-            <label class="block font-medium text-foreground mb-1">{{ t('Kanban.BoardName') }} *</label>
-            <input
-              v-model="boardFormNombre"
-              type="text"
-              class="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
-            />
-          </div>
-
-          <div>
-            <label class="block font-medium text-foreground mb-1">{{ t('Kanban.Description') }}</label>
-            <textarea
-              v-model="boardFormDescripcion"
-              rows="2"
-              class="w-full px-3 py-1.5 rounded-md bg-background border border-border text-foreground focus:outline-hidden"
-            />
-          </div>
-
-          <div>
-            <label class="block font-medium text-foreground mb-1">{{ t('Kanban.Color') }}</label>
-            <div class="flex items-center gap-2">
-              <input
-                v-model="boardFormColor"
-                type="color"
-                class="w-10 h-8 p-1 rounded-md bg-background border border-border cursor-pointer"
-              />
-              <span class="text-xs font-mono text-muted-foreground">{{ boardFormColor || 'Predeterminado' }}</span>
-            </div>
-            <!-- Quick preset swatches -->
-            <div class="flex items-center gap-1.5 mt-2">
-              <button
-                v-for="c in KANBAN_PRESET_COLORS"
-                :key="c"
-                type="button"
-                class="w-5 h-5 rounded-full border border-border transition-transform hover:scale-110"
-                :style="{ backgroundColor: c }"
-                :title="c"
-                @click="boardFormColor = c"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-2 border-t border-border pt-3">
-          <button
-            type="button"
-            class="px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground"
-            @click="showBoardModal = false"
-          >
-            {{ t('General.Cancel') }}
-          </button>
-          <button
-            type="button"
-            class="px-4 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90"
-            @click="saveBoard"
-          >
-            {{ t('General.Save') }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal: Manage All Boards (Active / Hidden / Delete) -->
-    <div
-      v-if="showManageBoardsModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4"
-    >
-      <div class="w-full max-w-lg rounded-xl bg-surface-card border border-border p-5 shadow-lg flex flex-col gap-4">
-        <div class="flex items-center justify-between border-b border-border pb-2">
-          <div class="flex items-center gap-2">
-            <div>
-              <h3 class="text-sm font-semibold text-foreground">Gestionar Tableros</h3>
-              <p class="text-xs text-muted-foreground mt-0.5">
-                Oculta o muestra tableros de la barra superior. Los tableros personalizados pueden eliminarse.
-              </p>
-            </div>
-            <HelpButton topic-id="kanban-boards-management" title="Guía sobre gestión y ciclo de vida de tableros" />
-          </div>
-          <button type="button" class="text-muted-foreground hover:text-foreground" @click="showManageBoardsModal = false">✕</button>
-        </div>
-
-        <div class="flex flex-col gap-2 max-h-80 overflow-y-auto">
-          <div
-            v-for="b in store.tableros"
-            :key="b.id"
-            class="flex items-center justify-between gap-3 p-2.5 rounded-lg border text-xs"
-            :class="b.activo ? 'border-border bg-surface-elevated' : 'border-dashed border-border bg-muted/30 opacity-70'"
-          >
-            <div class="flex items-center gap-2 min-w-0">
-              <span
-                class="w-3 h-3 rounded-full shrink-0 border border-border"
-                :style="{ backgroundColor: b.color || 'var(--color-primary, currentColor)' }"
-              />
-              <span class="font-medium text-foreground truncate">{{ b.nombre }}</span>
-              <span
-                v-if="store.isTableroPinned(b.id)"
-                class="text-xs text-primary"
-                title="Fijado al inicio"
-              >
-                📌
-              </span>
-              <span
-                v-if="b.esPreset"
-                class="text-xs text-muted-foreground"
-                title="Tablero preestablecido del sistema (protegido)"
-              >
-                🔒
-              </span>
-              <span
-                v-if="!b.activo"
-                class="text-[9px] px-1 py-0.2 rounded font-mono bg-warning/10 text-warning"
-              >
-                OCULTO
-              </span>
-            </div>
-
-            <div class="flex items-center gap-1.5 shrink-0">
-              <!-- Pin / Unpin button -->
-              <button
-                type="button"
-                class="p-1 rounded text-xs border border-border hover:bg-muted"
-                :class="store.isTableroPinned(b.id) ? 'text-primary bg-primary/10' : 'text-muted-foreground'"
-                :title="store.isTableroPinned(b.id) ? 'Desfijar del inicio' : 'Fijar al inicio de la lista'"
-                @click="store.togglePinTablero(b.id)"
-              >
-                📌
-              </button>
-              <!-- Toggle visibility -->
-              <button
-                type="button"
-                class="px-2 py-1 rounded text-xs border border-border hover:bg-muted"
-                :class="b.activo ? 'text-muted-foreground' : 'text-primary font-medium'"
-                :title="b.activo ? 'Ocultar este tablero' : 'Hacer visible este tablero'"
-                @click="store.toggleTableroActivo(b)"
-              >
-                {{ b.activo ? 'Ocultar' : 'Mostrar' }}
-              </button>
-
-              <!-- Edit -->
-              <button
-                type="button"
-                class="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
-                title="Editar tablero"
-                @click="openEditBoard(b)"
-              >
-                ✎
-              </button>
-
-              <!-- Delete (only custom boards) -->
-              <button
-                v-if="!b.esPreset"
-                type="button"
-                class="p-1 rounded hover:bg-muted text-destructive"
-                title="Eliminar tablero"
-                @click="handleDeleteBoardPrompt(b)"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-between items-center border-t border-border pt-3">
-          <button
-            type="button"
-            class="px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-foreground"
-            @click="openCreateBoard"
-          >
-            + {{ t('Kanban.NewBoard') }}
-          </button>
-          <button
-            type="button"
-            class="px-4 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90"
-            @click="showManageBoardsModal = false"
-          >
-            {{ t('General.Close') }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal: Checklist -->
-    <div
-      v-if="showChecklistModal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4"
-    >
-      <div class="w-full max-w-sm rounded-xl bg-surface-card border border-border p-5 shadow-lg flex flex-col gap-4">
-        <div class="flex items-center justify-between border-b border-border pb-2">
-          <h3 class="text-sm font-semibold text-foreground">
-            {{ t('Kanban.Checklist') }}: {{ checklistCard?.titulo }}
-          </h3>
-          <button type="button" class="text-muted-foreground hover:text-foreground" @click="showChecklistModal = false">✕</button>
-        </div>
-
-        <div class="flex flex-col gap-2 max-h-60 overflow-y-auto">
-          <div
-            v-for="item in checklistItems"
-            :key="item.id"
-            class="flex items-center justify-between gap-2 p-1.5 rounded hover:bg-muted/50 text-xs"
-          >
-            <label class="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
-              <input
-                type="checkbox"
-                :checked="item.completada"
-                class="rounded border-border text-primary"
-                @change="toggleChecklist(item)"
-              />
-              <span
-                class="truncate"
-                :class="item.completada ? 'line-through text-muted-foreground' : 'text-foreground'"
-              >
-                {{ item.titulo }}
-              </span>
-            </label>
-            <button
-              type="button"
-              class="p-1 text-destructive hover:bg-destructive/10 rounded"
-              @click="removeChecklist(item)"
-            >
-              ✕
-            </button>
-          </div>
-          <div v-if="checklistItems.length === 0" class="text-xs text-muted-foreground py-2 text-center">
-            {{ t('Kanban.EmptyChecklist') }}
-          </div>
-        </div>
-
-        <div class="flex gap-2 border-t border-border pt-3">
-          <input
-            v-model="newChecklistTitle"
-            type="text"
-            :placeholder="t('Kanban.NewChecklistItem')"
-            class="flex-1 px-2.5 py-1 text-xs rounded-md bg-background border border-border text-foreground focus:outline-hidden"
-            @keyup.enter="addChecklist"
-          />
-          <button
-            type="button"
-            class="px-3 py-1 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90"
-            @click="addChecklist"
-          >
-            {{ t('Kanban.Add') }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <ChecklistModal
+      :show="showChecklistModal"
+      :card="checklistCard"
+      :items="checklistItems"
+      @close="showChecklistModal = false"
+      @add-item="handleAddChecklist"
+      @toggle-item="handleToggleChecklist"
+      @remove-item="handleRemoveChecklist"
+    />
   </div>
 </template>
