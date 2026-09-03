@@ -74,10 +74,11 @@ const treeValue = computed<TreeNode[]>(() => {
                 numero: '—',
                 nombre: trab.descripcion,
                 clienteNombre: trab.clienteNombre,
-                localidad: trab.fechaInicio,
+                localidad: '—',
                 estado: trab.estado,
                 trabajosCount: null,
-                rentabilidad: trab.presupuesto,
+                presupuesto: trab.presupuesto,
+                rentabilidad: null,
                 proyecto: null,
               },
               leaf: true,
@@ -168,6 +169,14 @@ watch(
   },
 )
 
+function onRowNavigate(node: TreeNode): void {
+  if (node.data.isProyecto && node.data.proyecto) {
+    void router.push({ name: 'proyecto-detalle', params: { proyectoId: node.data.proyecto.id } })
+  } else if (node.data.isTrabajo && node.data.trabajo) {
+    void router.push({ name: 'trabajo-detalle', params: { trabajoId: node.data.trabajo.id } })
+  }
+}
+
 const contextMenuModel = computed(() => {
   const node = contextNode.value
   if (!node) return []
@@ -175,6 +184,11 @@ const contextMenuModel = computed(() => {
   if (data.isProyecto && data.proyecto) {
     const p = data.proyecto
     return [
+      {
+        label: t('General.View'),
+        icon: 'pi pi-eye',
+        command: () => void router.push({ name: 'proyecto-detalle', params: { proyectoId: p.id } }),
+      },
       {
         label: t('General.Edit'),
         icon: 'pi pi-pencil',
@@ -305,7 +319,12 @@ function onPage(event: PageState): void {
                 <AppIcon name="loader-2" :size="14" class="animate-spin" /> Cargando...
               </span>
               <span v-else-if="node.data.isEmpty" class="text-muted-foreground text-xs italic">No hay trabajos en este proyecto</span>
-              <span v-else class="truncate" :class="node.data.isTrabajo ? 'text-muted-foreground' : 'font-medium'">
+              <span
+                v-else
+                class="truncate cursor-pointer hover:underline"
+                :class="node.data.isTrabajo ? 'text-muted-foreground pl-1' : 'font-medium'"
+                @click="onRowNavigate(node)"
+              >
                 {{ node.data.nombre }}
               </span>
             </template>
@@ -347,7 +366,13 @@ function onPage(event: PageState): void {
           <Column field="rentabilidad" :header="$t('Proyectos.Rentabilidad')" sortable>
             <template #body="{ node }">
               <template v-if="node.data.isLoading || node.data.isEmpty">—</template>
-              <MoneyText v-else :value="node.data.rentabilidad" :colored="!node.data.isTrabajo" />
+              <template v-else-if="node.data.isTrabajo">
+                <span v-if="node.data.presupuesto" class="text-xs text-muted-foreground">
+                  <span class="opacity-80">Presup.:</span> <MoneyText :value="node.data.presupuesto" />
+                </span>
+                <span v-else>—</span>
+              </template>
+              <MoneyText v-else :value="node.data.rentabilidad" colored />
             </template>
           </Column>
 

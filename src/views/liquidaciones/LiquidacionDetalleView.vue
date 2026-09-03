@@ -4,6 +4,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import DateText from '@/components/domain/DateText.vue'
+import ExportMenu from '@/components/domain/ExportMenu.vue'
 import ListState from '@/components/domain/ListState.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
@@ -13,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
 import { useLiquidacionesStore, type LiquidacionDetalle } from '@/stores/useLiquidacionesStore'
+import { useReportesStore } from '@/stores/useReportesStore'
 
 /**
  * One settlement. See `docs/09-modulos-funcionales.md` §3.11.
@@ -27,6 +29,7 @@ const router = useRouter()
 const { notify } = useApiError()
 const { confirmDelete } = useConfirmDelete()
 const store = useLiquidacionesStore()
+const reportes = useReportesStore()
 
 const liquidacionId = computed(() => String(route.params.liquidacionId ?? ''))
 
@@ -92,6 +95,11 @@ function anular(): void {
   })
 }
 
+function onExportarLiquidacion(destino: string) {
+  if (!liquidacion.value) return Promise.reject(new Error('No hay liquidación'))
+  return reportes.exportLiquidacion(liquidacion.value.id, destino)
+}
+
 onMounted(cargar)
 </script>
 
@@ -106,6 +114,13 @@ onMounted(cargar)
           <AppIcon name="arrow-left" :size="16" />
           {{ $t('General.Back') }}
         </Button>
+        <ExportMenu
+          v-if="liquidacion"
+          reporte="liquidacion"
+          :formatos="['Pdf']"
+          :detalle="liquidacion.empleadoNombre"
+          :run="(_, destino) => onExportarLiquidacion(destino)"
+        />
         <Button variant="destructive" :disabled="!liquidacion" @click="anular()">
           <AppIcon name="trash-2" :size="16" />
           {{ $t('Liquidaciones.Anular') }}

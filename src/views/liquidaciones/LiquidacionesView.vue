@@ -21,9 +21,11 @@ import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
+import { useExport } from '@/composables/useExport'
 import { useServerTable } from '@/composables/useServerTable'
 import { useShortcuts } from '@/composables/useShortcuts'
 import { useEmpleadosStore } from '@/stores/useEmpleadosStore'
+import { useReportesStore } from '@/stores/useReportesStore'
 import {
   useLiquidacionesStore,
   type LiquidacionFiltro,
@@ -61,6 +63,9 @@ const filtrosActivos = computed(
     table.filter.value.soloSinPdf === true,
 )
 
+const reportes = useReportesStore()
+const { exportar } = useExport()
+
 function onDelete(row: LiquidacionListItem): void {
   confirmDelete({
     entityKey: 'Entity.Liquidacion',
@@ -72,6 +77,15 @@ function onDelete(row: LiquidacionListItem): void {
 
 function abrirDetalle(row: LiquidacionListItem): void {
   void router.push({ name: 'liquidacion-detalle', params: { liquidacionId: row.id } })
+}
+
+function exportarPdf(row: LiquidacionListItem): void {
+  void exportar({
+    reporte: 'liquidacion',
+    formato: 'Pdf',
+    detalle: row.empleadoNombre,
+    run: (destino) => reportes.exportLiquidacion(row.id, destino),
+  })
 }
 
 // ------------------------------------------------------------------ wizard
@@ -172,15 +186,14 @@ function totalAdelantosDe(s: LiquidacionSugerencia): string {
     .toFixed(4)
 }
 
-const huboCambioDeBase = computed(() =>
-  store.sugerencias.some((s) => {
-    const ajuste = ajusteDe(s.empleadoId)
-    return ajuste.diasTrabajados !== s.diasTrabajados || ajuste.tarifaAplicada !== s.tarifaAplicada
-  }),
-)
+function empleadoCambioDeBase(s: LiquidacionSugerencia): boolean {
+  const ajuste = ajusteDe(s.empleadoId)
+  return ajuste.diasTrabajados !== s.diasTrabajados || ajuste.tarifaAplicada !== s.tarifaAplicada
+}
 
 function dtoDe(s: LiquidacionSugerencia): LiquidacionInput {
   const ajuste = ajusteDe(s.empleadoId)
+  const fueModificado = empleadoCambioDeBase(s)
   const totalBruto = (Number(ajuste.diasTrabajados) * Number(ajuste.tarifaAplicada)).toFixed(4)
   return {
     empleadoId: s.empleadoId,
@@ -195,7 +208,7 @@ function dtoDe(s: LiquidacionSugerencia): LiquidacionInput {
     multiplicadorDomingo: s.desglose.multiplicadorDomingo,
     multiplicadorFeriado: s.desglose.multiplicadorFeriado,
     // The untouched gross keeps the surcharges the backend computed; a corrected base cannot.
-    totalBruto: huboCambioDeBase.value ? totalBruto : s.totalBruto,
+    totalBruto: fueModificado ? totalBruto : s.totalBruto,
     totalAdelantos: totalAdelantosDe(s),
     observaciones: ajuste.observaciones,
     adelantos: s.adelantos
@@ -307,6 +320,9 @@ onMounted(() => {
         <div class="flex gap-1">
           <Button variant="ghost" size="sm" @click="abrirDetalle(data)">
             <AppIcon name="eye" :size="14" />
+          </Button>
+          <Button variant="ghost" size="sm" :title="$t('Export.Tipo.Pdf')" @click="exportarPdf(data)">
+            <AppIcon name="download" :size="14" />
           </Button>
           <Button variant="ghost" size="sm" @click="onDelete(data)">
             <AppIcon name="trash-2" :size="14" />

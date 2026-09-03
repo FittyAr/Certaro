@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Checkbox from 'primevue/checkbox'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
@@ -9,6 +10,7 @@ import Textarea from 'primevue/textarea'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 
 import CrudDrawer from '@/components/domain/CrudDrawer.vue'
 import DataGrid from '@/components/domain/DataGrid.vue'
@@ -31,6 +33,7 @@ import { useServerTable } from '@/composables/useServerTable'
 import { useShortcuts } from '@/composables/useShortcuts'
 import type { LookupItem } from '@/stores/useCatalogStore'
 import { useClientesStore } from '@/stores/useClientesStore'
+import { useMovimientosStore } from '@/stores/useMovimientosStore'
 import {
   MEDIOS_PAGO,
   useFacturasStore,
@@ -50,10 +53,14 @@ import {
  */
 
 const { t } = useI18n()
+const route = useRoute()
 const { confirmDelete } = useConfirmDelete()
 const { fieldErrors, notify } = useApiError()
 const store = useFacturasStore()
 const clientes = useClientesStore()
+const movimientosStore = useMovimientosStore()
+
+const registrarEnCaja = ref(true)
 
 const table = useServerTable<FacturaFiltro, FacturaListItem>({
   key: 'facturas',
@@ -153,7 +160,33 @@ async function abrirPagos(row: FacturaListItem): Promise<void> {
 async function registrarPago(): Promise<void> {
   pagoErrores.value = {}
   try {
+    const pagoMonto = nuevoPago.value.monto
+    const pagoMedio = nuevoPago.value.medioPago
+    const pagoFecha = nuevoPago.value.fecha
     factura.value = await store.crearPago(nuevoPago.value)
+
+    if (registrarEnCaja.value && factura.value) {
+      try {
+        await movimientosStore.create({
+          fecha: new Date(pagoFecha).toISOString(),
+          concepto: `Cobranza Factura ${factura.value.numero} (${pagoMedio})`,
+          monto: pagoMonto,
+          cantidad: '1.0000',
+          tipoMovimientoId: '00000000-0000-0000-0000-000000000001',
+          moneda: 'Ars',
+          cotizacionAplicada: null,
+          tipoConceptoPagoId: null,
+          categoriaId: null,
+          clienteId: factura.value.clienteId,
+          trabajoId: null,
+          empleadoId: null,
+          facturaId: factura.value.id,
+        })
+      } catch (err) {
+        console.warn('No se pudo registrar automáticamente el ingreso en caja:', err)
+      }
+    }
+
     nuevoPago.value = {
       facturaId: factura.value.id,
       fecha: hoy(),
@@ -216,6 +249,14 @@ onMounted(async () => {
     opcionesCliente.value = await clientes.lookup(undefined, 200)
   } catch (e) {
     notify(e)
+  }
+  if (route.query.certificadoId) {
+    drawer.openCreate()
+    if (route.query.clienteId) drawer.model.value.clienteId = String(route.query.clienteId)
+    if (route.query.subtotal) drawer.model.value.subtotal = String(route.query.subtotal)
+    if (route.query.iva) drawer.model.value.iva = String(route.query.iva)
+    if (route.query.total) drawer.model.value.total = String(route.query.total)
+    if (route.query.observaciones) drawer.model.value.observaciones = String(route.query.observaciones)
   }
 })
 </script>
@@ -488,10 +529,16 @@ onMounted(async () => {
               editable
             />
           </label>
-          <Button @click="registrarPago()">
-            <AppIcon name="plus" :size="16" />
-            {{ $t('Facturas.RegistrarPago') }}
-          </Button>
+          <div class="col-span-4 flex items-center justify-between pt-2">
+            <label class="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+              <Checkbox v-model="registrarEnCaja" :binary="true" />
+              <span>{{ $t('Facturas.RegistrarEnCaja') }}</span>
+            </label>
+            <Button @click="registrarPago()">
+              <AppIcon name="plus" :size="16" />
+              {{ $t('Facturas.RegistrarPago') }}
+            </Button>
+          </div>
         </div>
         <p v-else class="text-xs text-muted-foreground">{{ $t('Facturas.NoAdmitePagos') }}</p>
       </div>

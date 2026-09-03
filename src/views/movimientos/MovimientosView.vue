@@ -5,6 +5,7 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 
 import CrudDrawer from '@/components/domain/CrudDrawer.vue'
 import DataGrid from '@/components/domain/DataGrid.vue'
@@ -25,14 +26,18 @@ import { useCrudDrawer } from '@/composables/useCrudDrawer'
 import { useServerTable } from '@/composables/useServerTable'
 import { useShortcuts } from '@/composables/useShortcuts'
 import { useCatalogStore, type LookupItem } from '@/stores/useCatalogStore'
+import { useClientesStore } from '@/stores/useClientesStore'
+import { useEmpleadosStore } from '@/stores/useEmpleadosStore'
+import { useMovimientosStore } from '@/stores/useMovimientosStore'
+import { useProyectosStore } from '@/stores/useProyectosStore'
 import { useReportesStore } from '@/stores/useReportesStore'
-import {
-  useMovimientosStore,
-  type Moneda,
-  type MovimientoFiltro,
-  type MovimientoInput,
-  type MovimientoListItem,
-  type MovimientoResumen,
+import { useTrabajosStore } from '@/stores/useTrabajosStore'
+import type {
+  Moneda,
+  MovimientoFiltro,
+  MovimientoInput,
+  MovimientoListItem,
+  MovimientoResumen,
 } from '@/stores/useMovimientosStore'
 
 /**
@@ -44,10 +49,17 @@ import {
  */
 
 const { t } = useI18n()
+const route = useRoute()
 const { confirmDelete } = useConfirmDelete()
 const store = useMovimientosStore()
 const catalog = useCatalogStore()
 const reportes = useReportesStore()
+const empleados = useEmpleadosStore()
+const clientes = useClientesStore()
+const proyectos = useProyectosStore()
+const trabajos = useTrabajosStore()
+
+const ADELANTO_ID = '00000000-0000-0000-0000-000000000003'
 
 const table = useServerTable<MovimientoFiltro, MovimientoListItem, MovimientoResumen>({
   key: 'movimientos',
@@ -58,15 +70,62 @@ const table = useServerTable<MovimientoFiltro, MovimientoListItem, MovimientoRes
 
 const tipos = ref<LookupItem[]>([])
 const categorias = ref<LookupItem[]>([])
+const opcionesEmpleado = ref<LookupItem[]>([])
+const opcionesCliente = ref<LookupItem[]>([])
+const opcionesProyecto = ref<LookupItem[]>([])
+const opcionesTrabajo = ref<LookupItem[]>([])
+const selectedProyectoId = ref<string | null>(null)
 
 async function cargarSelectores(): Promise<void> {
-  ;[tipos.value, categorias.value] = await Promise.all([
+  const [t, c, emp, cli, proy] = await Promise.all([
     catalog.loadTiposMovimiento(),
     catalog.loadCategorias(),
+    empleados.fetchLookup(true),
+    clientes.lookup(undefined, 200),
+    proyectos.lookup(undefined, undefined, 200),
   ])
+  tipos.value = t
+  categorias.value = c
+  opcionesEmpleado.value = emp
+  opcionesCliente.value = cli
+  opcionesProyecto.value = proy
+}
+
+async function onClienteChange(): Promise<void> {
+  const cId = drawer.model.value.clienteId
+  selectedProyectoId.value = null
+  drawer.model.value.trabajoId = null
+  opcionesTrabajo.value = []
+  if (cId) {
+    opcionesProyecto.value = await proyectos.lookup(cId)
+  } else {
+    opcionesProyecto.value = await proyectos.lookup(undefined, undefined, 200)
+  }
+}
+
+async function onProyectoChange(): Promise<void> {
+  drawer.model.value.trabajoId = null
+  if (!selectedProyectoId.value) {
+    opcionesTrabajo.value = []
+    return
+  }
+  try {
+    opcionesTrabajo.value = await trabajos.lookup(selectedProyectoId.value)
+    if (opcionesTrabajo.value.length === 1 && opcionesTrabajo.value[0]) {
+      drawer.model.value.trabajoId = opcionesTrabajo.value[0].id
+    }
+    const p = await proyectos.fetchOne(selectedProyectoId.value)
+    if (p?.clienteId) {
+      drawer.model.value.clienteId = p.clienteId
+    }
+  } catch {
+    opcionesTrabajo.value = []
+  }
 }
 
 function vacio(): MovimientoInput & { rowVersion?: string } {
+  selectedProyectoId.value = null
+  opcionesTrabajo.value = []
   return {
     fecha: new Date().toISOString(),
     concepto: '',
@@ -90,6 +149,17 @@ const drawer = useCrudDrawer<MovimientoInput & { rowVersion?: string }>({
   empty: vacio,
   load: async (id) => {
     const d = await store.fetchOne(id)
+    selectedProyectoId.value = null
+    opcionesTrabajo.value = []
+    if (d.trabajoId) {
+      try {
+        const trab = await trabajos.fetchOne(d.trabajoId)
+        selectedProyectoId.value = trab.proyectoId
+        opcionesTrabajo.value = await trabajos.lookup(trab.proyectoId)
+      } catch {
+        // Fallback
+      }
+    }
     return {
       fecha: d.fecha,
       concepto: d.concepto,
@@ -111,6 +181,8 @@ const drawer = useCrudDrawer<MovimientoInput & { rowVersion?: string }>({
   update: (id, dto) => store.update(id, dto, dto.rowVersion ?? ''),
   onSaved: () => table.reload(),
 })
+
+const esAdelanto = computed(() => drawer.model.value.tipoMovimientoId === ADELANTO_ID)
 
 const monedaOptions = computed<{ label: string; value: Moneda }[]>(() => [
   { label: t('Movimientos.Moneda.Ars'), value: 'Ars' },
@@ -161,9 +233,17 @@ function movimientoContextMenu(row: MovimientoListItem) {
 
 useShortcuts({ 'ctrl+n': () => drawer.openCreate() })
 
-onMounted(() => {
+onMounted(async () => {
   table.start()
-  void cargarSelectores()
+  await cargarSelectores()
+  if (route.query.proyectoId) {
+    drawer.openCreate()
+    selectedProyectoId.value = String(route.query.proyectoId)
+    await onProyectoChange()
+    if (route.query.clienteId) {
+      drawer.model.value.clienteId = String(route.query.clienteId)
+    }
+  }
 })
 </script>
 
@@ -374,6 +454,25 @@ onMounted(() => {
         <FieldError id="mov-tipo-error" :message="drawer.fieldErrors.value.tipoMovimientoId" />
       </label>
 
+      <!-- Empleado selector (Required if Adelanto, selectable anytime) -->
+      <label v-if="esAdelanto || drawer.model.value.empleadoId || drawer.open.value" class="flex flex-col gap-1">
+        <span class="text-sm">
+          {{ $t('Movimientos.Empleado') }}
+          <span v-if="esAdelanto" class="text-destructive">*</span>
+        </span>
+        <Select
+          v-model="drawer.model.value.empleadoId"
+          :options="opcionesEmpleado"
+          option-label="label"
+          option-value="id"
+          filter
+          show-clear
+          :placeholder="esAdelanto ? $t('Movimientos.EmpleadoRequeridoPlaceholder') : $t('General.None')"
+          :invalid="Boolean(drawer.fieldErrors.value.empleadoId)"
+        />
+        <FieldError id="mov-empleado-error" :message="drawer.fieldErrors.value.empleadoId" />
+      </label>
+
       <label class="flex flex-col gap-1">
         <span class="text-sm">{{ $t('Movimientos.Categoria') }}</span>
         <Select
@@ -386,6 +485,57 @@ onMounted(() => {
         />
         <FieldError id="mov-categoria-error" :message="drawer.fieldErrors.value.categoriaId" />
       </label>
+
+      <!-- Imputación opcional a Cliente / Proyecto / Trabajo -->
+      <div class="space-y-3 rounded-md border border-border/70 bg-muted/20 p-3">
+        <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {{ $t('Movimientos.ImputacionOpcional') }}
+        </span>
+
+        <label class="flex flex-col gap-1">
+          <span class="text-xs text-muted-foreground">{{ $t('Movimientos.Cliente') }}</span>
+          <Select
+            v-model="drawer.model.value.clienteId"
+            :options="opcionesCliente"
+            option-label="label"
+            option-value="id"
+            filter
+            show-clear
+            :placeholder="$t('General.None')"
+            @change="onClienteChange()"
+          />
+        </label>
+
+        <div class="grid grid-cols-2 gap-3">
+          <label class="flex flex-col gap-1">
+            <span class="text-xs text-muted-foreground">{{ $t('Movimientos.Proyecto') }}</span>
+            <Select
+              v-model="selectedProyectoId"
+              :options="opcionesProyecto"
+              option-label="label"
+              option-value="id"
+              filter
+              show-clear
+              :placeholder="$t('General.None')"
+              @change="onProyectoChange()"
+            />
+          </label>
+
+          <label class="flex flex-col gap-1">
+            <span class="text-xs text-muted-foreground">{{ $t('Movimientos.Trabajo') }}</span>
+            <Select
+              v-model="drawer.model.value.trabajoId"
+              :options="opcionesTrabajo"
+              option-label="label"
+              option-value="id"
+              filter
+              show-clear
+              :placeholder="$t('General.None')"
+              :disabled="!selectedProyectoId && opcionesTrabajo.length === 0"
+            />
+          </label>
+        </div>
+      </div>
 
       <div class="grid grid-cols-2 gap-3">
         <label class="flex flex-col gap-1">

@@ -25,6 +25,24 @@ export const useUiStore = defineStore('ui', () => {
   const privacyMode = ref(false)
   const bootstrapState = ref<'initializing' | 'ready' | 'failed'>('initializing')
   const bootstrapErrorKey = ref<string | null>(null)
+  const onboardingDismissed = ref<boolean>(
+    (() => {
+      try {
+        return localStorage.getItem('ui:onboardingDismissed') === 'true'
+      } catch {
+        return false
+      }
+    })(),
+  )
+
+  function dismissOnboarding(): void {
+    onboardingDismissed.value = true
+    try {
+      localStorage.setItem('ui:onboardingDismissed', 'true')
+    } catch {
+      // ignore
+    }
+  }
 
   const prefersDark =
     typeof window !== 'undefined' && typeof window.matchMedia === 'function'
@@ -128,5 +146,7 @@ export const useUiStore = defineStore('ui', () => {
     isGroupExpanded,
     toggleGroup,
     setGroupExpanded,
+    onboardingDismissed,
+    dismissOnboarding,
   }
 })

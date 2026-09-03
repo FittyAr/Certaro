@@ -7,7 +7,7 @@ import ToggleSwitch from 'primevue/toggleswitch'
 import { useConfirm } from 'primevue/useconfirm'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import CrudDrawer from '@/components/domain/CrudDrawer.vue'
 import FieldError from '@/components/domain/FieldError.vue'
@@ -42,6 +42,7 @@ import {
 
 const { t } = useI18n()
 const confirm = useConfirm()
+const route = useRoute()
 const router = useRouter()
 const { confirmDelete } = useConfirmDelete()
 const { notify } = useApiError()
@@ -163,6 +164,10 @@ onMounted(async () => {
     opcionesProyecto.value = await store.lookup()
   } catch (e) {
     notify(e)
+  }
+  if (route.query.clienteId) {
+    await abrirCreate()
+    drawer.model.value.clienteId = String(route.query.clienteId)
   }
 })
 </script>

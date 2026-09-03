@@ -6,6 +6,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import DateText from '@/components/domain/DateText.vue'
+import ExportMenu from '@/components/domain/ExportMenu.vue'
 import ListState from '@/components/domain/ListState.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
@@ -16,6 +17,7 @@ import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
 import { useCertificadosStore, type CertificadoDetalle } from '@/stores/useCertificadosStore'
+import { useReportesStore } from '@/stores/useReportesStore'
 
 /**
  * One issued certificate. See `docs/09-modulos-funcionales.md` �3.7.
@@ -30,6 +32,7 @@ const router = useRouter()
 const { notify } = useApiError()
 const { confirmDelete } = useConfirmDelete()
 const store = useCertificadosStore()
+const reportes = useReportesStore()
 
 const certificadoId = computed(() => String(route.params.certificadoId ?? ''))
 
@@ -96,6 +99,26 @@ function verOrden(): void {
   })
 }
 
+function facturarCertificado(): void {
+  if (!certificado.value) return
+  void router.push({
+    path: '/facturas',
+    query: {
+      certificadoId: certificado.value.id,
+      clienteId: certificado.value.clienteId,
+      subtotal: certificado.value.totalNeto,
+      iva: '0.0000',
+      total: certificado.value.totalNeto,
+      observaciones: `Certificado N.º ${certificado.value.numero} · ${certificado.value.ordenTitulo}`,
+    },
+  })
+}
+
+function onExportarCertificado(destino: string) {
+  if (!certificado.value) return Promise.reject(new Error('No hay certificado'))
+  return reportes.exportCertificado(certificado.value.id, destino)
+}
+
 onMounted(cargar)
 </script>
 
@@ -113,6 +136,21 @@ onMounted(cargar)
         <Button variant="outline" @click="router.back()">
           <AppIcon name="arrow-left" :size="16" />
           {{ $t('General.Back') }}
+        </Button>
+        <ExportMenu
+          v-if="certificado"
+          reporte="certificado"
+          :formatos="['Pdf']"
+          :detalle="`${certificado.proyectoNombre} - #${certificado.numero}`"
+          :run="(_, destino) => onExportarCertificado(destino)"
+        />
+        <Button
+          v-if="certificado"
+          variant="secondary"
+          @click="facturarCertificado()"
+        >
+          <AppIcon name="receipt" :size="16" />
+          {{ $t('Certificados.Facturar') }}
         </Button>
         <Button variant="outline" :disabled="!certificado" @click="verOrden()">
           <AppIcon name="file-text" :size="16" />

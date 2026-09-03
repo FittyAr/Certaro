@@ -1,5 +1,12 @@
 <script setup lang="ts">
+import Checkbox from 'primevue/checkbox'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
+import Textarea from 'primevue/textarea'
 import { ref, computed, onMounted, watch } from 'vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import { Button } from '@/components/ui/button'
 import {
   useCalendarioStore,
   type CalendarioEventoDto,
@@ -9,6 +16,21 @@ import {
   type TipoRecurso,
 } from '@/stores/useCalendarioStore'
 import { useAuthStore } from '@/stores/useAuthStore'
+
+const tipoEventoOptions = [
+  { label: 'Trabajo', value: 'Trabajo' },
+  { label: 'Reunión', value: 'Reunion' },
+  { label: 'Mantenimiento', value: 'Mantenimiento' },
+  { label: 'Entrega', value: 'Entrega' },
+  { label: 'Otro', value: 'Otro' },
+]
+
+const tipoRecursoOptions = [
+  { label: 'Empleado', value: 'Empleado' },
+  { label: 'Vehículo', value: 'Vehiculo' },
+  { label: 'Herramienta', value: 'Herramienta' },
+  { label: 'Proyecto', value: 'Proyecto' },
+]
 
 const store = useCalendarioStore()
 const auth = useAuthStore()
@@ -44,8 +66,23 @@ function formatearFechaIso(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
-function formatearFechaHoraIso(d: Date): string {
-  return `${formatearFechaIso(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}:00.000Z`
+function fechaLocalIsoDe(isoUtc: string): string {
+  return formatearFechaIso(new Date(isoUtc))
+}
+
+function formatearHoraLocal(isoUtc: string): string {
+  const d = new Date(isoUtc)
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+function formatearLocalParaInput(isoUtc: string): string {
+  const d = new Date(isoUtc)
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+function coincideHora(isoUtc: string, hora: number): boolean {
+  const d = new Date(isoUtc)
+  return d.getHours() === hora
 }
 
 // Current period range calculation based on selected view
@@ -68,8 +105,8 @@ const rangoActual = computed(() => {
     fin.setHours(23, 59, 59, 999)
 
     return {
-      desde: formatearFechaHoraIso(inicio),
-      hasta: formatearFechaHoraIso(fin),
+      desde: inicio.toISOString(),
+      hasta: fin.toISOString(),
       inicio,
       fin,
     }
@@ -86,8 +123,8 @@ const rangoActual = computed(() => {
     fin.setHours(23, 59, 59, 999)
 
     return {
-      desde: formatearFechaHoraIso(inicio),
-      hasta: formatearFechaHoraIso(fin),
+      desde: inicio.toISOString(),
+      hasta: fin.toISOString(),
       inicio,
       fin,
     }
@@ -100,8 +137,8 @@ const rangoActual = computed(() => {
   fin.setHours(23, 59, 59, 999)
 
   return {
-    desde: formatearFechaHoraIso(inicio),
-    hasta: formatearFechaHoraIso(fin),
+    desde: inicio.toISOString(),
+    hasta: fin.toISOString(),
     inicio,
     fin,
   }
@@ -184,8 +221,8 @@ const diasCuadriculaMes = computed(() => {
   while (actual <= fin) {
     const fechaIso = formatearFechaIso(actual)
     const eventosDelDia = store.eventos.filter((e) => {
-      const eInicio = e.inicio.substring(0, 10)
-      const eFin = e.fin.substring(0, 10)
+      const eInicio = fechaLocalIsoDe(e.inicio)
+      const eFin = fechaLocalIsoDe(e.fin)
       return fechaIso >= eInicio && fechaIso <= eFin
     })
 
@@ -212,8 +249,8 @@ const diasSemanaView = computed(() => {
   for (let i = 0; i < 7; i++) {
     const fechaIso = formatearFechaIso(actual)
     const evs = store.eventos.filter((e) => {
-      const eInicio = e.inicio.substring(0, 10)
-      const eFin = e.fin.substring(0, 10)
+      const eInicio = fechaLocalIsoDe(e.inicio)
+      const eFin = fechaLocalIsoDe(e.fin)
       return fechaIso >= eInicio && fechaIso <= eFin
     })
 
@@ -238,8 +275,8 @@ const recursosActivos = computed(() => {
 function eventosDeRecurso(recursoId: string) {
   const diaIso = formatearFechaIso(store.fechaSeleccionada)
   return store.eventos.filter((e) => {
-    const eInicio = e.inicio.substring(0, 10)
-    const eFin = e.fin.substring(0, 10)
+    const eInicio = fechaLocalIsoDe(e.inicio)
+    const eFin = fechaLocalIsoDe(e.fin)
     const coincideDia = diaIso >= eInicio && diaIso <= eFin
     const tieneRecurso = e.recursos.some((r) => r.id === recursoId)
     return coincideDia && tieneRecurso
@@ -275,8 +312,8 @@ function abrirEditarEvento(ev: CalendarioEventoDto) {
   formTitulo.value = ev.titulo
   formDescripcion.value = ev.descripcion || ''
   formTipo.value = ev.tipo
-  formInicio.value = ev.inicio.substring(0, 16)
-  formFin.value = ev.fin.substring(0, 16)
+  formInicio.value = formatearLocalParaInput(ev.inicio)
+  formFin.value = formatearLocalParaInput(ev.fin)
   formTodoElDia.value = ev.todoElDia
   formRecursosIds.value = ev.recursos.map((r) => r.id)
 
@@ -286,8 +323,8 @@ function abrirEditarEvento(ev: CalendarioEventoDto) {
 async function guardarEvento() {
   if (!formTitulo.value.trim()) return
 
-  const inicioUtc = `${formInicio.value}:00.000Z`
-  const finUtc = `${formFin.value}:00.000Z`
+  const inicioUtc = new Date(formInicio.value).toISOString()
+  const finUtc = new Date(formFin.value).toISOString()
 
   try {
     if (eventoEditando.value) {
@@ -587,7 +624,7 @@ function getBadgeClass(tipo: TipoEvento, esVirtual: boolean) {
               @click="abrirCrearEvento(`${dia.fechaIso}T${pad(hora)}:00`)"
             >
               <div
-                v-for="ev in dia.eventos.filter(e => e.inicio.includes(`T${pad(hora)}:`))"
+                v-for="ev in dia.eventos.filter(e => coincideHora(e.inicio, hora))"
                 :key="ev.id"
                 :class="[
                   'text-[11px] px-1.5 py-0.5 rounded-md border font-medium truncate hover:opacity-80',
@@ -620,7 +657,7 @@ function getBadgeClass(tipo: TipoEvento, esVirtual: boolean) {
             <span class="w-16 text-xs text-muted-foreground font-mono">{{ pad(hora) }}:00</span>
             <div class="flex-1 flex flex-wrap gap-2 pl-4">
               <div
-                v-for="ev in store.eventos.filter(e => e.inicio.includes(`T${pad(hora)}:`))"
+                v-for="ev in store.eventos.filter(e => coincideHora(e.inicio, hora) && fechaLocalIsoDe(e.inicio) === formatearFechaIso(store.fechaSeleccionada))"
                 :key="ev.id"
                 :class="[
                   'px-3 py-1.5 rounded-md border text-xs font-medium hover:opacity-80 flex items-center gap-2',
@@ -684,7 +721,7 @@ function getBadgeClass(tipo: TipoEvento, esVirtual: boolean) {
               >
                 <div class="font-semibold truncate">{{ ev.titulo }}</div>
                 <div class="text-[10px] opacity-75 mt-0.5">
-                  {{ ev.inicio.substring(11, 16) }} - {{ ev.fin.substring(11, 16) }}
+                  {{ formatearHoraLocal(ev.inicio) }} - {{ formatearHoraLocal(ev.fin) }}
                 </div>
                 <div v-if="ev.descripcion" class="text-[10px] line-clamp-2 opacity-85 mt-1">
                   {{ ev.descripcion }}
@@ -703,244 +740,213 @@ function getBadgeClass(tipo: TipoEvento, esVirtual: boolean) {
     </main>
 
     <!-- MODAL: Crear/Editar Evento -->
-    <div
-      v-if="modalEventoAbierto"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4"
+    <Dialog
+      v-model:visible="modalEventoAbierto"
+      modal
+      :header="eventoEditando ? 'Editar Evento' : 'Nuevo Evento'"
+      class="w-full max-w-lg"
     >
-      <div class="bg-surface-card border border-border rounded-xl shadow-lg w-full max-w-lg overflow-hidden">
-        <div class="p-4 border-b border-border flex items-center justify-between">
-          <h2 class="text-base font-bold">
-            {{ eventoEditando ? 'Editar Evento' : 'Nuevo Evento' }}
-          </h2>
-          <button
-            type="button"
-            class="text-muted-foreground hover:text-foreground text-sm"
-            @click="modalEventoAbierto = false"
-          >
-            ✕
-          </button>
+      <form class="flex flex-col gap-3" @submit.prevent="guardarEvento">
+        <label class="flex flex-col gap-1">
+          <span class="text-xs font-medium text-foreground">Título *</span>
+          <InputText
+            v-model="formTitulo"
+            required
+            placeholder="Ej. Instalación en planta matriz"
+          />
+        </label>
+
+        <div class="grid grid-cols-2 gap-3">
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-medium text-foreground">Tipo de Evento</span>
+            <Select
+              v-model="formTipo"
+              :options="tipoEventoOptions"
+              option-label="label"
+              option-value="value"
+            />
+          </label>
+          <div class="flex items-center gap-2 pt-5">
+            <Checkbox id="todoElDia" v-model="formTodoElDia" :binary="true" />
+            <label for="todoElDia" class="text-xs font-medium text-foreground cursor-pointer">
+              Todo el día
+            </label>
+          </div>
         </div>
 
-        <form @submit.prevent="guardarEvento" class="p-4 flex flex-col gap-3 text-xs">
-          <div>
-            <label class="font-medium text-foreground block mb-1">Título *</label>
-            <input
-              v-model="formTitulo"
-              type="text"
+        <div class="grid grid-cols-2 gap-3">
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-medium text-foreground">Inicio</span>
+            <InputText
+              v-model="formInicio"
+              type="datetime-local"
               required
-              class="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
-              placeholder="Ej. Instalación en planta matriz"
             />
-          </div>
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-medium text-foreground">Fin</span>
+            <InputText
+              v-model="formFin"
+              type="datetime-local"
+              required
+            />
+          </label>
+        </div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="font-medium text-foreground block mb-1">Tipo de Evento</label>
-              <select
-                v-model="formTipo"
-                class="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
-              >
-                <option value="Trabajo">Trabajo</option>
-                <option value="Reunion">Reunión</option>
-                <option value="Mantenimiento">Mantenimiento</option>
-                <option value="Entrega">Entrega</option>
-                <option value="Otro">Otro</option>
-              </select>
-            </div>
-            <div class="flex items-center gap-2 pt-6">
-              <input
-                id="todoElDia"
-                v-model="formTodoElDia"
-                type="checkbox"
-                class="rounded border-border text-primary"
+        <div>
+          <span class="text-xs font-medium text-foreground block mb-1">Recursos Asignados</span>
+          <div class="max-h-28 overflow-y-auto border border-border rounded-md p-2 flex flex-col gap-1.5 bg-background">
+            <label
+              v-for="rec in store.recursos.filter((r) => r.activo)"
+              :key="rec.id"
+              class="flex items-center gap-2 cursor-pointer text-xs"
+            >
+              <Checkbox
+                v-model="formRecursosIds"
+                :value="rec.id"
               />
-              <label for="todoElDia" class="font-medium text-foreground">Todo el día</label>
-            </div>
+              <span>{{ rec.nombre }}</span>
+              <span class="text-[10px] text-muted-foreground font-mono">({{ rec.tipo }})</span>
+            </label>
           </div>
+        </div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="font-medium text-foreground block mb-1">Inicio</label>
-              <input
-                v-model="formInicio"
-                type="datetime-local"
-                required
-                class="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
-              />
-            </div>
-            <div>
-              <label class="font-medium text-foreground block mb-1">Fin</label>
-              <input
-                v-model="formFin"
-                type="datetime-local"
-                required
-                class="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
-              />
-            </div>
-          </div>
+        <label class="flex flex-col gap-1">
+          <span class="text-xs font-medium text-foreground">Descripción</span>
+          <Textarea
+            v-model="formDescripcion"
+            rows="2"
+            auto-resize
+            placeholder="Detalles adicionales..."
+          />
+        </label>
 
+        <div class="flex items-center justify-between pt-3 border-t border-border mt-2">
           <div>
-            <label class="font-medium text-foreground block mb-1">Recursos Asignados</label>
-            <div class="max-h-28 overflow-y-auto border border-border rounded-md p-2 flex flex-col gap-1.5 bg-background">
-              <label
-                v-for="rec in store.recursos.filter(r => r.activo)"
-                :key="rec.id"
-                class="flex items-center gap-2 cursor-pointer text-xs"
-              >
-                <input
-                  type="checkbox"
-                  :value="rec.id"
-                  v-model="formRecursosIds"
-                  class="rounded border-border text-primary"
-                />
-                <span>{{ rec.nombre }}</span>
-                <span class="text-[10px] text-muted-foreground font-mono">({{ rec.tipo }})</span>
-              </label>
-            </div>
+            <Button
+              v-if="eventoEditando && auth.hasPermission('calendario:editar_evento')"
+              type="button"
+              variant="destructive"
+              size="sm"
+              @click="borrarEvento"
+            >
+              <AppIcon name="trash-2" :size="14" />
+              Eliminar
+            </Button>
           </div>
-
-          <div>
-            <label class="font-medium text-foreground block mb-1">Descripción</label>
-            <textarea
-              v-model="formDescripcion"
-              rows="2"
-              class="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
-              placeholder="Detalles adicionales..."
-            ></textarea>
+          <div class="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              @click="modalEventoAbierto = false"
+            >
+              {{ $t('General.Cancel') }}
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+            >
+              {{ $t('General.Save') }}
+            </Button>
           </div>
-
-          <div class="flex items-center justify-between pt-3 border-t border-border mt-2">
-            <div>
-              <button
-                v-if="eventoEditando && auth.hasPermission('calendario:editar_evento')"
-                type="button"
-                class="px-3 py-1.5 text-destructive hover:bg-destructive/10 rounded-md font-medium"
-                @click="borrarEvento"
-              >
-                Eliminar
-              </button>
-            </div>
-            <div class="flex items-center gap-2">
-              <button
-                type="button"
-                class="px-3 py-1.5 border border-border rounded-md hover:bg-muted"
-                @click="modalEventoAbierto = false"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-1.5 bg-primary text-primary-foreground font-medium rounded-md hover:opacity-90"
-              >
-                Guardar
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
+        </div>
+      </form>
+    </Dialog>
 
     <!-- MODAL: Gestión de Recursos -->
-    <div
-      v-if="modalRecursosAbierto"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4"
+    <Dialog
+      v-model:visible="modalRecursosAbierto"
+      modal
+      header="Gestión de Recursos"
+      class="w-full max-w-xl"
     >
-      <div class="bg-surface-card border border-border rounded-xl shadow-lg w-full max-w-xl overflow-hidden">
-        <div class="p-4 border-b border-border flex items-center justify-between">
-          <h2 class="text-base font-bold">Gestión de Recursos</h2>
-          <button
-            type="button"
-            class="text-muted-foreground hover:text-foreground text-sm"
-            @click="modalRecursosAbierto = false"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div class="p-4 flex flex-col gap-4 text-xs">
-          <!-- Form new resource -->
-          <form @submit.prevent="guardarRecurso" class="p-3 border border-border rounded-lg bg-muted/20 flex flex-col gap-3">
-            <div class="font-semibold">
-              {{ editandoRecursoId ? 'Editar Recurso' : 'Nuevo Recurso' }}
+      <div class="flex flex-col gap-4">
+        <!-- Form new resource -->
+        <form class="p-3 border border-border rounded-lg bg-muted/20 flex flex-col gap-3" @submit.prevent="guardarRecurso">
+          <div class="font-semibold text-xs">
+            {{ editandoRecursoId ? 'Editar Recurso' : 'Nuevo Recurso' }}
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="col-span-2">
+              <InputText
+                v-model="formRecursoNombre"
+                required
+                placeholder="Nombre (ej. Camioneta 01, Cuadrilla A)"
+                class="w-full"
+              />
             </div>
-            <div class="grid grid-cols-3 gap-2">
-              <div class="col-span-2">
-                <input
-                  v-model="formRecursoNombre"
-                  type="text"
-                  required
-                  class="w-full px-3 py-1.5 bg-background border border-border rounded-md text-foreground"
-                  placeholder="Nombre (ej. Camioneta 01, Grua)"
-                />
-              </div>
-              <div>
-                <select
-                  v-model="formRecursoTipo"
-                  class="w-full px-3 py-1.5 bg-background border border-border rounded-md text-foreground"
-                >
-                  <option value="Empleado">Empleado</option>
-                  <option value="Vehiculo">Vehículo</option>
-                  <option value="Herramienta">Herramienta</option>
-                  <option value="Proyecto">Proyecto</option>
-                </select>
-              </div>
+            <div>
+              <Select
+                v-model="formRecursoTipo"
+                :options="tipoRecursoOptions"
+                option-label="label"
+                option-value="value"
+                class="w-full"
+              />
             </div>
-            <div class="flex justify-end gap-2">
-              <button
-                type="submit"
-                class="px-3 py-1 bg-primary text-primary-foreground rounded-md font-medium hover:opacity-90"
-              >
-                Guardar Recurso
-              </button>
-            </div>
-          </form>
-
-          <!-- List of active resources -->
-          <div class="max-h-60 overflow-y-auto border border-border rounded-lg divide-y divide-border">
-            <div
-              v-for="rec in store.recursos"
-              :key="rec.id"
-              class="p-2.5 flex items-center justify-between hover:bg-muted/10"
+          </div>
+          <div class="flex justify-end gap-2">
+            <Button
+              v-if="editandoRecursoId"
+              type="button"
+              variant="ghost"
+              size="sm"
+              @click="editandoRecursoId = null; formRecursoNombre = ''"
             >
-              <div>
-                <span class="font-medium">{{ rec.nombre }}</span>
-                <span class="text-muted-foreground text-[10px] ml-2">({{ rec.tipo }})</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <button
-                  type="button"
-                  class="text-primary hover:underline"
-                  @click="
-                    editandoRecursoId = rec.id;
-                    formRecursoNombre = rec.nombre;
-                    formRecursoTipo = rec.tipo;
-                    formRecursoGrupoId = rec.grupoId;
-                  "
-                >
-                  Editar
-                </button>
-                <button
-                  type="button"
-                  class="text-destructive hover:underline"
-                  @click="store.eliminarRecurso(rec.id, rec.rowVersion)"
-                >
-                  Eliminar
-                </button>
-              </div>
+              {{ $t('General.Cancel') }}
+            </Button>
+            <Button type="submit" size="sm">
+              {{ editandoRecursoId ? 'Actualizar' : 'Guardar Recurso' }}
+            </Button>
+          </div>
+        </form>
+
+        <!-- List of active resources -->
+        <div class="max-h-60 overflow-y-auto border border-border rounded-lg divide-y divide-border">
+          <div
+            v-for="rec in store.recursos"
+            :key="rec.id"
+            class="p-2.5 flex items-center justify-between hover:bg-muted/10 text-xs"
+          >
+            <div>
+              <span class="font-medium">{{ rec.nombre }}</span>
+              <span class="text-muted-foreground text-[10px] ml-2">({{ rec.tipo }})</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                @click="
+                  editandoRecursoId = rec.id;
+                  formRecursoNombre = rec.nombre;
+                  formRecursoTipo = rec.tipo;
+                  formRecursoGrupoId = rec.grupoId;
+                "
+              >
+                <AppIcon name="pencil" :size="14" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                @click="store.eliminarRecurso(rec.id, rec.rowVersion)"
+              >
+                <AppIcon name="trash-2" :size="14" />
+              </Button>
             </div>
           </div>
         </div>
-
-        <div class="p-3 border-t border-border flex justify-end">
-          <button
-            type="button"
-            class="px-4 py-1.5 border border-border rounded-md hover:bg-muted text-xs font-medium"
-            @click="modalRecursosAbierto = false"
-          >
-            Cerrar
-          </button>
-        </div>
       </div>
-    </div>
+      <template #footer>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          @click="modalRecursosAbierto = false"
+        >
+          {{ $t('General.Close') }}
+        </Button>
+      </template>
+    </Dialog>
   </div>
 </template>

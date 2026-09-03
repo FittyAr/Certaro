@@ -1,33 +1,47 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import DateText from '@/components/domain/DateText.vue'
 import ListState from '@/components/domain/ListState.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
+import AppIcon from '@/components/ui/AppIcon.vue'
+import { Button } from '@/components/ui/button'
 import HelpButton from '@/components/ui/HelpButton.vue'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useMovimientosStore, type MovimientoListItem } from '@/stores/useMovimientosStore'
+import { useProyectosStore, type ProyectoDetalle } from '@/stores/useProyectosStore'
+
 const route = useRoute()
+const router = useRouter()
 const { notify } = useApiError()
 const store = useMovimientosStore()
+const proyectos = useProyectosStore()
+
 const proyectoId = computed(() => String(route.params.proyectoId ?? ''))
+const proyecto = ref<ProyectoDetalle | null>(null)
 const items = ref<MovimientoListItem[]>([])
 const loading = ref(false)
 const firstLoad = ref(true)
 const error = ref<ApiError | null>(null)
+
 async function cargar(): Promise<void> {
   loading.value = true
   error.value = null
   try {
-    const res = await store.fetchPaged({
-      page: 1,
-      pageSize: 50,
-      filtro: { proyectoId: proyectoId.value } as unknown as Record<string, unknown>,
-      sortDir: 'Desc',
-    })
+    const [res, proy] = await Promise.all([
+      store.fetchPaged({
+        page: 1,
+        pageSize: 100,
+        filtro: { proyectoId: proyectoId.value } as unknown as Record<string, unknown>,
+        sortDir: 'Desc',
+      }),
+      proyectos.fetchOne(proyectoId.value).catch(() => null),
+    ])
     items.value = res.items
+    proyecto.value = proy
   } catch (e) {
     error.value = notify(e)
   } finally {
@@ -35,15 +49,81 @@ async function cargar(): Promise<void> {
     firstLoad.value = false
   }
 }
+
+const totalIngresos = computed(() =>
+  items.value
+    .filter((m) => m.esIngreso)
+    .reduce((acc, m) => acc + Number(m.total), 0)
+    .toFixed(4),
+)
+
+const totalGastos = computed(() =>
+  items.value
+    .filter((m) => !m.esIngreso)
+    .reduce((acc, m) => acc + Number(m.total), 0)
+    .toFixed(4),
+)
+
+const balanceNeto = computed(() =>
+  (Number(totalIngresos.value) - Number(totalGastos.value)).toFixed(4),
+)
+
+function irARegistrarMovimiento(): void {
+  void router.push({
+    path: '/movimientos',
+    query: {
+      proyectoId: proyectoId.value,
+      clienteId: proyecto.value?.clienteId ?? undefined,
+    },
+  })
+}
+
 onMounted(cargar)
 </script>
+
 <template>
   <section class="flex h-full flex-col gap-4 p-6">
-    <PageHeader :title="$t('Menu.Movimientos')" subtitle="Caja de proyecto">
+    <PageHeader
+      :title="$t('Proyectos.Caja.Title')"
+      :subtitle="proyecto ? `${proyecto.nombre} · #${proyecto.numero}` : $t('Movimientos.Subtitle')"
+    >
       <template #actions>
+        <Button size="sm" @click="irARegistrarMovimiento()">
+          <AppIcon name="plus" :size="16" />
+          {{ $t('Movimientos.RegistrarGasto') }}
+        </Button>
         <HelpButton topic-id="proyectos-caja" title="Ayuda sobre Caja de Proyecto" />
       </template>
     </PageHeader>
+
+    <!-- Resumen financiero del proyecto -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div class="rounded-lg border border-border bg-card p-4 shadow-xs">
+        <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {{ $t('Movimientos.Ingresos') }}
+        </span>
+        <div class="mt-1 text-xl font-bold">
+          <MoneyText :value="totalIngresos" colored />
+        </div>
+      </div>
+      <div class="rounded-lg border border-border bg-card p-4 shadow-xs">
+        <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {{ $t('Movimientos.Gastos') }}
+        </span>
+        <div class="mt-1 text-xl font-bold">
+          <MoneyText :value="`-${totalGastos}`" colored />
+        </div>
+      </div>
+      <div class="rounded-lg border border-border bg-card p-4 shadow-xs">
+        <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {{ $t('Movimientos.Balance') }}
+        </span>
+        <div class="mt-1 text-xl font-bold">
+          <MoneyText :value="balanceNeto" colored show-sign />
+        </div>
+      </div>
+    </div>
+
     <ListState
       :loading="loading"
       :first-load="firstLoad"
@@ -55,10 +135,34 @@ onMounted(cargar)
       @retry="cargar()"
     >
       <DataTable :value="items" data-key="id" size="small" class="text-sm">
-        <Column field="fecha" header="Fecha" />
+        <Column field="fecha" :header="$t('Movimientos.Fecha')">
+          <template #body="{ data }">
+            <DateText :value="data.fecha" />
+          </template>
+        </Column>
         <Column field="concepto" :header="$t('Movimientos.Concepto')" />
+        <Column field="tipoMovimientoNombre" :header="$t('Movimientos.Tipo')">
+          <template #body="{ data }">
+            <span
+              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+              :class="
+                data.esIngreso
+                  ? 'bg-success/10 text-success'
+                  : 'bg-destructive/10 text-destructive'
+              "
+            >
+              {{ data.tipoMovimientoNombre }}
+            </span>
+          </template>
+        </Column>
         <Column field="total" :header="$t('Movimientos.Total')">
-          <template #body="{ data }"><MoneyText :value="data.total" /></template>
+          <template #body="{ data }">
+            <MoneyText
+              :value="data.esIngreso ? data.total : `-${data.total}`"
+              colored
+              show-sign
+            />
+          </template>
         </Column>
       </DataTable>
     </ListState>
