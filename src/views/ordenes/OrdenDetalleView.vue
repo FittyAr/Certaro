@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
@@ -15,6 +15,7 @@ import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
 import PercentBar from '@/components/domain/PercentBar.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
+import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useCertificadosStore, type CertificadoBorradorItem } from '@/stores/useCertificadosStore'
@@ -143,6 +144,7 @@ onMounted(cargar)
           <AppIcon name="file-badge" :size="16" />
           {{ $t('Certificados.Emitir') }}
         </Button>
+        <HelpButton topic-id="ordenes-detalle" title="Ayuda sobre la Planilla de Ítems y Cómputo" />
       </template>
     </PageHeader>
 

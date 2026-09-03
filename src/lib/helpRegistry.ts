@@ -396,4 +396,54 @@ export const HELP_REGISTRY: Record<string, HelpTopic> = {
       'Finaliza el trabajo una vez que todos los certificados de avance hayan sido aprobados por el cliente.',
     ],
   },
+
+  'ordenes-overview': {
+    id: 'ordenes-overview',
+    title: 'Órdenes de Trabajo y Cómputo Métrico',
+    subtitle: 'Desglose pormenorizado de tareas, ítems y contratos de obra',
+    purpose:
+      'Una Orden de Trabajo desglosa un contrato en ítems medibles (unidades, metros, bocas de conexión) con cantidades y precios unitarios. Es la base técnica sobre la cual se emitirán los Certificados de Avance.',
+    workflow: [
+      'Crea una orden con "+ Nuevo" (o Ctrl+N) dentro del trabajo correspondiente.',
+      'Carga cada uno de los ítems cotizados: descripción, unidad de medida, cantidad y precio unitario.',
+      'Aplica porcentaje de ajuste UOCRA o descuentos globales si corresponde según pliego.',
+      'Guarda la orden y haz clic en su fila para ingresar al detalle de cómputo y certificación.',
+    ],
+    strengths: [
+      'Cálculo financiero exacto de subtotales por ítem y monto total presupuestado.',
+      'Protección contra sobre-certificación: no permite certificar más del 100% de la cantidad pactada.',
+      'Editor amplio de planilla para manipular cómodamente cómputos extensos.',
+    ],
+    limitations: [
+      'Una orden que posea certificados emitidos no puede modificarse en sus ítems ni eliminarse.',
+    ],
+    tips: [
+      'Utiliza unidades claras (m, u, gl) y descripciones detalladas para evitar discrepancias con el comitente en obra.',
+    ],
+  },
+
+  'ordenes-detalle': {
+    id: 'ordenes-detalle',
+    title: 'Planilla de Ítems y Certificación de Avance',
+    subtitle: 'Control de porcentajes acumulados y emisión de certificados',
+    purpose:
+      'Permite inspeccionar cada ítem de la orden, su avance porcentual a la fecha, monto facturable remanente y emitir nuevos Certificados de Obra.',
+    workflow: [
+      'Revisa la planilla de ítems y las barras de avance porcentual de cada renglón.',
+      'Haz clic en "Emitir Certificado" para abrir el asistente de certificación periódica.',
+      'El sistema precarga el acumulado anterior; solo debes tipear el porcentaje ejecutado en la quincena/mes.',
+      'Al guardar, se crea el Certificado oficial con numeración correlativa inmutable.',
+    ],
+    strengths: [
+      'Validación en tiempo real: resalta en rojo si algún ítem sobrepasa el 100% antes de grabar.',
+      'Barras gráficas de avance por ítem para una lectura visual instantánea.',
+      'Listado histórico inferior con todos los certificados expedidos contra esta orden.',
+    ],
+    limitations: [
+      'No es posible emitir un certificado si ningún ítem tiene avance en el período.',
+    ],
+    tips: [
+      'Recuerda que solo se puede anular el último certificado emitido de una orden si requieres corregir una medición.',
+    ],
+  },
 }
