@@ -341,7 +341,7 @@ pub async fn seed_demo_data(db: &DatabaseConnection) -> AppResult<SeedSummary> {
             };
             asist.insert(&tx).await.map_err(AppError::persistence)?;
             asistencias_count += 1;
-            fecha = fecha + chrono::Duration::days(1);
+            fecha += chrono::Duration::days(1);
         }
     }
 

@@ -259,7 +259,7 @@ impl Canvas {
         let ops: &mut Vec<Op> = if let Some(index) = page {
             &mut ops_ref[index]
         } else {
-            ops_ref.last_mut().unwrap()
+            Self::current_ops(&mut ops_ref)
         };
         ops.extend([
             Op::SetFillColor { col },
@@ -273,6 +273,14 @@ impl Canvas {
             Op::ShowText { items },
             Op::EndTextSection,
         ]);
+    }
+
+    fn current_ops(ops_ref: &mut [Vec<Op>]) -> &mut Vec<Op> {
+        let len = ops_ref.len();
+        if len == 0 {
+            unreachable!("canvas always has at least one page")
+        }
+        &mut ops_ref[len - 1]
     }
 
     pub fn rect(
@@ -294,7 +302,7 @@ impl Canvas {
             (point(x + width, bottom), false),
         ];
         let mut ops_ref = self.ops_per_page.borrow_mut();
-        let ops = ops_ref.last_mut().unwrap();
+        let ops = Self::current_ops(&mut ops_ref);
         if let Some(fill) = fill {
             ops.push(Op::SetFillColor {
                 col: color_of(fill),
@@ -336,7 +344,7 @@ impl Canvas {
     pub fn hline(&self, x: f32, y_top: f32, width: f32, color: Rgb, thickness: f32) {
         let y = self.height - y_top;
         let mut ops_ref = self.ops_per_page.borrow_mut();
-        let ops = ops_ref.last_mut().unwrap();
+        let ops = Self::current_ops(&mut ops_ref);
         ops.push(Op::SetOutlineColor {
             col: color_of(color),
         });
@@ -361,7 +369,7 @@ impl Canvas {
     pub fn vline(&self, x: f32, y_top: f32, height: f32, color: Rgb, thickness: f32) {
         let top = self.height - y_top;
         let mut ops_ref = self.ops_per_page.borrow_mut();
-        let ops = ops_ref.last_mut().unwrap();
+        let ops = Self::current_ops(&mut ops_ref);
         ops.push(Op::SetOutlineColor {
             col: color_of(color),
         });

@@ -480,7 +480,7 @@ impl AuthService {
         let now = self.clock.now_utc();
         let tx = self.uow.begin().await?;
 
-        if tx.roles().find_by_nombre(&input.nombre.trim()).await?.is_some() {
+        if tx.roles().find_by_nombre(input.nombre.trim()).await?.is_some() {
             return Err(AppError::conflict("DUPLICATE_ROLE", "Validation.Role.NameAlreadyExists"));
         }
 

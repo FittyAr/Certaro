@@ -39,7 +39,7 @@ pub async fn auth_current_user(
 ) -> ApiResult<Option<UsuarioConDetalleDto>> {
     // In SQLite desktop mode, authentication is completely bypassed
     if state.is_sqlite_mode() {
-        let super_admin_id = Uuid::parse_str("00000000-0000-0000-0000-000000000999").unwrap();
+        let super_admin_id = Uuid::from_u128(0x999);
         let outcome = match state.services() {
             Ok(services) => services.auth.obtener_usuario(super_admin_id).await.map(Some),
             Err(e) => Err(e),

@@ -56,6 +56,7 @@ impl TipoPresetTablero {
         }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
             "trabajos" => Some(Self::Trabajos),

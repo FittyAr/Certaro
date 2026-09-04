@@ -131,6 +131,8 @@ fn limite_sql(limite: u64) -> String {
     }
 }
 
+const MONTO_CONSOLIDADO_SQL: &str = "(CASE WHEN m.moneda = 1 AND m.cotizacion_aplicada IS NOT NULL AND m.cotizacion_aplicada > 0 THEN (m.monto * m.cotizacion_aplicada / 10000) * m.cantidad ELSE m.monto * m.cantidad END)";
+
 #[async_trait]
 impl DashboardRepository for SeaOrmDashboardRepository {
     async fn resumen_rango(
@@ -138,20 +140,21 @@ impl DashboardRepository for SeaOrmDashboardRepository {
         desde: DateTime<Utc>,
         hasta: DateTime<Utc>,
     ) -> AppResult<MovimientoResumen> {
-        let sql = "
-            SELECT tm.es_ingreso                  AS es_ingreso,
-                   SUM(m.monto * m.cantidad)      AS suma_bruta,
-                   COUNT(m.id)                    AS cantidad
-              FROM movimientos m
-              JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
-             WHERE m.is_deleted = 0
-               AND m.fecha >= ?1
-               AND m.fecha <= ?2
-             GROUP BY tm.es_ingreso";
+        let sql = format!(
+            "SELECT tm.es_ingreso                  AS es_ingreso,
+                    SUM({MONTO_CONSOLIDADO_SQL})   AS suma_bruta,
+                    COUNT(m.id)                    AS cantidad
+               FROM movimientos m
+               JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
+              WHERE m.is_deleted = 0
+                AND m.fecha >= ?1
+                AND m.fecha <= ?2
+              GROUP BY tm.es_ingreso"
+        );
 
         let rows = ResumenRow::find_by_statement(Statement::from_sql_and_values(
             DbBackend::Sqlite,
-            sql,
+            &sql,
             [
                 Value::from(time::to_storage(desde)),
                 Value::from(time::to_storage(hasta)),
@@ -280,7 +283,7 @@ impl DashboardRepository for SeaOrmDashboardRepository {
         let sql = format!(
             "SELECT c.id                       AS id,
                     c.nombre                   AS nombre,
-                    SUM(m.monto * m.cantidad)  AS suma_bruta
+                    SUM({MONTO_CONSOLIDADO_SQL}) AS suma_bruta
                FROM movimientos m
                JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
                JOIN clientes c          ON c.id = m.cliente_id
@@ -325,7 +328,7 @@ impl DashboardRepository for SeaOrmDashboardRepository {
         let sql = format!(
             "SELECT cat.id                     AS id,
                     cat.nombre                 AS nombre,
-                    SUM(m.monto * m.cantidad)  AS suma_bruta
+                    SUM({MONTO_CONSOLIDADO_SQL}) AS suma_bruta
                FROM movimientos m
                JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
                JOIN categorias cat      ON cat.id = m.categoria_id
@@ -362,19 +365,20 @@ impl DashboardRepository for SeaOrmDashboardRepository {
     }
 
     async fn serie_mensual(&self, anio: i32) -> AppResult<Vec<TotalMensual>> {
-        let sql = "
-            SELECT CAST(strftime('%m', m.fecha) AS INTEGER) AS mes,
-                   tm.es_ingreso                            AS es_ingreso,
-                   SUM(m.monto * m.cantidad)                AS suma_bruta
-              FROM movimientos m
-              JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
-             WHERE m.is_deleted = 0
-               AND CAST(strftime('%Y', m.fecha) AS INTEGER) = ?1
-             GROUP BY mes, tm.es_ingreso";
+        let sql = format!(
+            "SELECT CAST(strftime('%m', m.fecha) AS INTEGER) AS mes,
+                    tm.es_ingreso                            AS es_ingreso,
+                    SUM({MONTO_CONSOLIDADO_SQL})             AS suma_bruta
+               FROM movimientos m
+               JOIN tipos_movimiento tm ON tm.id = m.tipo_movimiento_id
+              WHERE m.is_deleted = 0
+                AND CAST(strftime('%Y', m.fecha) AS INTEGER) = ?1
+              GROUP BY mes, tm.es_ingreso"
+        );
 
         let rows = MensualRow::find_by_statement(Statement::from_sql_and_values(
             DbBackend::Sqlite,
-            sql,
+            &sql,
             [Value::from(anio)],
         ))
         .all(self.conn())
@@ -426,9 +430,9 @@ impl DashboardRepository for SeaOrmDashboardRepository {
                     o.nombre AS etiqueta,
                     ''       AS contexto,
                     COALESCE(SUM(CASE WHEN tm.es_ingreso = 1
-                                      THEN m.monto * m.cantidad END), 0) AS ingresos,
+                                      THEN {MONTO_CONSOLIDADO_SQL} END), 0) AS ingresos,
                     COALESCE(SUM(CASE WHEN tm.es_ingreso = 0
-                                      THEN m.monto * m.cantidad END), 0) AS gastos
+                                      THEN {MONTO_CONSOLIDADO_SQL} END), 0) AS gastos
                FROM proyectos o
                LEFT JOIN trabajos t         ON t.proyecto_id = o.id AND t.is_deleted = 0
                LEFT JOIN movimientos m      ON m.trabajo_id = t.id AND m.is_deleted = 0
@@ -469,9 +473,9 @@ impl DashboardRepository for SeaOrmDashboardRepository {
                     t.descripcion AS etiqueta,
                     o.nombre      AS contexto,
                     COALESCE(SUM(CASE WHEN tm.es_ingreso = 1
-                                      THEN m.monto * m.cantidad END), 0) AS ingresos,
+                                      THEN {MONTO_CONSOLIDADO_SQL} END), 0) AS ingresos,
                     COALESCE(SUM(CASE WHEN tm.es_ingreso = 0
-                                      THEN m.monto * m.cantidad END), 0) AS gastos
+                                      THEN {MONTO_CONSOLIDADO_SQL} END), 0) AS gastos
                FROM trabajos t
                JOIN proyectos o                  ON o.id = t.proyecto_id
                LEFT JOIN movimientos m       ON m.trabajo_id = t.id AND m.is_deleted = 0

@@ -346,15 +346,23 @@ impl MovimientoRepository for SeaOrmMovimientoRepository {
     async fn resumen(&self, filtro: &MovimientoFiltro) -> AppResult<MovimientoResumen> {
         // The sign lives in the type, so the aggregation groups by it and the two buckets come
         // back in one query rather than two.
+        let monto_expr = if filtro.moneda.is_none() {
+            Expr::cust(
+                "CASE WHEN movimientos.moneda = 1 AND movimientos.cotizacion_aplicada IS NOT NULL AND movimientos.cotizacion_aplicada > 0 \
+                 THEN (movimientos.monto * movimientos.cotizacion_aplicada / 10000) * movimientos.cantidad \
+                 ELSE movimientos.monto * movimientos.cantidad END",
+            )
+        } else {
+            Expr::col((Entity, Column::Monto)).mul(Expr::col((Entity, Column::Cantidad)))
+        };
+
         let (sql, values) = Query::select()
             .expr_as(
                 Expr::col((tipo_movimiento::Entity, tipo_movimiento::Column::EsIngreso)),
                 Alias::new("es_ingreso"),
             )
             .expr_as(
-                SimpleExpr::from(Func::sum(
-                    Expr::col((Entity, Column::Monto)).mul(Expr::col((Entity, Column::Cantidad))),
-                )),
+                SimpleExpr::from(Func::sum(monto_expr)),
                 Alias::new("suma_bruta"),
             )
             .expr_as(

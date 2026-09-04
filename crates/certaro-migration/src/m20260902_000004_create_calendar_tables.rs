@@ -99,7 +99,6 @@ impl MigrationTrait for Migration {
                 sea_orm::DatabaseBackend::MySql => {
                     let mut s = trimmed.to_string();
                     s = s.replace("BLOB NOT NULL DEFAULT X'0000000000000001'", "BINARY(8) NOT NULL DEFAULT 0x0000000000000001");
-                    s = s.replace("BLOB", "BLOB");
                     s = s.replace("X'0000000000000001'", "0x0000000000000001");
                     s = s.replace("INSERT OR IGNORE INTO", "INSERT IGNORE INTO");
                     s = s.replace("TEXT NOT NULL PRIMARY KEY", "VARCHAR(36) NOT NULL PRIMARY KEY");
