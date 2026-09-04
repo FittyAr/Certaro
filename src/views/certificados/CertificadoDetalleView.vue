@@ -225,7 +225,7 @@ onMounted(async () => {
         >
           <div>
             <dt class="text-xs text-muted-foreground">{{ $t('Certificados.Proyecto') }}</dt>
-            <dd>{{ certificado.proyectoNumero }} � {{ certificado.proyectoNombre }}</dd>
+            <dd>{{ certificado.proyectoNumero }} · {{ certificado.proyectoNombre }}</dd>
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">{{ $t('Certificados.Cliente') }}</dt>

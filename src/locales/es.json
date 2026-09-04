@@ -655,6 +655,7 @@
     "RegistrarGasto": "Registrar movimiento",
     "Cliente": "Cliente",
     "Proyecto": "Proyecto",
+    "ProyectoSinTrabajosAviso": "Este proyecto no tiene trabajos creados aún. Recuerda crear al menos un trabajo en el proyecto para que los gastos se imputen a la caja y rentabilidad de la obra.",
     "Trabajo": "Trabajo",
     "Empty": "Todavía no hay movimientos",
     "Fecha": "Fecha",
@@ -674,6 +675,7 @@
   },
   "Ordenes": {
     "AjusteUocra": "Ajuste UOCRA",
+    "AjusteUocraPorcentaje": "Ajuste UOCRA (%)",
     "Avance": "Avance",
     "BajarLinea": "Bajar",
     "Cantidad": "Cantidad",

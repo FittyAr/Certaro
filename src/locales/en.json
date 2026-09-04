@@ -655,6 +655,7 @@
     "RegistrarGasto": "Record movement",
     "Cliente": "Customer",
     "Proyecto": "Project",
+    "ProyectoSinTrabajosAviso": "This project has no jobs created yet. Remember to create at least one job in the project so expenses can be attributed to the site cash flow and profitability.",
     "Trabajo": "Job",
     "Empty": "No movements yet",
     "Fecha": "Date",
@@ -674,6 +675,7 @@
   },
   "Ordenes": {
     "AjusteUocra": "UOCRA adjustment",
+    "AjusteUocraPorcentaje": "UOCRA adjustment (%)",
     "Avance": "Progress",
     "BajarLinea": "Move down",
     "Cantidad": "Quantity",

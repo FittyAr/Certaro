@@ -30,7 +30,7 @@ import { useTrabajosStore } from '@/stores/useTrabajosStore'
 
 /**
  * Work orders of one job: the itemised quote certificates are issued against.
- * See `docs/09-modulos-funcionales.md` �3.6.
+ * See `docs/09-modulos-funcionales.md` §3.6.
  *
  * The editor is a full-width dialog rather than the usual side drawer because the sheet is a grid
  * of lines, and a 480-pixel panel cannot show a line and its subtotal at the same time.

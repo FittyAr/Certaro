@@ -428,7 +428,7 @@ onMounted(async () => {
             <MoneyText :value="data.esIngreso ? data.total : `-${data.total}`" colored />
             <span
               v-if="data.moneda === 'Usd'"
-              class="rounded border border-amber-500/30 bg-amber-500/10 px-1 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400"
+              class="rounded border border-warning/30 bg-warning/10 px-1 py-0.5 text-[10px] font-bold text-warning"
             >
               USD
             </span>
@@ -629,7 +629,7 @@ onMounted(async () => {
         </div>
         <p
           v-if="selectedProyectoId && opcionesTrabajo.length === 0"
-          class="rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs text-amber-700 dark:text-amber-400"
+          class="rounded-md border border-warning/30 bg-warning/10 p-2 text-xs text-warning"
         >
           {{ $t('Movimientos.ProyectoSinTrabajosAviso') || 'Este proyecto no tiene trabajos creados aún. Recuerda crear al menos un trabajo en el proyecto para que los gastos se imputen a la caja y rentabilidad de la obra.' }}
         </p>

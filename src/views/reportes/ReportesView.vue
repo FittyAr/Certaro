@@ -38,7 +38,7 @@ async function cargarSelectores(): Promise<void> {
     certificados.fetchPaged({ page: 1, pageSize: 100, filtro: {}, sortDir: 'Desc' }),
   ])
   opcionesLiquidacion.value = liq.items.map((l) => ({
-    label: `${l.empleadoNombre} � ${l.fechaInicio} � ${l.fechaFin}`,
+    label: `${l.empleadoNombre} · ${l.fechaInicio} · ${l.fechaFin}`,
     value: l.id,
   }))
   opcionesCertificado.value = cert.items.map((c) => ({
