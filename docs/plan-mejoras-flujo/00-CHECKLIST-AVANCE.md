@@ -17,6 +17,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
 | **Fase 7** | Correcciones Críticas de Flujo, Cálculos Numéricos y Ergonomía | 7 | 7 | 🟢 Completada |
 | **Fase 8** | Integración Financiera, Consistencia de Cálculos y Ergonomía UX | 8 | 8 | 🟢 Completada |
 | **Fase 9** | Correcciones Críticas de Lógica Numérica, Imputación Financiera y Flujo de Obra | 6 | 6 | 🟢 Completada |
+| **Fase 10** | Integración Bimonetaria, Imputación de Mano de Obra y Ergonomía de Flujo | 7 | 0 | 🟡 En progreso |
 
 ---
 
@@ -284,5 +285,45 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Archivos:** `src/views/proyectos/ProyectoDetalleView.vue`.
   - **Detalle:** Utilizar el objeto `res.resumen` devuelto por el backend en lugar de calcular totales locales sobre la primera página de 100 movimientos.
   - **Criterio de aceptación:** La pestaña de caja en la ficha del proyecto refleja los totales matemáticos exactos independientemente del volumen de datos.
+
+---
+
+## Fase 10: Integración Bimonetaria, Imputación de Mano de Obra y Ergonomía de Flujo
+
+- [ ] **10.1. Conversión y Consolidación Bimonetaria en Caja y Dashboard**
+  - **Archivos:** `crates/certaro-infrastructure/src/persistence/repositories/movimiento.rs`, `crates/certaro-infrastructure/src/persistence/repositories/dashboard.rs`, `src/views/movimientos/MovimientosView.vue`.
+  - **Detalle:** En `resumen` y `resumen_rango`, multiplicar importes en USD por `COALESCE(m.cotizacion_aplicada, 1.0)` al consolidar en moneda local. Reemplazar clases de color literales por tokens semánticos (`warning`).
+  - **Criterio de aceptación:** El balance general de tesorería y el Dashboard no suman USD y ARS como si 1 USD fuera 1 ARS; los totales consolidados expresan magnitudes económicas equivalentes en moneda base.
+
+- [ ] **10.2. Imputación de Mano de Obra a Obras en Liquidaciones**
+  - **Archivos:** `src/views/liquidaciones/LiquidacionesView.vue`.
+  - **Detalle:** En el paso 3 del wizard de liquidaciones, incorporar selectores de Proyecto y Trabajo para imputar el costo salarial liquidado. Al crear el movimiento de egreso en caja, registrar `proyecto_id` y `trabajo_id`.
+  - **Criterio de aceptación:** Al liquidar jornales de una obra, el egreso de haberes se computa dentro de la Caja del Proyecto y en el cálculo de rentabilidad del proyecto.
+
+- [ ] **10.3. Automatización de IVA Sugerido y Alícuotas Rápidas en Facturación**
+  - **Archivos:** `src/views/certificados/CertificadoDetalleView.vue`, `src/views/facturas/FacturasView.vue`.
+  - **Detalle:** Al facturar un certificado, calcular automáticamente el IVA aplicando `sistema.config.business.ivaSugerido`. En el formulario de alta de facturas, añadir botones rápidos de alícuotas (0%, 10.5%, 21%, 27%). Reemplazar `window.confirm` por modal integrado `useConfirm`.
+  - **Criterio de aceptación:** Al presionar "Facturar Certificado", el IVA y el total se autocalculan según la tasa del negocio sin tipeo manual, y el usuario dispone de chips de alícuotas en el alta manual.
+
+- [ ] **10.4. Corrección de Fuga de Signo en Modo Privacidad del Dashboard**
+  - **Archivos:** `src/views/dashboard/DashboardView.vue`.
+  - **Detalle:** Ocultar los caracteres de signo `+` y `-` y desactivar estilos verde/rojo en los últimos movimientos cuando `ui.privacyMode` esté activo.
+  - **Criterio de aceptación:** El modo privacidad no delata si un movimiento fue ingreso o egreso.
+
+- [ ] **10.5. Saneamiento de Caracteres Corruptos y Claves i18n**
+  - **Archivos:** `src/views/reportes/ReportesView.vue`, `src/views/certificados/CertificadoDetalleView.vue`, `src/views/ordenes/OrdenesView.vue`, `src/locales/es.json`, `src/locales/en.json`.
+  - **Detalle:** Reemplazar caracteres corruptos `\uFFFD` por `·`. Añadir clave `Ordenes.AjusteUocraPorcentaje` y etiquetas requeridas.
+  - **Criterio de aceptación:** No existen glifos rotos en las vistas y `architecture.spec.ts` pasa sin advertencias.
+
+- [ ] **10.6. Enriquecimiento de Ficha de Cliente (`ClienteDetalleView`)**
+  - **Archivos:** `src/views/clientes/ClienteDetalleView.vue`.
+  - **Detalle:** Mostrar el saldo en cuenta corriente (`deuda`) y una grilla o listado de proyectos activos asociados al cliente.
+  - **Criterio de aceptación:** La ficha de cliente resume inmediatamente el saldo de deuda y las obras activas con acceso directo a cada una.
+
+- [ ] **10.7. Paginación en Caja de Obra y Ergonomía en Reportes**
+  - **Archivos:** `src/views/proyectos/ProyectoDetalleView.vue`.
+  - **Detalle:** Incorporar paginador en la tabla de movimientos de la pestaña de tesorería del proyecto.
+  - **Criterio de aceptación:** Obras con más de 100 movimientos permiten paginar y revisar el historial financiero íntegro.
+
 
 

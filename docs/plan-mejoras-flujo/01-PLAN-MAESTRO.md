@@ -45,6 +45,9 @@ Este subdirectorio contiene la especificación detallada por módulo:
 - [05-MODULO-CALENDARIO-Y-UX.md](./05-MODULO-CALENDARIO-Y-UX.md): Resolución de bug de huso horario, estandarización de interfaz con PrimeVue y onboarding inicial.
 - [06-FASE6-CONSOLIDACION-FLUJOS.md](./06-FASE6-CONSOLIDACION-FLUJOS.md): Hub de proyectos, historial de certificados en OT y cobro directo desde CC.
 - [07-FASE7-CORRECCIONES-FLUJO-Y-CALCULOS.md](./07-FASE7-CORRECCIONES-FLUJO-Y-CALCULOS.md): Correcciones críticas de cálculo en certificados, recargos de jornales, caja de obras y ergonomía.
+- [08-FASE8-INTEGRACION-FINANCIERA-Y-UX.md](./08-FASE8-INTEGRACION-FINANCIERA-Y-UX.md): Trazabilidad de cobros, egresos de liquidación en caja y filtros de movimientos.
+- [09-FASE9-CORRECCIONES-CRITICAS-CALCULOS-Y-FLUJOS.md](./09-FASE9-CORRECCIONES-CRITICAS-CALCULOS-Y-FLUJOS.md): Corrección de signo en ajuste UOCRA, prevención de movimientos huérfanos y edición de órdenes.
+- [10-FASE10-INTEGRACION-BIMONETARIA-MANO-DE-OBRA-Y-UX.md](./10-FASE10-INTEGRACION-BIMONETARIA-MANO-DE-OBRA-Y-UX.md): Consolidación bimonetaria, imputación de costos laborales a obras, automatización de IVA y mejoras UX.
 
 ---
 
@@ -58,6 +61,9 @@ graph TD
     F4 --> F5["Fase 5: Pruebas Integrales y Verificación"]
     F5 --> F6["Fase 6: Consolidación y Hub de Obras"]
     F6 --> F7["Fase 7: Correcciones Críticas de Flujo y Cálculos"]
+    F7 --> F8["Fase 8: Integración Financiera y Consistencia"]
+    F8 --> F9["Fase 9: Correcciones Críticas de Lógica y Flujo"]
+    F9 --> F10["Fase 10: Integración Bimonetaria y Ergonomía"]
 ```
 
 ### Fase 1: Bloqueos y Cálculos Críticos (Prioridad Inmediata)
@@ -98,3 +104,25 @@ graph TD
 - Reversión atómica de movimientos en caja al borrar cobranzas de facturas.
 - Corrección de zona horaria en cobros automáticos para evitar desfasaje de fecha civil.
 - Filtrado activo por cuadrilla en asistencia y acceso directo a ficha de clientes.
+
+### Fase 8: Integración Financiera y Consistencia
+- Imputación de cobranzas a obras y rentabilidad real.
+- Asiento opcional de egreso en caja al liquidar sueldos.
+- Trazabilidad y advertencia de facturación previa en certificados.
+- Navegación directa de facturas desde cuenta corriente y visualización de obras en movimientos.
+
+### Fase 9: Correcciones Críticas de Lógica y Flujo
+- Corrección de signo en ajuste UOCRA (+ adiciona en vez de restar).
+- Selector y filtro de moneda en libro de movimientos.
+- Prevención de movimientos huérfanos al imputar proyectos.
+- Edición directa de planilla de cómputo en `OrdenDetalleView`.
+- Consistencia matemática de totales de obra en `ProyectoDetalleView`.
+
+### Fase 10: Integración Bimonetaria y Ergonomía
+- Consolidación y conversión bimonetaria precisa en Caja y Dashboard.
+- Imputación de costos de mano de obra a proyectos en liquidaciones de jornales.
+- Automatización de IVA sugerido y botones rápidos de alícuotas en facturación.
+- Corrección de fuga de signo en modo privacidad y limpieza de caracteres corruptos.
+- Enriquecimiento de la ficha de cliente con deuda y obras activas.
+- Paginación en pestaña de caja de proyectos.
+
