@@ -16,9 +16,12 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
 import type { useServerTable } from '@/composables/useServerTable'
-import { useTrabajosStore, type TrabajoListItem } from '@/stores/useTrabajosStore'
+import type { TrabajoListItem } from '@/stores/useTrabajosStore'
 import { useSistemaStore } from '@/stores/useSistemaStore'
 import type { ProyectoListItem } from '@/stores/useProyectosStore'
+
+import { useProyectosContextMenu } from '@/components/domain/useProyectosContextMenu'
+import { useProyectosTreeNodes } from '@/components/domain/useProyectosTreeNodes'
 
 const props = defineProps<{
   table: ReturnType<typeof useServerTable<TFilter, ProyectoListItem>>
@@ -35,15 +38,18 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const router = useRouter()
 const { notify } = useApiError()
-const trabajosStore = useTrabajosStore()
 const sistemaStore = useSistemaStore()
 
 const contextMenu = ref<InstanceType<typeof ContextMenu> | null>(null)
 const contextNode = ref<TreeNode | null>(null)
 
-const expandedKeys = ref<Record<string, boolean>>({})
-const trabajosMap = ref<Map<string, TrabajoListItem[]>>(new Map())
-const loadingTrabajos = ref<Set<string>>(new Set())
+const {
+  expandedKeys,
+  treeValue,
+  handleExpand,
+  handleCollapse,
+  pruneRemoved,
+} = useProyectosTreeNodes(props.table.rows, notify)
 
 const rowsPerPage = computed(() =>
   props.table.pageSize.value === 0
@@ -55,117 +61,12 @@ const pageReportTemplate = computed(() =>
   t('General.PageReport', { first: '{first}', last: '{last}', totalRecords: '{totalRecords}' }),
 )
 
-const treeValue = computed<TreeNode[]>(() => {
-  return props.table.rows.value.map((proyecto) => {
-    const isExpanded = expandedKeys.value[proyecto.id] === true
-    const trabajos = trabajosMap.value.get(proyecto.id) ?? []
-    const isLoading = loadingTrabajos.value.has(proyecto.id)
-
-    const children: TreeNode[] | undefined = isExpanded
-      ? isLoading
-        ? [{ key: `${proyecto.id}-loading`, data: { isLoading: true }, leaf: true }]
-        : trabajos.length > 0
-          ? trabajos.map((trab) => ({
-              key: trab.id,
-              data: {
-                isTrabajo: true,
-                trabajo: trab,
-                // Map to common column fields
-                numero: '—',
-                nombre: trab.descripcion,
-                clienteNombre: trab.clienteNombre,
-                localidad: '—',
-                estado: trab.estado,
-                trabajosCount: null,
-                presupuesto: trab.presupuesto,
-                rentabilidad: null,
-                proyecto: null,
-              },
-              leaf: true,
-            }))
-          : [{ key: `${proyecto.id}-empty`, data: { isEmpty: true }, leaf: true }]
-      : undefined
-
-    return {
-      key: proyecto.id,
-      data: {
-        isProyecto: true,
-        proyecto,
-        numero: proyecto.numero,
-        nombre: proyecto.nombre,
-        clienteNombre: proyecto.clienteNombre,
-        localidad: proyecto.localidad,
-        estado: proyecto.estado,
-        trabajosCount: proyecto.trabajosCount,
-        rentabilidad: proyecto.rentabilidad,
-      },
-      children,
-      leaf: proyecto.trabajosCount === 0,
-    }
-  })
-})
-
-async function onExpand(node: TreeNode): Promise<void> {
-  const proyectoId = String(node.key)
-  const proyecto = props.table.rows.value.find((p) => p.id === proyectoId)
-  if (!proyecto || proyecto.trabajosCount === 0) return
-  if (trabajosMap.value.has(proyectoId)) return
-
-  loadingTrabajos.value = new Set(loadingTrabajos.value).add(proyectoId)
-  try {
-    const res = await trabajosStore.fetchPaged({
-      page: 1,
-      pageSize: 100,
-      filtro: { proyectoId } as unknown as Record<string, unknown>,
-      sortDir: 'Asc',
-    })
-    const next = new Map(trabajosMap.value)
-    next.set(proyectoId, res.items)
-    trabajosMap.value = next
-  } catch (e) {
-    notify(e)
-  } finally {
-    const next = new Set(loadingTrabajos.value)
-    next.delete(proyectoId)
-    loadingTrabajos.value = next
-  }
-}
-
-function onCollapse(node: TreeNode): void {
-  // Keep data cached, no need to clear
-  void node
-}
-
-function handleExpand(node: TreeNode): void {
-  expandedKeys.value = { ...expandedKeys.value, [String(node.key)]: true }
-  void onExpand(node)
-}
-
-function handleCollapse(node: TreeNode): void {
-  const key = String(node.key)
-  const next = { ...expandedKeys.value }
-  delete next[key]
-  expandedKeys.value = next
-  onCollapse(node)
-}
-
 // Clear cache when table reloads (page change, filter change)
 watch(
   () => props.table.rows.value.map((r) => r.id).join(','),
   () => {
-    // Keep expanded but clear trabajos that are no longer in current page
     const validIds = new Set(props.table.rows.value.map((r) => r.id))
-    const next = new Map<string, TrabajoListItem[]>()
-    for (const [k, v] of trabajosMap.value.entries()) {
-      if (validIds.has(k)) next.set(k, v)
-    }
-    trabajosMap.value = next
-    // Remove expanded keys for rows no longer present
-    const nextKeys: Record<string, boolean> = {}
-    for (const k of Object.keys(expandedKeys.value)) {
-      if (validIds.has(k)) nextKeys[k] = true
-    }
-    expandedKeys.value = nextKeys
+    pruneRemoved(validIds)
   },
 )
 
@@ -177,76 +78,12 @@ function onRowNavigate(node: TreeNode): void {
   }
 }
 
-const contextMenuModel = computed(() => {
-  const node = contextNode.value
-  if (!node) return []
-  const data = node.data as { isProyecto?: boolean; isTrabajo?: boolean; proyecto?: ProyectoListItem; trabajo?: TrabajoListItem }
-  if (data.isProyecto && data.proyecto) {
-    const p = data.proyecto
-    return [
-      {
-        label: t('General.View'),
-        icon: 'pi pi-eye',
-        command: () => void router.push({ name: 'proyecto-detalle', params: { proyectoId: p.id } }),
-      },
-      {
-        label: t('General.Edit'),
-        icon: 'pi pi-pencil',
-        command: () => emit('proyectoEdit', p),
-      },
-      {
-        label: t('General.Delete'),
-        icon: 'pi pi-trash',
-        disabled: !p.puedeEliminarse,
-        command: () => emit('proyectoDelete', p),
-      },
-      { separator: true },
-      {
-        label: t('Actions.Proyecto.Finalizada'),
-        icon: 'pi pi-check',
-        disabled: p.estado === 'Finalizada' || p.estado === 'Cancelada',
-        command: () => emit('proyectoTransition', p, 'Finalizada'),
-      },
-      { separator: true },
-      {
-        label: 'Agregar Trabajo',
-        icon: 'pi pi-plus',
-        disabled: p.estado === 'Finalizada' || p.estado === 'Cancelada',
-        command: () => emit('proyectoCreateTrabajo', p),
-      },
-      {
-        label: t('Proyectos.VerTrabajos'),
-        icon: 'pi pi-hammer',
-        command: () => void router.push({ name: 'proyecto-trabajos', params: { proyectoId: p.id } }),
-      },
-      {
-        label: t('Proyectos.VerCaja'),
-        icon: 'pi pi-wallet',
-        command: () => void router.push({ name: 'proyecto-caja', params: { proyectoId: p.id } }),
-      },
-      {
-        label: t('Proyectos.VerKanban') || 'Ver en Kanban',
-        icon: 'pi pi-th-large',
-        command: () => void router.push({ path: '/kanban', query: { proyectoId: p.id } }),
-      },
-    ]
-  }
-  if (data.isTrabajo && data.trabajo) {
-    const tr = data.trabajo
-    return [
-      {
-        label: t('General.View'),
-        icon: 'pi pi-eye',
-        command: () => emit('trabajoNavigate', tr),
-      },
-      {
-        label: t('General.Edit'),
-        icon: 'pi pi-pencil',
-        command: () => void router.push({ name: 'trabajo-detalle', params: { trabajoId: tr.id } }),
-      },
-    ]
-  }
-  return []
+const contextMenuModel = useProyectosContextMenu(contextNode, {
+  onProyectoEdit: (row) => emit('proyectoEdit', row),
+  onProyectoDelete: (row) => emit('proyectoDelete', row),
+  onProyectoTransition: (row, estado) => emit('proyectoTransition', row, estado),
+  onProyectoCreateTrabajo: (row) => emit('proyectoCreateTrabajo', row),
+  onTrabajoNavigate: (row) => emit('trabajoNavigate', row),
 })
 
 function onRowContextMenu(event: { originalEvent: Event; node: TreeNode }): void {
