@@ -23,7 +23,9 @@
     "test:coverage": "vitest run --coverage",
     "i18n:check": "node scripts/check-i18n.mjs",
     "version:check": "node scripts/sync-version.mjs --check",
-    "version:sync": "node scripts/sync-version.mjs"
+    "version:sync": "node scripts/sync-version.mjs",
+    "audit:monoliths": "node scripts/find-monolithic-files.mjs",
+    "audit:monoliths:plan": "node scripts/find-monolithic-files.mjs --ignore-tests --output docs/plan-segmentacion.md"
   },
   "dependencies": {
     "@primeuix/themes": "^1.0.0",
