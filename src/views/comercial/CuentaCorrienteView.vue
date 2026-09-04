@@ -12,10 +12,11 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
+import { createCategoria } from '@/api/categorias'
 import { useMovimientosStore } from '@/stores/useMovimientosStore'
 import { useProyectosStore } from '@/stores/useProyectosStore'
 import { useTrabajosStore } from '@/stores/useTrabajosStore'
-import type { LookupItem } from '@/stores/useCatalogStore'
+import { useCatalogStore, type LookupItem } from '@/stores/useCatalogStore'
 import {
   MEDIOS_PAGO,
   useFacturasStore,
@@ -47,6 +48,7 @@ const facturasStore = useFacturasStore()
 const movimientosStore = useMovimientosStore()
 const proyectosStore = useProyectosStore()
 const trabajosStore = useTrabajosStore()
+const catalogStore = useCatalogStore()
 
 const clienteId = computed(() => String(route.params.clienteId ?? ''))
 
@@ -214,6 +216,30 @@ async function abrirCobro(f: CuentaCorrienteFactura): Promise<void> {
   }
 }
 
+async function resolveCategoriaCobranza(): Promise<string | null> {
+  const cats = await catalogStore.loadCategorias()
+  const catCobranza = cats.find((c) => {
+    const l = c.label.toLowerCase()
+    return l.includes('cobranza') || l.includes('venta') || l.includes('ingreso') || l.includes('factura')
+  })
+  if (catCobranza) return catCobranza.id
+  if (cats.length > 0 && cats[0]) return cats[0].id
+
+  try {
+    const created = await createCategoria({
+      nombre: 'Cobranzas',
+      descripcion: 'Categoría automática para cobranzas de facturas',
+      colorHex: '#10B981',
+      icono: 'wallet',
+      categoriaPadreId: null,
+    })
+    catalogStore.invalidateCategorias()
+    return created.id
+  } catch {
+    return null
+  }
+}
+
 async function registrarPago(): Promise<void> {
   pagoErrores.value = {}
   guardandoPago.value = true
@@ -225,23 +251,28 @@ async function registrarPago(): Promise<void> {
 
     if (registrarEnCaja.value && factura.value) {
       try {
-        await movimientosStore.create({
-          fecha: fechaPagoToIso(pagoFecha),
-          concepto: `Cobranza Factura ${factura.value.numero} (${pagoMedio})`,
-          monto: pagoMonto,
-          cantidad: '1.0000',
-          tipoMovimientoId: '00000000-0000-0000-0000-000000000001',
-          moneda: 'Ars',
-          cotizacionAplicada: null,
-          tipoConceptoPagoId: null,
-          categoriaId: null,
-          clienteId: factura.value.clienteId,
-          trabajoId: pagoTrabajoId.value || null,
-          empleadoId: null,
-          facturaId: factura.value.id,
-        })
+        const catId = await resolveCategoriaCobranza()
+        if (catId) {
+          await movimientosStore.create({
+            fecha: fechaPagoToIso(pagoFecha),
+            concepto: `Cobranza Factura ${factura.value.numero} (${pagoMedio})`,
+            monto: pagoMonto,
+            cantidad: '1.0000',
+            tipoMovimientoId: '00000000-0000-0000-0000-000000000001',
+            moneda: 'Ars',
+            cotizacionAplicada: null,
+            tipoConceptoPagoId: null,
+            categoriaId: catId,
+            clienteId: factura.value.clienteId,
+            trabajoId: pagoTrabajoId.value || null,
+            empleadoId: null,
+            facturaId: factura.value.id,
+          })
+        } else {
+          console.warn('No se pudo determinar una categoría para asentar el cobro en caja.')
+        }
       } catch (err) {
-        console.warn('No se pudo registrar automáticamente el ingreso en caja:', err)
+        notify(err)
       }
     }
 

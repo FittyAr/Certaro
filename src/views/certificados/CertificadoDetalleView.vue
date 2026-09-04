@@ -128,20 +128,6 @@ function emitirFacturaCertificado(): void {
   const ivaNum = (subtotalNum * ivaSugeridoPct) / 100
   const totalNum = subtotalNum + ivaNum
 
-  try {
-    localStorage.setItem(
-      `certaro:cert-facturado:${certificado.value.id}`,
-      JSON.stringify({
-        fecha: new Date().toISOString(),
-        numero: certificado.value.numero,
-        total: certificado.value.totalNeto,
-      }),
-    )
-    facturado.value = true
-  } catch {
-    // ignore
-  }
-
   void router.push({
     path: '/facturas',
     query: {

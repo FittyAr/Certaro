@@ -101,6 +101,20 @@ const drawer = useCrudDrawer<Model>({
         // ignore
       }
     }
+    if (route.query.certificadoId) {
+      try {
+        localStorage.setItem(
+          `certaro:cert-facturado:${route.query.certificadoId}`,
+          JSON.stringify({
+            fecha: new Date().toISOString(),
+            facturaId: created.id,
+            numero: created.numero,
+          }),
+        )
+      } catch {
+        // ignore
+      }
+    }
     return created
   },
   update: (id, dto) => store.update(id, dto, dto.rowVersion ?? ''),
