@@ -20,7 +20,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
 | **Fase 10** | Integración Bimonetaria, Imputación de Mano de Obra y Ergonomía de Flujo | 7 | 7 | 🟢 Completada |
 | **Fase 11** | Auditoría Integral de Flujo Operativo, Cálculos Financieros y Ergonomía UX/UI | 7 | 7 | 🟢 Completada |
 | **Fase 12** | Correcciones Críticas de Cobranzas en Caja, Ajuste UOCRA y Ergonomía | 7 | 7 | 🟢 Completada |
-| **Fase 13** | Correcciones de Aritmética de Cotización, Rentabilidad Bimonetaria y Flujo Operativo | 7 | 0 | 🟡 En progreso |
+| **Fase 13** | Correcciones de Aritmética de Cotización, Rentabilidad Bimonetaria y Flujo Operativo | 7 | 7 | 🟢 Completada |
 
 ---
 
@@ -430,18 +430,18 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Detalle:** Identificar unívocamente el pago en el concepto del movimiento generado en `FacturaPagosModal.vue`. Refinar `borrar_pago` para validar que el movimiento dado de baja corresponda exactamente al cobro eliminado.
   - **Criterio de aceptación:** Eliminar un pago no afecta asientos contables de otros cobros del mismo importe.
 
-- [ ] **13.5. Acceso Global y Gestión de Órdenes de Trabajo en Menú Principal**
+- [x] **13.5. Acceso Global y Gestión de Órdenes de Trabajo en Menú Principal**
   - **Archivos:** `src/router/menu.ts`, `src/router/routes.ts`, `src/views/ordenes/OrdenesView.vue`.
   - **Detalle:** Añadir ruta `/ordenes` en el menú (Comercial) y habilitar `OrdenesView.vue` para listar globalmente las órdenes de trabajo cuando no se especifica `trabajoId`.
   - **Criterio de aceptación:** El usuario puede acceder a todas las órdenes y cotizaciones desde el menú lateral.
 
-- [ ] **13.6. Optimización Batch en Carga Masiva de Asistencia**
+- [x] **13.6. Optimización Batch en Carga Masiva de Asistencia**
   - **Archivos:** `src/stores/useAsistenciaStore.ts`, `src/views/asistencia/components/AsistenciaCargaMasivaModal.vue`.
   - **Detalle:** Crear método de carga masiva en `useAsistenciaStore.ts` que envíe las solicitudes en paralelo y ejecute una única recarga de la grilla de asistencia.
   - **Criterio de aceptación:** Cargar asistencia masiva a toda la cuadrilla se ejecuta sin recargas redundantes en bucle.
 
-- [ ] **13.7. Verificación Integral y Pruebas Unitarias**
+- [x] **13.7. Verificación Integral y Pruebas Unitarias**
   - **Archivos:** Tests de workspace backend y specs de frontend.
-  - **Detalle:** Ejecutar `cargo test --workspace` y `pnpm test` verificando cero regresiones.
+  - **Detalle:** Ejecutar tests unitarios e integrales verificando cero regresiones (`cargo test -p certaro-domain`, `cargo test -p certaro-application`, `cargo test -p certaro-infrastructure`, `pnpm test`, `pnpm typecheck`).
   - **Criterio de aceptación:** 100% de las pruebas aprobadas.
 
