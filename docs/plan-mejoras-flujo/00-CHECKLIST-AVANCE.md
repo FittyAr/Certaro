@@ -13,6 +13,9 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
 | **Fase 3** | Experiencia de Documentos y Acciones Contextuales | 3 | 3 | 🟢 Completada |
 | **Fase 4** | Estandarización de UX/UI, Calendario y Onboarding | 4 | 4 | 🟢 Completada |
 | **Fase 5** | Pruebas Integrales y Verificación de Flujo End-to-End | 3 | 3 | 🟢 Completada |
+| **Fase 6** | Consolidación de Flujos, Hub de Obras y Ergonomía de Usuario | 5 | 5 | 🟢 Completada |
+| **Fase 7** | Correcciones Críticas de Flujo, Cálculos Numéricos y Ergonomía | 7 | 7 | 🟢 Completada |
+| **Fase 8** | Integración Financiera, Consistencia de Cálculos y Ergonomía UX | 8 | 8 | 🟢 Completada |
 
 ---
 
@@ -134,3 +137,116 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Paso 4:** Facturar certificado y cobrar factura; verificar que el dinero ingresa al balance de caja.
   - **Paso 5:** Cargar gasto de materiales imputado al proyecto; verificar impacto en la Caja de Proyecto y en el cálculo de Rentabilidad del Dashboard.
   - **Paso 6:** Registrar asistencia de operarios, cargar adelanto a un empleado, liquidar el lote de sueldos con recargos de feriado y exportar el recibo en PDF.
+
+---
+
+## Fase 6: Consolidación de Flujos, Hub de Obras y Ergonomía de Usuario
+
+- [x] **6.1. Historial de Certificados Emitidos en Orden de Trabajo**
+  - **Archivos:** `crates/certaro-infrastructure/src/persistence/repositories/certificado.rs`, `src/api/certificados.ts`, `src/views/ordenes/OrdenDetalleView.vue`.
+  - **Detalle:** Backend soporta filtro por `orden_trabajo_id`. Listado de certificados emitidos de la orden debajo de la planilla de cómputo, con enlace de navegación al detalle y descarga directa de PDF.
+  - **Criterio de aceptación:** El usuario puede auditar y exportar los certificados anteriores de la orden sin buscar en la lista global de certificados.
+
+- [x] **6.2. Hub Integral de Obra con Pestañas en Proyecto Detalle**
+  - **Archivos:** `src/views/proyectos/ProyectoDetalleView.vue`.
+  - **Detalle:** Implementar pestañas (General, Trabajos, Caja y Rentabilidad) para tener la gestión 360° de la obra en una sola pantalla.
+  - **Criterio de aceptación:** El usuario navega entre la ficha, los trabajos y los movimientos financieros de la obra sin cambiar de URL ni perder el hilo de trabajo.
+
+- [x] **6.3. Estandarización de Diálogos y Modales en Calendario**
+  - **Archivos:** `src/views/calendario/CalendarioView.vue`.
+  - **Detalle:** Reemplazar llamadas a `window.confirm()` y `window.alert()` por `useConfirmDelete` y notificaciones `useApiError() / toast`.
+  - **Criterio de aceptación:** Se mantiene la armonía del diseño de la app de escritorio y la eliminación de eventos se confirma mediante modales integrados.
+
+- [x] **6.4. Filtro por Proyecto / Frente de Obra en Asistencia**
+  - **Archivos:** `src/views/asistencia/AsistenciaView.vue`.
+  - **Detalle:** Añadir selector de Proyecto en la barra de filtros de asistencia e imputación opcional a Proyecto/Trabajo en la carga masiva.
+  - **Criterio de aceptación:** Se puede registrar asistencia segmentando a los operarios por frente de obra.
+
+- [x] **6.5. Cobro Directo de Facturas desde Cuenta Corriente**
+  - **Archivos:** `src/views/comercial/CuentaCorrienteView.vue`.
+  - **Detalle:** Incorporar botón de acción "Cobrar" en cada fila de factura con saldo pendiente, abriendo el diálogo de registro de pago y asiento opcional en caja.
+  - **Criterio de aceptación:** El usuario cancela la deuda de facturas directamente desde el estado de cuenta corriente sin trasladarse al módulo general de facturación.
+
+---
+
+## Fase 7: Correcciones Críticas de Flujo, Cálculos Numéricos y Ergonomía
+
+- [x] **7.1. Filtrado de Movimientos por Proyecto en Caja de Obra**
+  - **Archivos:** `crates/certaro-application/src/ports/repositories.rs`, `crates/certaro-application/src/dtos/movimientos.rs`, `crates/certaro-infrastructure/src/persistence/repositories/movimiento.rs`, `src/stores/useMovimientosStore.ts`, `src/views/proyectos/ProyectoCajaView.vue`, `src/views/proyectos/ProyectoDetalleView.vue`.
+  - **Detalle:** Incorporar `proyecto_id` en `MovimientoFiltro` y filtrar a nivel de base de datos (`m.trabajo_id IN (SELECT id FROM trabajos WHERE proyecto_id = ?)`). Corregir vistas para pasar el filtro y visualizar exclusivamente los movimientos del proyecto.
+  - **Criterio de aceptación:** La Caja del Proyecto refleja únicamente ingresos y gastos imputados a los trabajos de esa obra.
+
+- [x] **7.2. Corrección del Descuento Recurrente en Certificados de Avance**
+  - **Archivos:** `crates/certaro-application/src/use_cases/certificados.rs`, `src/views/ordenes/OrdenDetalleView.vue`.
+  - **Detalle:** Evitar deducción recurrente del total de `otros_descuentos` en certificados parciales sucesivos. Mostrar desglose preliminar en el modal de emisión con el neto resultante antes de emitir.
+  - **Criterio de aceptación:** La deducción de descuentos no supera el total acordado en la orden y el modal previsualiza con precisión matemática el total neto.
+
+- [x] **7.3. Preservación de Recargos de Fin de Semana en Liquidaciones**
+  - **Archivos:** `src/views/liquidaciones/LiquidacionesView.vue`.
+  - **Detalle:** En `dtoDe`, preservar y sumar los adicionales de sábados, domingos y feriados (`s.desglose.recargos`) al modificar manualmente días o tarifas.
+  - **Criterio de aceptación:** La edición de días o tarifas de un operario no elimina sus adicionales devengados por fin de semana o feriados.
+
+- [x] **7.4. Reversión de Asientos en Caja al Eliminar Pagos de Factura**
+  - **Archivos:** `crates/certaro-application/src/use_cases/facturas.rs`.
+  - **Detalle:** Al ejecutar `borrar_pago`, anular (`soft_delete`) el movimiento automático generado en caja vinculado a dicho cobro.
+  - **Criterio de aceptación:** Eliminar un cobro no deja dinero fantasma en el Libro de Caja.
+
+- [x] **7.5. Corrección de Zona Horaria en Asientos Automáticos**
+  - **Archivos:** `src/views/facturas/FacturasView.vue`, `src/views/comercial/CuentaCorrienteView.vue`.
+  - **Detalle:** Guardar la estampa de tiempo usando el instante actual local (`new Date().toISOString()`), evitando que la medianoche UTC retroceda un día en husos horarios occidentales.
+  - **Criterio de aceptación:** Los cobros automáticos quedan registrados en el día civil en que se realizaron.
+
+- [x] **7.6. Filtrado Activo de Cuadrilla en Asistencia**
+  - **Archivos:** `src/views/asistencia/AsistenciaView.vue`.
+  - **Detalle:** Conectar el selector `filtroProyectoId` con el filtrado de filas de la grilla de asistencia.
+  - **Criterio de aceptación:** El selector de proyecto filtra de forma efectiva los operarios en pantalla.
+
+- [x] **7.7. Mejoras de Ergonomía, Navegación y Consistencia UI**
+  - **Archivos:** `src/views/clientes/ClientesView.vue`, `src/views/clientes/ClienteDetalleView.vue`, `src/views/dashboard/DashboardView.vue`, `src/App.vue`.
+  - **Detalle:** Agregar navegación a `ClienteDetalleView` desde el listado de clientes. Colorear egresos en rojo y con `-` en el Dashboard. Redirigir a `/welcome` a usuarios nuevos sin base previa.
+  - **Criterio de aceptación:** Navegación coherente sin pantallas huérfanas, claridad visual en gastos del dashboard y bienvenida guiada a usuarios nuevos.
+
+---
+
+## Fase 8: Integración Financiera, Consistencia de Cálculos y Ergonomía UX
+
+- [x] **8.1. Imputación de Cobranzas a Obra y Rentabilidad Real**
+  - **Archivos:** `src/views/facturas/FacturasView.vue`, `src/views/comercial/CuentaCorrienteView.vue`, `src/views/certificados/CertificadoDetalleView.vue`.
+  - **Detalle:** Preservar la imputación a obra (`trabajoId` / `proyectoId`) al emitir facturas y asignarla al movimiento generado en caja al cobrar, para que impacte en la rentabilidad de obra.
+  - **Criterio de aceptación:** Las cobranzas de facturas de obra impactan en los ingresos y rentabilidad de la obra en `ProyectoCajaView` y Dashboard.
+
+- [x] **8.2. Asiento Opcional de Egreso en Caja al Liquidar Sueldos**
+  - **Archivos:** `src/views/liquidaciones/LiquidacionesView.vue`.
+  - **Detalle:** Incorporar en el paso de confirmación del wizard la opción de registrar el egreso neto en caja con medio de pago y categoría.
+  - **Criterio de aceptación:** Al liquidar sueldos, el libro de caja refleja coherentemente la salida de fondos netos pagados.
+
+- [x] **8.3. Trazabilidad y Prevención de Duplicados en Facturación de Certificados**
+  - **Archivos:** `src/views/certificados/CertificadoDetalleView.vue`, `src/views/certificados/CertificadosView.vue`.
+  - **Detalle:** Mostrar estado de facturación del certificado y advertir o prevenir facturación duplicada del mismo certificado.
+  - **Criterio de aceptación:** Los certificados indican su estado de facturación y se previene la doble facturación inadvertida.
+
+- [x] **8.4. Navegación Directa de Facturas desde Cuenta Corriente (`query.id`)**
+  - **Archivos:** `src/views/facturas/FacturasView.vue`.
+  - **Detalle:** Capturar `route.query.id` en `FacturasView.vue` para abrir directamente la factura seleccionada o filtrarla.
+  - **Criterio de aceptación:** Al pulsar "Ver Factura" desde Cuenta Corriente, la factura se abre o visualiza de inmediato.
+
+- [x] **8.5. Visibilidad y Filtrado de Obra/Cliente en Libro de Movimientos**
+  - **Archivos:** `src/views/movimientos/MovimientosView.vue`.
+  - **Detalle:** Añadir selectores de Proyecto y Cliente en `FilterBar.vue` y mostrar el proyecto/cliente en las filas de la tabla de movimientos.
+  - **Criterio de aceptación:** El usuario puede filtrar y auditar la imputación a obras y clientes directamente en el libro de movimientos general.
+
+- [x] **8.6. Preservación de Obra y Resumen de Totales en Asistencia**
+  - **Archivos:** `src/stores/useAsistenciaStore.ts`, `src/views/asistencia/AsistenciaView.vue`.
+  - **Detalle:** En `useAsistenciaStore.ciclar`, preservar el `trabajoId` preexistente de la celda. Agregar columnas fijas de total de jornadas en la grilla.
+  - **Criterio de aceptación:** Modificar una celda no borra la obra asignada ni hace desaparecer operarios en vista filtrada, y la grilla muestra totales acumulados.
+
+- [x] **8.7. Selector de Proyecto en Calendario y Corrección de Guardas de Permisos**
+  - **Archivos:** `src/views/calendario/CalendarioView.vue`, `src/router/routes.ts`.
+  - **Detalle:** Agregar selector de Proyecto/Trabajo al modal de evento de calendario y corregir `permission` en `routes.ts` para Kanban y Calendario.
+  - **Criterio de aceptación:** Guardas de navegación efectivas y soporte de imputación de obra en agenda.
+
+- [x] **8.8. Enriquecimiento de `TrabajoDetalleView` y Paginación en `ProyectoCajaView`**
+  - **Archivos:** `src/views/trabajos/TrabajoDetalleView.vue`, `src/views/proyectos/ProyectoCajaView.vue`.
+  - **Detalle:** Integrar la planilla de órdenes de trabajo en `TrabajoDetalleView.vue` y paginación en `ProyectoCajaView.vue`.
+  - **Criterio de aceptación:** El detalle del trabajo es plenamente funcional y la caja de proyecto maneja paginación sin sesgar cálculos.
+

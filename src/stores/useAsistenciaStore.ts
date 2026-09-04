@@ -46,7 +46,7 @@ export const useAsistenciaStore = defineStore('asistencia', () => {
       empleadoId,
       fecha,
       tipoJornada: siguienteJornada(actual),
-      trabajoId: null,
+      trabajoId: fila.celdas[indice]?.trabajoId ?? null,
       observaciones: fila.celdas[indice]?.observaciones ?? null,
     })
     fila.celdas[indice] = celda

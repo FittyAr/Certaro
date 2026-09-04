@@ -20,6 +20,7 @@ export interface MovimientoFiltro {
   categoriaId?: Uuid
   clienteId?: Uuid
   trabajoId?: Uuid
+  proyectoId?: Uuid
   empleadoId?: Uuid
   facturaId?: Uuid
   moneda?: Moneda
@@ -64,7 +65,10 @@ export interface MovimientoListItem {
   categoriaNombre: string | null
   categoriaColor: string | null
   clienteId: Uuid | null
+  clienteNombre: string | null
   trabajoId: Uuid | null
+  trabajoDescripcion: string | null
+  proyectoNombre: string | null
   empleadoId: Uuid | null
   facturaId: Uuid | null
   tipoConceptoPagoId: Uuid | null

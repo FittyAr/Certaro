@@ -12,3 +12,6 @@ Este directorio contiene la documentación técnica y el plan de implementación
 | [03-MODULO-LIQUIDACIONES-Y-PERSONAL.md](./03-MODULO-LIQUIDACIONES-Y-PERSONAL.md) | Corrección del bug de recargos en liquidaciones por lote y exportación ágil de recibos de sueldo en PDF. |
 | [04-MODULO-COMERCIAL-Y-OBRAS.md](./04-MODULO-COMERCIAL-Y-OBRAS.md) | Corrección de columnas en árbol de proyectos, enlace Certificado $\rightarrow$ Factura y fichas comerciales. |
 | [05-MODULO-CALENDARIO-Y-UX.md](./05-MODULO-CALENDARIO-Y-UX.md) | Corrección del desfasaje horario, estandarización con PrimeVue y onboarding para nuevos usuarios. |
+| [06-FASE6-CONSOLIDACION-FLUJOS.md](./06-FASE6-CONSOLIDACION-FLUJOS.md) | Hub integral de proyectos/obras, historial de certificados en órdenes, cobro en cuenta corriente y UX. |
+| [07-FASE7-CORRECCIONES-FLUJO-Y-CALCULOS.md](./07-FASE7-CORRECCIONES-FLUJO-Y-CALCULOS.md) | Correcciones críticas de cálculo en certificados, recargos salariales, caja de obras, reversión y ergonomía. |
+

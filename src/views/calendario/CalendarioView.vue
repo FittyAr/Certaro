@@ -5,8 +5,11 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { ref, computed, onMounted, watch } from 'vue'
+import { useToast } from 'primevue/usetoast'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { Button } from '@/components/ui/button'
+import { useApiError } from '@/composables/useApiError'
+import { useConfirmDelete } from '@/composables/useConfirmDelete'
 import {
   useCalendarioStore,
   type CalendarioEventoDto,
@@ -16,6 +19,9 @@ import {
   type TipoRecurso,
 } from '@/stores/useCalendarioStore'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useProyectosStore } from '@/stores/useProyectosStore'
+import { useTrabajosStore } from '@/stores/useTrabajosStore'
+import type { LookupItem } from '@/stores/useCatalogStore'
 
 const tipoEventoOptions = [
   { label: 'Trabajo', value: 'Trabajo' },
@@ -32,8 +38,14 @@ const tipoRecursoOptions = [
   { label: 'Proyecto', value: 'Proyecto' },
 ]
 
+const { notify } = useApiError()
+const { confirmDelete } = useConfirmDelete()
+const toast = useToast()
+
 const store = useCalendarioStore()
 const auth = useAuthStore()
+const proyectosStore = useProyectosStore()
+const trabajosStore = useTrabajosStore()
 
 const modalEventoAbierto = ref(false)
 const modalRecursosAbierto = ref(false)
@@ -47,6 +59,23 @@ const formInicio = ref('')
 const formFin = ref('')
 const formTodoElDia = ref(false)
 const formRecursosIds = ref<string[]>([])
+const formProyectoId = ref<string | null>(null)
+const formTrabajoId = ref<string | null>(null)
+const opcionesProyectos = ref<LookupItem[]>([])
+const opcionesTrabajos = ref<LookupItem[]>([])
+
+async function onProyectoChange(): Promise<void> {
+  formTrabajoId.value = null
+  if (!formProyectoId.value) {
+    opcionesTrabajos.value = []
+    return
+  }
+  try {
+    opcionesTrabajos.value = await trabajosStore.lookup(formProyectoId.value)
+  } catch {
+    opcionesTrabajos.value = []
+  }
+}
 
 // Form state for Resource modal
 const formRecursoNombre = ref('')
@@ -156,6 +185,14 @@ async function recargarDatos() {
 
 onMounted(() => {
   recargarDatos()
+  proyectosStore
+    .lookup(undefined, undefined, 200)
+    .then((res) => {
+      opcionesProyectos.value = res
+    })
+    .catch(() => {
+      opcionesProyectos.value = []
+    })
 })
 
 watch([() => store.fechaSeleccionada, () => store.vistaActual], () => {
@@ -289,6 +326,9 @@ function abrirCrearEvento(fechaPredeterminada?: string) {
   formTitulo.value = ''
   formDescripcion.value = ''
   formTipo.value = 'Trabajo'
+  formProyectoId.value = null
+  formTrabajoId.value = null
+  opcionesTrabajos.value = []
 
   const base = fechaPredeterminada ? new Date(fechaPredeterminada) : new Date(store.fechaSeleccionada)
   const anio = base.getFullYear()
@@ -316,6 +356,19 @@ function abrirEditarEvento(ev: CalendarioEventoDto) {
   formFin.value = formatearLocalParaInput(ev.fin)
   formTodoElDia.value = ev.todoElDia
   formRecursosIds.value = ev.recursos.map((r) => r.id)
+  formProyectoId.value = null
+  formTrabajoId.value = ev.trabajoId ?? null
+  opcionesTrabajos.value = []
+
+  if (ev.trabajoId) {
+    trabajosStore
+      .fetchOne(ev.trabajoId)
+      .then(async (t) => {
+        formProyectoId.value = t.proyectoId
+        opcionesTrabajos.value = await trabajosStore.lookup(t.proyectoId)
+      })
+      .catch(() => {})
+  }
 
   modalEventoAbierto.value = true
 }
@@ -336,6 +389,7 @@ async function guardarEvento() {
         fin: finUtc,
         todoElDia: formTodoElDia.value,
         recursoIds: formRecursosIds.value,
+        trabajoId: formTrabajoId.value || null,
         rowVersion: eventoEditando.value.rowVersion,
       }
       await store.actualizarEvento(eventoEditando.value.id, input)
@@ -348,25 +402,27 @@ async function guardarEvento() {
         fin: finUtc,
         todoElDia: formTodoElDia.value,
         recursoIds: formRecursosIds.value,
+        trabajoId: formTrabajoId.value || null,
       }
       await store.crearEvento(input)
     }
     modalEventoAbierto.value = false
   } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al guardar el evento')
+    notify(err)
   }
 }
 
 async function borrarEvento() {
   if (!eventoEditando.value) return
-  if (!confirm('¿Eliminar este evento del calendario?')) return
-
-  try {
-    await store.eliminarEvento(eventoEditando.value.id, eventoEditando.value.rowVersion)
-    modalEventoAbierto.value = false
-  } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al eliminar el evento')
-  }
+  const ev = eventoEditando.value
+  confirmDelete({
+    entityKey: 'Menu.Calendario',
+    label: ev.titulo,
+    action: async () => {
+      await store.eliminarEvento(ev.id, ev.rowVersion)
+      modalEventoAbierto.value = false
+    },
+  })
 }
 
 // Resource management
@@ -403,16 +459,21 @@ async function guardarRecurso() {
     formRecursoNombre.value = ''
     editandoRecursoId.value = null
   } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al guardar el recurso')
+    notify(err)
   }
 }
 
 async function ejecutarSincronizacionEmpleados() {
   try {
     await store.sincronizarEmpleados()
-    alert('Empleados sincronizados como recursos correctamente.')
+    toast.add({
+      severity: 'success',
+      summary: 'Sincronización',
+      detail: 'Empleados sincronizados como recursos correctamente.',
+      life: 3000,
+    })
   } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al sincronizar empleados')
+    notify(err)
   }
 }
 
@@ -772,6 +833,35 @@ function getBadgeClass(tipo: TipoEvento, esVirtual: boolean) {
               Todo el día
             </label>
           </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 rounded-md border border-border/70 bg-muted/20 p-2.5">
+          <label class="flex flex-col gap-1">
+            <span class="text-xs text-muted-foreground">Proyecto / Obra (opcional)</span>
+            <Select
+              v-model="formProyectoId"
+              :options="opcionesProyectos"
+              option-label="label"
+              option-value="id"
+              filter
+              show-clear
+              placeholder="Ninguno"
+              @change="onProyectoChange"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs text-muted-foreground">Trabajo / Frente (opcional)</span>
+            <Select
+              v-model="formTrabajoId"
+              :options="opcionesTrabajos"
+              option-label="label"
+              option-value="id"
+              filter
+              show-clear
+              placeholder="Ninguno"
+              :disabled="!formProyectoId && opcionesTrabajos.length === 0"
+            />
+          </label>
         </div>
 
         <div class="grid grid-cols-2 gap-3">

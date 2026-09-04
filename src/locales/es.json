@@ -156,7 +156,8 @@
     "SinContactos": "Sin contactos cargados",
     "SoloConDeuda": "Solo con deuda",
     "Subtitle": "Clientes, contactos y saldo pendiente",
-    "Telefono": "Teléfono"
+    "Telefono": "Teléfono",
+    "VerFicha": "Ver ficha"
   },
   "Comercial": {
     "Antiguedad": {
@@ -586,7 +587,10 @@
     "Warning": {
       "FeriadosNoDisponibles": "El período no tiene feriados cargados. Si el calendario no se sincronizó, el recargo por feriado no se está aplicando."
     },
-    "YaDescontado": "ya descontado"
+    "YaDescontado": "ya descontado",
+    "RegistrarEnCaja": "Registrar egreso de sueldos en el Libro de Caja",
+    "Categoria": "Categoría de gasto",
+    "MedioPago": "Medio de pago"
   },
   "MedioPago": {
     "Cheque": "Cheque",

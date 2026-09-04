@@ -34,6 +34,8 @@ import { useShortcuts } from '@/composables/useShortcuts'
 import type { LookupItem } from '@/stores/useCatalogStore'
 import { useClientesStore } from '@/stores/useClientesStore'
 import { useMovimientosStore } from '@/stores/useMovimientosStore'
+import { useProyectosStore } from '@/stores/useProyectosStore'
+import { useTrabajosStore } from '@/stores/useTrabajosStore'
 import {
   MEDIOS_PAGO,
   useFacturasStore,
@@ -59,8 +61,30 @@ const { fieldErrors, notify } = useApiError()
 const store = useFacturasStore()
 const clientes = useClientesStore()
 const movimientosStore = useMovimientosStore()
+const proyectosStore = useProyectosStore()
+const trabajosStore = useTrabajosStore()
 
 const registrarEnCaja = ref(true)
+const pagoProyectoId = ref<string | null>(null)
+const pagoTrabajoId = ref<string | null>(null)
+const opcionesProyectos = ref<LookupItem[]>([])
+const pagoOpcionesTrabajos = ref<LookupItem[]>([])
+
+async function onPagoProyectoChange(): Promise<void> {
+  pagoTrabajoId.value = null
+  if (!pagoProyectoId.value) {
+    pagoOpcionesTrabajos.value = []
+    return
+  }
+  try {
+    pagoOpcionesTrabajos.value = await trabajosStore.lookup(pagoProyectoId.value)
+    if (pagoOpcionesTrabajos.value.length === 1 && pagoOpcionesTrabajos.value[0]) {
+      pagoTrabajoId.value = pagoOpcionesTrabajos.value[0].id
+    }
+  } catch {
+    pagoOpcionesTrabajos.value = []
+  }
+}
 
 const table = useServerTable<FacturaFiltro, FacturaListItem>({
   key: 'facturas',
@@ -113,7 +137,23 @@ const drawer = useCrudDrawer<Model>({
       rowVersion: d.audit.rowVersion,
     }
   },
-  create: (dto) => store.create(dto),
+  create: async (dto) => {
+    const created = await store.create(dto)
+    if (route.query.proyectoId || route.query.trabajoId) {
+      try {
+        localStorage.setItem(
+          `certaro:factura-obra:${created.id}`,
+          JSON.stringify({
+            proyectoId: route.query.proyectoId ? String(route.query.proyectoId) : null,
+            trabajoId: route.query.trabajoId ? String(route.query.trabajoId) : null,
+          }),
+        )
+      } catch {
+        // ignore
+      }
+    }
+    return created
+  },
   update: (id, dto) => store.update(id, dto, dto.rowVersion ?? ''),
   onSaved: () => table.reload(),
 })
@@ -140,7 +180,7 @@ const nuevoPago = ref<PagoFacturaInput>({
 })
 const pagoErrores = ref<Record<string, string>>({})
 
-async function abrirPagos(row: FacturaListItem): Promise<void> {
+async function abrirPagos(row: { id: string }): Promise<void> {
   try {
     factura.value = await store.fetchOne(row.id)
     // The default is what is still owed: the usual payment cancels the balance in full.
@@ -151,6 +191,36 @@ async function abrirPagos(row: FacturaListItem): Promise<void> {
       medioPago: 'Efectivo',
     }
     pagoErrores.value = {}
+
+    pagoProyectoId.value = null
+    pagoTrabajoId.value = null
+    pagoOpcionesTrabajos.value = []
+
+    try {
+      opcionesProyectos.value = await proyectosStore.lookup(factura.value.clienteId)
+    } catch {
+      opcionesProyectos.value = []
+    }
+
+    const cachedObra = localStorage.getItem(`certaro:factura-obra:${row.id}`)
+    if (cachedObra) {
+      try {
+        const parsed = JSON.parse(cachedObra)
+        if (parsed.proyectoId) {
+          pagoProyectoId.value = parsed.proyectoId
+          await onPagoProyectoChange()
+        }
+        if (parsed.trabajoId) {
+          pagoTrabajoId.value = parsed.trabajoId
+        }
+      } catch {
+        // ignore
+      }
+    } else if (opcionesProyectos.value.length === 1 && opcionesProyectos.value[0]) {
+      pagoProyectoId.value = opcionesProyectos.value[0].id
+      await onPagoProyectoChange()
+    }
+
     pagosVisible.value = true
   } catch (e) {
     notify(e)
@@ -165,10 +235,20 @@ async function registrarPago(): Promise<void> {
     const pagoFecha = nuevoPago.value.fecha
     factura.value = await store.crearPago(nuevoPago.value)
 
+function fechaPagoToIso(fechaStr: string): string {
+  if (!fechaStr) return new Date().toISOString()
+  const partes = fechaStr.split('-').map(Number)
+  if (partes.length === 3 && partes[0] && partes[1] && partes[2]) {
+    const now = new Date()
+    return new Date(partes[0], partes[1] - 1, partes[2], now.getHours(), now.getMinutes(), now.getSeconds()).toISOString()
+  }
+  return new Date().toISOString()
+}
+
     if (registrarEnCaja.value && factura.value) {
       try {
         await movimientosStore.create({
-          fecha: new Date(pagoFecha).toISOString(),
+          fecha: fechaPagoToIso(pagoFecha),
           concepto: `Cobranza Factura ${factura.value.numero} (${pagoMedio})`,
           monto: pagoMonto,
           cantidad: '1.0000',
@@ -178,7 +258,7 @@ async function registrarPago(): Promise<void> {
           tipoConceptoPagoId: null,
           categoriaId: null,
           clienteId: factura.value.clienteId,
-          trabajoId: null,
+          trabajoId: pagoTrabajoId.value || null,
           empleadoId: null,
           facturaId: factura.value.id,
         })
@@ -250,7 +330,18 @@ onMounted(async () => {
   } catch (e) {
     notify(e)
   }
-  if (route.query.certificadoId) {
+  if (route.query.id) {
+    const targetId = String(route.query.id)
+    store
+      .fetchOne(targetId)
+      .then((f) => {
+        void abrirPagos(f)
+      })
+      .catch(() => {
+        table.filter.value.texto = targetId
+        void table.reload()
+      })
+  } else if (route.query.certificadoId) {
     drawer.openCreate()
     if (route.query.clienteId) drawer.model.value.clienteId = String(route.query.clienteId)
     if (route.query.subtotal) drawer.model.value.subtotal = String(route.query.subtotal)
@@ -529,6 +620,35 @@ onMounted(async () => {
               editable
             />
           </label>
+          <div v-if="registrarEnCaja" class="col-span-4 grid grid-cols-2 gap-3 rounded border border-border/70 bg-muted/20 p-2.5">
+            <label class="flex flex-col gap-1">
+              <span class="text-xs text-muted-foreground">Imputar a Proyecto / Obra</span>
+              <Select
+                v-model="pagoProyectoId"
+                :options="opcionesProyectos"
+                option-label="label"
+                option-value="id"
+                filter
+                show-clear
+                placeholder="General (Sin proyecto)"
+                @change="onPagoProyectoChange()"
+              />
+            </label>
+            <label class="flex flex-col gap-1">
+              <span class="text-xs text-muted-foreground">Trabajo / Frente de Obra</span>
+              <Select
+                v-model="pagoTrabajoId"
+                :options="pagoOpcionesTrabajos"
+                option-label="label"
+                option-value="id"
+                filter
+                show-clear
+                placeholder="General"
+                :disabled="!pagoProyectoId && pagoOpcionesTrabajos.length === 0"
+              />
+            </label>
+          </div>
+
           <div class="col-span-4 flex items-center justify-between pt-2">
             <label class="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
               <Checkbox v-model="registrarEnCaja" :binary="true" />

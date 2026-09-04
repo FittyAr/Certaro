@@ -27,6 +27,8 @@ const loading = ref(false)
 const firstLoad = ref(true)
 const error = ref<ApiError | null>(null)
 
+const resumen = ref<{ totalIngresos: string; totalGastos: string; balance: string } | null>(null)
+
 async function cargar(): Promise<void> {
   loading.value = true
   error.value = null
@@ -34,14 +36,21 @@ async function cargar(): Promise<void> {
     const [res, proy] = await Promise.all([
       store.fetchPaged({
         page: 1,
-        pageSize: 100,
-        filtro: { proyectoId: proyectoId.value } as unknown as Record<string, unknown>,
+        pageSize: 500,
+        filtro: { proyectoId: proyectoId.value },
         sortDir: 'Desc',
       }),
       proyectos.fetchOne(proyectoId.value).catch(() => null),
     ])
     items.value = res.items
     proyecto.value = proy
+    if (res.resumen) {
+      resumen.value = {
+        totalIngresos: res.resumen.totalIngresos,
+        totalGastos: res.resumen.totalGastos,
+        balance: res.resumen.balance,
+      }
+    }
   } catch (e) {
     error.value = notify(e)
   } finally {
@@ -51,21 +60,27 @@ async function cargar(): Promise<void> {
 }
 
 const totalIngresos = computed(() =>
-  items.value
-    .filter((m) => m.esIngreso)
-    .reduce((acc, m) => acc + Number(m.total), 0)
-    .toFixed(4),
+  resumen.value
+    ? resumen.value.totalIngresos
+    : items.value
+        .filter((m) => m.esIngreso)
+        .reduce((acc, m) => acc + Number(m.total), 0)
+        .toFixed(4),
 )
 
 const totalGastos = computed(() =>
-  items.value
-    .filter((m) => !m.esIngreso)
-    .reduce((acc, m) => acc + Number(m.total), 0)
-    .toFixed(4),
+  resumen.value
+    ? resumen.value.totalGastos
+    : items.value
+        .filter((m) => !m.esIngreso)
+        .reduce((acc, m) => acc + Number(m.total), 0)
+        .toFixed(4),
 )
 
 const balanceNeto = computed(() =>
-  (Number(totalIngresos.value) - Number(totalGastos.value)).toFixed(4),
+  resumen.value
+    ? resumen.value.balance
+    : (Number(totalIngresos.value) - Number(totalGastos.value)).toFixed(4),
 )
 
 function irARegistrarMovimiento(): void {
@@ -134,7 +149,15 @@ onMounted(cargar)
       class="flex-1"
       @retry="cargar()"
     >
-      <DataTable :value="items" data-key="id" size="small" class="text-sm">
+      <DataTable
+        :value="items"
+        data-key="id"
+        size="small"
+        class="text-sm border border-border rounded-md overflow-hidden"
+        paginator
+        :rows="20"
+        :rows-per-page-options="[10, 20, 50, 100]"
+      >
         <Column field="fecha" :header="$t('Movimientos.Fecha')">
           <template #body="{ data }">
             <DateText :value="data.fecha" />

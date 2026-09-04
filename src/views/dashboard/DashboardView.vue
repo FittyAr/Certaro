@@ -487,7 +487,12 @@ onMounted(() => {
             >
               <DateText :value="movimiento.fecha" class="text-muted-foreground" />
               <span class="flex-1 truncate">{{ movimiento.concepto }}</span>
-              <MoneyText :value="movimiento.total" :colored="movimiento.esIngreso" />
+              <span
+                class="font-medium tabular-nums"
+                :class="movimiento.esIngreso ? 'text-money-positive' : 'text-money-negative'"
+              >
+                {{ movimiento.esIngreso ? '+' : '-' }} <MoneyText :value="movimiento.total" />
+              </span>
             </li>
           </ul>
         </section>

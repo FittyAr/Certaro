@@ -91,6 +91,7 @@ export interface ActualizarEventoInput {
   fin: string
   todoElDia: boolean
   color?: string | null
+  trabajoId?: Uuid | null
   recursoIds?: Uuid[] | null
   rowVersion: RowVersion
 }

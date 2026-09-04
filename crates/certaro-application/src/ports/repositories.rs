@@ -149,6 +149,7 @@ pub struct MovimientoFiltro {
     pub categoria_id: Option<Uuid>,
     pub cliente_id: Option<Uuid>,
     pub trabajo_id: Option<Uuid>,
+    pub proyecto_id: Option<Uuid>,
     pub empleado_id: Option<Uuid>,
     pub factura_id: Option<Uuid>,
     pub moneda: Option<Moneda>,
@@ -573,6 +574,7 @@ pub trait OrdenTrabajoRepository: Send + Sync {
 /// Filter of `certificados`. See `docs/09-modulos-funcionales.md` §3.7.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct CertificadoFiltro {
+    pub orden_trabajo_id: Option<Uuid>,
     pub proyecto_id: Option<Uuid>,
     pub trabajo_id: Option<Uuid>,
     pub cliente_id: Option<Uuid>,

@@ -2,7 +2,7 @@
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 import DateInput from '@/components/domain/DateInput.vue'
 import ListState from '@/components/domain/ListState.vue'
@@ -12,6 +12,9 @@ import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useShortcuts } from '@/composables/useShortcuts'
+import type { LookupItem } from '@/stores/useCatalogStore'
+import { useProyectosStore } from '@/stores/useProyectosStore'
+import { useTrabajosStore } from '@/stores/useTrabajosStore'
 import { useAsistenciaStore, type TipoJornada } from '@/stores/useAsistenciaStore'
 
 /**
@@ -23,6 +26,8 @@ import { useAsistenciaStore, type TipoJornada } from '@/stores/useAsistenciaStor
 
 const { notify } = useApiError()
 const store = useAsistenciaStore()
+const proyectosStore = useProyectosStore()
+const trabajosStore = useTrabajosStore()
 
 const TIPOS: TipoJornada[] = ['Completa', 'Media', 'Falta', 'FaltaJustificada', 'Feriado']
 
@@ -89,7 +94,61 @@ async function ciclar(empleadoId: string, fecha: string): Promise<void> {
   }
 }
 
-const grilla = computed(() => store.grilla)
+const filtroProyectoId = ref<string | null>(null)
+const opcionesProyecto = ref<LookupItem[]>([])
+const opcionesTrabajo = ref<LookupItem[]>([])
+const trabajosDelProyecto = ref<Set<string>>(new Set())
+
+watch(filtroProyectoId, async (newVal) => {
+  if (!newVal) {
+    trabajosDelProyecto.value.clear()
+    return
+  }
+  try {
+    const trs = await trabajosStore.lookup(newVal)
+    trabajosDelProyecto.value = new Set(trs.map((t) => t.id))
+  } catch {
+    trabajosDelProyecto.value.clear()
+  }
+})
+
+const grilla = computed(() => {
+  const g = store.grilla
+  if (!g) return null
+  if (!filtroProyectoId.value) return g
+  const jobIds = trabajosDelProyecto.value
+  const filteredFilas = g.filas.filter((fila) =>
+    fila.celdas.some((c) => c.trabajoId && jobIds.has(c.trabajoId)),
+  )
+  return {
+    ...g,
+    filas: filteredFilas,
+  }
+})
+
+async function cargarProyectos(): Promise<void> {
+  try {
+    opcionesProyecto.value = await proyectosStore.lookup(undefined, undefined, 200)
+  } catch {
+    opcionesProyecto.value = []
+  }
+}
+
+async function onProyectoRangoChange(pId: string | null): Promise<void> {
+  rango.value.trabajoId = null
+  if (!pId) {
+    opcionesTrabajo.value = []
+    return
+  }
+  try {
+    opcionesTrabajo.value = await trabajosStore.lookup(pId)
+    if (opcionesTrabajo.value.length === 1 && opcionesTrabajo.value[0]) {
+      rango.value.trabajoId = opcionesTrabajo.value[0].id
+    }
+  } catch {
+    opcionesTrabajo.value = []
+  }
+}
 
 // ------------------------------------------------------------------ bulk entry
 
@@ -97,12 +156,16 @@ const rangoOpen = ref(false)
 const guardando = ref(false)
 const rango = ref<{
   empleadoId: string
+  proyectoId: string | null
+  trabajoId: string | null
   desde: string
   hasta: string
   tipoJornada: TipoJornada
   soloDiasHabiles: boolean
 }>({
   empleadoId: '',
+  proyectoId: null,
+  trabajoId: null,
   desde: desde.value,
   hasta: hasta.value,
   tipoJornada: 'Completa',
@@ -116,10 +179,15 @@ const empleadosDeLaGrilla = computed(
 function abrirRango(empleadoId?: string): void {
   rango.value = {
     empleadoId: empleadoId ?? empleadosDeLaGrilla.value[0]?.id ?? '',
+    proyectoId: filtroProyectoId.value ?? null,
+    trabajoId: null,
     desde: desde.value,
     hasta: hasta.value,
     tipoJornada: 'Completa',
     soloDiasHabiles: true,
+  }
+  if (rango.value.proyectoId) {
+    void onProyectoRangoChange(rango.value.proyectoId)
   }
   rangoOpen.value = true
 }
@@ -128,7 +196,14 @@ async function guardarRango(): Promise<void> {
   if (guardando.value || !rango.value.empleadoId) return
   guardando.value = true
   try {
-    await store.cargarRango({ ...rango.value, trabajoId: null })
+    await store.cargarRango({
+      empleadoId: rango.value.empleadoId,
+      desde: rango.value.desde,
+      hasta: rango.value.hasta,
+      tipoJornada: rango.value.tipoJornada,
+      soloDiasHabiles: rango.value.soloDiasHabiles,
+      trabajoId: rango.value.trabajoId,
+    })
     rangoOpen.value = false
   } catch (e) {
     notify(e)
@@ -139,7 +214,10 @@ async function guardarRango(): Promise<void> {
 
 useShortcuts({ 'ctrl+n': () => abrirRango() })
 
-onMounted(cargar)
+onMounted(() => {
+  void cargar()
+  void cargarProyectos()
+})
 </script>
 
 <template>
@@ -162,6 +240,18 @@ onMounted(cargar)
       <label class="flex flex-col gap-1">
         <span class="text-xs text-muted-foreground">{{ $t('General.To') }}</span>
         <DateInput v-model="hasta" @update:model-value="cargar()" />
+      </label>
+      <label class="flex flex-col gap-1 min-w-[180px]">
+        <span class="text-xs text-muted-foreground">{{ $t('Menu.Proyectos') }}</span>
+        <Select
+          v-model="filtroProyectoId"
+          :options="opcionesProyecto"
+          option-label="label"
+          option-value="id"
+          filter
+          show-clear
+          :placeholder="$t('General.All')"
+        />
       </label>
 
       <div class="ml-auto flex flex-wrap items-center gap-3 text-xs">
@@ -209,6 +299,9 @@ onMounted(cargar)
               >
                 {{ dia.fecha.slice(8) }}
               </th>
+              <th class="p-1 text-center font-medium text-muted-foreground" title="Jornadas Completas">C</th>
+              <th class="p-1 text-center font-medium text-muted-foreground" title="Medias Jornadas">½</th>
+              <th class="p-1 text-center font-medium text-muted-foreground" title="Faltas">F</th>
               <th class="p-2 text-right font-medium">{{ $t('Asistencia.Jornadas') }}</th>
             </tr>
           </thead>
@@ -241,7 +334,16 @@ onMounted(cargar)
                   {{ celda.tipoJornada ? ABREVIATURAS[celda.tipoJornada] : '·' }}
                 </button>
               </td>
-              <td class="p-2 text-right tabular-nums">
+              <td class="p-1 text-center tabular-nums text-muted-foreground">
+                {{ fila.resumen.completas }}
+              </td>
+              <td class="p-1 text-center tabular-nums text-muted-foreground">
+                {{ fila.resumen.medias }}
+              </td>
+              <td class="p-1 text-center tabular-nums text-muted-foreground">
+                {{ fila.resumen.faltas + fila.resumen.faltasJustificadas }}
+              </td>
+              <td class="p-2 text-right font-semibold tabular-nums text-foreground">
                 {{ fila.resumen.jornadasEquivalentes }}
               </td>
             </tr>
@@ -279,6 +381,39 @@ onMounted(cargar)
             :option-label="(o: TipoJornada) => $t(`TipoJornada.${o}`)"
           />
         </label>
+
+        <!-- Imputación opcional a Proyecto / Trabajo -->
+        <div class="space-y-2 rounded-md border border-border/70 bg-muted/20 p-2.5">
+          <span class="text-xs font-semibold text-muted-foreground">
+            Imputación a Obra (Opcional)
+          </span>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs text-muted-foreground">{{ $t('Menu.Proyectos') }}</span>
+            <Select
+              v-model="rango.proyectoId"
+              :options="opcionesProyecto"
+              option-label="label"
+              option-value="id"
+              filter
+              show-clear
+              :placeholder="$t('General.None')"
+              @change="onProyectoRangoChange(rango.proyectoId)"
+            />
+          </label>
+          <label v-if="opcionesTrabajo.length > 0" class="flex flex-col gap-1">
+            <span class="text-xs text-muted-foreground">{{ $t('Menu.Trabajos') }}</span>
+            <Select
+              v-model="rango.trabajoId"
+              :options="opcionesTrabajo"
+              option-label="label"
+              option-value="id"
+              filter
+              show-clear
+              :placeholder="$t('General.None')"
+            />
+          </label>
+        </div>
+
         <label class="flex items-center gap-2 cursor-pointer select-none">
           <ToggleSwitch v-model="rango.soloDiasHabiles" />
           <span class="text-sm font-medium text-foreground/90">{{ $t('Asistencia.SoloDiasHabiles') }}</span>

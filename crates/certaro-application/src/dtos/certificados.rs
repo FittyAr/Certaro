@@ -12,6 +12,7 @@ use crate::result::AppResult;
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CertificadoFiltroDto {
+    pub orden_trabajo_id: Option<Uuid>,
     pub proyecto_id: Option<Uuid>,
     pub trabajo_id: Option<Uuid>,
     pub cliente_id: Option<Uuid>,
@@ -22,6 +23,7 @@ pub struct CertificadoFiltroDto {
 impl From<CertificadoFiltroDto> for CertificadoFiltro {
     fn from(dto: CertificadoFiltroDto) -> Self {
         Self {
+            orden_trabajo_id: dto.orden_trabajo_id,
             proyecto_id: dto.proyecto_id,
             trabajo_id: dto.trabajo_id,
             cliente_id: dto.cliente_id,

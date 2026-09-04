@@ -24,7 +24,9 @@ import { useConfirmDelete } from '@/composables/useConfirmDelete'
 import { useExport } from '@/composables/useExport'
 import { useServerTable } from '@/composables/useServerTable'
 import { useShortcuts } from '@/composables/useShortcuts'
+import { useCatalogStore, type LookupItem } from '@/stores/useCatalogStore'
 import { useEmpleadosStore } from '@/stores/useEmpleadosStore'
+import { useMovimientosStore } from '@/stores/useMovimientosStore'
 import { useReportesStore } from '@/stores/useReportesStore'
 import {
   useLiquidacionesStore,
@@ -47,6 +49,8 @@ const { notify } = useApiError()
 const { confirmDelete } = useConfirmDelete()
 const store = useLiquidacionesStore()
 const empleados = useEmpleadosStore()
+const catalog = useCatalogStore()
+const movimientosStore = useMovimientosStore()
 
 const table = useServerTable<LiquidacionFiltro, LiquidacionListItem>({
   key: 'liquidaciones',
@@ -103,6 +107,18 @@ const paso = ref<1 | 2 | 3>(1)
 const cargandoSugerencias = ref(false)
 const guardando = ref(false)
 
+// Cash ledger integration for settlement payout
+const registrarEnCaja = ref(true)
+const categoriaGastoId = ref<string | null>(null)
+const medioPago = ref<'Efectivo' | 'Transferencia' | 'Cheque'>('Transferencia')
+const categoriasOpciones = ref<LookupItem[]>([])
+
+const mediosPagoOpciones = [
+  { label: 'Transferencia Bancaria', value: 'Transferencia' },
+  { label: 'Efectivo', value: 'Efectivo' },
+  { label: 'Cheque', value: 'Cheque' },
+]
+
 function primerDiaDelMes(): string {
   const now = new Date()
   return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
@@ -116,14 +132,27 @@ const seleccion = ref<string[]>([])
 const periodo = ref({ desde: primerDiaDelMes(), hasta: hoy() })
 const ajustes = ref<Record<string, Ajuste>>({})
 
-function abrirWizard(): void {
+async function abrirWizard(): Promise<void> {
   paso.value = 1
   seleccion.value = []
   periodo.value = { desde: primerDiaDelMes(), hasta: hoy() }
   ajustes.value = {}
   store.sugerencias = []
+  registrarEnCaja.value = true
+  medioPago.value = 'Transferencia'
   wizardOpen.value = true
   void empleados.fetchLookup(true)
+  try {
+    categoriasOpciones.value = await catalog.loadCategorias()
+    const catSueldos = categoriasOpciones.value.find((c) =>
+      c.label.toLowerCase().includes('sueldo'),
+    )
+    if (catSueldos) {
+      categoriaGastoId.value = catSueldos.id
+    }
+  } catch {
+    // Ignore error loading categories
+  }
 }
 
 async function calcular(): Promise<void> {
@@ -191,10 +220,24 @@ function empleadoCambioDeBase(s: LiquidacionSugerencia): boolean {
   return ajuste.diasTrabajados !== s.diasTrabajados || ajuste.tarifaAplicada !== s.tarifaAplicada
 }
 
+function recargosDe(s: LiquidacionSugerencia, tarifa: number): number {
+  if (!s.desglose) return 0
+  const multSab = Math.max(0, Number(s.desglose.multiplicadorSabado) - 1)
+  const multDom = Math.max(0, Number(s.desglose.multiplicadorDomingo) - 1)
+  const multFer = Math.max(0, Number(s.desglose.multiplicadorFeriado) - 1)
+  const sab = Number(s.desglose.diasSabado) * multSab * tarifa
+  const dom = Number(s.desglose.diasDomingo) * multDom * tarifa
+  const fer = Number(s.desglose.diasFeriado) * multFer * tarifa
+  const sum = sab + dom + fer
+  return sum > 0 ? sum : Number(s.desglose.recargos ?? 0)
+}
+
 function dtoDe(s: LiquidacionSugerencia): LiquidacionInput {
   const ajuste = ajusteDe(s.empleadoId)
   const fueModificado = empleadoCambioDeBase(s)
-  const totalBruto = (Number(ajuste.diasTrabajados) * Number(ajuste.tarifaAplicada)).toFixed(4)
+  const baseModificada = Number(ajuste.diasTrabajados) * Number(ajuste.tarifaAplicada)
+  const recargos = recargosDe(s, Number(ajuste.tarifaAplicada))
+  const totalBrutoModificado = (baseModificada + recargos).toFixed(4)
   return {
     empleadoId: s.empleadoId,
     fechaInicio: s.desde,
@@ -207,8 +250,8 @@ function dtoDe(s: LiquidacionSugerencia): LiquidacionInput {
     multiplicadorSabado: s.desglose.multiplicadorSabado,
     multiplicadorDomingo: s.desglose.multiplicadorDomingo,
     multiplicadorFeriado: s.desglose.multiplicadorFeriado,
-    // The untouched gross keeps the surcharges the backend computed; a corrected base cannot.
-    totalBruto: fueModificado ? totalBruto : s.totalBruto,
+    // The untouched gross keeps the surcharges the backend computed; a corrected base preserves them.
+    totalBruto: fueModificado ? totalBrutoModificado : s.totalBruto,
     totalAdelantos: totalAdelantosDe(s),
     observaciones: ajuste.observaciones,
     adelantos: s.adelantos
@@ -227,6 +270,35 @@ async function confirmar(): Promise<void> {
   guardando.value = true
   try {
     await store.createBatch(store.sugerencias.map(dtoDe))
+
+    // Optional registration of net salaries as an expense movement in the Cash Ledger
+    if (registrarEnCaja.value && Number(totalNetoDelLote.value) > 0) {
+      try {
+        const count = store.sugerencias.length
+        const nombres = store.sugerencias.map((s) => s.empleadoNombre).slice(0, 3).join(', ')
+        const sufijo = count > 3 ? ` y ${count - 3} más` : ''
+        const concepto = `Pago de sueldos: ${nombres}${sufijo} (${periodo.value.desde} al ${periodo.value.hasta}) · ${medioPago.value}`
+
+        await movimientosStore.create({
+          fecha: new Date().toISOString(),
+          concepto,
+          monto: totalNetoDelLote.value,
+          cantidad: '1.0000',
+          tipoMovimientoId: '00000000-0000-0000-0000-000000000002', // Gasto
+          moneda: 'Ars',
+          cotizacionAplicada: null,
+          tipoConceptoPagoId: '00000000-0000-0000-0000-000000000103', // Liquidación
+          categoriaId: categoriaGastoId.value,
+          clienteId: null,
+          trabajoId: null,
+          empleadoId: count === 1 ? (store.sugerencias[0]?.empleadoId ?? null) : null,
+          facturaId: null,
+        })
+      } catch (movErr) {
+        notify(movErr)
+      }
+    }
+
     wizardOpen.value = false
     await table.reload()
   } catch (e) {
@@ -463,6 +535,38 @@ onMounted(() => {
         <div class="flex justify-end gap-2 border-t border-border pt-2 font-medium">
           <span>{{ $t('Liquidaciones.TotalDelLote') }}</span>
           <MoneyText :value="totalNetoDelLote" />
+        </div>
+
+        <!-- Cash ledger outflow options -->
+        <div class="mt-4 rounded-lg border border-border bg-card/60 p-3 space-y-3">
+          <label class="flex items-center gap-2 cursor-pointer font-medium text-sm">
+            <Checkbox v-model="registrarEnCaja" binary />
+            <span>{{ $t('Liquidaciones.RegistrarEnCaja') }}</span>
+          </label>
+
+          <div v-if="registrarEnCaja" class="grid grid-cols-1 gap-3 sm:grid-cols-2 pt-1">
+            <label class="flex flex-col gap-1 text-xs">
+              <span class="text-muted-foreground">{{ $t('Liquidaciones.MedioPago') }}</span>
+              <Select
+                v-model="medioPago"
+                :options="mediosPagoOpciones"
+                option-label="label"
+                option-value="value"
+              />
+            </label>
+            <label class="flex flex-col gap-1 text-xs">
+              <span class="text-muted-foreground">{{ $t('Liquidaciones.Categoria') }}</span>
+              <Select
+                v-model="categoriaGastoId"
+                :options="categoriasOpciones"
+                option-label="label"
+                option-value="id"
+                filter
+                show-clear
+                placeholder="Seleccionar categoría"
+              />
+            </label>
+          </div>
         </div>
       </div>
 

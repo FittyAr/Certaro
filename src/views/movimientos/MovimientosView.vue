@@ -199,6 +199,8 @@ const filtrosActivos = computed(() =>
     table.filter.value.concepto ||
     table.filter.value.tipoMovimientoId ||
     table.filter.value.categoriaId ||
+    table.filter.value.clienteId ||
+    table.filter.value.proyectoId ||
     table.filter.value.fechaDesde ||
     table.filter.value.fechaHasta,
   ),
@@ -234,6 +236,12 @@ function movimientoContextMenu(row: MovimientoListItem) {
 useShortcuts({ 'ctrl+n': () => drawer.openCreate() })
 
 onMounted(async () => {
+  if (route.query.filtroProyectoId) {
+    table.filter.value.proyectoId = String(route.query.filtroProyectoId)
+  }
+  if (route.query.filtroClienteId) {
+    table.filter.value.clienteId = String(route.query.filtroClienteId)
+  }
   table.start()
   await cargarSelectores()
   if (route.query.proyectoId) {
@@ -294,6 +302,30 @@ onMounted(async () => {
         />
       </label>
       <label class="flex flex-col gap-1">
+        <span class="text-xs text-muted-foreground">{{ $t('Movimientos.Cliente') }}</span>
+        <Select
+          v-model="table.filter.value.clienteId"
+          :options="opcionesCliente"
+          option-label="label"
+          option-value="id"
+          show-clear
+          filter
+          :placeholder="$t('General.All')"
+        />
+      </label>
+      <label class="flex flex-col gap-1">
+        <span class="text-xs text-muted-foreground">{{ $t('Movimientos.Proyecto') }}</span>
+        <Select
+          v-model="table.filter.value.proyectoId"
+          :options="opcionesProyecto"
+          option-label="label"
+          option-value="id"
+          show-clear
+          filter
+          :placeholder="$t('General.All')"
+        />
+      </label>
+      <label class="flex flex-col gap-1">
         <span class="text-xs text-muted-foreground">{{ $t('Movimientos.Desde') }}</span>
         <DateInput v-model="table.filter.value.fechaDesde" />
       </label>
@@ -327,6 +359,20 @@ onMounted(async () => {
             />
             {{ data.categoriaNombre ?? '—' }}
           </span>
+        </template>
+      </Column>
+      <Column :header="$t('Movimientos.ImputacionOpcional')">
+        <template #body="{ data }">
+          <div v-if="data.proyectoNombre || data.clienteNombre" class="text-xs leading-tight">
+            <div v-if="data.proyectoNombre" class="font-medium text-foreground flex items-center gap-1">
+              <AppIcon name="briefcase" :size="12" class="text-muted-foreground" />
+              <span>{{ data.proyectoNombre }}</span>
+            </div>
+            <div v-if="data.clienteNombre" class="text-muted-foreground">
+              {{ data.clienteNombre }}
+            </div>
+          </div>
+          <span v-else class="text-xs text-muted-foreground">—</span>
         </template>
       </Column>
       <Column field="monto" :header="$t('Movimientos.Monto')" sortable>

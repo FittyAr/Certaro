@@ -13,6 +13,7 @@ import type {
 /** See `docs/11-contratos-tauri.md` §5.5. */
 
 export interface CertificadoFiltro {
+  ordenTrabajoId?: Uuid
   proyectoId?: Uuid
   trabajoId?: Uuid
   clienteId?: Uuid

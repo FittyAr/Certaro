@@ -100,6 +100,14 @@ function onAnular(row: CertificadoListItem): void {
   })
 }
 
+function esFacturado(id: string): boolean {
+  try {
+    return Boolean(localStorage.getItem(`certaro:cert-facturado:${id}`))
+  } catch {
+    return false
+  }
+}
+
 onMounted(async () => {
   table.start()
   try {
@@ -185,6 +193,23 @@ onMounted(async () => {
       </Column>
       <Column field="totalNeto" :header="$t('Certificados.TotalNeto')" sortable>
         <template #body="{ data }"><MoneyText :value="data.totalNeto" /></template>
+      </Column>
+      <Column header="Facturación" class="w-28 text-center">
+        <template #body="{ data }">
+          <span
+            v-if="esFacturado(data.id)"
+            class="inline-flex items-center gap-1 rounded bg-success/15 px-2 py-0.5 text-xs font-semibold text-success"
+          >
+            <AppIcon name="check" :size="12" />
+            Facturado
+          </span>
+          <span
+            v-else
+            class="inline-flex items-center gap-1 rounded bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
+          >
+            Pendiente
+          </span>
+        </template>
       </Column>
 
       <template #actions="{ data }">

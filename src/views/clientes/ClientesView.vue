@@ -44,6 +44,10 @@ function verCuenta(clienteId: string): void {
   void router.push({ name: 'cliente-cuenta', params: { clienteId } })
 }
 
+function verFicha(clienteId: string): void {
+  void router.push({ name: 'cliente-detalle', params: { clienteId } })
+}
+
 const table = useServerTable<ClienteFiltro, ClienteListItem>({
   key: 'clientes',
   initialFilter: { texto: '' },
@@ -131,6 +135,11 @@ function onDelete(row: ClienteListItem): void {
 
 function clienteContextMenu(row: ClienteListItem) {
   return [
+    {
+      label: t('Clientes.VerFicha') || 'Ver Ficha de Cliente',
+      icon: 'pi pi-eye',
+      command: () => verFicha(row.id),
+    },
     { label: t('General.Edit'), icon: 'pi pi-pencil', command: () => drawer.openEdit(row.id) },
     {
       label: t('Comercial.CuentaCorriente.Title'),
@@ -211,6 +220,14 @@ onMounted(() => table.start())
 
       <template #actions="{ data }">
         <div class="flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            :title="$t('Clientes.VerFicha') || 'Ver Ficha de Cliente'"
+            @click="verFicha(data.id)"
+          >
+            <AppIcon name="eye" :size="14" />
+          </Button>
           <Button
             variant="ghost"
             size="sm"

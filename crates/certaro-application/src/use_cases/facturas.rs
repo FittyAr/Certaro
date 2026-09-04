@@ -19,8 +19,10 @@ use crate::dtos::facturas::{
     PagoFacturaItem,
 };
 use crate::error::AppError;
-use crate::paging::PagedResult;
-use crate::ports::repositories::{FacturaRepository, Transaction, UnitOfWork};
+use crate::paging::{PageRequest, PagedResult};
+use crate::ports::repositories::{
+    FacturaRepository, MovimientoFiltro, SortDir, Transaction, UnitOfWork,
+};
 use crate::ports::{ClockPort, IdGeneratorPort, SettingsStore};
 use crate::result::AppResult;
 use crate::use_cases::shared::{
@@ -432,6 +434,34 @@ impl FacturasService {
 
             repo.soft_delete_pago(id, esperado, now).await?;
             recalcular(repo, pago.factura_id, hoy, dias).await?;
+
+            // Revertir movimiento en caja si existiese uno vinculado a esta factura y monto de pago
+            let movs_repo = tx.movimientos();
+            if let Ok(res) = movs_repo
+                .search(
+                    &MovimientoFiltro {
+                        factura_id: Some(pago.factura_id),
+                        monto_min: Some(pago.monto),
+                        monto_max: Some(pago.monto),
+                        ..Default::default()
+                    },
+                    PageRequest::new(1, 10),
+                    None,
+                    SortDir::Desc,
+                )
+                .await
+            {
+                if let Some(primer_mov) = res.items.first() {
+                    let _ = movs_repo
+                        .soft_delete(
+                            primer_mov.movimiento.id,
+                            primer_mov.movimiento.audit.row_version,
+                            now,
+                        )
+                        .await;
+                }
+            }
+
             load_detalle(&*tx, pago.factura_id, hoy, dias).await
         }
         .await;

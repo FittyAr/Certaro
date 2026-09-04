@@ -94,6 +94,13 @@ impl CertificadosService {
                 .ok_or_else(|| AppError::not_found("OrdenTrabajo", orden_trabajo_id))?;
             let acumulados = acumulados_de(tx.certificados(), orden_trabajo_id).await?;
             let numero = tx.certificados().ultimo_numero(orden_trabajo_id).await? + 1;
+            let anteriores = tx.certificados().de_orden(orden_trabajo_id).await?;
+            let ya_descontado = Money::try_sum(anteriores.iter().map(|c| c.otros_descuentos))?;
+            let otros_descuentos_restante = row
+                .orden
+                .otros_descuentos
+                .checked_sub(ya_descontado)
+                .unwrap_or(Money::ZERO);
 
             let items = row
                 .orden
@@ -125,7 +132,7 @@ impl CertificadosService {
                 proyecto_nombre: row.proyecto_nombre.clone(),
                 cliente_nombre: row.cliente_nombre.clone(),
                 ajuste_uocra_porcentaje: row.orden.ajuste_uocra_porcentaje,
-                otros_descuentos: row.orden.otros_descuentos,
+                otros_descuentos: otros_descuentos_restante,
                 items,
             })
         }
@@ -187,9 +194,34 @@ impl CertificadosService {
 
             let total_certificado = Money::try_sum(lineas.iter().map(|l| l.subtotal_actual))?;
             let ajuste_uocra = total_certificado.percent(orden.ajuste_uocra_porcentaje)?;
-            let total_neto = total_certificado
-                .checked_sub(ajuste_uocra)?
-                .checked_sub(orden.otros_descuentos)?;
+
+            let anteriores = certificados.de_orden(orden.id).await?;
+            let ya_descontado = Money::try_sum(anteriores.iter().map(|c| c.otros_descuentos))?;
+            let descuento_disponible = orden
+                .otros_descuentos
+                .checked_sub(ya_descontado)
+                .unwrap_or(Money::ZERO);
+
+            let bases = orden
+                .items
+                .iter()
+                .map(|i| i.base())
+                .collect::<Result<Vec<_>, _>>()?;
+            let total_orden = Money::try_sum(bases)?;
+            let descuento_a_aplicar = if total_orden.raw() > 0 && orden.otros_descuentos.raw() > 0 {
+                let pct = Decimal4::from_raw(total_certificado.raw())
+                    .checked_div(Decimal4::from_raw(total_orden.raw()))
+                    .and_then(|q| q.checked_mul(Decimal4::HUNDRED))
+                    .unwrap_or(Decimal4::ZERO);
+                let prop = orden.otros_descuentos.percent(pct)?;
+                prop.min(descuento_disponible)
+            } else {
+                descuento_disponible
+            };
+
+            let neto_previo = total_certificado.checked_sub(ajuste_uocra)?;
+            let otros_descuentos = descuento_a_aplicar.min(neto_previo);
+            let total_neto = neto_previo.checked_sub(otros_descuentos)?;
 
             let certificado = Certificado {
                 id,
@@ -199,7 +231,7 @@ impl CertificadosService {
                 observaciones: normalise(input.observaciones.clone()),
                 total_certificado,
                 ajuste_uocra,
-                otros_descuentos: orden.otros_descuentos,
+                otros_descuentos,
                 total_neto,
                 items: Vec::new(),
                 audit: Audit::new(now),

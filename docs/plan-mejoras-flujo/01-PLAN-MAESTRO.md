@@ -43,6 +43,8 @@ Este subdirectorio contiene la especificación detallada por módulo:
 - [03-MODULO-LIQUIDACIONES-Y-PERSONAL.md](./03-MODULO-LIQUIDACIONES-Y-PERSONAL.md): Corrección del bug de recargos en lotes, exportación ágil de recibos en PDF.
 - [04-MODULO-COMERCIAL-Y-OBRAS.md](./04-MODULO-COMERCIAL-Y-OBRAS.md): Corrección del árbol de proyectos, puente entre certificados y facturas, navegación a detalles.
 - [05-MODULO-CALENDARIO-Y-UX.md](./05-MODULO-CALENDARIO-Y-UX.md): Resolución de bug de huso horario, estandarización de interfaz con PrimeVue y onboarding inicial.
+- [06-FASE6-CONSOLIDACION-FLUJOS.md](./06-FASE6-CONSOLIDACION-FLUJOS.md): Hub de proyectos, historial de certificados en OT y cobro directo desde CC.
+- [07-FASE7-CORRECCIONES-FLUJO-Y-CALCULOS.md](./07-FASE7-CORRECCIONES-FLUJO-Y-CALCULOS.md): Correcciones críticas de cálculo en certificados, recargos de jornales, caja de obras y ergonomía.
 
 ---
 
@@ -54,6 +56,8 @@ graph TD
     F2 --> F3["Fase 3: Documentos y Acciones Contextuales"]
     F3 --> F4["Fase 4: Calendario, UX y Onboarding"]
     F4 --> F5["Fase 5: Pruebas Integrales y Verificación"]
+    F5 --> F6["Fase 6: Consolidación y Hub de Obras"]
+    F6 --> F7["Fase 7: Correcciones Críticas de Flujo y Cálculos"]
 ```
 
 ### Fase 1: Bloqueos y Cálculos Críticos (Prioridad Inmediata)
@@ -80,3 +84,17 @@ graph TD
 ### Fase 5: Pruebas y Verificación
 - Ejecución de suites completas (`cargo test`, `pnpm test`, `pnpm typecheck`).
 - Prueba de humo manual extremo a extremo del flujo operativo.
+
+### Fase 6: Consolidación de Flujos, Hub de Obras y Ergonomía
+- Historial de certificados emitidos dentro de la orden de trabajo con exportación directa.
+- Hub integral de obra con pestañas en `ProyectoDetalleView`.
+- Modales nativos integrados en calendario y filtro por proyecto en asistencia.
+- Cobro directo de facturas desde cuenta corriente.
+
+### Fase 7: Correcciones Críticas de Flujo, Cálculos Numéricos y Ergonomía
+- Filtrado por proyecto en el repositorio de movimientos para la Caja de Obra.
+- Corrección de deducción múltiple de `otrosDescuentos` en certificados y desglose en modal.
+- Preservación de recargos de sábados, domingos y feriados al editar días o tarifas en liquidaciones.
+- Reversión atómica de movimientos en caja al borrar cobranzas de facturas.
+- Corrección de zona horaria en cobros automáticos para evitar desfasaje de fecha civil.
+- Filtrado activo por cuadrilla en asistencia y acceso directo a ficha de clientes.

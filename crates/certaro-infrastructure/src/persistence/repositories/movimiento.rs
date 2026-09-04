@@ -148,6 +148,14 @@ fn filtro_condition(filtro: &MovimientoFiltro) -> Condition {
     if let Some(id) = filtro.trabajo_id {
         c = c.add(Column::TrabajoId.eq(id.to_string()));
     }
+    if let Some(id) = filtro.proyecto_id {
+        let mut sub = Query::select();
+        sub.column(trabajo::Column::Id)
+            .from(trabajo::Entity)
+            .and_where(Expr::col(trabajo::Column::ProyectoId).eq(id.to_string()))
+            .and_where(Expr::col(trabajo::Column::IsDeleted).eq(false));
+        c = c.add(Expr::col((Entity, Column::TrabajoId)).in_subquery(sub.take()));
+    }
     if let Some(id) = filtro.empleado_id {
         c = c.add(Column::EmpleadoId.eq(id.to_string()));
     }

@@ -18,7 +18,13 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
-import { useCertificadosStore, type CertificadoBorradorItem } from '@/stores/useCertificadosStore'
+import { useExport } from '@/composables/useExport'
+import { useReportesStore } from '@/stores/useReportesStore'
+import {
+  useCertificadosStore,
+  type CertificadoBorradorItem,
+  type CertificadoListItem,
+} from '@/stores/useCertificadosStore'
 import { useOrdenesTrabajoStore, type OrdenTrabajoDetalle } from '@/stores/useOrdenesTrabajoStore'
 
 /**
@@ -35,10 +41,13 @@ const router = useRouter()
 const { notify, fieldErrors } = useApiError()
 const store = useOrdenesTrabajoStore()
 const certificados = useCertificadosStore()
+const reportes = useReportesStore()
+const { exportar } = useExport()
 
 const ordenId = computed(() => String(route.params.ordenId ?? ''))
 
 const orden = ref<OrdenTrabajoDetalle | null>(null)
+const certificadosEmitidos = ref<CertificadoListItem[]>([])
 const loading = ref(false)
 const firstLoad = ref(true)
 const error = ref<ApiError | null>(null)
@@ -47,13 +56,33 @@ async function cargar(): Promise<void> {
   loading.value = true
   error.value = null
   try {
-    orden.value = await store.fetchOne(ordenId.value)
+    const [ord, certs] = await Promise.all([
+      store.fetchOne(ordenId.value),
+      certificados.fetchPaged({
+        page: 1,
+        pageSize: 50,
+        filtro: { ordenTrabajoId: ordenId.value },
+        sortBy: 'numero',
+        sortDir: 'Desc',
+      }),
+    ])
+    orden.value = ord
+    certificadosEmitidos.value = certs.items
   } catch (e) {
     error.value = notify(e)
   } finally {
     loading.value = false
     firstLoad.value = false
   }
+}
+
+function exportarPdfCertificado(cert: CertificadoListItem): void {
+  void exportar({
+    reporte: 'certificado',
+    formato: 'Pdf',
+    detalle: `${cert.proyectoNombre} - #${cert.numero}`,
+    run: (destino) => reportes.exportCertificado(cert.id, destino),
+  })
 }
 
 const emisionOpen = ref(false)
@@ -96,10 +125,36 @@ function subtotalDe(item: CertificadoBorradorItem): string {
   return ((Number(item.base) * pedido) / 100).toFixed(4)
 }
 
-const totalAEmitir = computed(() => {
+const totalCertificadoAEmitir = computed(() => {
   const draft = borrador.value
   if (!draft) return '0.0000'
   return draft.items.reduce((acc, i) => acc + Number(subtotalDe(i)), 0).toFixed(4)
+})
+
+const ajusteUocraAEmitir = computed(() => {
+  const draft = borrador.value
+  if (!draft) return '0.0000'
+  const sub = Number(totalCertificadoAEmitir.value)
+  const pct = Number(draft.ajusteUocraPorcentaje)
+  return ((sub * pct) / 100).toFixed(4)
+})
+
+const otrosDescuentosAEmitir = computed(() => {
+  const draft = borrador.value
+  if (!draft) return '0.0000'
+  const sub = Number(totalCertificadoAEmitir.value)
+  const totalOrden = draft.items.reduce((acc, i) => acc + Number(i.base), 0)
+  const restante = Number(draft.otrosDescuentos)
+  if (totalOrden <= 0 || restante <= 0) return '0.0000'
+  const prop = (sub / totalOrden) * restante
+  return Math.min(prop, restante).toFixed(4)
+})
+
+const totalNetoAEmitir = computed(() => {
+  const bruto = Number(totalCertificadoAEmitir.value)
+  const uocra = Number(ajusteUocraAEmitir.value)
+  const otros = Number(otrosDescuentosAEmitir.value)
+  return Math.max(0, bruto - uocra - otros).toFixed(4)
 })
 
 const hayExcedidos = computed(() => borrador.value?.items.some(excede) ?? false)
@@ -226,6 +281,73 @@ onMounted(cargar)
             <dd><MoneyText :value="orden.totalNeto" /></dd>
           </div>
         </dl>
+
+        <!-- Historial de Certificados de Avance Emitidos para esta Orden -->
+        <section class="space-y-3 rounded-lg border border-border bg-surface-card p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-semibold text-foreground">
+                {{ $t('Certificados.Subtitle') }}
+              </h2>
+              <p class="text-xs text-muted-foreground">
+                Certificados de avance generados para esta orden de trabajo
+              </p>
+            </div>
+            <Button size="sm" @click="abrirEmision()">
+              <AppIcon name="file-badge" :size="14" />
+              {{ $t('Certificados.Emitir') }}
+            </Button>
+          </div>
+
+          <div v-if="certificadosEmitidos.length === 0" class="rounded-md border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+            {{ $t('Certificados.Empty') }}
+          </div>
+          <DataTable
+            v-else
+            :value="certificadosEmitidos"
+            data-key="id"
+            size="small"
+            class="text-xs"
+          >
+            <Column field="numero" :header="$t('Certificados.Numero')">
+              <template #body="{ data }">
+                <span class="font-semibold text-foreground">#{{ data.numero }}</span>
+              </template>
+            </Column>
+            <Column field="fecha" :header="$t('Certificados.Fecha')">
+              <template #body="{ data }">
+                <DateText :value="data.fecha" />
+              </template>
+            </Column>
+            <Column field="totalNeto" :header="$t('Certificados.TotalNeto')">
+              <template #body="{ data }">
+                <MoneyText :value="data.totalNeto" />
+              </template>
+            </Column>
+            <Column :header="$t('General.Actions')" class="w-32 text-right">
+              <template #body="{ data }">
+                <div class="flex items-center justify-end gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    title="Exportar PDF"
+                    @click="exportarPdfCertificado(data)"
+                  >
+                    <AppIcon name="download" :size="14" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    :title="$t('Certificados.VerDetalle')"
+                    @click="router.push({ name: 'certificado-detalle', params: { certificadoId: data.id } })"
+                  >
+                    <AppIcon name="eye" :size="14" />
+                  </Button>
+                </div>
+              </template>
+            </Column>
+          </DataTable>
+        </section>
       </div>
     </ListState>
 
@@ -311,10 +433,24 @@ onMounted(cargar)
           <Textarea v-model="observacionesEmision" rows="2" auto-resize />
         </label>
 
-        <div class="flex justify-end gap-2 border-t border-border pt-3 text-sm">
-          <span class="text-muted-foreground">{{ $t('Certificados.TotalAEmitir') }}</span>
-          <MoneyText :value="totalAEmitir" />
-        </div>
+        <dl class="space-y-1.5 rounded-md border border-border bg-surface-card p-3 text-sm">
+          <div class="flex justify-between">
+            <dt class="text-muted-foreground">{{ $t('Certificados.TotalCertificado') }}</dt>
+            <dd><MoneyText :value="totalCertificadoAEmitir" /></dd>
+          </div>
+          <div v-if="Number(ajusteUocraAEmitir) > 0" class="flex justify-between text-muted-foreground">
+            <dt>{{ $t('Certificados.AjusteUocra') }} ({{ borrador.ajusteUocraPorcentaje }}%)</dt>
+            <dd>- <MoneyText :value="ajusteUocraAEmitir" /></dd>
+          </div>
+          <div v-if="Number(otrosDescuentosAEmitir) > 0" class="flex justify-between text-muted-foreground">
+            <dt>{{ $t('Certificados.OtrosDescuentos') }}</dt>
+            <dd>- <MoneyText :value="otrosDescuentosAEmitir" /></dd>
+          </div>
+          <div class="flex justify-between border-t border-border pt-1 font-semibold">
+            <dt>{{ $t('Certificados.TotalNeto') }}</dt>
+            <dd><MoneyText :value="totalNetoAEmitir" colored /></dd>
+          </div>
+        </dl>
       </div>
 
       <template #footer>

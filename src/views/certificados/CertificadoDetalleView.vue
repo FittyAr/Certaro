@@ -99,13 +99,46 @@ function verOrden(): void {
   })
 }
 
+const facturado = ref(false)
+
+function verificarFacturado(id: string): void {
+  try {
+    facturado.value = Boolean(localStorage.getItem(`certaro:cert-facturado:${id}`))
+  } catch {
+    facturado.value = false
+  }
+}
+
 function facturarCertificado(): void {
   if (!certificado.value) return
+  if (facturado.value) {
+    const continuar = window.confirm(
+      'Este certificado de avance ya fue enviado a facturar previamente. ¿Deseas emitir otra factura para este mismo certificado?',
+    )
+    if (!continuar) return
+  }
+
+  try {
+    localStorage.setItem(
+      `certaro:cert-facturado:${certificado.value.id}`,
+      JSON.stringify({
+        fecha: new Date().toISOString(),
+        numero: certificado.value.numero,
+        total: certificado.value.totalNeto,
+      }),
+    )
+    facturado.value = true
+  } catch {
+    // ignore
+  }
+
   void router.push({
     path: '/facturas',
     query: {
       certificadoId: certificado.value.id,
       clienteId: certificado.value.clienteId,
+      proyectoId: certificado.value.proyectoId,
+      trabajoId: certificado.value.trabajoId,
       subtotal: certificado.value.totalNeto,
       iva: '0.0000',
       total: certificado.value.totalNeto,
@@ -119,7 +152,12 @@ function onExportarCertificado(destino: string) {
   return reportes.exportCertificado(certificado.value.id, destino)
 }
 
-onMounted(cargar)
+onMounted(async () => {
+  await cargar()
+  if (certificadoId.value) {
+    verificarFacturado(certificadoId.value)
+  }
+})
 </script>
 
 <template>
@@ -133,6 +171,13 @@ onMounted(cargar)
       :subtitle="certificado?.ordenTitulo"
     >
       <template #actions>
+        <span
+          v-if="facturado"
+          class="inline-flex items-center gap-1.5 rounded-md border border-success/40 bg-success/15 px-2.5 py-1 text-xs font-semibold text-success"
+        >
+          <AppIcon name="receipt" :size="14" />
+          Facturado
+        </span>
         <Button variant="outline" @click="router.back()">
           <AppIcon name="arrow-left" :size="16" />
           {{ $t('General.Back') }}

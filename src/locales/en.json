@@ -156,7 +156,8 @@
     "SinContactos": "No contacts yet",
     "SoloConDeuda": "With debt only",
     "Subtitle": "Customers, contacts and outstanding balance",
-    "Telefono": "Phone"
+    "Telefono": "Phone",
+    "VerFicha": "View details"
   },
   "Comercial": {
     "Antiguedad": {
@@ -586,7 +587,10 @@
     "Warning": {
       "FeriadosNoDisponibles": "The period has no holidays loaded. If the calendar failed to sync, the holiday surcharge is not being applied."
     },
-    "YaDescontado": "already discounted"
+    "YaDescontado": "already discounted",
+    "RegistrarEnCaja": "Record payroll expense in Cash Ledger",
+    "Categoria": "Expense category",
+    "MedioPago": "Payment method"
   },
   "MedioPago": {
     "Cheque": "Cheque",

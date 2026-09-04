@@ -174,6 +174,9 @@ mod certificado_alias {
 
 fn filtro_condition(filtro: &CertificadoFiltro) -> Condition {
     let mut c = alive();
+    if let Some(id) = filtro.orden_trabajo_id {
+        c = c.add(Column::OrdenTrabajoId.eq(id.to_string()));
+    }
     if let Some(id) = filtro.trabajo_id {
         c = c.add(
             Expr::col((orden_trabajo::Entity, orden_trabajo::Column::TrabajoId)).eq(id.to_string()),

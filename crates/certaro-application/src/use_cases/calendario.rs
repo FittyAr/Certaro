@@ -580,6 +580,7 @@ impl CalendarioService {
         entity.fin = fin;
         entity.todo_el_dia = input.todo_el_dia;
         entity.color = input.color;
+        entity.trabajo_id = input.trabajo_id;
         entity.audit.touch(now);
 
         tx.calendario_eventos().update(&entity).await?;

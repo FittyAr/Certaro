@@ -11,7 +11,6 @@ import { appIsReady } from '@/api/app'
 import { isTauri } from '@/api/client'
 import { useConfigStore } from '@/stores/useConfigStore'
 import { useDashboardStore, type Cotizacion } from '@/stores/useDashboardStore'
-import { useSistemaStore } from '@/stores/useSistemaStore'
 import { useUiStore } from '@/stores/useUiStore'
 import { useVersionCheck } from '@/composables/useVersionCheck'
 import ErrorView from '@/views/errors/ErrorView.vue'
@@ -19,7 +18,6 @@ import ErrorView from '@/views/errors/ErrorView.vue'
 const ui = useUiStore()
 const config = useConfigStore()
 const dashboard = useDashboardStore()
-const sistema = useSistemaStore()
 const versionCheck = useVersionCheck()
 const router = useRouter()
 
@@ -44,17 +42,10 @@ async function onAppReady(): Promise<void> {
     await config.load()
     ui.privacyMode = config.config?.dashboard.privacyMode ?? false
 
-    // If first launch, check whether a legacy database exists to guide the user
+    // If first launch, guide the user through the welcome screen
     const welcomed = localStorage.getItem('eo:welcomed')
     if (!welcomed) {
-      try {
-        const candidate = await sistema.detectLegacyDb()
-        if (candidate) {
-          await router.push('/welcome')
-        }
-      } catch {
-        // Non-blocking detection failure
-      }
+      await router.push('/welcome')
     }
 
     ui.markReady()

@@ -127,13 +127,13 @@ export const routes: RouteRecordRaw[] = [
     path: '/kanban',
     name: 'kanban',
     component: () => import('@/views/kanban/KanbanView.vue'),
-    meta: { titleKey: 'Menu.Kanban', requiredPermission: 'kanban:ver' },
+    meta: { titleKey: 'Menu.Kanban', permission: 'kanban:ver' },
   },
   {
     path: '/calendario',
     name: 'calendario',
     component: () => import('@/views/calendario/CalendarioView.vue'),
-    meta: { titleKey: 'Menu.Calendario', requiredPermission: 'calendario:ver' },
+    meta: { titleKey: 'Menu.Calendario', permission: 'calendario:ver' },
   },
   {
     path: '/certificados',

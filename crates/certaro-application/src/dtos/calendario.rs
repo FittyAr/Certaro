@@ -108,6 +108,7 @@ pub struct ActualizarEventoInput {
     pub fin: String,
     pub todo_el_dia: bool,
     pub color: Option<String>,
+    pub trabajo_id: Option<Uuid>,
     pub recurso_ids: Option<Vec<Uuid>>,
     pub row_version: RowVersion,
 }
