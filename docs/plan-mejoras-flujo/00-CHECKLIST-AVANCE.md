@@ -18,7 +18,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
 | **Fase 8** | Integración Financiera, Consistencia de Cálculos y Ergonomía UX | 8 | 8 | 🟢 Completada |
 | **Fase 9** | Correcciones Críticas de Lógica Numérica, Imputación Financiera y Flujo de Obra | 6 | 6 | 🟢 Completada |
 | **Fase 10** | Integración Bimonetaria, Imputación de Mano de Obra y Ergonomía de Flujo | 7 | 7 | 🟢 Completada |
-| **Fase 11** | Auditoría Integral de Flujo Operativo, Cálculos Financieros y Ergonomía UX/UI | 7 | 5 | 🟡 En Progreso |
+| **Fase 11** | Auditoría Integral de Flujo Operativo, Cálculos Financieros y Ergonomía UX/UI | 7 | 6 | 🟡 En Progreso |
 
 ---
 
@@ -355,7 +355,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Detalle:** Refrescar el monto de recargos según la tarifa editada en tiempo real. Mostrar advertencia destacada cuando `totalNeto < 0`.
   - **Criterio de aceptación:** La columna de recargos refleja la tarifa modificada y el sistema alerta visualmente si los adelantos superan el sueldo.
 
-- [ ] **11.6. Carga Masiva de Asistencia para Toda la Cuadrilla**
+- [x] **11.6. Carga Masiva de Asistencia para Toda la Cuadrilla**
   - **Archivos:** `src/views/asistencia/components/AsistenciaCargaMasivaModal.vue`, `src/locales/es.json`, `src/locales/en.json`.
   - **Detalle:** Añadir opción para aplicar la carga de jornadas a todos los empleados activos de la empresa o del proyecto en un único clic.
   - **Criterio de aceptación:** Se pueden asentar jornadas para toda la cuadrilla en lote.

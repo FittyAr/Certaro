@@ -41,14 +41,17 @@
     "Ready": "Listo"
   },
   "Asistencia": {
+    "AplicarA": "Aplicar a",
     "CargaMasiva": "Carga por rango",
+    "EmpleadoIndividual": "Empleado individual",
     "Empty": "No hay empleados activos para el período",
     "Jornadas": "Jornadas",
     "SinRegistro": "Sin registro",
     "SoloAsignados": "Solo asignados a la obra",
     "SoloDiasHabiles": "Saltear sábados, domingos y feriados",
     "Subtitle": "Un click recorre los tipos de jornada y vuelve al vacío",
-    "TipoJornada": "Tipo de jornada"
+    "TipoJornada": "Tipo de jornada",
+    "TodaCuadrilla": "Toda la cuadrilla activa"
   },
   "Auth": {
     "Login": {

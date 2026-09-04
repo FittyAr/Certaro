@@ -31,6 +31,7 @@ const trabajosStore = useTrabajosStore()
 
 const TIPOS: TipoJornada[] = ['Completa', 'Media', 'Falta', 'FaltaJustificada', 'Feriado']
 const guardando = ref(false)
+const todaLaCuadrilla = ref(false)
 const opcionesTrabajo = ref<LookupItem[]>([])
 
 const rango = ref<{
@@ -55,6 +56,7 @@ watch(
   () => props.visible,
   async (isOpen) => {
     if (isOpen) {
+      todaLaCuadrilla.value = false
       rango.value = {
         empleadoId: props.initialEmpleadoId ?? props.empleadosOpciones[0]?.id ?? '',
         proyectoId: props.initialProyectoId ?? null,
@@ -91,17 +93,33 @@ async function onProyectoRangoChange(pId: string | null): Promise<void> {
 }
 
 async function guardarRango(): Promise<void> {
-  if (guardando.value || !rango.value.empleadoId) return
+  if (guardando.value) return
+  if (!todaLaCuadrilla.value && !rango.value.empleadoId) return
+  if (todaLaCuadrilla.value && props.empleadosOpciones.length === 0) return
+
   guardando.value = true
   try {
-    await store.cargarRango({
-      empleadoId: rango.value.empleadoId,
-      desde: rango.value.desde,
-      hasta: rango.value.hasta,
-      tipoJornada: rango.value.tipoJornada,
-      soloDiasHabiles: rango.value.soloDiasHabiles,
-      trabajoId: rango.value.trabajoId,
-    })
+    if (todaLaCuadrilla.value) {
+      for (const emp of props.empleadosOpciones) {
+        await store.cargarRango({
+          empleadoId: emp.id,
+          desde: rango.value.desde,
+          hasta: rango.value.hasta,
+          tipoJornada: rango.value.tipoJornada,
+          soloDiasHabiles: rango.value.soloDiasHabiles,
+          trabajoId: rango.value.trabajoId,
+        })
+      }
+    } else {
+      await store.cargarRango({
+        empleadoId: rango.value.empleadoId,
+        desde: rango.value.desde,
+        hasta: rango.value.hasta,
+        tipoJornada: rango.value.tipoJornada,
+        soloDiasHabiles: rango.value.soloDiasHabiles,
+        trabajoId: rango.value.trabajoId,
+      })
+    }
     emit('update:visible', false)
     emit('saved')
   } catch (e) {
@@ -120,13 +138,22 @@ async function guardarRango(): Promise<void> {
     @update:visible="emit('update:visible', $event)"
   >
     <div class="flex w-80 flex-col gap-3">
-      <label class="flex flex-col gap-1">
+      <!-- Opción: Toda la cuadrilla o individual -->
+      <label class="flex items-center gap-2 cursor-pointer select-none rounded border border-border/70 bg-muted/20 p-2 text-sm">
+        <ToggleSwitch v-model="todaLaCuadrilla" />
+        <span class="font-medium text-foreground/90">
+          {{ $t('Asistencia.TodaCuadrilla') }}
+        </span>
+      </label>
+
+      <label v-if="!todaLaCuadrilla" class="flex flex-col gap-1">
         <span class="text-sm">{{ $t('Empleados.Nombre') }}</span>
         <Select
           v-model="rango.empleadoId"
           :options="empleadosOpciones"
           option-label="label"
           option-value="id"
+          filter
         />
       </label>
       <div class="grid grid-cols-2 gap-3">
