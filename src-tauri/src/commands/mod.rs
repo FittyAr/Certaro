@@ -1,5 +1,8 @@
 //! Tauri commands: one module per functional area.
 
+pub mod handlers;
+pub use handlers::generate_handler;
+
 pub mod adjuntos;
 pub mod app;
 pub mod asistencias;
