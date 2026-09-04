@@ -60,6 +60,19 @@ impl OrdenTrabajo {
             .checked_sub(self.otros_descuentos)
     }
 
+    /// The UOCRA adjustment calculated on the full budgeted quote amount.
+    pub fn ajuste_uocra_presupuestado(&self) -> Result<Money, DomainError> {
+        self.total_presupuestado()?
+            .percent(self.ajuste_uocra_porcentaje)
+    }
+
+    /// Full net value of the budgeted quote: total_presupuestado + ajuste_uocra_presupuestado - otros_descuentos.
+    pub fn total_presupuestado_neto(&self) -> Result<Money, DomainError> {
+        self.total_presupuestado()?
+            .checked_add(self.ajuste_uocra_presupuestado()?)?
+            .checked_sub(self.otros_descuentos)
+    }
+
     /// Whether anything at all would be certified. An order with no progress cannot be issued.
     pub fn tiene_avance(&self) -> bool {
         self.items_vivos()
@@ -212,6 +225,18 @@ mod tests {
         assert_eq!(o.ajuste_uocra().unwrap(), Money::parse("201600").unwrap());
         // 2520000 + 201600 - 20000 = 2701600
         assert_eq!(o.total_neto().unwrap(), Money::parse("2701600").unwrap());
+    }
+
+    #[test]
+    fn el_total_presupuestado_neto_calcula_sobre_la_cotizacion_completa() {
+        // Presupuesto: 10 * 100 = 1000. UOCRA: 10% = 100. Otros descuentos: 50.
+        // Total presupuestado neto = 1000 + 100 - 50 = 1050.
+        // Avance actual: 0%. Total certificado = 0.
+        let o = orden(vec![item("10", "100", "0", "0")], "10", "50");
+        assert_eq!(o.total_presupuestado().unwrap(), Money::parse("1000").unwrap());
+        assert_eq!(o.ajuste_uocra_presupuestado().unwrap(), Money::parse("100").unwrap());
+        assert_eq!(o.total_presupuestado_neto().unwrap(), Money::parse("1050").unwrap());
+        assert_eq!(o.total_certificado().unwrap(), Money::ZERO);
     }
 
     #[test]

@@ -20,6 +20,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
 | **Fase 10** | Integración Bimonetaria, Imputación de Mano de Obra y Ergonomía de Flujo | 7 | 7 | 🟢 Completada |
 | **Fase 11** | Auditoría Integral de Flujo Operativo, Cálculos Financieros y Ergonomía UX/UI | 7 | 7 | 🟢 Completada |
 | **Fase 12** | Correcciones Críticas de Cobranzas en Caja, Ajuste UOCRA y Ergonomía | 7 | 7 | 🟢 Completada |
+| **Fase 13** | Correcciones de Aritmética de Cotización, Rentabilidad Bimonetaria y Flujo Operativo | 7 | 0 | 🟡 En progreso |
 
 ---
 
@@ -404,4 +405,43 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Archivos:** `src/views/certificados/CertificadoDetalleView.vue`, `src/views/facturas/FacturasView.vue`.
   - **Detalle:** No escribir en `localStorage` al hacer clic en "Facturar Certificado". Pasar el `certificadoId` en la URL y registrar la marca de facturado únicamente cuando la factura es persistida con éxito en el método `create` de `useCrudDrawer`.
   - **Criterio de aceptación:** Cancelar o cerrar el formulario de factura no deja el certificado marcado falsamente como facturado.
+
+---
+
+## Fase 13: Correcciones de Aritmética de Cotización, Rentabilidad Bimonetaria y Flujo Operativo
+
+- [x] **13.1. Total Presupuestado Neto y Aritmética Coherente en Cotizaciones**
+  - **Archivos:** `crates/certaro-domain/src/entities/orden_trabajo.rs`, `crates/certaro-application/src/dtos/ordenes_trabajo.rs`, `crates/certaro-infrastructure/src/persistence/mappers/orden_trabajo.rs`, `src/views/ordenes/OrdenDetalleView.vue`.
+  - **Detalle:** Incorporar en dominio y DTOs el cálculo de `ajuste_uocra_presupuestado` y `total_presupuestado_neto` (`total_presupuestado + ajuste_uocra_presupuestado - otros_descuentos`). En `OrdenDetalleView.vue`, clarificar la visualización para que una orden con 0% de avance y descuento muestre su valor neto de cotización positivo y no `-$ 50.000,00`.
+  - **Criterio de aceptación:** Las órdenes de trabajo muestran un Total Presupuestado Neto matemáticamente coherente para el presupuesto completo.
+
+- [ ] **13.2. Corrección Bimonetaria en Rentabilidad de Obras (SeaORM)**
+  - **Archivos:** `crates/certaro-infrastructure/src/persistence/repositories/proyecto/query.rs`.
+  - **Detalle:** Modificar `suma_movimientos_expr` para que aplique la fórmula de monto consolidado multiplicando por `cotizacion_aplicada` cuando la moneda es USD.
+  - **Criterio de aceptación:** Compras y cobros en USD impactan en la rentabilidad de la obra convertidos a pesos según su cotización real.
+
+- [ ] **13.3. Inclusión de Adelantos Preexistentes No Descontados en Liquidación**
+  - **Archivos:** `crates/certaro-infrastructure/src/persistence/repositories/liquidacion/mod.rs`.
+  - **Detalle:** En `candidatos_adelantos`, ampliar el query para que busque todos los adelantos con fecha anterior o igual a la fecha fin del período que aún no hayan sido descontados en una liquidación previa.
+  - **Criterio de aceptación:** Adelantos dados a empleados antes del primer día de la quincena se sugieren para ser descontados en la liquidación.
+
+- [ ] **13.4. Precisión en Borrado de Pagos y Asientos de Caja**
+  - **Archivos:** `crates/certaro-application/src/use_cases/facturas/pagos.rs`, `src/views/facturas/components/FacturaPagosModal.vue`.
+  - **Detalle:** Identificar unívocamente el pago en el concepto del movimiento generado en `FacturaPagosModal.vue`. Refinar `borrar_pago` para validar que el movimiento dado de baja corresponda exactamente al cobro eliminado.
+  - **Criterio de aceptación:** Eliminar un pago no afecta asientos contables de otros cobros del mismo importe.
+
+- [ ] **13.5. Acceso Global y Gestión de Órdenes de Trabajo en Menú Principal**
+  - **Archivos:** `src/router/menu.ts`, `src/router/routes.ts`, `src/views/ordenes/OrdenesView.vue`.
+  - **Detalle:** Añadir ruta `/ordenes` en el menú (Comercial) y habilitar `OrdenesView.vue` para listar globalmente las órdenes de trabajo cuando no se especifica `trabajoId`.
+  - **Criterio de aceptación:** El usuario puede acceder a todas las órdenes y cotizaciones desde el menú lateral.
+
+- [ ] **13.6. Optimización Batch en Carga Masiva de Asistencia**
+  - **Archivos:** `src/stores/useAsistenciaStore.ts`, `src/views/asistencia/components/AsistenciaCargaMasivaModal.vue`.
+  - **Detalle:** Crear método de carga masiva en `useAsistenciaStore.ts` que envíe las solicitudes en paralelo y ejecute una única recarga de la grilla de asistencia.
+  - **Criterio de aceptación:** Cargar asistencia masiva a toda la cuadrilla se ejecuta sin recargas redundantes en bucle.
+
+- [ ] **13.7. Verificación Integral y Pruebas Unitarias**
+  - **Archivos:** Tests de workspace backend y specs de frontend.
+  - **Detalle:** Ejecutar `cargo test --workspace` y `pnpm test` verificando cero regresiones.
+  - **Criterio de aceptación:** 100% de las pruebas aprobadas.
 

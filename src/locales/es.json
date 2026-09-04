@@ -713,6 +713,10 @@
     "TotalCertificado": "Total certificado",
     "TotalNeto": "Total neto",
     "TotalPresupuestado": "Total presupuestado",
+    "TotalPresupuestadoNeto": "Total presupuestado neto",
+    "ResumenCotizacion": "Presupuesto pactado",
+    "ResumenCertificacion": "Avance certificado",
+    "NetoCertificado": "Neto certificado emitido",
     "UltimoCertificado": "Último certificado",
     "Unidad": "Unidad",
     "VerDetalle": "Ver detalle"

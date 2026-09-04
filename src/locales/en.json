@@ -713,7 +713,11 @@
     "TotalCertificado": "Certified total",
     "TotalNeto": "Net total",
     "TotalPresupuestado": "Quoted total",
-    "UltimoCertificado": "Last certificate",
+    "TotalPresupuestadoNeto": "Net quoted total",
+    "ResumenCotizacion": "Agreed quote",
+    "ResumenCertificacion": "Certified progress",
+    "NetoCertificado": "Net certified issued",
+    "UltimoCertificado": "Latest certificate",
     "Unidad": "Unit",
     "VerDetalle": "View detail"
   },

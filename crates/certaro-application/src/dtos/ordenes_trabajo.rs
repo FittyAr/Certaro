@@ -96,6 +96,7 @@ pub struct OrdenTrabajoListItem {
     pub fecha: NaiveDate,
     pub items_count: usize,
     pub total_presupuestado: Money,
+    pub total_presupuestado_neto: Money,
     /// What would be certified right now, before the discounts.
     pub total_certificado: Money,
     pub certificados_count: u64,
@@ -112,6 +113,7 @@ impl OrdenTrabajoListItem {
             fecha: row.orden.fecha,
             items_count: row.orden.items.len(),
             total_presupuestado: row.orden.total_presupuestado()?,
+            total_presupuestado_neto: row.orden.total_presupuestado_neto()?,
             total_certificado: row.orden.total_certificado()?,
             certificados_count: row.certificados_count,
             row_version: row.orden.audit.row_version.to_hex(),
@@ -138,6 +140,8 @@ pub struct OrdenTrabajoDetalle {
     pub otros_descuentos: Money,
     pub items: Vec<OrdenTrabajoItemDto>,
     pub total_presupuestado: Money,
+    pub ajuste_uocra_presupuestado: Money,
+    pub total_presupuestado_neto: Money,
     pub total_certificado: Money,
     /// The percentage above, resolved into the amount it discounts.
     pub ajuste_uocra: Money,
@@ -173,6 +177,8 @@ impl OrdenTrabajoDetalle {
             otros_descuentos: row.orden.otros_descuentos,
             items,
             total_presupuestado: row.orden.total_presupuestado()?,
+            ajuste_uocra_presupuestado: row.orden.ajuste_uocra_presupuestado()?,
+            total_presupuestado_neto: row.orden.total_presupuestado_neto()?,
             total_certificado: row.orden.total_certificado()?,
             ajuste_uocra: row.orden.ajuste_uocra()?,
             total_neto: row.orden.total_neto()?,

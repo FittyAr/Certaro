@@ -58,6 +58,7 @@ export interface OrdenTrabajoListItem {
   fecha: CivilDate
   itemsCount: number
   totalPresupuestado: Money
+  totalPresupuestadoNeto?: Money
   totalCertificado: Money
   certificadosCount: number
   rowVersion: RowVersion
@@ -80,6 +81,8 @@ export interface OrdenTrabajoDetalle {
   otrosDescuentos: Money
   items: OrdenTrabajoItem[]
   totalPresupuestado: Money
+  ajusteUocraPresupuestado?: Money
+  totalPresupuestadoNeto?: Money
   totalCertificado: Money
   ajusteUocra: Money
   totalNeto: Money

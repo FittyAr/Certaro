@@ -158,28 +158,55 @@ onMounted(cargar)
           </Column>
         </DataTable>
 
-        <dl class="ml-auto w-full max-w-sm space-y-1 rounded-md border border-border p-4 text-sm">
-          <div class="flex justify-between">
-            <dt>{{ $t('Ordenes.TotalPresupuestado') }}</dt>
-            <dd><MoneyText :value="orden.totalPresupuestado" /></dd>
-          </div>
-          <div class="flex justify-between">
-            <dt>{{ $t('Ordenes.TotalCertificado') }}</dt>
-            <dd><MoneyText :value="orden.totalCertificado" /></dd>
-          </div>
-          <div class="flex justify-between text-muted-foreground">
-            <dt>{{ $t('Ordenes.AjusteUocra') }} <template v-if="Number(orden.ajusteUocraPorcentaje) > 0">(+{{ orden.ajusteUocraPorcentaje }}%)</template></dt>
-            <dd>+ <MoneyText :value="orden.ajusteUocra" /></dd>
-          </div>
-          <div class="flex justify-between text-muted-foreground">
-            <dt>{{ $t('Ordenes.OtrosDescuentos') }}</dt>
-            <dd>− <MoneyText :value="orden.otrosDescuentos" /></dd>
-          </div>
-          <div class="flex justify-between border-t border-border pt-1 font-semibold">
-            <dt>{{ $t('Ordenes.TotalNeto') }}</dt>
-            <dd><MoneyText :value="orden.totalNeto" /></dd>
-          </div>
-        </dl>
+        <div class="ml-auto flex flex-col gap-3 md:flex-row md:justify-end">
+          <!-- Resumen de la Cotización / Presupuesto Total -->
+          <dl class="w-full max-w-sm space-y-1 rounded-md border border-border bg-surface-card p-4 text-sm">
+            <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {{ $t('Ordenes.ResumenCotizacion') }}
+            </span>
+            <div class="flex justify-between pt-1">
+              <dt>{{ $t('Ordenes.TotalPresupuestado') }}</dt>
+              <dd><MoneyText :value="orden.totalPresupuestado" /></dd>
+            </div>
+            <div class="flex justify-between text-muted-foreground">
+              <dt>
+                {{ $t('Ordenes.AjusteUocra') }}
+                <template v-if="Number(orden.ajusteUocraPorcentaje) > 0">(+{{ orden.ajusteUocraPorcentaje }}%)</template>
+              </dt>
+              <dd>+ <MoneyText :value="orden.ajusteUocraPresupuestado ?? orden.ajusteUocra" /></dd>
+            </div>
+            <div class="flex justify-between text-muted-foreground">
+              <dt>{{ $t('Ordenes.OtrosDescuentos') }}</dt>
+              <dd>− <MoneyText :value="orden.otrosDescuentos" /></dd>
+            </div>
+            <div class="flex justify-between border-t border-border pt-1 font-semibold text-foreground">
+              <dt>{{ $t('Ordenes.TotalPresupuestadoNeto') }}</dt>
+              <dd><MoneyText :value="orden.totalPresupuestadoNeto ?? orden.totalPresupuestado" /></dd>
+            </div>
+          </dl>
+
+          <!-- Resumen de Certificación Acumulada -->
+          <dl class="w-full max-w-sm space-y-1 rounded-md border border-border bg-surface-card p-4 text-sm">
+            <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {{ $t('Ordenes.ResumenCertificacion') }}
+            </span>
+            <div class="flex justify-between pt-1">
+              <dt>{{ $t('Ordenes.TotalCertificado') }}</dt>
+              <dd><MoneyText :value="orden.totalCertificado" /></dd>
+            </div>
+            <div class="flex justify-between text-muted-foreground">
+              <dt>
+                {{ $t('Ordenes.AjusteUocra') }}
+                <template v-if="Number(orden.ajusteUocraPorcentaje) > 0">(+{{ orden.ajusteUocraPorcentaje }}%)</template>
+              </dt>
+              <dd>+ <MoneyText :value="orden.ajusteUocra" /></dd>
+            </div>
+            <div class="flex justify-between border-t border-border pt-1 font-semibold">
+              <dt>{{ $t('Ordenes.NetoCertificado') }}</dt>
+              <dd><MoneyText :value="orden.totalNeto" /></dd>
+            </div>
+          </dl>
+        </div>
 
         <!-- Historial de Certificados de Avance Emitidos para esta Orden -->
         <section class="space-y-3 rounded-lg border border-border bg-surface-card p-4">
