@@ -135,7 +135,9 @@
     "Unidad": "Unit",
     "VerDetalle": "View detail",
     "VerOrden": "View work order",
-    "Facturar": "Invoice this certificate"
+    "Facturar": "Invoice this certificate",
+    "FacturadoReconfirmarTitulo": "Certificate already invoiced",
+    "FacturadoReconfirmar": "This progress certificate was already sent for invoicing earlier. Do you want to issue another invoice for this same certificate?"
   },
   "Clientes": {
     "AgregarContacto": "Add contact",
@@ -154,7 +156,9 @@
     "NoBorrable": "The customer has projects or invoices",
     "Nombre": "Name",
     "Proyectos": "Projects",
+    "ProyectosAsociados": "Customer projects",
     "SinContactos": "No contacts yet",
+    "SinProyectos": "The customer has no registered projects",
     "SoloConDeuda": "With debt only",
     "Subtitle": "Customers, contacts and outstanding balance",
     "Telefono": "Phone",
@@ -591,7 +595,9 @@
     "YaDescontado": "already discounted",
     "RegistrarEnCaja": "Record payroll expense in Cash Ledger",
     "Categoria": "Expense category",
-    "MedioPago": "Payment method"
+    "MedioPago": "Payment method",
+    "ImputarProyecto": "Attribute to project (optional)",
+    "ImputarTrabajo": "Project job"
   },
   "MedioPago": {
     "Cheque": "Cheque",

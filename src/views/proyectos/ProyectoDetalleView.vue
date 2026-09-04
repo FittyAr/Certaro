@@ -398,6 +398,8 @@ onMounted(cargarTodo)
                   data-key="id"
                   size="small"
                   class="text-sm"
+                  paginator
+                  :rows="20"
                 >
                   <Column field="fecha" :header="$t('Movimientos.Fecha')">
                     <template #body="{ data }">

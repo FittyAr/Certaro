@@ -2,7 +2,9 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Textarea from 'primevue/textarea'
+import { useConfirm } from 'primevue/useconfirm'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
 import DateText from '@/components/domain/DateText.vue'
@@ -17,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
 import { useCertificadosStore, type CertificadoDetalle } from '@/stores/useCertificadosStore'
+import { useConfigStore } from '@/stores/useConfigStore'
 import { useReportesStore } from '@/stores/useReportesStore'
 
 /**
@@ -29,6 +32,9 @@ import { useReportesStore } from '@/stores/useReportesStore'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
+const confirm = useConfirm()
+const configStore = useConfigStore()
 const { notify } = useApiError()
 const { confirmDelete } = useConfirmDelete()
 const store = useCertificadosStore()
@@ -48,6 +54,8 @@ async function cargar(): Promise<void> {
   error.value = null
   try {
     certificado.value = await store.fetchOne(certificadoId.value)
+    observaciones.value = certificado.value.observaciones
+    verificarFacturado(certificadoId.value)
   } catch (e) {
     error.value = notify(e)
   } finally {
@@ -65,14 +73,17 @@ const observacionesCambiaron = computed(
 )
 
 async function guardarObservaciones(): Promise<void> {
-  if (!certificado.value || guardando.value) return
+  const actual = certificado.value
+  if (!actual || guardando.value) return
   guardando.value = true
   try {
-    certificado.value = await store.updateObservaciones(
-      certificado.value.id,
-      observaciones.value?.trim() ? observaciones.value : null,
-      certificado.value.audit.rowVersion,
+    const updated = await store.updateObservaciones(
+      actual.id,
+      observaciones.value,
+      actual.audit.rowVersion,
     )
+    certificado.value = updated
+    observaciones.value = updated.observaciones
   } catch (e) {
     notify(e)
   } finally {
@@ -109,14 +120,13 @@ function verificarFacturado(id: string): void {
   }
 }
 
-function facturarCertificado(): void {
+function emitirFacturaCertificado(): void {
   if (!certificado.value) return
-  if (facturado.value) {
-    const continuar = window.confirm(
-      'Este certificado de avance ya fue enviado a facturar previamente. ¿Deseas emitir otra factura para este mismo certificado?',
-    )
-    if (!continuar) return
-  }
+
+  const subtotalNum = Number(certificado.value.totalNeto)
+  const ivaSugeridoPct = Number(configStore.config?.business.ivaSugerido ?? 21)
+  const ivaNum = (subtotalNum * ivaSugeridoPct) / 100
+  const totalNum = subtotalNum + ivaNum
 
   try {
     localStorage.setItem(
@@ -139,12 +149,29 @@ function facturarCertificado(): void {
       clienteId: certificado.value.clienteId,
       proyectoId: certificado.value.proyectoId,
       trabajoId: certificado.value.trabajoId,
-      subtotal: certificado.value.totalNeto,
-      iva: '0.0000',
-      total: certificado.value.totalNeto,
+      subtotal: subtotalNum.toFixed(4),
+      iva: ivaNum.toFixed(4),
+      total: totalNum.toFixed(4),
       observaciones: `Certificado N.º ${certificado.value.numero} · ${certificado.value.ordenTitulo}`,
     },
   })
+}
+
+function facturarCertificado(): void {
+  if (!certificado.value) return
+  if (facturado.value) {
+    confirm.require({
+      header: t('Certificados.FacturadoReconfirmarTitulo'),
+      message: t('Certificados.FacturadoReconfirmar'),
+      acceptLabel: t('General.Confirm'),
+      rejectLabel: t('General.Cancel'),
+      accept: () => {
+        emitirFacturaCertificado()
+      },
+    })
+    return
+  }
+  emitirFacturaCertificado()
 }
 
 function onExportarCertificado(destino: string) {

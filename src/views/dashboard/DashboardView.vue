@@ -489,9 +489,9 @@ onMounted(() => {
               <span class="flex-1 truncate">{{ movimiento.concepto }}</span>
               <span
                 class="font-medium tabular-nums"
-                :class="movimiento.esIngreso ? 'text-money-positive' : 'text-money-negative'"
+                :class="!ui.privacyMode ? (movimiento.esIngreso ? 'text-money-positive' : 'text-money-negative') : ''"
               >
-                {{ movimiento.esIngreso ? '+' : '-' }} <MoneyText :value="movimiento.total" />
+                <template v-if="!ui.privacyMode">{{ movimiento.esIngreso ? '+' : '-' }} </template><MoneyText :value="movimiento.total" />
               </span>
             </li>
           </ul>

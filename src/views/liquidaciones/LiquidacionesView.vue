@@ -27,7 +27,9 @@ import { useShortcuts } from '@/composables/useShortcuts'
 import { useCatalogStore, type LookupItem } from '@/stores/useCatalogStore'
 import { useEmpleadosStore } from '@/stores/useEmpleadosStore'
 import { useMovimientosStore } from '@/stores/useMovimientosStore'
+import { useProyectosStore } from '@/stores/useProyectosStore'
 import { useReportesStore } from '@/stores/useReportesStore'
+import { useTrabajosStore } from '@/stores/useTrabajosStore'
 import {
   useLiquidacionesStore,
   type LiquidacionFiltro,
@@ -51,6 +53,8 @@ const store = useLiquidacionesStore()
 const empleados = useEmpleadosStore()
 const catalog = useCatalogStore()
 const movimientosStore = useMovimientosStore()
+const proyectos = useProyectosStore()
+const trabajos = useTrabajosStore()
 
 const table = useServerTable<LiquidacionFiltro, LiquidacionListItem>({
   key: 'liquidaciones',
@@ -112,12 +116,32 @@ const registrarEnCaja = ref(true)
 const categoriaGastoId = ref<string | null>(null)
 const medioPago = ref<'Efectivo' | 'Transferencia' | 'Cheque'>('Transferencia')
 const categoriasOpciones = ref<LookupItem[]>([])
+const pagoProyectoId = ref<string | null>(null)
+const pagoTrabajoId = ref<string | null>(null)
+const opcionesProyecto = ref<LookupItem[]>([])
+const opcionesTrabajo = ref<LookupItem[]>([])
 
 const mediosPagoOpciones = [
   { label: 'Transferencia Bancaria', value: 'Transferencia' },
   { label: 'Efectivo', value: 'Efectivo' },
   { label: 'Cheque', value: 'Cheque' },
 ]
+
+async function onProyectoChange(): Promise<void> {
+  pagoTrabajoId.value = null
+  if (!pagoProyectoId.value) {
+    opcionesTrabajo.value = []
+    return
+  }
+  try {
+    opcionesTrabajo.value = await trabajos.lookup(pagoProyectoId.value)
+    if (opcionesTrabajo.value.length > 0 && opcionesTrabajo.value[0]) {
+      pagoTrabajoId.value = opcionesTrabajo.value[0].id
+    }
+  } catch {
+    opcionesTrabajo.value = []
+  }
+}
 
 function primerDiaDelMes(): string {
   const now = new Date()
@@ -140,10 +164,18 @@ async function abrirWizard(): Promise<void> {
   store.sugerencias = []
   registrarEnCaja.value = true
   medioPago.value = 'Transferencia'
+  pagoProyectoId.value = null
+  pagoTrabajoId.value = null
+  opcionesTrabajo.value = []
   wizardOpen.value = true
   void empleados.fetchLookup(true)
   try {
-    categoriasOpciones.value = await catalog.loadCategorias()
+    const [cats, proys] = await Promise.all([
+      catalog.loadCategorias(),
+      proyectos.lookup(undefined, undefined, 200),
+    ])
+    categoriasOpciones.value = cats
+    opcionesProyecto.value = proys
     const catSueldos = categoriasOpciones.value.find((c) =>
       c.label.toLowerCase().includes('sueldo'),
     )
@@ -279,6 +311,16 @@ async function confirmar(): Promise<void> {
         const sufijo = count > 3 ? ` y ${count - 3} más` : ''
         const concepto = `Pago de sueldos: ${nombres}${sufijo} (${periodo.value.desde} al ${periodo.value.hasta}) · ${medioPago.value}`
 
+        let imputacionClienteId: string | null = null
+        if (pagoProyectoId.value) {
+          try {
+            const p = await proyectos.fetchOne(pagoProyectoId.value)
+            imputacionClienteId = p?.clienteId ?? null
+          } catch {
+            // ignore
+          }
+        }
+
         await movimientosStore.create({
           fecha: new Date().toISOString(),
           concepto,
@@ -289,8 +331,8 @@ async function confirmar(): Promise<void> {
           cotizacionAplicada: null,
           tipoConceptoPagoId: '00000000-0000-0000-0000-000000000103', // Liquidación
           categoriaId: categoriaGastoId.value,
-          clienteId: null,
-          trabajoId: null,
+          clienteId: imputacionClienteId,
+          trabajoId: pagoTrabajoId.value,
           empleadoId: count === 1 ? (store.sugerencias[0]?.empleadoId ?? null) : null,
           facturaId: null,
         })
@@ -564,6 +606,32 @@ onMounted(() => {
                 filter
                 show-clear
                 placeholder="Seleccionar categoría"
+              />
+            </label>
+            <label class="flex flex-col gap-1 text-xs">
+              <span class="text-muted-foreground">{{ $t('Liquidaciones.ImputarProyecto') }}</span>
+              <Select
+                v-model="pagoProyectoId"
+                :options="opcionesProyecto"
+                option-label="label"
+                option-value="id"
+                filter
+                show-clear
+                :placeholder="$t('General.None')"
+                @change="onProyectoChange()"
+              />
+            </label>
+            <label class="flex flex-col gap-1 text-xs">
+              <span class="text-muted-foreground">{{ $t('Liquidaciones.ImputarTrabajo') }}</span>
+              <Select
+                v-model="pagoTrabajoId"
+                :options="opcionesTrabajo"
+                option-label="label"
+                option-value="id"
+                filter
+                show-clear
+                :placeholder="$t('General.None')"
+                :disabled="!pagoProyectoId && opcionesTrabajo.length === 0"
               />
             </label>
           </div>

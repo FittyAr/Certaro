@@ -1,27 +1,53 @@
 <script setup lang="ts">
+import Column from 'primevue/column'
+import DataTable from 'primevue/datatable'
+import Divider from 'primevue/divider'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+
 import ListState from '@/components/domain/ListState.vue'
-import Divider from 'primevue/divider'
+import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
+import StatePill from '@/components/domain/StatePill.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useClientesStore, type ClienteDetalle } from '@/stores/useClientesStore'
+import { useComercialStore } from '@/stores/useComercialStore'
+import { useProyectosStore, type ProyectoListItem } from '@/stores/useProyectosStore'
+
 const route = useRoute()
 const router = useRouter()
 const { notify } = useApiError()
 const store = useClientesStore()
+const comercialStore = useComercialStore()
+const proyectosStore = useProyectosStore()
+
 const clienteId = computed(() => String(route.params.clienteId ?? ''))
 const cliente = ref<ClienteDetalle | null>(null)
+const deudaCliente = ref<string>('0.0000')
+const proyectosDelCliente = ref<ProyectoListItem[]>([])
 const loading = ref(false)
 const firstLoad = ref(true)
 const error = ref<ApiError | null>(null)
+
 async function cargar(): Promise<void> {
   loading.value = true
   error.value = null
   try {
-    cliente.value = await store.fetchOne(clienteId.value)
+    const [c, cc, proys] = await Promise.all([
+      store.fetchOne(clienteId.value),
+      comercialStore.fetchCuentaCorriente({ clienteId: clienteId.value }),
+      proyectosStore.fetchPaged({
+        page: 1,
+        pageSize: 50,
+        filtro: { clienteId: clienteId.value },
+        sortDir: 'Desc',
+      }),
+    ])
+    cliente.value = c
+    deudaCliente.value = cc.saldo
+    proyectosDelCliente.value = proys.items
   } catch (e) {
     error.value = notify(e)
   } finally {
@@ -29,6 +55,7 @@ async function cargar(): Promise<void> {
     firstLoad.value = false
   }
 }
+
 onMounted(cargar)
 </script>
 <template>
@@ -72,6 +99,14 @@ onMounted(cargar)
       <div v-if="cliente" class="space-y-4">
         <!-- Indicadores rápidos -->
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div class="rounded-md border border-border bg-card p-3 shadow-xs">
+            <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {{ $t('Clientes.Deuda') }}
+            </span>
+            <div class="mt-1 text-xl font-bold">
+              <MoneyText :value="deudaCliente" colored />
+            </div>
+          </div>
           <div class="rounded-md border border-border bg-card p-3 shadow-xs">
             <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {{ $t('Clientes.Proyectos') }}
@@ -138,6 +173,69 @@ onMounted(cargar)
               <p v-if="c.telefono" class="text-muted-foreground">{{ c.telefono }}</p>
             </div>
           </div>
+        </div>
+
+        <!-- Proyectos asociados -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {{ $t('Clientes.ProyectosAsociados') }}
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              class="text-xs"
+              @click="router.push({ name: 'proyectos', query: { clienteId: cliente.id } })"
+            >
+              <AppIcon name="plus" :size="14" />
+              {{ $t('General.New') }}
+            </Button>
+          </div>
+
+          <div v-if="!proyectosDelCliente.length" class="rounded-md border border-border p-4 text-center text-xs text-muted-foreground">
+            {{ $t('Clientes.SinProyectos') }}
+          </div>
+
+          <DataTable
+            v-else
+            :value="proyectosDelCliente"
+            responsive-layout="scroll"
+            class="text-sm border border-border rounded-md overflow-hidden"
+          >
+            <Column field="numero" :header="$t('Proyectos.Numero')" :sortable="true" style="width: 100px">
+              <template #body="{ data }">
+                <span class="font-mono text-xs font-semibold">#{{ data.numero }}</span>
+              </template>
+            </Column>
+            <Column field="nombre" :header="$t('Proyectos.Nombre')">
+              <template #body="{ data }">
+                <button
+                  type="button"
+                  class="text-left font-medium text-primary hover:underline cursor-pointer"
+                  @click="router.push({ name: 'proyecto-detalle', params: { proyectoId: data.id } })"
+                >
+                  {{ data.nombre }}
+                </button>
+              </template>
+            </Column>
+            <Column field="estado.actual" :header="$t('Proyectos.Estado')" style="width: 130px">
+              <template #body="{ data }">
+                <StatePill entity="Proyecto" :value="data.estado.actual" />
+              </template>
+            </Column>
+            <Column :header="$t('General.Actions')" style="width: 80px">
+              <template #body="{ data }">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  :title="$t('General.View')"
+                  @click="router.push({ name: 'proyecto-detalle', params: { proyectoId: data.id } })"
+                >
+                  <AppIcon name="arrow-right" :size="14" />
+                </Button>
+              </template>
+            </Column>
+          </DataTable>
         </div>
       </div>
     </ListState>

@@ -168,6 +168,12 @@ function recalcularTotal(): void {
   drawer.model.value.total = (subtotal + iva).toFixed(4)
 }
 
+function aplicarAlicuotaIva(porcentaje: number): void {
+  const subtotal = Number(drawer.model.value.subtotal)
+  drawer.model.value.iva = ((subtotal * porcentaje) / 100).toFixed(4)
+  recalcularTotal()
+}
+
 // ------------------------------------------------------------------- payments
 
 const pagosVisible = ref(false)
@@ -532,7 +538,39 @@ onMounted(async () => {
           <FieldError id="fac-subtotal-error" :message="drawer.fieldErrors.value.subtotal" />
         </label>
         <label class="flex flex-col gap-1">
-          <span class="text-sm">{{ $t('Facturas.Iva') }}</span>
+          <div class="flex items-center justify-between">
+            <span class="text-sm">{{ $t('Facturas.Iva') }}</span>
+            <div class="flex gap-1 text-[11px]">
+              <button
+                type="button"
+                class="rounded border border-border px-1 py-0.2 hover:bg-muted font-medium transition-colors"
+                @click="aplicarAlicuotaIva(0)"
+              >
+                0%
+              </button>
+              <button
+                type="button"
+                class="rounded border border-border px-1 py-0.2 hover:bg-muted font-medium transition-colors"
+                @click="aplicarAlicuotaIva(10.5)"
+              >
+                10.5%
+              </button>
+              <button
+                type="button"
+                class="rounded border border-border px-1 py-0.2 hover:bg-muted font-medium transition-colors"
+                @click="aplicarAlicuotaIva(21)"
+              >
+                21%
+              </button>
+              <button
+                type="button"
+                class="rounded border border-border px-1 py-0.2 hover:bg-muted font-medium transition-colors"
+                @click="aplicarAlicuotaIva(27)"
+              >
+                27%
+              </button>
+            </div>
+          </div>
           <MoneyInput
             v-model="drawer.model.value.iva"
             :min="0"
