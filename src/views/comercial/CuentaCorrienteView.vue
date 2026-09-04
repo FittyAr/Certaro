@@ -13,6 +13,9 @@ import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useMovimientosStore } from '@/stores/useMovimientosStore'
+import { useProyectosStore } from '@/stores/useProyectosStore'
+import { useTrabajosStore } from '@/stores/useTrabajosStore'
+import type { LookupItem } from '@/stores/useCatalogStore'
 import {
   MEDIOS_PAGO,
   useFacturasStore,
@@ -42,6 +45,8 @@ const { notify, fieldErrors } = useApiError()
 const store = useComercialStore()
 const facturasStore = useFacturasStore()
 const movimientosStore = useMovimientosStore()
+const proyectosStore = useProyectosStore()
+const trabajosStore = useTrabajosStore()
 
 const clienteId = computed(() => String(route.params.clienteId ?? ''))
 
@@ -115,6 +120,10 @@ const pagosVisible = ref(false)
 const factura = ref<FacturaDetalle | null>(null)
 const registrarEnCaja = ref(true)
 const guardandoPago = ref(false)
+const pagoProyectoId = ref<string | null>(null)
+const pagoTrabajoId = ref<string | null>(null)
+const opcionesProyectos = ref<LookupItem[]>([])
+const pagoOpcionesTrabajos = ref<LookupItem[]>([])
 const nuevoPago = ref<PagoFacturaInput>({
   facturaId: '',
   fecha: hoy(),
@@ -127,6 +136,39 @@ const medioPagoOptions = computed(() =>
   MEDIOS_PAGO.map((value) => ({ label: t(`MedioPago.${value}`), value })),
 )
 
+async function onPagoProyectoChange(): Promise<void> {
+  pagoTrabajoId.value = null
+  if (!pagoProyectoId.value) {
+    pagoOpcionesTrabajos.value = []
+    return
+  }
+  try {
+    pagoOpcionesTrabajos.value = await trabajosStore.lookup(pagoProyectoId.value)
+    if (pagoOpcionesTrabajos.value.length === 1 && pagoOpcionesTrabajos.value[0]) {
+      pagoTrabajoId.value = pagoOpcionesTrabajos.value[0].id
+    }
+  } catch {
+    pagoOpcionesTrabajos.value = []
+  }
+}
+
+function fechaPagoToIso(fechaStr: string): string {
+  if (!fechaStr) return new Date().toISOString()
+  const partes = fechaStr.split('-').map(Number)
+  if (partes.length === 3 && partes[0] && partes[1] && partes[2]) {
+    const now = new Date()
+    return new Date(
+      partes[0],
+      partes[1] - 1,
+      partes[2],
+      now.getHours(),
+      now.getMinutes(),
+      now.getSeconds(),
+    ).toISOString()
+  }
+  return new Date().toISOString()
+}
+
 async function abrirCobro(f: CuentaCorrienteFactura): Promise<void> {
   try {
     factura.value = await facturasStore.fetchOne(f.id)
@@ -137,6 +179,35 @@ async function abrirCobro(f: CuentaCorrienteFactura): Promise<void> {
       medioPago: 'Efectivo',
     }
     pagoErrores.value = {}
+    pagoProyectoId.value = null
+    pagoTrabajoId.value = null
+    pagoOpcionesTrabajos.value = []
+
+    try {
+      opcionesProyectos.value = await proyectosStore.lookup(factura.value.clienteId || clienteId.value)
+    } catch {
+      opcionesProyectos.value = []
+    }
+
+    const cachedObra = localStorage.getItem(`certaro:factura-obra:${f.id}`)
+    if (cachedObra) {
+      try {
+        const parsed = JSON.parse(cachedObra)
+        if (parsed.proyectoId) {
+          pagoProyectoId.value = parsed.proyectoId
+          await onPagoProyectoChange()
+        }
+        if (parsed.trabajoId) {
+          pagoTrabajoId.value = parsed.trabajoId
+        }
+      } catch {
+        // ignore
+      }
+    } else if (opcionesProyectos.value.length === 1 && opcionesProyectos.value[0]) {
+      pagoProyectoId.value = opcionesProyectos.value[0].id
+      await onPagoProyectoChange()
+    }
+
     pagosVisible.value = true
   } catch (e) {
     notify(e)
@@ -152,28 +223,7 @@ async function registrarPago(): Promise<void> {
     const pagoFecha = nuevoPago.value.fecha
     factura.value = await facturasStore.crearPago(nuevoPago.value)
 
-function fechaPagoToIso(fechaStr: string): string {
-  if (!fechaStr) return new Date().toISOString()
-  const partes = fechaStr.split('-').map(Number)
-  if (partes.length === 3 && partes[0] && partes[1] && partes[2]) {
-    const now = new Date()
-    return new Date(partes[0], partes[1] - 1, partes[2], now.getHours(), now.getMinutes(), now.getSeconds()).toISOString()
-  }
-  return new Date().toISOString()
-}
-
     if (registrarEnCaja.value && factura.value) {
-      let imputacionTrabajoId: string | null = null
-      try {
-        const cachedObra = localStorage.getItem(`certaro:factura-obra:${factura.value.id}`)
-        if (cachedObra) {
-          const parsed = JSON.parse(cachedObra)
-          if (parsed.trabajoId) imputacionTrabajoId = parsed.trabajoId
-        }
-      } catch {
-        // ignore
-      }
-
       try {
         await movimientosStore.create({
           fecha: fechaPagoToIso(pagoFecha),
@@ -186,7 +236,7 @@ function fechaPagoToIso(fechaStr: string): string {
           tipoConceptoPagoId: null,
           categoriaId: null,
           clienteId: factura.value.clienteId,
-          trabajoId: imputacionTrabajoId,
+          trabajoId: pagoTrabajoId.value || null,
           empleadoId: null,
           facturaId: factura.value.id,
         })
@@ -291,11 +341,16 @@ onMounted(cargar)
     <CuentaCorrienteCobroModal
       v-model:visible="pagosVisible"
       v-model:registrar-en-caja="registrarEnCaja"
+      v-model:pago-proyecto-id="pagoProyectoId"
+      v-model:pago-trabajo-id="pagoTrabajoId"
       :factura="factura"
       :nuevo-pago="nuevoPago"
       :pago-errores="pagoErrores"
       :medio-pago-options="medioPagoOptions"
       :guardando-pago="guardandoPago"
+      :opciones-proyectos="opcionesProyectos"
+      :pago-opciones-trabajos="pagoOpcionesTrabajos"
+      @proyecto-change="onPagoProyectoChange"
       @registrar="registrarPago"
     />
   </section>

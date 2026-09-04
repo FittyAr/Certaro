@@ -340,7 +340,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Detalle:** Solicitar confirmación modal explícita antes de eliminar un pago (`borrarPago`), previniendo la anulación accidental del cobro y del asiento en caja.
   - **Criterio de aceptación:** La eliminación requiere confirmación explícita con fecha, medio y monto.
 
-- [ ] **11.3. Imputación a Obra en Cobranzas desde Cuenta Corriente**
+- [x] **11.3. Imputación a Obra en Cobranzas desde Cuenta Corriente**
   - **Archivos:** `src/views/comercial/components/CuentaCorrienteCobroModal.vue`, `src/views/comercial/CuentaCorrienteView.vue`.
   - **Detalle:** Incorporar selectores dependientes de Proyecto y Trabajo en `CuentaCorrienteCobroModal.vue` e imputar el ingreso generado en caja a la obra indicada.
   - **Criterio de aceptación:** El cobro desde cuenta corriente puede asignarse a un proyecto y se refleja inmediatamente en su caja y rentabilidad.

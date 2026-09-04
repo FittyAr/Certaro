@@ -7,6 +7,7 @@ import FieldError from '@/components/domain/FieldError.vue'
 import MoneyInput from '@/components/domain/MoneyInput.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import { Button } from '@/components/ui/button'
+import type { LookupItem } from '@/stores/useCatalogStore'
 import type { FacturaDetalle, PagoFacturaInput } from '@/stores/useFacturasStore'
 
 defineProps<{
@@ -17,11 +18,18 @@ defineProps<{
   medioPagoOptions: { label: string; value: string }[]
   registrarEnCaja: boolean
   guardandoPago: boolean
+  pagoProyectoId?: string | null
+  pagoTrabajoId?: string | null
+  opcionesProyectos?: LookupItem[]
+  pagoOpcionesTrabajos?: LookupItem[]
 }>()
 
 const emit = defineEmits<{
   (e: 'update:visible', val: boolean): void
   (e: 'update:registrarEnCaja', val: boolean): void
+  (e: 'update:pagoProyectoId', val: string | null): void
+  (e: 'update:pagoTrabajoId', val: string | null): void
+  (e: 'proyectoChange'): void
   (e: 'registrar'): void
 }>()
 </script>
@@ -80,6 +88,37 @@ const emit = defineEmits<{
           <span class="text-muted-foreground block">Ingresa como cobranza en el libro de caja</span>
         </div>
       </label>
+
+      <div v-if="registrarEnCaja" class="grid grid-cols-2 gap-3 rounded border border-border/70 bg-muted/20 p-2.5">
+        <label class="flex flex-col gap-1">
+          <span class="text-xs text-muted-foreground">Imputar a Proyecto / Obra</span>
+          <Select
+            :model-value="pagoProyectoId"
+            :options="opcionesProyectos ?? []"
+            option-label="label"
+            option-value="id"
+            filter
+            show-clear
+            placeholder="General (Sin proyecto)"
+            @update:model-value="emit('update:pagoProyectoId', $event)"
+            @change="emit('proyectoChange')"
+          />
+        </label>
+        <label class="flex flex-col gap-1">
+          <span class="text-xs text-muted-foreground">Trabajo / Frente de Obra</span>
+          <Select
+            :model-value="pagoTrabajoId"
+            :options="pagoOpcionesTrabajos ?? []"
+            option-label="label"
+            option-value="id"
+            filter
+            show-clear
+            placeholder="General"
+            :disabled="!pagoProyectoId && (!pagoOpcionesTrabajos || pagoOpcionesTrabajos.length === 0)"
+            @update:model-value="emit('update:pagoTrabajoId', $event)"
+          />
+        </label>
+      </div>
     </div>
 
     <template #footer>
