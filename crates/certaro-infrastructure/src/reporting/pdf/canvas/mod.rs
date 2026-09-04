@@ -13,100 +13,17 @@ use std::cell::{Cell, RefCell};
 
 use certaro_application::result::AppResult;
 use printpdf::{
-    BuiltinFont, Color, Line, LinePoint, Mm, Op, PdfDocument, PdfFontHandle, PdfPage,
-    PdfSaveOptions, Point, Polygon, PolygonRing, Pt, Rgb as PdfRgb, TextItem, WindingOrder,
+    BuiltinFont, Line, LinePoint, Mm, Op, PdfDocument, PdfFontHandle, PdfPage,
+    PdfSaveOptions, Polygon, PolygonRing, Pt, TextItem, WindingOrder,
 };
 
 use super::theme::{self, Rgb};
 
-/// Multiplier from font size to line height. 1.2 is the usual typographic default and matches the
-/// spacing of the tables in the paper forms these reports reproduce.
-const LINE_HEIGHT: f32 = 1.2;
+mod helpers;
+mod types;
 
-/// Approximate advance width of Helvetica, as a fraction of the font size. Used to fit and, when
-/// needed, truncate text. `printpdf` exposes no metrics for built-in fonts, and the alternative —
-/// text that silently overflows into the next column — is worse than a slightly early ellipsis.
-const AVG_CHAR_WIDTH: f32 = 0.5;
-const AVG_CHAR_WIDTH_BOLD: f32 = 0.54;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum FontStyle {
-    #[default]
-    Regular,
-    Bold,
-    Italic,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum Align {
-    #[default]
-    Left,
-    Center,
-    Right,
-}
-
-/// A piece of text with everything needed to place it.
-#[derive(Debug, Clone)]
-pub struct TextSpec {
-    pub text: String,
-    pub size: f32,
-    pub style: FontStyle,
-    pub color: Rgb,
-    pub align: Align,
-}
-
-impl TextSpec {
-    #[must_use]
-    pub fn new(text: impl Into<String>, size: f32) -> Self {
-        Self {
-            text: text.into(),
-            size,
-            style: FontStyle::Regular,
-            color: theme::TEXT,
-            align: Align::Left,
-        }
-    }
-
-    #[must_use]
-    pub fn bold(mut self) -> Self {
-        self.style = FontStyle::Bold;
-        self
-    }
-
-    #[must_use]
-    pub fn italic(mut self) -> Self {
-        self.style = FontStyle::Italic;
-        self
-    }
-
-    #[must_use]
-    pub fn color(mut self, color: Rgb) -> Self {
-        self.color = color;
-        self
-    }
-
-    #[must_use]
-    pub fn align(mut self, align: Align) -> Self {
-        self.align = align;
-        self
-    }
-}
-
-struct Fonts {
-    regular: PdfFontHandle,
-    bold: PdfFontHandle,
-    italic: PdfFontHandle,
-}
-
-impl Fonts {
-    fn pick(&self, style: FontStyle) -> PdfFontHandle {
-        match style {
-            FontStyle::Regular => self.regular.clone(),
-            FontStyle::Bold => self.bold.clone(),
-            FontStyle::Italic => self.italic.clone(),
-        }
-    }
-}
+use helpers::*;
+pub use types::*;
 
 pub struct Canvas {
     doc: PdfDocument,
@@ -456,13 +373,6 @@ impl Canvas {
     }
 }
 
-fn point(x: f32, y: f32) -> Point {
-    Point::new(Mm::from(Pt(x)), Mm::from(Pt(y)))
-}
-
-fn color_of(rgb: Rgb) -> Color {
-    Color::Rgb(PdfRgb::new(rgb.0, rgb.1, rgb.2, None))
-}
 
 #[cfg(test)]
 mod tests {
@@ -532,3 +442,4 @@ mod tests {
         assert!(bytes.starts_with(b"%PDF"), "no es un PDF");
     }
 }
+
