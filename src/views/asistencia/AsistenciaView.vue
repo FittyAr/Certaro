@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { computed, onMounted, ref, watch } from 'vue'
@@ -16,6 +15,8 @@ import type { LookupItem } from '@/stores/useCatalogStore'
 import { useProyectosStore } from '@/stores/useProyectosStore'
 import { useTrabajosStore } from '@/stores/useTrabajosStore'
 import { useAsistenciaStore, type TipoJornada } from '@/stores/useAsistenciaStore'
+import AsistenciaTablaGrid from './components/AsistenciaTablaGrid.vue'
+import AsistenciaCargaMasivaModal from './components/AsistenciaCargaMasivaModal.vue'
 
 /**
  * Attendance grid. See `docs/09-modulos-funcionales.md` §3.10.
@@ -97,7 +98,6 @@ async function ciclar(empleadoId: string, fecha: string): Promise<void> {
 const filtroProyectoId = ref<string | null>(null)
 const soloAsignados = ref(false)
 const opcionesProyecto = ref<LookupItem[]>([])
-const opcionesTrabajo = ref<LookupItem[]>([])
 const trabajosDelProyecto = ref<Set<string>>(new Set())
 
 watch(filtroProyectoId, async (newVal) => {
@@ -135,82 +135,18 @@ async function cargarProyectos(): Promise<void> {
   }
 }
 
-async function onProyectoRangoChange(pId: string | null): Promise<void> {
-  rango.value.trabajoId = null
-  if (!pId) {
-    opcionesTrabajo.value = []
-    return
-  }
-  try {
-    opcionesTrabajo.value = await trabajosStore.lookup(pId)
-    if (opcionesTrabajo.value.length === 1 && opcionesTrabajo.value[0]) {
-      rango.value.trabajoId = opcionesTrabajo.value[0].id
-    }
-  } catch {
-    opcionesTrabajo.value = []
-  }
-}
-
 // ------------------------------------------------------------------ bulk entry
 
 const rangoOpen = ref(false)
-const guardando = ref(false)
-const rango = ref<{
-  empleadoId: string
-  proyectoId: string | null
-  trabajoId: string | null
-  desde: string
-  hasta: string
-  tipoJornada: TipoJornada
-  soloDiasHabiles: boolean
-}>({
-  empleadoId: '',
-  proyectoId: null,
-  trabajoId: null,
-  desde: desde.value,
-  hasta: hasta.value,
-  tipoJornada: 'Completa',
-  soloDiasHabiles: true,
-})
+const modalEmpleadoId = ref<string | undefined>(undefined)
 
 const empleadosDeLaGrilla = computed(
   () => grilla.value?.filas.map((f) => ({ id: f.empleadoId, label: f.empleadoNombre })) ?? [],
 )
 
 function abrirRango(empleadoId?: string): void {
-  rango.value = {
-    empleadoId: empleadoId ?? empleadosDeLaGrilla.value[0]?.id ?? '',
-    proyectoId: filtroProyectoId.value ?? null,
-    trabajoId: null,
-    desde: desde.value,
-    hasta: hasta.value,
-    tipoJornada: 'Completa',
-    soloDiasHabiles: true,
-  }
-  if (rango.value.proyectoId) {
-    void onProyectoRangoChange(rango.value.proyectoId)
-  }
+  modalEmpleadoId.value = empleadoId ?? empleadosDeLaGrilla.value[0]?.id
   rangoOpen.value = true
-}
-
-async function guardarRango(): Promise<void> {
-  if (guardando.value || !rango.value.empleadoId) return
-  guardando.value = true
-  try {
-    await store.cargarRango({
-      empleadoId: rango.value.empleadoId,
-      desde: rango.value.desde,
-      hasta: rango.value.hasta,
-      tipoJornada: rango.value.tipoJornada,
-      soloDiasHabiles: rango.value.soloDiasHabiles,
-      trabajoId: rango.value.trabajoId,
-    })
-    rangoOpen.value = false
-  } catch (e) {
-    notify(e)
-  } finally {
-    guardando.value = false
-  }
 }
 
 useShortcuts({ 'ctrl+n': () => abrirRango() })
@@ -286,155 +222,25 @@ onMounted(() => {
       class="flex-1"
       @retry="cargar()"
     >
-      <div v-if="grilla" class="overflow-auto">
-        <table class="w-full border-collapse text-xs">
-          <thead>
-            <tr>
-              <th
-                class="sticky left-0 z-10 bg-background p-2 text-left font-medium"
-                :style="{ minWidth: '12rem' }"
-              >
-                {{ $t('Empleados.Nombre') }}
-              </th>
-              <th
-                v-for="dia in grilla.dias"
-                :key="dia.fecha"
-                class="p-1 text-center font-medium"
-                :class="{
-                  'text-muted-foreground': dia.esFinDeSemana,
-                  'text-accent': dia.esFeriado,
-                }"
-                :title="dia.feriadoNombre ?? undefined"
-              >
-                {{ dia.fecha.slice(8) }}
-              </th>
-              <th class="p-1 text-center font-medium text-muted-foreground" title="Jornadas Completas">C</th>
-              <th class="p-1 text-center font-medium text-muted-foreground" title="Medias Jornadas">½</th>
-              <th class="p-1 text-center font-medium text-muted-foreground" title="Faltas">F</th>
-              <th class="p-2 text-right font-medium">{{ $t('Asistencia.Jornadas') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="fila in grilla.filas" :key="fila.empleadoId" class="border-t border-border">
-              <th class="sticky left-0 z-10 bg-background p-2 text-left font-normal">
-                <button
-                  type="button"
-                  class="underline-offset-2 hover:underline"
-                  :title="$t('Asistencia.CargaMasiva')"
-                  @click="abrirRango(fila.empleadoId)"
-                >
-                  {{ fila.empleadoNombre }}
-                </button>
-              </th>
-              <td v-for="(celda, i) in fila.celdas" :key="celda.fecha" class="p-0.5 text-center">
-                <button
-                  type="button"
-                  class="inline-flex h-7 w-7 items-center justify-center rounded border border-border transition-colors hover:border-primary"
-                  :class="celda.tipoJornada ? CLASES[celda.tipoJornada] : 'text-transparent'"
-                  :aria-label="`${fila.empleadoNombre} ${celda.fecha}`"
-                  :title="
-                    celda.tipoJornada
-                      ? $t(`TipoJornada.${celda.tipoJornada}`)
-                      : $t('Asistencia.SinRegistro')
-                  "
-                  :disabled="grilla.dias[i] === undefined"
-                  @click="ciclar(fila.empleadoId, celda.fecha)"
-                >
-                  {{ celda.tipoJornada ? ABREVIATURAS[celda.tipoJornada] : '·' }}
-                </button>
-              </td>
-              <td class="p-1 text-center tabular-nums text-muted-foreground">
-                {{ fila.resumen.completas }}
-              </td>
-              <td class="p-1 text-center tabular-nums text-muted-foreground">
-                {{ fila.resumen.medias }}
-              </td>
-              <td class="p-1 text-center tabular-nums text-muted-foreground">
-                {{ fila.resumen.faltas + fila.resumen.faltasJustificadas }}
-              </td>
-              <td class="p-2 text-right font-semibold tabular-nums text-foreground">
-                {{ fila.resumen.jornadasEquivalentes }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <AsistenciaTablaGrid
+        v-if="grilla"
+        :grilla="grilla"
+        :clases="CLASES"
+        :abreviaturas="ABREVIATURAS"
+        @abrir-rango="abrirRango"
+        @ciclar="ciclar"
+      />
     </ListState>
 
-    <Dialog v-model:visible="rangoOpen" modal :header="$t('Asistencia.CargaMasiva')">
-      <div class="flex w-80 flex-col gap-3">
-        <label class="flex flex-col gap-1">
-          <span class="text-sm">{{ $t('Empleados.Nombre') }}</span>
-          <Select
-            v-model="rango.empleadoId"
-            :options="empleadosDeLaGrilla"
-            option-label="label"
-            option-value="id"
-          />
-        </label>
-        <div class="grid grid-cols-2 gap-3">
-          <label class="flex flex-col gap-1">
-            <span class="text-sm">{{ $t('General.From') }}</span>
-            <DateInput v-model="rango.desde" />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-sm">{{ $t('General.To') }}</span>
-            <DateInput v-model="rango.hasta" />
-          </label>
-        </div>
-        <label class="flex flex-col gap-1">
-          <span class="text-sm">{{ $t('Asistencia.TipoJornada') }}</span>
-          <Select
-            v-model="rango.tipoJornada"
-            :options="TIPOS"
-            :option-label="(o: TipoJornada) => $t(`TipoJornada.${o}`)"
-          />
-        </label>
-
-        <!-- Imputación opcional a Proyecto / Trabajo -->
-        <div class="space-y-2 rounded-md border border-border/70 bg-muted/20 p-2.5">
-          <span class="text-xs font-semibold text-muted-foreground">
-            Imputación a Obra (Opcional)
-          </span>
-          <label class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">{{ $t('Menu.Proyectos') }}</span>
-            <Select
-              v-model="rango.proyectoId"
-              :options="opcionesProyecto"
-              option-label="label"
-              option-value="id"
-              filter
-              show-clear
-              :placeholder="$t('General.None')"
-              @change="onProyectoRangoChange(rango.proyectoId)"
-            />
-          </label>
-          <label v-if="opcionesTrabajo.length > 0" class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">{{ $t('Menu.Trabajos') }}</span>
-            <Select
-              v-model="rango.trabajoId"
-              :options="opcionesTrabajo"
-              option-label="label"
-              option-value="id"
-              filter
-              show-clear
-              :placeholder="$t('General.None')"
-            />
-          </label>
-        </div>
-
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-          <ToggleSwitch v-model="rango.soloDiasHabiles" />
-          <span class="text-sm font-medium text-foreground/90">{{ $t('Asistencia.SoloDiasHabiles') }}</span>
-        </label>
-      </div>
-
-      <template #footer>
-        <Button variant="outline" :disabled="guardando" @click="rangoOpen = false">
-          {{ $t('General.Cancel') }}
-        </Button>
-        <Button :disabled="guardando" @click="guardarRango()">{{ $t('General.Save') }}</Button>
-      </template>
-    </Dialog>
+    <AsistenciaCargaMasivaModal
+      v-model:visible="rangoOpen"
+      :empleados-opciones="empleadosDeLaGrilla"
+      :opciones-proyecto="opcionesProyecto"
+      :initial-empleado-id="modalEmpleadoId"
+      :initial-proyecto-id="filtroProyectoId"
+      :initial-desde="desde"
+      :initial-hasta="hasta"
+      @saved="cargar()"
+    />
   </section>
 </template>
