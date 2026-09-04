@@ -1,21 +1,13 @@
 <script setup lang="ts">
-import Column from 'primevue/column'
-import DataTable from 'primevue/datatable'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
-import Dialog from 'primevue/dialog'
-import Select from 'primevue/select'
-import DateInput from '@/components/domain/DateInput.vue'
 import DateText from '@/components/domain/DateText.vue'
-import FieldError from '@/components/domain/FieldError.vue'
 import ListState from '@/components/domain/ListState.vue'
-import MoneyInput from '@/components/domain/MoneyInput.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
-import StatePill from '@/components/domain/StatePill.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
@@ -33,6 +25,8 @@ import {
   type CuentaCorriente,
   type CuentaCorrienteFactura,
 } from '@/stores/useComercialStore'
+import CuentaCorrienteCobroModal from './components/CuentaCorrienteCobroModal.vue'
+import CuentaCorrienteFacturasTable from './components/CuentaCorrienteFacturasTable.vue'
 
 /**
  * A customer's account statement with the ageing of their debt. See `docs/09` §3.3.
@@ -285,134 +279,24 @@ onMounted(cargar)
           </dl>
         </section>
 
-        <DataTable
-          :value="cuenta.facturas"
-          data-key="id"
-          size="small"
-          scrollable
-          scroll-height="flex"
-          class="flex-1 text-sm"
-          @row-dblclick="verFactura($event.data as CuentaCorrienteFactura)"
-        >
-          <template #empty>
-            <p class="p-4 text-center text-sm text-muted-foreground">
-              {{ $t('Comercial.CuentaCorriente.SinDeuda') }}
-            </p>
-          </template>
-          <Column field="numero" :header="$t('Facturas.Numero')" sortable />
-          <Column field="fecha" :header="$t('Facturas.Fecha')" sortable>
-            <template #body="{ data }"><DateText :value="data.fecha" /></template>
-          </Column>
-          <Column field="fechaVencimiento" :header="$t('Facturas.Vencimiento')" sortable>
-            <template #body="{ data }"><DateText :value="data.fechaVencimiento" /></template>
-          </Column>
-          <Column field="estado" :header="$t('Facturas.Estado')">
-            <template #body="{ data }"><StatePill entity="Factura" :value="data.estado" /></template>
-          </Column>
-          <Column field="total" :header="$t('Facturas.Total')" sortable>
-            <template #body="{ data }"><MoneyText :value="data.total" /></template>
-          </Column>
-          <Column field="pagado" :header="$t('Facturas.Pagado')" sortable>
-            <template #body="{ data }"><MoneyText :value="data.pagado" /></template>
-          </Column>
-          <Column field="saldo" :header="$t('Facturas.Saldo')" sortable>
-            <template #body="{ data }"><MoneyText :value="data.saldo" colored /></template>
-          </Column>
-          <Column field="diasMora" :header="$t('Comercial.CuentaCorriente.DiasMora')" sortable>
-            <template #body="{ data }">
-              <span class="tabular-nums" :class="claseMora(data.diasMora)">{{ data.diasMora }}</span>
-            </template>
-          </Column>
-          <Column :header="$t('General.Actions')" class="w-24 text-right">
-            <template #body="{ data }">
-              <div class="flex items-center justify-end gap-1">
-                <Button
-                  v-if="Number(data.saldo) > 0"
-                  size="sm"
-                  variant="outline"
-                  title="Registrar Cobro"
-                  class="h-7 px-2 text-xs"
-                  @click="abrirCobro(data)"
-                >
-                  <AppIcon name="wallet" :size="12" />
-                  <span class="ml-1">Cobrar</span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  :title="$t('General.View')"
-                  class="h-7 w-7 p-0"
-                  @click="verFactura(data)"
-                >
-                  <AppIcon name="eye" :size="13" />
-                </Button>
-              </div>
-            </template>
-          </Column>
-        </DataTable>
+        <CuentaCorrienteFacturasTable
+          :facturas="cuenta.facturas"
+          :clase-mora="claseMora"
+          @ver-factura="verFactura"
+          @abrir-cobro="abrirCobro"
+        />
       </div>
     </ListState>
 
-    <!-- Dialog para registrar pago directo -->
-    <Dialog
+    <CuentaCorrienteCobroModal
       v-model:visible="pagosVisible"
-      modal
-      :header="$t('Facturas.RegistrarPago')"
-      class="w-[32rem]"
-      :dismissable-mask="true"
-    >
-      <div v-if="factura" class="flex flex-col gap-4">
-        <div class="flex items-center justify-between rounded-md border border-border bg-muted/20 p-3 text-sm">
-          <div>
-            <span class="text-xs text-muted-foreground">{{ $t('Facturas.Numero') }}</span>
-            <p class="font-semibold text-foreground">{{ factura.numero }}</p>
-          </div>
-          <div class="text-right">
-            <span class="text-xs text-muted-foreground">{{ $t('Facturas.Saldo') }}</span>
-            <p><MoneyText :value="factura.saldo" colored /></p>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <label class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">{{ $t('Facturas.Fecha') }}</span>
-            <DateInput v-model="nuevoPago.fecha" :invalid="Boolean(pagoErrores.fecha)" />
-            <FieldError id="cc-pago-fecha-error" :message="pagoErrores.fecha" />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">{{ $t('Facturas.Monto') }}</span>
-            <MoneyInput v-model="nuevoPago.monto" :min="0" :invalid="Boolean(pagoErrores.monto)" />
-            <FieldError id="cc-pago-monto-error" :message="pagoErrores.monto" />
-          </label>
-        </div>
-
-        <label class="flex flex-col gap-1">
-          <span class="text-xs text-muted-foreground">{{ $t('Facturas.MedioPago') }}</span>
-          <Select
-            v-model="nuevoPago.medioPago"
-            :options="medioPagoOptions"
-            option-label="label"
-            option-value="value"
-          />
-        </label>
-
-        <label class="flex items-center gap-2 cursor-pointer select-none rounded-md border border-border/80 bg-surface-raised p-2.5">
-          <ToggleSwitch v-model="registrarEnCaja" />
-          <div class="text-xs">
-            <span class="font-medium text-foreground block">Registrar movimiento en caja</span>
-            <span class="text-muted-foreground block">Ingresa como cobranza en el libro de caja</span>
-          </div>
-        </label>
-      </div>
-
-      <template #footer>
-        <Button variant="outline" :disabled="guardandoPago" @click="pagosVisible = false">
-          {{ $t('General.Cancel') }}
-        </Button>
-        <Button :disabled="guardandoPago || Number(nuevoPago.monto) <= 0" @click="registrarPago()">
-          {{ $t('Facturas.RegistrarPago') }}
-        </Button>
-      </template>
-    </Dialog>
+      v-model:registrar-en-caja="registrarEnCaja"
+      :factura="factura"
+      :nuevo-pago="nuevoPago"
+      :pago-errores="pagoErrores"
+      :medio-pago-options="medioPagoOptions"
+      :guardando-pago="guardandoPago"
+      @registrar="registrarPago"
+    />
   </section>
 </template>
