@@ -41,8 +41,13 @@ impl OrdenesTrabajoService {
 
     /// Every order of a job. Not paged: a job has a handful of sheets, not thousands.
     pub async fn de_trabajo(&self, trabajo_id: Uuid) -> AppResult<Vec<OrdenTrabajoListItem>> {
+        self.listar(Some(trabajo_id)).await
+    }
+
+    /// List orders, optionally filtered by job.
+    pub async fn listar(&self, trabajo_id: Option<Uuid>) -> AppResult<Vec<OrdenTrabajoListItem>> {
         let tx = self.uow.begin().await?;
-        let result = tx.ordenes_trabajo().de_trabajo(trabajo_id).await;
+        let result = tx.ordenes_trabajo().listar(trabajo_id).await;
         let rows = finish_read(tx, result).await?;
         rows.iter().map(OrdenTrabajoListItem::build).collect()
     }

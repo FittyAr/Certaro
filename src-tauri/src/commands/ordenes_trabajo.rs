@@ -15,10 +15,10 @@ use crate::state::AppState;
 #[tauri::command]
 pub async fn ordenes_trabajo_list(
     state: State<'_, AppState>,
-    trabajo_id: Uuid,
+    trabajo_id: Option<Uuid>,
 ) -> ApiResult<Vec<OrdenTrabajoListItem>> {
     let outcome = match state.services() {
-        Ok(services) => services.ordenes_trabajo.de_trabajo(trabajo_id).await,
+        Ok(services) => services.ordenes_trabajo.listar(trabajo_id).await,
         Err(e) => Err(e),
     };
     handle("ordenes_trabajo_list", outcome)

@@ -140,6 +140,9 @@ pub trait OrdenTrabajoRepository: Send + Sync {
     /// Every order of a job, with items. Not paged: the doc is explicit that this list is short.
     async fn de_trabajo(&self, trabajo_id: Uuid) -> AppResult<Vec<OrdenTrabajoConRelaciones>>;
 
+    /// List orders, optionally filtered by job. When trabajo_id is None, returns all active orders.
+    async fn listar(&self, trabajo_id: Option<Uuid>) -> AppResult<Vec<OrdenTrabajoConRelaciones>>;
+
     async fn lookup(
         &self,
         trabajo_id: Option<Uuid>,

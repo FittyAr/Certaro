@@ -45,7 +45,11 @@ async function cargar(): Promise<void> {
   loading.value = true
   error.value = null
   try {
-    rows.value = await store.fetchDeTrabajo(trabajoId.value)
+    if (trabajoId.value) {
+      rows.value = await store.fetchDeTrabajo(trabajoId.value)
+    } else {
+      rows.value = await store.fetchList()
+    }
   } catch (e) {
     error.value = notify(e)
   } finally {
@@ -54,9 +58,22 @@ async function cargar(): Promise<void> {
   }
 }
 
-watch(trabajoId, cargar)
+watch(trabajoId, async (newVal) => {
+  await cargar()
+  if (newVal) {
+    try {
+      const trabajo = await trabajos.fetchOne(newVal)
+      trabajoDescripcion.value = trabajo.descripcion
+    } catch (e) {
+      notify(e)
+    }
+  } else {
+    trabajoDescripcion.value = ''
+  }
+})
 
 function abrirNuevo(): void {
+  if (!trabajoId.value) return
   ordenIdEdicion.value = null
   editorOpen.value = true
 }
@@ -83,24 +100,26 @@ useShortcuts({ 'ctrl+n': abrirNuevo })
 
 onMounted(async () => {
   await cargar()
-  try {
-    const trabajo = await trabajos.fetchOne(trabajoId.value)
-    trabajoDescripcion.value = trabajo.descripcion
-  } catch (e) {
-    notify(e)
+  if (trabajoId.value) {
+    try {
+      const trabajo = await trabajos.fetchOne(trabajoId.value)
+      trabajoDescripcion.value = trabajo.descripcion
+    } catch (e) {
+      notify(e)
+    }
   }
 })
 </script>
 
 <template>
   <section class="flex h-full flex-col gap-4 p-6">
-    <PageHeader :title="$t('Ordenes.Title')" :subtitle="trabajoDescripcion">
+    <PageHeader :title="$t('Ordenes.Title')" :subtitle="trabajoDescripcion || undefined">
       <template #actions>
-        <Button variant="outline" @click="router.back()">
+        <Button v-if="trabajoId" variant="outline" @click="router.back()">
           <AppIcon name="arrow-left" :size="16" />
           {{ $t('General.Back') }}
         </Button>
-        <Button @click="abrirNuevo()">
+        <Button v-if="trabajoId" @click="abrirNuevo()">
           <AppIcon name="plus" :size="16" />
           {{ $t('General.New') }}
         </Button>
@@ -114,7 +133,7 @@ onMounted(async () => {
       :error="error"
       :is-empty="(rows?.length ?? 0) === 0"
       :is-filtered="false"
-      empty-key="Ordenes.Empty"
+      :empty-key="trabajoId ? 'Ordenes.Empty' : 'Ordenes.EmptyGlobal'"
       class="flex-1"
       @retry="cargar()"
     >

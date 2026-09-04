@@ -53,6 +53,12 @@ export interface OrdenTrabajoItem {
 export interface OrdenTrabajoListItem {
   id: Uuid
   trabajoId: Uuid
+  trabajoDescripcion?: string
+  proyectoId?: Uuid
+  proyectoNumero?: number
+  proyectoNombre?: string
+  clienteId?: Uuid
+  clienteNombre?: string
   titulo: string
   numeroCertificado: string | null
   fecha: CivilDate
@@ -91,9 +97,9 @@ export interface OrdenTrabajoDetalle {
   audit: Audit
 }
 
-/** Not paged: a job has a handful of sheets, not thousands. */
-export function listOrdenesTrabajo(trabajoId: Uuid): Promise<OrdenTrabajoListItem[]> {
-  return callCommand('ordenes_trabajo_list', { trabajoId })
+/** Not paged: a job has a handful of sheets, not thousands. If trabajoId is omitted, returns all orders. */
+export function listOrdenesTrabajo(trabajoId?: Uuid): Promise<OrdenTrabajoListItem[]> {
+  return callCommand('ordenes_trabajo_list', { trabajoId: trabajoId || null })
 }
 
 export function getOrdenTrabajo(id: Uuid): Promise<OrdenTrabajoDetalle> {

@@ -29,6 +29,27 @@ const emit = defineEmits<{
     <Column field="fecha" :header="$t('Ordenes.Fecha')">
       <template #body="{ data }"><DateText :value="data.fecha" /></template>
     </Column>
+    <Column
+      v-if="rows.some(r => r.clienteNombre)"
+      field="clienteNombre"
+      :header="$t('Ordenes.Cliente')"
+    />
+    <Column
+      v-if="rows.some(r => r.proyectoNombre)"
+      field="proyectoNombre"
+      :header="$t('Ordenes.Proyecto')"
+    >
+      <template #body="{ data }">
+        <span v-if="data.proyectoNombre">
+          {{ data.proyectoNumero ? `#${data.proyectoNumero} - ` : '' }}{{ data.proyectoNombre }}
+        </span>
+      </template>
+    </Column>
+    <Column
+      v-if="rows.some(r => r.trabajoDescripcion)"
+      field="trabajoDescripcion"
+      :header="$t('Ordenes.Trabajo', 'Trabajo')"
+    />
     <Column field="titulo" :header="$t('Ordenes.Titulo')" />
     <Column field="itemsCount" :header="$t('Ordenes.Items')" />
     <Column field="totalPresupuestado" :header="$t('Ordenes.TotalPresupuestado')">

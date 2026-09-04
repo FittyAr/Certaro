@@ -88,9 +88,15 @@ impl OrdenTrabajoRepository for SeaOrmOrdenTrabajoRepository {
     }
 
     async fn de_trabajo(&self, trabajo_id: Uuid) -> AppResult<Vec<OrdenTrabajoConRelaciones>> {
-        let rows = base_query()
-            .filter(alive())
-            .filter(Column::TrabajoId.eq(trabajo_id.to_string()))
+        self.listar(Some(trabajo_id)).await
+    }
+
+    async fn listar(&self, trabajo_id: Option<Uuid>) -> AppResult<Vec<OrdenTrabajoConRelaciones>> {
+        let mut query = base_query().filter(alive());
+        if let Some(id) = trabajo_id {
+            query = query.filter(Column::TrabajoId.eq(id.to_string()));
+        }
+        let rows = query
             .order_by_desc(Column::Fecha)
             .order_by_desc(Expr::col((Entity, Column::Id)))
             .into_model::<RowConRelaciones>()
@@ -98,9 +104,6 @@ impl OrdenTrabajoRepository for SeaOrmOrdenTrabajoRepository {
             .await
             .map_err(AppError::persistence)?;
 
-        // One extra round trip per order for its items and its certificate count. A job has a
-        // handful of orders, so this is bounded; the alternative is a grouped join whose rows would
-        // have to be stitched back together anyway.
         let mut result = Vec::with_capacity(rows.len());
         for row in rows {
             let id = common::uuid(&row.id)?;

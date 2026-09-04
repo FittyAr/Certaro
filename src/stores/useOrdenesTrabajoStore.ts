@@ -29,6 +29,10 @@ export const useOrdenesTrabajoStore = defineStore('ordenesTrabajo', () => {
     return listOrdenesTrabajo(trabajoId)
   }
 
+  function fetchList(trabajoId?: Uuid): Promise<OrdenTrabajoListItem[]> {
+    return listOrdenesTrabajo(trabajoId)
+  }
+
   async function fetchOne(id: Uuid): Promise<OrdenTrabajoDetalle> {
     current.value = await getOrdenTrabajo(id)
     return current.value
@@ -58,5 +62,5 @@ export const useOrdenesTrabajoStore = defineStore('ordenesTrabajo', () => {
     return lookupOrdenesTrabajo(trabajoId, texto, limite)
   }
 
-  return { current, fetchDeTrabajo, fetchOne, create, update, remove, lookup }
+  return { current, fetchDeTrabajo, fetchList, fetchOne, create, update, remove, lookup }
 })

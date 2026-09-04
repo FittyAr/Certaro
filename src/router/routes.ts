@@ -118,10 +118,16 @@ export const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/ordenes',
+    name: 'ordenes',
+    component: () => import('@/views/ordenes/OrdenesView.vue'),
+    meta: { titleKey: 'Menu.Ordenes' },
+  },
+  {
     path: '/ordenes/:ordenId',
     name: 'orden-detalle',
     component: () => import('@/views/ordenes/OrdenDetalleView.vue'),
-    meta: { titleKey: 'Ordenes.Title', breadcrumb: ['trabajos'], idParam: 'ordenId' },
+    meta: { titleKey: 'Ordenes.Title', breadcrumb: ['ordenes'], idParam: 'ordenId' },
   },
   {
     path: '/kanban',
