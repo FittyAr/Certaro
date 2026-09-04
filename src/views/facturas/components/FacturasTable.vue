@@ -58,14 +58,22 @@ const emit = defineEmits<{
       <div class="flex gap-1">
         <Button
           v-if="data.estado === 'Borrador'"
-          variant="ghost"
+          variant="outline"
           size="sm"
+          class="h-7 gap-1 px-2 border-primary/40 text-primary hover:bg-primary/10 text-xs font-medium"
           :title="$t('Actions.Factura.Emitida')"
           @click="emit('cambiar-estado', data, 'Emitida')"
         >
-          <AppIcon name="send" :size="14" />
+          <AppIcon name="send" :size="12" />
+          <span>{{ $t('Actions.Factura.Emitida') || 'Emitir' }}</span>
         </Button>
-        <Button variant="ghost" size="sm" :title="$t('Facturas.Pagos')" @click="emit('abrir-pagos', data)">
+        <Button
+          variant="ghost"
+          size="sm"
+          :disabled="!data.admitePagos"
+          :title="data.admitePagos ? $t('Facturas.Pagos') : (data.estado === 'Borrador' ? 'Debe emitir la factura para registrar pagos' : $t('Facturas.Pagos'))"
+          @click="emit('abrir-pagos', data)"
+        >
           <AppIcon name="wallet" :size="14" />
         </Button>
         <Button

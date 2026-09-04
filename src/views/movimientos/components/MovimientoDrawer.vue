@@ -8,6 +8,7 @@ import CrudDrawer from '@/components/domain/CrudDrawer.vue'
 import DateInput from '@/components/domain/DateInput.vue'
 import FieldError from '@/components/domain/FieldError.vue'
 import MoneyInput from '@/components/domain/MoneyInput.vue'
+import MoneyText from '@/components/domain/MoneyText.vue'
 import { useCrudDrawer } from '@/composables/useCrudDrawer'
 import type { LookupItem } from '@/stores/useCatalogStore'
 import { useMovimientosStore, type MovimientoInput } from '@/stores/useMovimientosStore'
@@ -95,6 +96,7 @@ const drawer = useCrudDrawer<MovimientoInput & { rowVersion?: string }>({
   empty: vacio,
   load: async (id) => {
     const d = await store.fetchOne(id)
+    mostrarEmpleado.value = Boolean(d.empleadoId)
     selectedProyectoId.value = null
     opcionesTrabajo.value = []
     if (d.trabajoId) {
@@ -148,6 +150,15 @@ const drawer = useCrudDrawer<MovimientoInput & { rowVersion?: string }>({
   onSaved: () => emit('saved'),
 })
 
+const mostrarEmpleado = ref(false)
+
+const subtotalEstimado = computed(() => {
+  const m = Number(drawer.model.value.monto)
+  const q = Number(drawer.model.value.cantidad)
+  if (isNaN(m) || isNaN(q) || m <= 0 || q <= 0) return '0.0000'
+  return (m * q).toFixed(4)
+})
+
 const esAdelanto = computed(() => drawer.model.value.tipoMovimientoId === ADELANTO_ID)
 
 watch(
@@ -165,6 +176,7 @@ async function openCreate(preset?: {
   clienteId?: string
   tipoMovimientoId?: string
 }): Promise<void> {
+  mostrarEmpleado.value = false
   drawer.openCreate()
   if (preset?.tipoMovimientoId) {
     drawer.model.value.tipoMovimientoId = preset.tipoMovimientoId
@@ -245,6 +257,17 @@ defineExpose({
       </label>
     </div>
 
+    <!-- Previsualización de total estimado cuando cantidad != 1 -->
+    <div
+      v-if="Number(drawer.model.value.cantidad) !== 1 && Number(subtotalEstimado) > 0"
+      class="flex items-center justify-between rounded-md border border-border/80 bg-muted/20 px-3 py-2 text-xs"
+    >
+      <span class="text-muted-foreground font-medium">Total estimado (Monto × Cantidad):</span>
+      <span class="font-bold text-foreground tabular-nums">
+        <MoneyText :value="subtotalEstimado" colored />
+      </span>
+    </div>
+
     <label class="flex flex-col gap-1">
       <span class="text-sm">{{ $t('Movimientos.Tipo') }}</span>
       <Select
@@ -257,24 +280,35 @@ defineExpose({
       <FieldError id="mov-tipo-error" :message="drawer.fieldErrors.value.tipoMovimientoId" />
     </label>
 
-    <!-- Empleado selector (Required if Adelanto, selectable anytime) -->
-    <label v-if="esAdelanto || drawer.model.value.empleadoId || drawer.open.value" class="flex flex-col gap-1">
-      <span class="text-sm">
-        {{ $t('Movimientos.Empleado') }}
-        <span v-if="esAdelanto" class="text-destructive">*</span>
-      </span>
-      <Select
-        v-model="drawer.model.value.empleadoId"
-        :options="opcionesEmpleado"
-        option-label="label"
-        option-value="id"
-        filter
-        show-clear
-        :placeholder="esAdelanto ? $t('Movimientos.EmpleadoRequeridoPlaceholder') : $t('General.None')"
-        :invalid="Boolean(drawer.fieldErrors.value.empleadoId)"
-      />
-      <FieldError id="mov-empleado-error" :message="drawer.fieldErrors.value.empleadoId" />
-    </label>
+    <!-- Empleado selector (Required if Adelanto, optional otherwise) -->
+    <div v-if="esAdelanto || drawer.model.value.empleadoId || mostrarEmpleado" class="flex flex-col gap-1">
+      <label class="flex flex-col gap-1">
+        <span class="text-sm">
+          {{ $t('Movimientos.Empleado') }}
+          <span v-if="esAdelanto" class="text-destructive">*</span>
+        </span>
+        <Select
+          v-model="drawer.model.value.empleadoId"
+          :options="opcionesEmpleado"
+          option-label="label"
+          option-value="id"
+          filter
+          show-clear
+          :placeholder="esAdelanto ? $t('Movimientos.EmpleadoRequeridoPlaceholder') : $t('General.None')"
+          :invalid="Boolean(drawer.fieldErrors.value.empleadoId)"
+        />
+        <FieldError id="mov-empleado-error" :message="drawer.fieldErrors.value.empleadoId" />
+      </label>
+    </div>
+    <div v-else class="text-right -mt-1 mb-1">
+      <button
+        type="button"
+        class="text-xs text-primary hover:underline font-medium"
+        @click="mostrarEmpleado = true"
+      >
+        + Asignar a un empleado
+      </button>
+    </div>
 
     <label class="flex flex-col gap-1">
       <span class="text-sm">{{ $t('Movimientos.Categoria') }}</span>
