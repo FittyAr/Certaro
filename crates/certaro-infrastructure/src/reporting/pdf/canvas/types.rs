@@ -64,10 +64,10 @@ impl TextSpec {
     }
 }
 
-pub(super) struct Fonts {
-    pub(super) regular: PdfFontHandle,
-    pub(super) bold: PdfFontHandle,
-    pub(super) italic: PdfFontHandle,
+pub(crate) struct Fonts {
+    pub(crate) regular: PdfFontHandle,
+    pub(crate) bold: PdfFontHandle,
+    pub(crate) italic: PdfFontHandle,
 }
 
 impl Fonts {
