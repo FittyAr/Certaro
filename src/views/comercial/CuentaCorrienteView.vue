@@ -12,7 +12,7 @@ import AppIcon from '@/components/ui/AppIcon.vue'
 import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
-import { createCategoria } from '@/api/categorias'
+import { useCategoriasStore } from '@/stores/useCategoriasStore'
 import { useMovimientosStore } from '@/stores/useMovimientosStore'
 import { useProyectosStore } from '@/stores/useProyectosStore'
 import { useTrabajosStore } from '@/stores/useTrabajosStore'
@@ -45,6 +45,7 @@ const router = useRouter()
 const { notify, fieldErrors } = useApiError()
 const store = useComercialStore()
 const facturasStore = useFacturasStore()
+const categoriasStore = useCategoriasStore()
 const movimientosStore = useMovimientosStore()
 const proyectosStore = useProyectosStore()
 const trabajosStore = useTrabajosStore()
@@ -226,14 +227,13 @@ async function resolveCategoriaCobranza(): Promise<string | null> {
   if (cats.length > 0 && cats[0]) return cats[0].id
 
   try {
-    const created = await createCategoria({
+    const created = await categoriasStore.create({
       nombre: 'Cobranzas',
       descripcion: 'Categoría automática para cobranzas de facturas',
-      colorHex: '#10B981',
+      colorHex: null,
       icono: 'wallet',
       categoriaPadreId: null,
     })
-    catalogStore.invalidateCategorias()
     return created.id
   } catch {
     return null

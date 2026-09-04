@@ -15,10 +15,10 @@ import MoneyText from '@/components/domain/MoneyText.vue'
 import StatePill from '@/components/domain/StatePill.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { Button } from '@/components/ui/button'
-import { createCategoria } from '@/api/categorias'
 import { useApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
 import { useCatalogStore, type LookupItem } from '@/stores/useCatalogStore'
+import { useCategoriasStore } from '@/stores/useCategoriasStore'
 import { useMovimientosStore } from '@/stores/useMovimientosStore'
 import { useProyectosStore } from '@/stores/useProyectosStore'
 import { useTrabajosStore } from '@/stores/useTrabajosStore'
@@ -44,6 +44,7 @@ const { fieldErrors, notify } = useApiError()
 const { confirmDelete } = useConfirmDelete()
 const store = useFacturasStore()
 const catalogStore = useCatalogStore()
+const categoriasStore = useCategoriasStore()
 const movimientosStore = useMovimientosStore()
 const proyectosStore = useProyectosStore()
 const trabajosStore = useTrabajosStore()
@@ -157,14 +158,13 @@ async function resolveCategoriaCobranza(): Promise<string | null> {
   if (cats.length > 0 && cats[0]) return cats[0].id
 
   try {
-    const created = await createCategoria({
+    const created = await categoriasStore.create({
       nombre: 'Cobranzas',
       descripcion: 'Categoría automática para cobranzas de facturas',
-      colorHex: '#10B981',
+      colorHex: null,
       icono: 'wallet',
       categoriaPadreId: null,
     })
-    catalogStore.invalidateCategorias()
     return created.id
   } catch {
     return null
