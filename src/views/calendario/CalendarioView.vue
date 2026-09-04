@@ -11,17 +11,16 @@ import { useProyectosStore } from '@/stores/useProyectosStore'
 import type { LookupItem } from '@/stores/useCatalogStore'
 import CalendarioEventoModal from './components/CalendarioEventoModal.vue'
 import CalendarioRecursosModal from './components/CalendarioRecursosModal.vue'
+import CalendarioMesGrid from './components/CalendarioMesGrid.vue'
+import CalendarioSemanaGrid from './components/CalendarioSemanaGrid.vue'
+import CalendarioDiaGrid from './components/CalendarioDiaGrid.vue'
+import CalendarioRecursosGrid from './components/CalendarioRecursosGrid.vue'
 import {
   DIAS_SEMANA,
-  HORAS_DIA,
-  pad,
   formatearFechaIso,
   fechaLocalIsoDe,
-  formatearHoraLocal,
-  coincideHora,
   useCalendarioPeriodo,
 } from './composables/useCalendarioPeriodo'
-import { getBadgeClass } from './composables/useBadgeClass'
 
 const { notify } = useApiError()
 const toast = useToast()
@@ -131,17 +130,6 @@ const diasSemanaView = computed(() => {
 const recursosActivos = computed(() => {
   return store.recursos.filter((r) => r.activo)
 })
-
-function eventosDeRecurso(recursoId: string) {
-  const diaIso = formatearFechaIso(store.fechaSeleccionada)
-  return store.eventos.filter((e) => {
-    const eInicio = fechaLocalIsoDe(e.inicio)
-    const eFin = fechaLocalIsoDe(e.fin)
-    const coincideDia = diaIso >= eInicio && diaIso <= eFin
-    const tieneRecurso = e.recursos.some((r) => r.id === recursoId)
-    return coincideDia && tieneRecurso
-  })
-}
 
 // Modal actions
 function abrirCrearEvento(fechaPredeterminada?: string) {
@@ -283,203 +271,42 @@ async function ejecutarSincronizacionEmpleados() {
     <!-- Content views -->
     <main class="flex-1 overflow-auto p-4">
       <!-- 1. MONTH VIEW -->
-      <div v-if="store.vistaActual === 'mes'" class="flex flex-col h-full border border-border rounded-lg bg-surface-card overflow-hidden">
-        <!-- Weekday headers -->
-        <div class="grid grid-cols-7 border-b border-border bg-muted/30 text-center text-xs font-semibold py-2">
-          <div v-for="dia in DIAS_SEMANA" :key="dia">{{ dia }}</div>
-        </div>
-
-        <!-- Month Day Cells -->
-        <div class="grid grid-cols-7 flex-1 auto-rows-fr">
-          <div
-            v-for="dia in diasCuadriculaMes"
-            :key="dia.fechaIso"
-            :class="[
-              'border-b border-r border-border p-1.5 flex flex-col min-h-24 transition-colors cursor-pointer hover:bg-muted/20',
-              !dia.esMesActual ? 'opacity-40 bg-muted/10' : '',
-              dia.esHoy ? 'bg-primary/5' : ''
-            ]"
-            @click="abrirCrearEvento(dia.fechaIso)"
-          >
-            <div class="flex items-center justify-between mb-1">
-              <span
-                :class="[
-                  'text-xs font-medium px-1.5 py-0.5 rounded-full',
-                  dia.esHoy ? 'bg-primary text-primary-foreground font-bold' : 'text-muted-foreground'
-                ]"
-              >
-                {{ dia.numeroDia }}
-              </span>
-              <span v-if="dia.eventos.length > 3" class="text-[10px] text-muted-foreground font-medium">
-                +{{ dia.eventos.length - 3 }}
-              </span>
-            </div>
-
-            <!-- Event Pills (max 3 displayed) -->
-            <div class="flex flex-col gap-1 overflow-hidden">
-              <div
-                v-for="ev in dia.eventos.slice(0, 3)"
-                :key="ev.id"
-                :class="[
-                  'text-[11px] px-1.5 py-0.5 rounded-md border truncate font-medium flex items-center justify-between cursor-pointer hover:opacity-80',
-                  getBadgeClass(ev.tipo, ev.esVirtual)
-                ]"
-                @click.stop="abrirEditarEvento(ev)"
-              >
-                <span class="truncate">{{ ev.titulo }}</span>
-                <span v-if="ev.esVirtual" class="text-[9px] uppercase tracking-wider font-semibold opacity-70">
-                  Virtual
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <CalendarioMesGrid
+        v-if="store.vistaActual === 'mes'"
+        :dias="diasCuadriculaMes"
+        @crear="abrirCrearEvento"
+        @editar="abrirEditarEvento"
+      />
 
       <!-- 2. WEEK VIEW -->
-      <div v-else-if="store.vistaActual === 'semana'" class="flex flex-col h-full border border-border rounded-lg bg-surface-card overflow-hidden">
-        <!-- Week header -->
-        <div class="grid grid-cols-8 border-b border-border bg-muted/30 text-xs font-semibold py-2">
-          <div class="text-center text-muted-foreground">Hora</div>
-          <div
-            v-for="dia in diasSemanaView"
-            :key="dia.fechaIso"
-            :class="['text-center', dia.esHoy ? 'text-primary font-bold' : '']"
-          >
-            {{ dia.diaNombre }} {{ dia.numeroDia }}
-          </div>
-        </div>
-
-        <!-- Hourly rows -->
-        <div class="flex-1 overflow-y-auto">
-          <div
-            v-for="hora in HORAS_DIA"
-            :key="hora"
-            class="grid grid-cols-8 border-b border-border min-h-12 text-xs"
-          >
-            <div class="border-r border-border p-1 text-center text-muted-foreground text-[11px] font-mono">
-              {{ pad(hora) }}:00
-            </div>
-            <div
-              v-for="dia in diasSemanaView"
-              :key="dia.fechaIso"
-              class="border-r border-border p-1 flex flex-col gap-1 hover:bg-muted/10 cursor-pointer"
-              @click="abrirCrearEvento(`${dia.fechaIso}T${pad(hora)}:00`)"
-            >
-              <div
-                v-for="ev in dia.eventos.filter(e => coincideHora(e.inicio, hora))"
-                :key="ev.id"
-                :class="[
-                  'text-[11px] px-1.5 py-0.5 rounded-md border font-medium truncate hover:opacity-80',
-                  getBadgeClass(ev.tipo, ev.esVirtual)
-                ]"
-                @click.stop="abrirEditarEvento(ev)"
-              >
-                {{ ev.titulo }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <CalendarioSemanaGrid
+        v-else-if="store.vistaActual === 'semana'"
+        :dias="diasSemanaView"
+        @crear="abrirCrearEvento"
+        @editar="abrirEditarEvento"
+      />
 
       <!-- 3. DAY VIEW -->
-      <div v-else-if="store.vistaActual === 'dia'" class="flex flex-col h-full border border-border rounded-lg bg-surface-card overflow-hidden">
-        <div class="border-b border-border bg-muted/30 p-3 text-sm font-semibold flex items-center justify-between">
-          <span>Detalle de Agenda: {{ tituloPeriodo }}</span>
-          <span class="text-xs text-muted-foreground font-normal">
-            {{ store.eventos.length }} eventos programados
-          </span>
-        </div>
-        <div class="flex-1 overflow-y-auto divide-y divide-border">
-          <div
-            v-for="hora in HORAS_DIA"
-            :key="hora"
-            class="flex items-start min-h-14 p-2 hover:bg-muted/10 cursor-pointer"
-            @click="abrirCrearEvento(`${formatearFechaIso(store.fechaSeleccionada)}T${pad(hora)}:00`)"
-          >
-            <span class="w-16 text-xs text-muted-foreground font-mono">{{ pad(hora) }}:00</span>
-            <div class="flex-1 flex flex-wrap gap-2 pl-4">
-              <div
-                v-for="ev in store.eventos.filter(e => coincideHora(e.inicio, hora) && fechaLocalIsoDe(e.inicio) === formatearFechaIso(store.fechaSeleccionada))"
-                :key="ev.id"
-                :class="[
-                  'px-3 py-1.5 rounded-md border text-xs font-medium hover:opacity-80 flex items-center gap-2',
-                  getBadgeClass(ev.tipo, ev.esVirtual)
-                ]"
-                @click.stop="abrirEditarEvento(ev)"
-              >
-                <span>{{ ev.titulo }}</span>
-                <span v-if="ev.recursos.length > 0" class="text-[10px] opacity-75 font-normal">
-                  ({{ ev.recursos.map(r => r.nombre).join(', ') }})
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <CalendarioDiaGrid
+        v-else-if="store.vistaActual === 'dia'"
+        :titulo-periodo="tituloPeriodo"
+        :eventos="store.eventos"
+        :fecha-seleccionada-iso="formatearFechaIso(store.fechaSeleccionada)"
+        @crear="abrirCrearEvento"
+        @editar="abrirEditarEvento"
+      />
 
       <!-- 4. RESOURCE DAY VIEW -->
-      <div v-else-if="store.vistaActual === 'recursos'" class="flex flex-col h-full border border-border rounded-lg bg-surface-card overflow-hidden">
-        <div class="border-b border-border bg-muted/30 p-3 flex items-center justify-between">
-          <span class="text-sm font-semibold">Vista de Recursos: {{ tituloPeriodo }}</span>
-          <div class="flex items-center gap-2">
-            <span class="text-xs text-muted-foreground">
-              {{ recursosActivos.length }} recursos activos
-            </span>
-            <button
-              v-if="auth.hasPermission('calendario:gestionar_recursos')"
-              type="button"
-              class="px-2.5 py-1 text-xs border border-border rounded-md hover:bg-muted"
-              @click="ejecutarSincronizacionEmpleados"
-            >
-              Sincronizar Empleados
-            </button>
-          </div>
-        </div>
-
-        <div class="flex-1 overflow-x-auto flex">
-          <div
-            v-for="recurso in recursosActivos"
-            :key="recurso.id"
-            class="flex-1 min-w-56 border-r border-border flex flex-col"
-          >
-            <!-- Column header -->
-            <div class="p-2 border-b border-border bg-muted/20 text-center">
-              <div class="text-xs font-bold truncate">{{ recurso.nombre }}</div>
-              <div class="text-[10px] text-muted-foreground uppercase tracking-wider">
-                {{ recurso.tipo }}
-              </div>
-            </div>
-
-            <!-- Event list for resource -->
-            <div class="flex-1 p-2 flex flex-col gap-2 overflow-y-auto">
-              <div
-                v-for="ev in eventosDeRecurso(recurso.id)"
-                :key="ev.id"
-                :class="[
-                  'p-2 rounded-md border text-xs cursor-pointer hover:opacity-80 transition-opacity',
-                  getBadgeClass(ev.tipo, ev.esVirtual)
-                ]"
-                @click="abrirEditarEvento(ev)"
-              >
-                <div class="font-semibold truncate">{{ ev.titulo }}</div>
-                <div class="text-[10px] opacity-75 mt-0.5">
-                  {{ formatearHoraLocal(ev.inicio) }} - {{ formatearHoraLocal(ev.fin) }}
-                </div>
-                <div v-if="ev.descripcion" class="text-[10px] line-clamp-2 opacity-85 mt-1">
-                  {{ ev.descripcion }}
-                </div>
-              </div>
-              <div
-                v-if="eventosDeRecurso(recurso.id).length === 0"
-                class="text-[11px] text-muted-foreground text-center py-8 italic"
-              >
-                Sin asignaciones hoy
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <CalendarioRecursosGrid
+        v-else-if="store.vistaActual === 'recursos'"
+        :titulo-periodo="tituloPeriodo"
+        :recursos="recursosActivos"
+        :eventos="store.eventos"
+        :fecha-seleccionada="store.fechaSeleccionada"
+        :puede-gestionar-recursos="auth.hasPermission('calendario:gestionar_recursos')"
+        @editar="abrirEditarEvento"
+        @sincronizar="ejecutarSincronizacionEmpleados"
+      />
     </main>
 
     <!-- MODAL: Crear/Editar Evento -->
