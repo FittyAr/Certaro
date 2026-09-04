@@ -128,11 +128,11 @@ pub(crate) fn suma_movimientos_expr(es_ingreso: bool) -> SimpleExpr {
             None,
             Box::new(
                 Query::select()
-                    .expr(Func::sum(
-                        Expr::col((movimiento::Entity, movimiento::Column::Monto)).mul(Expr::col(
-                            (movimiento::Entity, movimiento::Column::Cantidad),
-                        )),
-                    ))
+                    .expr(Func::sum(Expr::cust(
+                        "CASE WHEN movimientos.moneda = 1 AND movimientos.cotizacion_aplicada IS NOT NULL AND movimientos.cotizacion_aplicada > 0 \
+                         THEN (movimientos.monto * movimientos.cotizacion_aplicada / 10000) * movimientos.cantidad \
+                         ELSE movimientos.monto * movimientos.cantidad END"
+                    )))
                     .from(movimiento::Entity)
                     .inner_join(
                         trabajo::Entity,

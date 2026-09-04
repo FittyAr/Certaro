@@ -415,7 +415,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Detalle:** Incorporar en dominio y DTOs el cálculo de `ajuste_uocra_presupuestado` y `total_presupuestado_neto` (`total_presupuestado + ajuste_uocra_presupuestado - otros_descuentos`). En `OrdenDetalleView.vue`, clarificar la visualización para que una orden con 0% de avance y descuento muestre su valor neto de cotización positivo y no `-$ 50.000,00`.
   - **Criterio de aceptación:** Las órdenes de trabajo muestran un Total Presupuestado Neto matemáticamente coherente para el presupuesto completo.
 
-- [ ] **13.2. Corrección Bimonetaria en Rentabilidad de Obras (SeaORM)**
+- [x] **13.2. Corrección Bimonetaria en Rentabilidad de Obras (SeaORM)**
   - **Archivos:** `crates/certaro-infrastructure/src/persistence/repositories/proyecto/query.rs`.
   - **Detalle:** Modificar `suma_movimientos_expr` para que aplique la fórmula de monto consolidado multiplicando por `cotizacion_aplicada` cuando la moneda es USD.
   - **Criterio de aceptación:** Compras y cobros en USD impactan en la rentabilidad de la obra convertidos a pesos según su cotización real.
