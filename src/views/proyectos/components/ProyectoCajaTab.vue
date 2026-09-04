@@ -36,7 +36,7 @@ const emit = defineEmits<{
           {{ $t('Movimientos.Gastos') }}
         </span>
         <div class="mt-1 text-xl font-bold">
-          <MoneyText :value="`-${totalGastos}`" colored />
+          <MoneyText :value="Number(totalGastos) > 0 ? `-${totalGastos}` : '0.0000'" colored />
         </div>
       </div>
       <div class="rounded-lg border border-border bg-card p-4 shadow-xs">
@@ -95,7 +95,7 @@ const emit = defineEmits<{
       <Column field="total" :header="$t('Movimientos.Total')">
         <template #body="{ data }">
           <MoneyText
-            :value="data.esIngreso ? data.total : `-${data.total}`"
+            :value="data.esIngreso ? data.total : (Number(data.total) > 0 ? `-${data.total}` : '0.0000')"
             colored
           />
         </template>

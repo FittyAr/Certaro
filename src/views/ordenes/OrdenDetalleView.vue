@@ -168,8 +168,8 @@ onMounted(cargar)
             <dd><MoneyText :value="orden.totalCertificado" /></dd>
           </div>
           <div class="flex justify-between text-muted-foreground">
-            <dt>{{ $t('Ordenes.AjusteUocra') }}</dt>
-            <dd>− <MoneyText :value="orden.ajusteUocra" /></dd>
+            <dt>{{ $t('Ordenes.AjusteUocra') }} <template v-if="Number(orden.ajusteUocraPorcentaje) > 0">(+{{ orden.ajusteUocraPorcentaje }}%)</template></dt>
+            <dd>+ <MoneyText :value="orden.ajusteUocra" /></dd>
           </div>
           <div class="flex justify-between text-muted-foreground">
             <dt>{{ $t('Ordenes.OtrosDescuentos') }}</dt>
