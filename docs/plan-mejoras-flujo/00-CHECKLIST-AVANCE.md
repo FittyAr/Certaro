@@ -425,7 +425,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Detalle:** En `candidatos_adelantos`, ampliar el query para que busque todos los adelantos con fecha anterior o igual a la fecha fin del período que aún no hayan sido descontados en una liquidación previa.
   - **Criterio de aceptación:** Adelantos dados a empleados antes del primer día de la quincena se sugieren para ser descontados en la liquidación.
 
-- [ ] **13.4. Precisión en Borrado de Pagos y Asientos de Caja**
+- [x] **13.4. Precisión en Borrado de Pagos y Asientos de Caja**
   - **Archivos:** `crates/certaro-application/src/use_cases/facturas/pagos.rs`, `src/views/facturas/components/FacturaPagosModal.vue`.
   - **Detalle:** Identificar unívocamente el pago en el concepto del movimiento generado en `FacturaPagosModal.vue`. Refinar `borrar_pago` para validar que el movimiento dado de baja corresponda exactamente al cobro eliminado.
   - **Criterio de aceptación:** Eliminar un pago no afecta asientos contables de otros cobros del mismo importe.

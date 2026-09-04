@@ -136,17 +136,28 @@ impl FacturasService {
                         monto_max: Some(pago.monto),
                         ..Default::default()
                     },
-                    PageRequest::new(1, 10),
+                    PageRequest::new(1, 20),
                     None,
                     SortDir::Desc,
                 )
                 .await
             {
-                if let Some(primer_mov) = res.items.first() {
+                let pago_id_str = pago.id.to_string();
+                let ref_corta = &pago_id_str[..8.min(pago_id_str.len())];
+                let candidato = res
+                    .items
+                    .iter()
+                    .find(|m| {
+                        m.movimiento.concepto.contains(ref_corta)
+                            || m.movimiento.concepto.contains(&pago.medio_pago)
+                    })
+                    .or_else(|| res.items.first());
+
+                if let Some(mov) = candidato {
                     let _ = movs_repo
                         .soft_delete(
-                            primer_mov.movimiento.id,
-                            primer_mov.movimiento.audit.row_version,
+                            mov.movimiento.id,
+                            mov.movimiento.audit.row_version,
                             now,
                         )
                         .await;

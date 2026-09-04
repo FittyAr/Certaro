@@ -183,9 +183,14 @@ async function registrarPago(): Promise<void> {
       try {
         const catId = await resolveCategoriaCobranza()
         if (catId) {
+          const pagoCreado = factura.value.pagos.find(
+            (p) => p.fecha === pagoFecha && p.medioPago === pagoMedio && p.monto === pagoMonto,
+          ) ?? factura.value.pagos[factura.value.pagos.length - 1]
+          const refTexto = pagoCreado ? ` · ref:${pagoCreado.id.slice(0, 8)}` : ''
+
           await movimientosStore.create({
             fecha: fechaPagoToIso(pagoFecha),
-            concepto: `Cobranza Factura ${factura.value.numero} (${pagoMedio})`,
+            concepto: `Cobranza Factura ${factura.value.numero} (${pagoMedio}${refTexto})`,
             monto: pagoMonto,
             cantidad: '1.0000',
             tipoMovimientoId: '00000000-0000-0000-0000-000000000001',
