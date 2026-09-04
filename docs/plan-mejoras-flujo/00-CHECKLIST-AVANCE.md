@@ -18,6 +18,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
 | **Fase 8** | Integración Financiera, Consistencia de Cálculos y Ergonomía UX | 8 | 8 | 🟢 Completada |
 | **Fase 9** | Correcciones Críticas de Lógica Numérica, Imputación Financiera y Flujo de Obra | 6 | 6 | 🟢 Completada |
 | **Fase 10** | Integración Bimonetaria, Imputación de Mano de Obra y Ergonomía de Flujo | 7 | 7 | 🟢 Completada |
+| **Fase 11** | Auditoría Integral de Flujo Operativo, Cálculos Financieros y Ergonomía UX/UI | 7 | 0 | 🟡 En Progreso |
 
 ---
 
@@ -325,5 +326,41 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Detalle:** Incorporar paginador en la tabla de movimientos de la pestaña de tesorería del proyecto.
   - **Criterio de aceptación:** Obras con más de 100 movimientos permiten paginar y revisar el historial financiero íntegro.
 
+---
 
+## Fase 11: Auditoría Integral de Flujo Operativo, Cálculos Financieros y Ergonomía UX/UI
 
+- [ ] **11.1. Corrección y Unificación del Cálculo de Descuentos en Certificados**
+  - **Archivos:** `src/views/ordenes/components/OrdenEmisionCertificadoModal.vue`, `src/views/ordenes/OrdenDetalleView.vue`.
+  - **Detalle:** Unificar la fórmula proporcional de descuentos en `OrdenEmisionCertificadoModal.vue` con la lógica del backend (`issuance.rs`), garantizando que la previsualización coincida centavo a centavo con el certificado emitido. Agregar enlaces rápidos en la lista de certificados de la orden.
+  - **Criterio de aceptación:** El modal calcula exactamente el mismo importe neto que emitirá el backend.
+
+- [ ] **11.2. Confirmación Segura en Eliminación de Cobros**
+  - **Archivos:** `src/views/facturas/components/FacturaPagosModal.vue`.
+  - **Detalle:** Solicitar confirmación modal explícita antes de eliminar un pago (`borrarPago`), previniendo la anulación accidental del cobro y del asiento en caja.
+  - **Criterio de aceptación:** La eliminación requiere confirmación explícita con fecha, medio y monto.
+
+- [ ] **11.3. Imputación a Obra en Cobranzas desde Cuenta Corriente**
+  - **Archivos:** `src/views/comercial/components/CuentaCorrienteCobroModal.vue`, `src/views/comercial/CuentaCorrienteView.vue`.
+  - **Detalle:** Incorporar selectores dependientes de Proyecto y Trabajo en `CuentaCorrienteCobroModal.vue` e imputar el ingreso generado en caja a la obra indicada.
+  - **Criterio de aceptación:** El cobro desde cuenta corriente puede asignarse a un proyecto y se refleja inmediatamente en su caja y rentabilidad.
+
+- [ ] **11.4. Preselección de "Gasto" desde Caja de Obra**
+  - **Archivos:** `src/views/movimientos/MovimientosView.vue`, `src/views/movimientos/components/MovimientoDrawer.vue`.
+  - **Detalle:** Preseleccionar automáticamente el tipo de movimiento `Gasto` al navegar desde el botón "+ Registrar Gasto" de la ficha de obra.
+  - **Criterio de aceptación:** El drawer abre con el tipo "Gasto" seleccionado por defecto al venir desde la caja de proyecto.
+
+- [ ] **11.5. Recálculo Dinámico de Recargos y Alerta de Neto Negativo en Liquidaciones**
+  - **Archivos:** `src/views/liquidaciones/components/LiquidacionItemSugerido.vue`, `src/locales/es.json`, `src/locales/en.json`.
+  - **Detalle:** Refrescar el monto de recargos según la tarifa editada en tiempo real. Mostrar advertencia destacada cuando `totalNeto < 0`.
+  - **Criterio de aceptación:** La columna de recargos refleja la tarifa modificada y el sistema alerta visualmente si los adelantos superan el sueldo.
+
+- [ ] **11.6. Carga Masiva de Asistencia para Toda la Cuadrilla**
+  - **Archivos:** `src/views/asistencia/components/AsistenciaCargaMasivaModal.vue`, `src/locales/es.json`, `src/locales/en.json`.
+  - **Detalle:** Añadir opción para aplicar la carga de jornadas a todos los empleados activos de la empresa o del proyecto en un único clic.
+  - **Criterio de aceptación:** Se pueden asentar jornadas para toda la cuadrilla en lote.
+
+- [ ] **11.7. Higiene de Código y Saneamiento de Glifos**
+  - **Archivos:** `src/views/reportes/ReportesView.vue`, `src/views/comercial/CuentaCorrienteView.vue`.
+  - **Detalle:** Reemplazar glifo corrupto `\uFFFD` en comentarios de `ReportesView.vue` y limpiar declaraciones anidadas en `CuentaCorrienteView.vue`.
+  - **Criterio de aceptación:** 0 errores de linter, typecheck y architecture specs aprobadas.

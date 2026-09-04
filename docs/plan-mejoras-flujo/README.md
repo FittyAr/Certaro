@@ -14,4 +14,7 @@ Este directorio contiene la documentación técnica y el plan de implementación
 | [05-MODULO-CALENDARIO-Y-UX.md](./05-MODULO-CALENDARIO-Y-UX.md) | Corrección del desfasaje horario, estandarización con PrimeVue y onboarding para nuevos usuarios. |
 | [06-FASE6-CONSOLIDACION-FLUJOS.md](./06-FASE6-CONSOLIDACION-FLUJOS.md) | Hub integral de proyectos/obras, historial de certificados en órdenes, cobro en cuenta corriente y UX. |
 | [07-FASE7-CORRECCIONES-FLUJO-Y-CALCULOS.md](./07-FASE7-CORRECCIONES-FLUJO-Y-CALCULOS.md) | Correcciones críticas de cálculo en certificados, recargos salariales, caja de obras, reversión y ergonomía. |
-
+| [08-FASE8-INTEGRACION-FINANCIERA-Y-UX.md](./08-FASE8-INTEGRACION-FINANCIERA-Y-UX.md) | Imputación de cobranzas a obra, egreso en caja al liquidar, trazabilidad y filtros comerciales. |
+| [09-FASE9-CORRECCIONES-CRITICAS-CALCULOS-Y-FLUJOS.md](./09-FASE9-CORRECCIONES-CRITICAS-CALCULOS-Y-FLUJOS.md) | Signo de ajuste UOCRA, filtros de moneda, prevención de movimientos huérfanos y edición de planilla. |
+| [10-FASE10-INTEGRACION-BIMONETARIA-MANO-DE-OBRA-Y-UX.md](./10-FASE10-INTEGRACION-BIMONETARIA-MANO-DE-OBRA-Y-UX.md) | Integración bimonetaria con cotizaciones, imputación de mano de obra, IVA sugerido y ficha de cliente. |
+| [11-FASE11-AUDITORIA-FLUJO-OPERATIVO-Y-CALCULOS.md](./11-FASE11-AUDITORIA-FLUJO-OPERATIVO-Y-CALCULOS.md) | Unificación de fórmulas de certificados, confirmación de pagos, cobro con obra en cuenta corriente y cuadrillas. |
