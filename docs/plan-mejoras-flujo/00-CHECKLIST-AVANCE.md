@@ -335,7 +335,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Detalle:** Unificar la fórmula proporcional de descuentos en `OrdenEmisionCertificadoModal.vue` con la lógica del backend (`issuance.rs`), garantizando que la previsualización coincida centavo a centavo con el certificado emitido. Agregar enlaces rápidos en la lista de certificados de la orden.
   - **Criterio de aceptación:** El modal calcula exactamente el mismo importe neto que emitirá el backend.
 
-- [ ] **11.2. Confirmación Segura en Eliminación de Cobros**
+- [x] **11.2. Confirmación Segura en Eliminación de Cobros**
   - **Archivos:** `src/views/facturas/components/FacturaPagosModal.vue`.
   - **Detalle:** Solicitar confirmación modal explícita antes de eliminar un pago (`borrarPago`), previniendo la anulación accidental del cobro y del asiento en caja.
   - **Criterio de aceptación:** La eliminación requiere confirmación explícita con fecha, medio y monto.

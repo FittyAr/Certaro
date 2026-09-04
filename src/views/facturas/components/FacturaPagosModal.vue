@@ -16,6 +16,7 @@ import StatePill from '@/components/domain/StatePill.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
+import { useConfirmDelete } from '@/composables/useConfirmDelete'
 import type { LookupItem } from '@/stores/useCatalogStore'
 import { useMovimientosStore } from '@/stores/useMovimientosStore'
 import { useProyectosStore } from '@/stores/useProyectosStore'
@@ -39,6 +40,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const { fieldErrors, notify } = useApiError()
+const { confirmDelete } = useConfirmDelete()
 const store = useFacturasStore()
 const movimientosStore = useMovimientosStore()
 const proyectosStore = useProyectosStore()
@@ -186,13 +188,15 @@ async function registrarPago(): Promise<void> {
   }
 }
 
-async function borrarPago(id: string, rowVersion: string): Promise<void> {
-  try {
-    factura.value = await store.borrarPago(id, rowVersion)
-    emit('pagoModificado')
-  } catch (e) {
-    notify(e)
-  }
+function borrarPago(pago: { id: string; rowVersion: string; fecha: string; medioPago: string; monto: string }): void {
+  confirmDelete({
+    entityKey: 'Facturas.Pagos',
+    label: `${pago.fecha} · ${pago.medioPago} ($${pago.monto})`,
+    action: async () => {
+      factura.value = await store.borrarPago(pago.id, pago.rowVersion)
+      emit('pagoModificado')
+    },
+  })
 }
 </script>
 
@@ -230,7 +234,7 @@ async function borrarPago(id: string, rowVersion: string): Promise<void> {
         </Column>
         <Column>
           <template #body="{ data }">
-            <Button variant="ghost" size="sm" @click="borrarPago(data.id, data.rowVersion)">
+            <Button variant="ghost" size="sm" @click="borrarPago(data)">
               <AppIcon name="trash-2" :size="14" />
             </Button>
           </template>
