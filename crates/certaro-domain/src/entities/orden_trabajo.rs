@@ -48,7 +48,7 @@ impl OrdenTrabajo {
         })
     }
 
-    /// The UOCRA adjustment as an amount. It is a discount, so the net subtracts it.
+    /// The UOCRA adjustment as an amount. It is an addition/escalation on the certified amount.
     pub fn ajuste_uocra(&self) -> Result<Money, DomainError> {
         self.total_certificado()?
             .percent(self.ajuste_uocra_porcentaje)
@@ -56,7 +56,7 @@ impl OrdenTrabajo {
 
     pub fn total_neto(&self) -> Result<Money, DomainError> {
         self.total_certificado()?
-            .checked_sub(self.ajuste_uocra()?)?
+            .checked_add(self.ajuste_uocra()?)?
             .checked_sub(self.otros_descuentos)
     }
 
@@ -203,14 +203,15 @@ mod tests {
     }
 
     #[test]
-    fn el_ajuste_uocra_resta() {
+    fn el_ajuste_uocra_suma_al_neto() {
         let o = orden(vec![item("4200", "1000", "0", "60")], "8", "20000");
         assert_eq!(
             o.total_certificado().unwrap(),
             Money::parse("2520000").unwrap()
         );
         assert_eq!(o.ajuste_uocra().unwrap(), Money::parse("201600").unwrap());
-        assert_eq!(o.total_neto().unwrap(), Money::parse("2298400").unwrap());
+        // 2520000 + 201600 - 20000 = 2701600
+        assert_eq!(o.total_neto().unwrap(), Money::parse("2701600").unwrap());
     }
 
     #[test]

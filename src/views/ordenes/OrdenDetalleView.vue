@@ -154,7 +154,7 @@ const totalNetoAEmitir = computed(() => {
   const bruto = Number(totalCertificadoAEmitir.value)
   const uocra = Number(ajusteUocraAEmitir.value)
   const otros = Number(otrosDescuentosAEmitir.value)
-  return Math.max(0, bruto - uocra - otros).toFixed(4)
+  return Math.max(0, bruto + uocra - otros).toFixed(4)
 })
 
 const hayExcedidos = computed(() => borrador.value?.items.some(excede) ?? false)
@@ -439,8 +439,8 @@ onMounted(cargar)
             <dd><MoneyText :value="totalCertificadoAEmitir" /></dd>
           </div>
           <div v-if="Number(ajusteUocraAEmitir) > 0" class="flex justify-between text-muted-foreground">
-            <dt>{{ $t('Certificados.AjusteUocra') }} ({{ borrador.ajusteUocraPorcentaje }}%)</dt>
-            <dd>- <MoneyText :value="ajusteUocraAEmitir" /></dd>
+            <dt>{{ $t('Certificados.AjusteUocra') }} (+{{ borrador.ajusteUocraPorcentaje }}%)</dt>
+            <dd>+ <MoneyText :value="ajusteUocraAEmitir" /></dd>
           </div>
           <div v-if="Number(otrosDescuentosAEmitir) > 0" class="flex justify-between text-muted-foreground">
             <dt>{{ $t('Certificados.OtrosDescuentos') }}</dt>

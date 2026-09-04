@@ -219,7 +219,7 @@ impl CertificadosService {
                 descuento_disponible
             };
 
-            let neto_previo = total_certificado.checked_sub(ajuste_uocra)?;
+            let neto_previo = total_certificado.checked_add(ajuste_uocra)?;
             let otros_descuentos = descuento_a_aplicar.min(neto_previo);
             let total_neto = neto_previo.checked_sub(otros_descuentos)?;
 

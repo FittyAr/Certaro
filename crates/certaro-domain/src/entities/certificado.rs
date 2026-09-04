@@ -40,7 +40,7 @@ impl Certificado {
     /// this is corrupt data, not a rounding difference.
     pub fn total_neto_calculado(&self) -> Result<Money, DomainError> {
         self.total_certificado
-            .checked_sub(self.ajuste_uocra)?
+            .checked_add(self.ajuste_uocra)?
             .checked_sub(self.otros_descuentos)
     }
 
