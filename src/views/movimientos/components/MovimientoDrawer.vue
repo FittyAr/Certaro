@@ -3,7 +3,6 @@ import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import { computed, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
 
 import CrudDrawer from '@/components/domain/CrudDrawer.vue'
 import DateInput from '@/components/domain/DateInput.vue'
@@ -11,9 +10,11 @@ import FieldError from '@/components/domain/FieldError.vue'
 import MoneyInput from '@/components/domain/MoneyInput.vue'
 import { useCrudDrawer } from '@/composables/useCrudDrawer'
 import type { LookupItem } from '@/stores/useCatalogStore'
-import { useMovimientosStore, type Moneda, type MovimientoInput } from '@/stores/useMovimientosStore'
+import { useMovimientosStore, type MovimientoInput } from '@/stores/useMovimientosStore'
 import { useProyectosStore } from '@/stores/useProyectosStore'
 import { useTrabajosStore } from '@/stores/useTrabajosStore'
+import MovimientoImputacionSection from './MovimientoImputacionSection.vue'
+import MovimientoMonedaSection from './MovimientoMonedaSection.vue'
 
 const props = defineProps<{
   tipos: LookupItem[]
@@ -27,7 +28,6 @@ const emit = defineEmits<{
   (e: 'saved'): void
 }>()
 
-const { t } = useI18n()
 const store = useMovimientosStore()
 const proyectos = useProyectosStore()
 const trabajos = useTrabajosStore()
@@ -149,13 +149,6 @@ const drawer = useCrudDrawer<MovimientoInput & { rowVersion?: string }>({
 })
 
 const esAdelanto = computed(() => drawer.model.value.tipoMovimientoId === ADELANTO_ID)
-
-const monedaOptions = computed<{ label: string; value: Moneda }[]>(() => [
-  { label: t('Movimientos.Moneda.Ars'), value: 'Ars' },
-  { label: t('Movimientos.Moneda.Usd'), value: 'Usd' },
-])
-
-const pideCotizacion = computed(() => drawer.model.value.moneda === 'Usd')
 
 watch(
   () => props.opcionesProyecto,
@@ -289,88 +282,21 @@ defineExpose({
       <FieldError id="mov-categoria-error" :message="drawer.fieldErrors.value.categoriaId" />
     </label>
 
-    <!-- Imputación opcional a Cliente / Proyecto / Trabajo -->
-    <div class="space-y-3 rounded-md border border-border/70 bg-muted/20 p-3">
-      <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {{ $t('Movimientos.ImputacionOpcional') }}
-      </span>
+    <MovimientoImputacionSection
+      v-model:cliente-id="drawer.model.value.clienteId"
+      v-model:selected-proyecto-id="selectedProyectoId"
+      v-model:trabajo-id="drawer.model.value.trabajoId"
+      :opciones-cliente="opcionesCliente"
+      :opciones-proyecto="opcionesProyecto"
+      :opciones-trabajo="opcionesTrabajo"
+      @cliente-change="onClienteChange"
+      @proyecto-change="onProyectoChange"
+    />
 
-      <label class="flex flex-col gap-1">
-        <span class="text-xs text-muted-foreground">{{ $t('Movimientos.Cliente') }}</span>
-        <Select
-          v-model="drawer.model.value.clienteId"
-          :options="opcionesCliente"
-          option-label="label"
-          option-value="id"
-          filter
-          show-clear
-          :placeholder="$t('General.None')"
-          @change="onClienteChange()"
-        />
-      </label>
-
-      <div class="grid grid-cols-2 gap-3">
-        <label class="flex flex-col gap-1">
-          <span class="text-xs text-muted-foreground">{{ $t('Movimientos.Proyecto') }}</span>
-          <Select
-            v-model="selectedProyectoId"
-            :options="opcionesProyecto"
-            option-label="label"
-            option-value="id"
-            filter
-            show-clear
-            :placeholder="$t('General.None')"
-            @change="onProyectoChange()"
-          />
-        </label>
-
-        <label class="flex flex-col gap-1">
-          <span class="text-xs text-muted-foreground">{{ $t('Movimientos.Trabajo') }}</span>
-          <Select
-            v-model="drawer.model.value.trabajoId"
-            :options="opcionesTrabajo"
-            option-label="label"
-            option-value="id"
-            filter
-            show-clear
-            :placeholder="$t('General.None')"
-            :disabled="!selectedProyectoId && opcionesTrabajo.length === 0"
-          />
-        </label>
-      </div>
-      <p
-        v-if="selectedProyectoId && opcionesTrabajo.length === 0"
-        class="rounded-md border border-warning/30 bg-warning/10 p-2 text-xs text-warning"
-      >
-        {{ $t('Movimientos.ProyectoSinTrabajosAviso') || 'Este proyecto no tiene trabajos creados aún. Recuerda crear al menos un trabajo en el proyecto para que los gastos se imputen a la caja y rentabilidad de la obra.' }}
-      </p>
-    </div>
-
-    <div class="grid grid-cols-2 gap-3">
-      <label class="flex flex-col gap-1">
-        <span class="text-sm">{{ $t('Movimientos.Moneda.Label') }}</span>
-        <Select
-          v-model="drawer.model.value.moneda"
-          :options="monedaOptions"
-          option-label="label"
-          option-value="value"
-          @change="!pideCotizacion && (drawer.model.value.cotizacionAplicada = null)"
-        />
-      </label>
-
-      <label v-if="pideCotizacion" class="flex flex-col gap-1">
-        <span class="text-sm">{{ $t('Movimientos.Cotizacion') }}</span>
-        <MoneyInput
-          :model-value="drawer.model.value.cotizacionAplicada ?? '0.0000'"
-          :min="0"
-          :invalid="Boolean(drawer.fieldErrors.value.cotizacionAplicada)"
-          @update:model-value="(value) => (drawer.model.value.cotizacionAplicada = value)"
-        />
-        <FieldError
-          id="mov-cotizacion-error"
-          :message="drawer.fieldErrors.value.cotizacionAplicada"
-        />
-      </label>
-    </div>
+    <MovimientoMonedaSection
+      v-model:moneda="drawer.model.value.moneda"
+      v-model:cotizacion-aplicada="drawer.model.value.cotizacionAplicada"
+      :field-error-cotizacion="drawer.fieldErrors.value.cotizacionAplicada"
+    />
   </CrudDrawer>
 </template>
