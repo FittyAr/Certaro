@@ -601,7 +601,10 @@
     "Categoria": "Expense category",
     "MedioPago": "Payment method",
     "ImputarProyecto": "Attribute to project (optional)",
-    "ImputarTrabajo": "Project job"
+    "ImputarTrabajo": "Project job",
+    "ImputacionIndividual": "Attribute to project / job (optional)",
+    "ImputarLoteGeneral": "General batch attribution",
+    "MovimientosMultiples": "Individual cash movements will be recorded to attribute labor expenses to each worker's assigned project."
   },
   "MedioPago": {
     "Cheque": "Cheque",

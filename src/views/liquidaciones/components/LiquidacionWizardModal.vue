@@ -51,6 +51,7 @@ const pagoProyectoId = ref<string | null>(null)
 const pagoTrabajoId = ref<string | null>(null)
 const opcionesProyecto = ref<LookupItem[]>([])
 const opcionesTrabajo = ref<LookupItem[]>([])
+const trabajosPorProyecto = ref<Record<string, LookupItem[]>>({})
 
 const mediosPagoOpciones = [
   { label: 'Transferencia Bancaria', value: 'Transferencia' },
@@ -58,19 +59,41 @@ const mediosPagoOpciones = [
   { label: 'Cheque', value: 'Cheque' },
 ]
 
+async function cargarTrabajosProyecto(proyectoId: string): Promise<LookupItem[]> {
+  if (trabajosPorProyecto.value[proyectoId]) {
+    return trabajosPorProyecto.value[proyectoId]
+  }
+  try {
+    const list = await trabajos.lookup(proyectoId)
+    trabajosPorProyecto.value[proyectoId] = list
+    return list
+  } catch {
+    trabajosPorProyecto.value[proyectoId] = []
+    return []
+  }
+}
+
 async function onProyectoChange(): Promise<void> {
   pagoTrabajoId.value = null
   if (!pagoProyectoId.value) {
     opcionesTrabajo.value = []
     return
   }
-  try {
-    opcionesTrabajo.value = await trabajos.lookup(pagoProyectoId.value)
-    if (opcionesTrabajo.value.length > 0 && opcionesTrabajo.value[0]) {
-      pagoTrabajoId.value = opcionesTrabajo.value[0].id
+  opcionesTrabajo.value = await cargarTrabajosProyecto(pagoProyectoId.value)
+  if (opcionesTrabajo.value.length > 0 && opcionesTrabajo.value[0]) {
+    pagoTrabajoId.value = opcionesTrabajo.value[0].id
+  }
+}
+
+async function onEmpleadoProyectoChange(empleadoId: string, proyectoId: string | null): Promise<void> {
+  const aj = ajustes.value[empleadoId]
+  if (!aj) return
+  aj.trabajoId = null
+  if (proyectoId) {
+    const trs = await cargarTrabajosProyecto(proyectoId)
+    if (trs.length > 0 && trs[0]) {
+      aj.trabajoId = trs[0].id
     }
-  } catch {
-    opcionesTrabajo.value = []
   }
 }
 
@@ -92,6 +115,7 @@ async function inicializarWizard(): Promise<void> {
   seleccion.value = []
   periodo.value = { desde: primerDiaDelMes(), hasta: hoy() }
   ajustes.value = {}
+  trabajosPorProyecto.value = {}
   store.sugerencias = []
   registrarEnCaja.value = true
   medioPago.value = 'Transferencia'
@@ -145,6 +169,8 @@ async function calcular(): Promise<void> {
           adelantosIncluidos: new Set(
             s.adelantos.filter((a) => a.incluir).map((a) => a.movimientoId),
           ),
+          proyectoId: null,
+          trabajoId: null,
         },
       ]),
     )
@@ -163,6 +189,8 @@ function ajusteDe(empleadoId: string): Ajuste {
       tarifaAplicada: '0.0000',
       observaciones: null,
       adelantosIncluidos: new Set<string>(),
+      proyectoId: null,
+      trabajoId: null,
     }
   )
 }
@@ -230,6 +258,10 @@ function dtoDe(s: LiquidacionSugerencia): LiquidacionInput {
   }
 }
 
+const hayImputacionIndividual = computed(() =>
+  store.sugerencias.some((s) => Boolean(ajusteDe(s.empleadoId).proyectoId)),
+)
+
 async function confirmar(): Promise<void> {
   if (guardando.value) return
   guardando.value = true
@@ -238,36 +270,75 @@ async function confirmar(): Promise<void> {
 
     if (registrarEnCaja.value && Number(totalNetoDelLote.value) > 0) {
       try {
-        const count = store.sugerencias.length
-        const nombres = store.sugerencias.map((s) => s.empleadoNombre).slice(0, 3).join(', ')
-        const sufijo = count > 3 ? ` y ${count - 3} más` : ''
-        const concepto = `Pago de sueldos: ${nombres}${sufijo} (${periodo.value.desde} al ${periodo.value.hasta}) · ${medioPago.value}`
+        const fechaIso = new Date().toISOString()
+        const clientesCache = new Map<string, string | null>()
 
-        let imputacionClienteId: string | null = null
-        if (pagoProyectoId.value) {
+        async function resolverClienteId(proyId: string | null): Promise<string | null> {
+          if (!proyId) return null
+          if (clientesCache.has(proyId)) return clientesCache.get(proyId)!
           try {
-            const p = await proyectos.fetchOne(pagoProyectoId.value)
-            imputacionClienteId = p?.clienteId ?? null
+            const p = await proyectos.fetchOne(proyId)
+            const cId = p?.clienteId ?? null
+            clientesCache.set(proyId, cId)
+            return cId
           } catch {
-            // ignore
+            clientesCache.set(proyId, null)
+            return null
           }
         }
 
-        await movimientosStore.create({
-          fecha: new Date().toISOString(),
-          concepto,
-          monto: totalNetoDelLote.value,
-          cantidad: '1.0000',
-          tipoMovimientoId: '00000000-0000-0000-0000-000000000002', // Gasto
-          moneda: 'Ars',
-          cotizacionAplicada: null,
-          tipoConceptoPagoId: '00000000-0000-0000-0000-000000000103', // Liquidación
-          categoriaId: categoriaGastoId.value,
-          clienteId: imputacionClienteId,
-          trabajoId: pagoTrabajoId.value,
-          empleadoId: count === 1 ? (store.sugerencias[0]?.empleadoId ?? null) : null,
-          facturaId: null,
-        })
+        if (hayImputacionIndividual.value) {
+          // Record individual cash movements per employee to properly impute labor costs to each site
+          for (const s of store.sugerencias) {
+            const aj = ajusteDe(s.empleadoId)
+            const netoEmpleado = (Number(dtoDe(s).totalBruto) - Number(totalAdelantosDe(s))).toFixed(4)
+            if (Number(netoEmpleado) <= 0) continue
+
+            const proyId = aj.proyectoId || pagoProyectoId.value
+            const trabId = aj.proyectoId ? (aj.trabajoId || null) : (pagoTrabajoId.value || null)
+            const clienteId = await resolverClienteId(proyId)
+            const concepto = `Pago de sueldo: ${s.empleadoNombre} (${periodo.value.desde} al ${periodo.value.hasta}) · ${medioPago.value}`
+
+            await movimientosStore.create({
+              fecha: fechaIso,
+              concepto,
+              monto: netoEmpleado,
+              cantidad: '1.0000',
+              tipoMovimientoId: '00000000-0000-0000-0000-000000000002', // Gasto
+              moneda: 'Ars',
+              cotizacionAplicada: null,
+              tipoConceptoPagoId: '00000000-0000-0000-0000-000000000103', // Liquidación
+              categoriaId: categoriaGastoId.value,
+              clienteId,
+              trabajoId: trabId,
+              empleadoId: s.empleadoId,
+              facturaId: null,
+            })
+          }
+        } else {
+          // Unified batch cash movement
+          const count = store.sugerencias.length
+          const nombres = store.sugerencias.map((s) => s.empleadoNombre).slice(0, 3).join(', ')
+          const sufijo = count > 3 ? ` y ${count - 3} más` : ''
+          const concepto = `Pago de sueldos: ${nombres}${sufijo} (${periodo.value.desde} al ${periodo.value.hasta}) · ${medioPago.value}`
+          const clienteId = await resolverClienteId(pagoProyectoId.value)
+
+          await movimientosStore.create({
+            fecha: fechaIso,
+            concepto,
+            monto: totalNetoDelLote.value,
+            cantidad: '1.0000',
+            tipoMovimientoId: '00000000-0000-0000-0000-000000000002', // Gasto
+            moneda: 'Ars',
+            cotizacionAplicada: null,
+            tipoConceptoPagoId: '00000000-0000-0000-0000-000000000103', // Liquidación
+            categoriaId: categoriaGastoId.value,
+            clienteId,
+            trabajoId: pagoTrabajoId.value,
+            empleadoId: count === 1 ? (store.sugerencias[0]?.empleadoId ?? null) : null,
+            facturaId: null,
+          })
+        }
       } catch (movErr) {
         notify(movErr)
       }
@@ -315,7 +386,10 @@ const totalNetoDelLote = computed(() =>
         :ajuste="ajusteDe(s.empleadoId)"
         :total-bruto="dtoDe(s).totalBruto"
         :total-neto="(Number(dtoDe(s).totalBruto) - Number(totalAdelantosDe(s))).toFixed(4)"
+        :opciones-proyecto="opcionesProyecto"
+        :opciones-trabajo="ajusteDe(s.empleadoId).proyectoId ? (trabajosPorProyecto[ajusteDe(s.empleadoId).proyectoId!] ?? []) : []"
         @alternar-adelanto="(movId) => alternarAdelanto(s.empleadoId, movId)"
+        @proyecto-change="(proyId) => onEmpleadoProyectoChange(s.empleadoId, proyId)"
       />
     </div>
 
@@ -326,6 +400,7 @@ const totalNetoDelLote = computed(() =>
       :dto-de="dtoDe"
       :total-adelantos-de="totalAdelantosDe"
       :total-neto-del-lote="totalNetoDelLote"
+      :hay-imputacion-individual="hayImputacionIndividual"
       v-model:registrar-en-caja="registrarEnCaja"
       v-model:medio-pago="medioPago"
       v-model:categoria-gasto-id="categoriaGastoId"

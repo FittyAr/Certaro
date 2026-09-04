@@ -601,7 +601,10 @@
     "Categoria": "Categoría de gasto",
     "MedioPago": "Medio de pago",
     "ImputarProyecto": "Imputar a proyecto (opcional)",
-    "ImputarTrabajo": "Trabajo de la obra"
+    "ImputarTrabajo": "Trabajo de la obra",
+    "ImputacionIndividual": "Imputar a obra / trabajo (opcional)",
+    "ImputarLoteGeneral": "Imputación general del lote",
+    "MovimientosMultiples": "Se registrarán egresos individuales en caja para imputar la mano de obra según la obra configurada para cada operario."
   },
   "MedioPago": {
     "Cheque": "Cheque",

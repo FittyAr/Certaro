@@ -7,6 +7,8 @@ import DateText from '@/components/domain/DateText.vue'
 import DecimalInput from '@/components/domain/DecimalInput.vue'
 import MoneyInput from '@/components/domain/MoneyInput.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
+import Select from 'primevue/select'
+import type { LookupItem } from '@/stores/useCatalogStore'
 import type { LiquidacionSugerencia } from '@/stores/useLiquidacionesStore'
 
 export interface AjusteLiquidacion {
@@ -14,6 +16,8 @@ export interface AjusteLiquidacion {
   tarifaAplicada: string
   observaciones: string | null
   adelantosIncluidos: Set<string>
+  proyectoId?: string | null
+  trabajoId?: string | null
 }
 
 const props = defineProps<{
@@ -21,10 +25,13 @@ const props = defineProps<{
   ajuste: AjusteLiquidacion
   totalBruto: string
   totalNeto: string
+  opcionesProyecto?: LookupItem[]
+  opcionesTrabajo?: LookupItem[]
 }>()
 
 const emit = defineEmits<{
   (e: 'alternarAdelanto', movimientoId: string): void
+  (e: 'proyectoChange', proyectoId: string | null): void
 }>()
 
 const recargosActuales = computed(() => {
@@ -102,6 +109,35 @@ const esNetoNegativo = computed(() => Number(props.totalNeto) < 0)
         <span v-if="adelanto.yaDescontado">
           {{ $t('Liquidaciones.YaDescontado') }}
         </span>
+      </label>
+    </div>
+
+    <div v-if="opcionesProyecto && opcionesProyecto.length > 0" class="grid grid-cols-1 gap-3 sm:grid-cols-2 rounded border border-border/50 bg-muted/20 p-2.5">
+      <label class="flex flex-col gap-1 text-xs">
+        <span class="text-muted-foreground">{{ $t('Liquidaciones.ImputarProyecto') }}</span>
+        <Select
+          :model-value="ajuste.proyectoId"
+          :options="opcionesProyecto"
+          option-label="label"
+          option-value="id"
+          filter
+          show-clear
+          :placeholder="$t('General.None')"
+          @update:model-value="(val) => { ajuste.proyectoId = val; emit('proyectoChange', val) }"
+        />
+      </label>
+      <label class="flex flex-col gap-1 text-xs">
+        <span class="text-muted-foreground">{{ $t('Liquidaciones.ImputarTrabajo') }}</span>
+        <Select
+          v-model="ajuste.trabajoId"
+          :options="opcionesTrabajo ?? []"
+          option-label="label"
+          option-value="id"
+          filter
+          show-clear
+          :placeholder="$t('General.None')"
+          :disabled="!ajuste.proyectoId && (opcionesTrabajo?.length ?? 0) === 0"
+        />
       </label>
     </div>
 

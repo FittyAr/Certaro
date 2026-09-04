@@ -19,6 +19,7 @@ defineProps<{
   opcionesProyecto: LookupItem[]
   opcionesTrabajo: LookupItem[]
   mediosPagoOpciones: { label: string; value: string }[]
+  hayImputacionIndividual?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -64,58 +65,66 @@ const emit = defineEmits<{
         <span>{{ $t('Liquidaciones.RegistrarEnCaja') }}</span>
       </label>
 
-      <div v-if="registrarEnCaja" class="grid grid-cols-1 gap-3 sm:grid-cols-2 pt-1">
-        <label class="flex flex-col gap-1 text-xs">
-          <span class="text-muted-foreground">{{ $t('Liquidaciones.MedioPago') }}</span>
-          <Select
-            :model-value="medioPago"
-            :options="mediosPagoOpciones"
-            option-label="label"
-            option-value="value"
-            @update:model-value="emit('update:medioPago', $event)"
-          />
-        </label>
-        <label class="flex flex-col gap-1 text-xs">
-          <span class="text-muted-foreground">{{ $t('Liquidaciones.Categoria') }}</span>
-          <Select
-            :model-value="categoriaGastoId"
-            :options="categoriasOpciones"
-            option-label="label"
-            option-value="id"
-            filter
-            show-clear
-            placeholder="Seleccionar categoría"
-            @update:model-value="emit('update:categoriaGastoId', $event)"
-          />
-        </label>
-        <label class="flex flex-col gap-1 text-xs">
-          <span class="text-muted-foreground">{{ $t('Liquidaciones.ImputarProyecto') }}</span>
-          <Select
-            :model-value="pagoProyectoId"
-            :options="opcionesProyecto"
-            option-label="label"
-            option-value="id"
-            filter
-            show-clear
-            :placeholder="$t('General.None')"
-            @update:model-value="emit('update:pagoProyectoId', $event)"
-            @change="emit('proyectoChange')"
-          />
-        </label>
-        <label class="flex flex-col gap-1 text-xs">
-          <span class="text-muted-foreground">{{ $t('Liquidaciones.ImputarTrabajo') }}</span>
-          <Select
-            :model-value="pagoTrabajoId"
-            :options="opcionesTrabajo"
-            option-label="label"
-            option-value="id"
-            filter
-            show-clear
-            :placeholder="$t('General.None')"
-            :disabled="!pagoProyectoId && opcionesTrabajo.length === 0"
-            @update:model-value="emit('update:pagoTrabajoId', $event)"
-          />
-        </label>
+      <div v-if="registrarEnCaja" class="pt-1 space-y-3">
+        <div v-if="hayImputacionIndividual" class="rounded border border-primary/30 bg-primary/10 p-2.5 text-xs text-primary flex items-center gap-2">
+          <span>ℹ️ {{ $t('Liquidaciones.MovimientosMultiples') }}</span>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label class="flex flex-col gap-1 text-xs">
+            <span class="text-muted-foreground">{{ $t('Liquidaciones.MedioPago') }}</span>
+            <Select
+              :model-value="medioPago"
+              :options="mediosPagoOpciones"
+              option-label="label"
+              option-value="value"
+              @update:model-value="emit('update:medioPago', $event)"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-xs">
+            <span class="text-muted-foreground">{{ $t('Liquidaciones.Categoria') }}</span>
+            <Select
+              :model-value="categoriaGastoId"
+              :options="categoriasOpciones"
+              option-label="label"
+              option-value="id"
+              filter
+              show-clear
+              placeholder="Seleccionar categoría"
+              @update:model-value="emit('update:categoriaGastoId', $event)"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-xs">
+            <span class="text-muted-foreground">
+              {{ hayImputacionIndividual ? $t('Liquidaciones.ImputarLoteGeneral') : $t('Liquidaciones.ImputarProyecto') }}
+            </span>
+            <Select
+              :model-value="pagoProyectoId"
+              :options="opcionesProyecto"
+              option-label="label"
+              option-value="id"
+              filter
+              show-clear
+              :placeholder="$t('General.None')"
+              @update:model-value="emit('update:pagoProyectoId', $event)"
+              @change="emit('proyectoChange')"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-xs">
+            <span class="text-muted-foreground">{{ $t('Liquidaciones.ImputarTrabajo') }}</span>
+            <Select
+              :model-value="pagoTrabajoId"
+              :options="opcionesTrabajo"
+              option-label="label"
+              option-value="id"
+              filter
+              show-clear
+              :placeholder="$t('General.None')"
+              :disabled="!pagoProyectoId && opcionesTrabajo.length === 0"
+              @update:model-value="emit('update:pagoTrabajoId', $event)"
+            />
+          </label>
+        </div>
       </div>
     </div>
   </div>
