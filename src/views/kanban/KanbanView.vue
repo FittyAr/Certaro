@@ -25,6 +25,9 @@ import DeleteColumnModal from './components/DeleteColumnModal.vue'
 import StrictDeleteBoardModal from './components/StrictDeleteBoardModal.vue'
 import ChecklistModal from './components/ChecklistModal.vue'
 
+import { useKanbanModals } from './composables/useKanbanModals'
+import { useKanbanDragAndDrop } from './composables/useKanbanDragAndDrop'
+
 const { t } = useI18n()
 const route = useRoute()
 const store = useKanbanStore()
@@ -41,20 +44,42 @@ const selectedPrioridad = ref<string>('all')
 const selectedProyectoId = ref<string>('all')
 const proyectosOptions = ref<{ label: string; value: string }[]>([])
 
-// Pointer-based Drag & Drop State
-type DragType = 'card' | 'column' | null
-const dragType = ref<DragType>(null)
-const draggingCard = ref<KanbanTarjetaDto | null>(null)
-const draggingColumn = ref<KanbanColumnaDto | null>(null)
-const dragPosition = ref({ x: 0, y: 0 })
-const dragHoverColumnaId = ref<Uuid | null>(null)
-const dragHoverCardId = ref<Uuid | null>(null)
-
-let startX = 0
-let startY = 0
-let activeCard: KanbanTarjetaDto | null = null
-let activeColumn: KanbanColumnaDto | null = null
-let hasMovedEnough = false
+// Modals management composable
+const {
+  showCardModal,
+  editingCard,
+  cardFormColumnaId,
+  showColumnModal,
+  editingColumn,
+  showBoardModal,
+  editingBoard,
+  showManageBoardsModal,
+  showDeleteColModal,
+  colToDelete,
+  showStrictDeleteBoardModal,
+  boardToDelete,
+  showChecklistModal,
+  checklistCard,
+  checklistItems,
+  openCreateCard,
+  openEditCard,
+  handleSaveCard,
+  removeCard,
+  openCreateColumn,
+  openEditColumn,
+  handleSaveColumn,
+  confirmDeleteColumna,
+  executeDeleteColumn,
+  openCreateBoard,
+  openEditBoard,
+  handleSaveBoard,
+  handleDeleteBoardPrompt,
+  executeStrictDeleteBoard,
+  openChecklist,
+  handleAddChecklist,
+  handleToggleChecklist,
+  handleRemoveChecklist,
+} = useKanbanModals(store)
 
 // Context Menus
 const cardMenuRef = ref<InstanceType<typeof ContextMenu> | null>(null)
@@ -64,29 +89,6 @@ const boardMenuRef = ref<InstanceType<typeof ContextMenu> | null>(null)
 const contextCard = ref<KanbanTarjetaDto | null>(null)
 const contextColumn = ref<KanbanColumnaDto | null>(null)
 const contextBoard = ref<KanbanTableroDto | null>(null)
-
-// Modals State
-const showCardModal = ref(false)
-const editingCard = ref<KanbanTarjetaDto | null>(null)
-const cardFormColumnaId = ref<Uuid>('')
-
-const showColumnModal = ref(false)
-const editingColumn = ref<KanbanColumnaDto | null>(null)
-
-const showBoardModal = ref(false)
-const editingBoard = ref<KanbanTableroDto | null>(null)
-
-const showManageBoardsModal = ref(false)
-
-const showDeleteColModal = ref(false)
-const colToDelete = ref<KanbanColumnaDto | null>(null)
-
-const showStrictDeleteBoardModal = ref(false)
-const boardToDelete = ref<KanbanTableroDto | null>(null)
-
-const showChecklistModal = ref(false)
-const checklistCard = ref<KanbanTarjetaDto | null>(null)
-const checklistItems = ref<any[]>([])
 
 onMounted(async () => {
   await store.fetchTableros()
@@ -158,6 +160,25 @@ function getPriorityClass(p: PrioridadTarjeta) {
       return 'bg-primary/10 text-primary border-primary/30'
   }
 }
+
+// Drag & Drop Composable
+const {
+  draggingCard,
+  draggingColumn,
+  dragPosition,
+  dragHoverColumnaId,
+  dragHoverCardId,
+  onCardPointerDown,
+  onColumnPointerDown,
+  moverColumna,
+} = useKanbanDragAndDrop({
+  store,
+  canMove,
+  canManage,
+  sortedColumnas,
+  getTarjetasPorColumna,
+  onCardClickToEdit: openEditCard,
+})
 
 // -------------------------------------------------------------
 // Context Menus
@@ -326,411 +347,6 @@ const boardMenuItems = computed(() => {
     },
   ]
 })
-
-// -------------------------------------------------------------
-// Pointer Dragging for CARDS & COLUMNS
-// -------------------------------------------------------------
-function onCardPointerDown(e: PointerEvent, card: KanbanTarjetaDto) {
-  if (!canMove.value || e.button !== 0) return
-  const target = e.target as HTMLElement | null
-  if (target && target.closest('button, input, select, textarea, a')) return
-
-  startX = e.clientX
-  startY = e.clientY
-  activeCard = card
-  activeColumn = null
-  hasMovedEnough = false
-  dragType.value = null
-
-  window.addEventListener('pointermove', onGlobalPointerMove)
-  window.addEventListener('pointerup', onGlobalPointerUp)
-}
-
-function onColumnPointerDown(e: PointerEvent, col: KanbanColumnaDto) {
-  if (!canManage.value || e.button !== 0) return
-  const target = e.target as HTMLElement | null
-  if (target && target.closest('button, input, select, textarea, a')) return
-
-  startX = e.clientX
-  startY = e.clientY
-  activeColumn = col
-  activeCard = null
-  hasMovedEnough = false
-  dragType.value = null
-
-  window.addEventListener('pointermove', onGlobalPointerMove)
-  window.addEventListener('pointerup', onGlobalPointerUp)
-}
-
-function onGlobalPointerMove(e: PointerEvent) {
-  const dx = e.clientX - startX
-  const dy = e.clientY - startY
-  const dist = Math.sqrt(dx * dx + dy * dy)
-
-  if (!hasMovedEnough && dist > 5) {
-    hasMovedEnough = true
-    if (activeCard) {
-      dragType.value = 'card'
-      draggingCard.value = activeCard
-    } else if (activeColumn) {
-      dragType.value = 'column'
-      draggingColumn.value = activeColumn
-    }
-  }
-
-  if (hasMovedEnough) {
-    dragPosition.value = { x: e.clientX, y: e.clientY }
-
-    const el = document.elementFromPoint(e.clientX, e.clientY)
-    const colEl = el?.closest('[data-columna-id]') as HTMLElement | null
-    if (colEl) {
-      const colId = colEl.getAttribute('data-columna-id') as Uuid
-      dragHoverColumnaId.value = colId
-
-      if (dragType.value === 'card') {
-        const cardEl = el?.closest('[data-card-id]') as HTMLElement | null
-        if (cardEl && cardEl.getAttribute('data-card-id') !== activeCard?.id) {
-          dragHoverCardId.value = cardEl.getAttribute('data-card-id') as Uuid
-        } else {
-          dragHoverCardId.value = null
-        }
-      }
-    } else {
-      dragHoverColumnaId.value = null
-      dragHoverCardId.value = null
-    }
-  }
-}
-
-async function onGlobalPointerUp(_e: PointerEvent) {
-  window.removeEventListener('pointermove', onGlobalPointerMove)
-  window.removeEventListener('pointerup', onGlobalPointerUp)
-
-  if (hasMovedEnough) {
-    // 1. Dropping a CARD
-    if (dragType.value === 'card' && draggingCard.value && dragHoverColumnaId.value) {
-      const card = draggingCard.value
-      const targetColId = dragHoverColumnaId.value
-      const targetCardId = dragHoverCardId.value
-      const origenColumnaId = card.columnaId
-
-      const colCards = getTarjetasPorColumna(targetColId).filter((c) => c.id !== card.id)
-
-      let nuevoOrden = colCards.length
-      if (targetCardId) {
-        const targetIdx = colCards.findIndex((c) => c.id === targetCardId)
-        if (targetIdx !== -1) {
-          colCards.splice(targetIdx, 0, card)
-          nuevoOrden = targetIdx
-        } else {
-          colCards.push(card)
-        }
-      } else {
-        colCards.push(card)
-      }
-
-      const tarjetaIdsEnDestino = colCards.map((c) => c.id)
-
-      try {
-        await store.reordenarTarjetas({
-          tarjetaId: card.id,
-          origenColumnaId,
-          destinoColumnaId: targetColId,
-          nuevoOrden,
-          tarjetaIdsEnDestino,
-        })
-      } catch (err: unknown) {
-        alert(err instanceof Error ? err.message : 'Error al mover tarjeta')
-      }
-    }
-
-    // 2. Dropping a COLUMN
-    if (dragType.value === 'column' && draggingColumn.value && dragHoverColumnaId.value && store.currentTableroId) {
-      const sourceCol = draggingColumn.value
-      const targetColId = dragHoverColumnaId.value
-
-      if (sourceCol.id !== targetColId) {
-        const cols = [...sortedColumnas.value]
-        const fromIdx = cols.findIndex((c) => c.id === sourceCol.id)
-        const toIdx = cols.findIndex((c) => c.id === targetColId)
-
-        if (fromIdx !== -1 && toIdx !== -1) {
-          const [moved] = cols.splice(fromIdx, 1)
-          if (moved) {
-            cols.splice(toIdx, 0, moved)
-            const newColumnaIds = cols.map((c) => c.id)
-            try {
-              await store.reordenarColumnas({
-                tableroId: store.currentTableroId,
-                columnaIds: newColumnaIds,
-              })
-            } catch (err: unknown) {
-              alert(err instanceof Error ? err.message : 'Error al reordenar columnas')
-            }
-          }
-        }
-      }
-    }
-  } else if (activeCard) {
-    openEditCard(activeCard)
-  }
-
-  activeCard = null
-  activeColumn = null
-  draggingCard.value = null
-  draggingColumn.value = null
-  dragHoverColumnaId.value = null
-  dragHoverCardId.value = null
-  hasMovedEnough = false
-  dragType.value = null
-}
-
-// -------------------------------------------------------------
-// Quick Button Column reordering
-// -------------------------------------------------------------
-async function moverColumna(col: KanbanColumnaDto, direccion: 'izq' | 'der') {
-  if (!canManage.value || !store.detalle || !store.currentTableroId) return
-  const cols = [...sortedColumnas.value]
-  const idx = cols.findIndex((c) => c.id === col.id)
-  if (idx === -1) return
-
-  const targetIdx = direccion === 'izq' ? idx - 1 : idx + 1
-  if (targetIdx < 0 || targetIdx >= cols.length) return
-
-  const [moved] = cols.splice(idx, 1)
-  if (!moved) return
-  cols.splice(targetIdx, 0, moved)
-
-  const newColumnaIds = cols.map((c) => c.id)
-
-  try {
-    await store.reordenarColumnas({
-      tableroId: store.currentTableroId,
-      columnaIds: newColumnaIds,
-    })
-  } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al reordenar columnas')
-  }
-}
-
-// -------------------------------------------------------------
-// Card CRUD Handlers
-// -------------------------------------------------------------
-function openCreateCard(columnaId: Uuid) {
-  editingCard.value = null
-  cardFormColumnaId.value = columnaId
-  showCardModal.value = true
-}
-
-function openEditCard(card: KanbanTarjetaDto) {
-  editingCard.value = card
-  cardFormColumnaId.value = card.columnaId
-  showCardModal.value = true
-}
-
-async function handleSaveCard(data: {
-  titulo: string
-  descripcion: string | null
-  prioridad: PrioridadTarjeta
-  fechaVencimiento: string | null
-  etiquetaIds: Uuid[]
-}) {
-  try {
-    if (editingCard.value) {
-      await store.updateTarjeta(editingCard.value.id, {
-        ...data,
-        rowVersion: editingCard.value.rowVersion,
-      })
-    } else {
-      await store.createTarjeta({
-        columnaId: cardFormColumnaId.value,
-        ...data,
-      })
-    }
-    showCardModal.value = false
-  } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al guardar tarjeta')
-  }
-}
-
-async function removeCard(card: KanbanTarjetaDto) {
-  if (!confirm(t('Kanban.ConfirmDeleteCard'))) return
-  try {
-    await store.deleteTarjeta(card.id, card.rowVersion)
-  } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al eliminar tarjeta')
-  }
-}
-
-// -------------------------------------------------------------
-// Column CRUD Handlers
-// -------------------------------------------------------------
-function openCreateColumn() {
-  editingColumn.value = null
-  showColumnModal.value = true
-}
-
-function openEditColumn(col: KanbanColumnaDto) {
-  editingColumn.value = col
-  showColumnModal.value = true
-}
-
-async function handleSaveColumn(data: {
-  nombre: string
-  color: string | null
-  orden: number
-  limiteWip: number | null
-}) {
-  if (!store.currentTableroId) return
-  try {
-    if (editingColumn.value) {
-      await store.updateColumna(editingColumn.value.id, {
-        ...data,
-        rowVersion: editingColumn.value.rowVersion,
-      })
-    } else {
-      await store.createColumna({
-        tableroId: store.currentTableroId,
-        ...data,
-      })
-    }
-    showColumnModal.value = false
-  } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al guardar columna')
-  }
-}
-
-function confirmDeleteColumna(col: KanbanColumnaDto) {
-  colToDelete.value = col
-  showDeleteColModal.value = true
-}
-
-async function executeDeleteColumn() {
-  if (!colToDelete.value) return
-  const col = colToDelete.value
-  showDeleteColModal.value = false
-  try {
-    await store.deleteColumna(col.id, col.rowVersion)
-  } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al eliminar columna')
-  }
-}
-
-// -------------------------------------------------------------
-// Board CRUD Handlers
-// -------------------------------------------------------------
-function openCreateBoard() {
-  editingBoard.value = null
-  showBoardModal.value = true
-}
-
-function openEditBoard(b: KanbanTableroDto) {
-  editingBoard.value = b
-  showBoardModal.value = true
-}
-
-async function handleSaveBoard(data: {
-  nombre: string
-  descripcion: string | null
-  color: string | null
-}) {
-  try {
-    if (editingBoard.value) {
-      await store.updateTablero(editingBoard.value.id, {
-        ...data,
-        activo: editingBoard.value.activo,
-        rowVersion: editingBoard.value.rowVersion,
-      })
-    } else {
-      await store.createTablero(data)
-    }
-    showBoardModal.value = false
-  } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al guardar tablero')
-  }
-}
-
-async function handleDeleteBoardPrompt(board: KanbanTableroDto) {
-  if (board.esPreset) {
-    alert('Los tableros presets del sistema no se pueden eliminar. Puedes ocultarlo usando la opción Ocultar.')
-    return
-  }
-
-  let cardCount = 0
-  if (store.currentTableroId === board.id && store.detalle) {
-    cardCount = store.detalle.tarjetas.length
-  }
-
-  if (cardCount === 0) {
-    try {
-      await store.deleteTablero(board.id, board.rowVersion)
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Error al eliminar tablero')
-    }
-    return
-  }
-
-  boardToDelete.value = board
-  showStrictDeleteBoardModal.value = true
-}
-
-async function executeStrictDeleteBoard() {
-  if (!boardToDelete.value) return
-  const b = boardToDelete.value
-  showStrictDeleteBoardModal.value = false
-  try {
-    await store.deleteTablero(b.id, b.rowVersion)
-  } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al eliminar tablero')
-  }
-}
-
-// -------------------------------------------------------------
-// Checklist Handlers
-// -------------------------------------------------------------
-async function openChecklist(card: KanbanTarjetaDto) {
-  checklistCard.value = card
-  checklistItems.value = await store.listChecklist(card.id)
-  showChecklistModal.value = true
-}
-
-async function handleAddChecklist(titulo: string) {
-  if (!checklistCard.value) return
-  try {
-    const item = await store.addChecklistItem({
-      tarjetaId: checklistCard.value.id,
-      titulo,
-    })
-    checklistItems.value.push(item)
-  } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al agregar item al checklist')
-  }
-}
-
-async function handleToggleChecklist(item: any) {
-  item.completada = !item.completada
-  try {
-    await store.updateChecklistItem(item.id, {
-      titulo: item.titulo,
-      completada: item.completada,
-      orden: item.orden,
-      rowVersion: item.rowVersion,
-    })
-  } catch (err: unknown) {
-    item.completada = !item.completada
-    alert(err instanceof Error ? err.message : 'Error al actualizar checklist')
-  }
-}
-
-async function handleRemoveChecklist(item: any) {
-  if (!checklistCard.value) return
-  try {
-    await store.deleteChecklistItem(item.id, checklistCard.value.id, item.completada)
-    checklistItems.value = checklistItems.value.filter((x) => x.id !== item.id)
-  } catch (err: unknown) {
-    alert(err instanceof Error ? err.message : 'Error al eliminar checklist')
-  }
-}
 </script>
 
 <template>
