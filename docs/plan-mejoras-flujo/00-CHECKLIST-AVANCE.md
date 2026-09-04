@@ -19,7 +19,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
 | **Fase 9** | Correcciones Críticas de Lógica Numérica, Imputación Financiera y Flujo de Obra | 6 | 6 | 🟢 Completada |
 | **Fase 10** | Integración Bimonetaria, Imputación de Mano de Obra y Ergonomía de Flujo | 7 | 7 | 🟢 Completada |
 | **Fase 11** | Auditoría Integral de Flujo Operativo, Cálculos Financieros y Ergonomía UX/UI | 7 | 7 | 🟢 Completada |
-| **Fase 12** | Correcciones Críticas de Cobranzas en Caja, Ajuste UOCRA y Ergonomía | 7 | 0 | 🟡 En Progreso |
+| **Fase 12** | Correcciones Críticas de Cobranzas en Caja, Ajuste UOCRA y Ergonomía | 7 | 7 | 🟢 Completada |
 
 ---
 
@@ -370,37 +370,37 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
 
 ## Fase 12: Correcciones Críticas de Cobranzas en Caja, Ajuste UOCRA, Mano de Obra y Ergonomía
 
-- [ ] **12.1. Resolución de Categoría Obligatoria en Cobros Automáticos de Factura**
+- [x] **12.1. Resolución de Categoría Obligatoria en Cobros Automáticos de Factura**
   - **Archivos:** `src/views/facturas/components/FacturaPagosModal.vue`, `src/views/comercial/CuentaCorrienteView.vue`.
   - **Detalle:** Cargar las categorías con `useCatalogStore.loadCategorias()`. Asignar automáticamente una categoría de ingresos al registrar el pago para cumplir con la regla de validación de backend (`validation/movimientos.rs`). En caso de error, notificar al usuario con `notify(err)` en lugar de silenciarlo.
   - **Criterio de aceptación:** Al cobrar una factura con "Registrar movimiento en caja", el movimiento se inserta correctamente en la base de datos y se refleja de inmediato en el balance de caja y rentabilidad de obra.
 
-- [ ] **12.2. Corrección del Signo de Ajuste UOCRA en Orden de Trabajo**
+- [x] **12.2. Corrección del Signo de Ajuste UOCRA en Orden de Trabajo**
   - **Archivos:** `src/views/ordenes/OrdenDetalleView.vue`.
   - **Detalle:** Reemplazar el signo `−` por `+` en la fila de `Ajuste UOCRA`, indicando visualmente que es un adicional sobre el valor certificado y armonizando con `OrdenEmisionCertificadoModal.vue`.
   - **Criterio de aceptación:** En la pantalla de orden de trabajo, la suma visual `Total Certificado + Ajuste UOCRA - Otros Descuentos = Total Neto` es matemáticamente coherente.
 
-- [ ] **12.3. Imputación de Obra por Operario en Wizard de Liquidaciones**
+- [x] **12.3. Imputación de Obra por Operario en Wizard de Liquidaciones**
   - **Archivos:** `src/views/liquidaciones/components/LiquidacionWizardModal.vue`, `src/views/liquidaciones/components/LiquidacionItemSugerido.vue`.
   - **Detalle:** Permitir seleccionar Proyecto y Trabajo individualmente por operario en el paso 2 del wizard. Al confirmar en el paso 3, generar los asientos de egreso imputados a cada obra y empleado respectivo.
   - **Criterio de aceptación:** Al liquidar una cuadrilla donde los obreros trabajaron en distintos proyectos, la mano de obra de cada uno impacta exactamente en la "Caja de Proyecto" de la obra asignada.
 
-- [ ] **12.4. Control de Estado y Ergonomía del Botón Cobrar en Facturas**
+- [x] **12.4. Control de Estado y Ergonomía del Botón Cobrar en Facturas**
   - **Archivos:** `src/views/facturas/components/FacturasTable.vue`.
   - **Detalle:** Deshabilitar el botón de cobro o destacar la acción de emisión si la factura está en estado `Borrador`. Mostrar tooltip explicativo si no admite pagos.
   - **Criterio de aceptación:** El usuario no tropieza con errores `ESTADO_NO_ADMITE_PAGOS` y es guiado a emitir la factura antes de cobrarla.
 
-- [ ] **12.5. Previsualización de Subtotal y Limpieza de Selector de Empleado en Movimientos**
+- [x] **12.5. Previsualización de Subtotal y Limpieza de Selector de Empleado en Movimientos**
   - **Archivos:** `src/views/movimientos/components/MovimientoDrawer.vue`.
   - **Detalle:** Incorporar un indicador reactivo que calcule y muestre `Total estimado: Monto × Cantidad` en tiempo real. Corregir la condición `v-if` para que el selector de empleado se muestre solo cuando el tipo es `Adelanto` o ya tiene un empleado asignado.
   - **Criterio de aceptación:** El usuario tiene confirmación inmediata del total antes de guardar y los formularios de gastos estándar no solicitan empleado innecesariamente.
 
-- [ ] **12.6. Corrección de Visualización "-$ 0,00" en Caja de Obra**
+- [x] **12.6. Corrección de Visualización "-$ 0,00" en Caja de Obra**
   - **Archivos:** `src/views/proyectos/components/ProyectoCajaTab.vue`, `src/views/proyectos/ProyectoCajaView.vue`.
   - **Detalle:** Condicionar el prefijo `-` para que cuando `totalGastos === '0.0000'` o el número sea 0, se muestre `$ 0,00` con estilo neutral.
   - **Criterio de aceptación:** Una obra sin gastos muestra `$ 0,00` neutral sin signo negativo ni color rojo de alerta.
 
-- [ ] **12.7. Trazabilidad de Certificado Facturado Post-Confirmación**
+- [x] **12.7. Trazabilidad de Certificado Facturado Post-Confirmación**
   - **Archivos:** `src/views/certificados/CertificadoDetalleView.vue`, `src/views/facturas/FacturasView.vue`.
   - **Detalle:** No escribir en `localStorage` al hacer clic en "Facturar Certificado". Pasar el `certificadoId` en la URL y registrar la marca de facturado únicamente cuando la factura es persistida con éxito en el método `create` de `useCrudDrawer`.
   - **Criterio de aceptación:** Cancelar o cerrar el formulario de factura no deja el certificado marcado falsamente como facturado.
