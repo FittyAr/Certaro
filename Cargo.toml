@@ -91,7 +91,7 @@ figment = { version = "0.10", features = ["json", "env"] }
 argon2 = "0.5"
 rand = "0.8"
 sha2 = "0.10"
-totp-rs = { version = "5.6", default-features = false, features = ["gen_secret"] }
+totp-rs = { version = "6.0", default-features = false, features = ["gen_secret"] }
 
 # CLI (certaro-import-legacy only)
 clap = { version = "4", features = ["derive"] }
