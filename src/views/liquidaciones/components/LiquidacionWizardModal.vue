@@ -3,13 +3,10 @@ import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
-import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
+import LiquidacionItemSugerido, { type AjusteLiquidacion } from './LiquidacionItemSugerido.vue'
 
 import DateInput from '@/components/domain/DateInput.vue'
-import DateText from '@/components/domain/DateText.vue'
-import DecimalInput from '@/components/domain/DecimalInput.vue'
-import MoneyInput from '@/components/domain/MoneyInput.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
@@ -42,12 +39,7 @@ const proyectos = useProyectosStore()
 const trabajos = useTrabajosStore()
 
 /** What the user can change in step two, kept apart from the suggestion the backend returned. */
-interface Ajuste {
-  diasTrabajados: string
-  tarifaAplicada: string
-  observaciones: string | null
-  adelantosIncluidos: Set<string>
-}
+type Ajuste = AjusteLiquidacion
 
 const paso = ref<1 | 2 | 3>(1)
 const cargandoSugerencias = ref(false)
@@ -338,80 +330,15 @@ const totalNetoDelLote = computed(() =>
 
     <!-- Step 2: the suggestion, editable -->
     <div v-else-if="paso === 2" class="flex flex-col gap-4">
-      <div
+      <LiquidacionItemSugerido
         v-for="s in store.sugerencias"
         :key="s.empleadoId"
-        class="space-y-3 rounded-md border border-border p-3"
-      >
-        <div class="flex items-baseline justify-between">
-          <h4 class="font-semibold">{{ s.empleadoNombre }}</h4>
-          <span class="text-xs text-muted-foreground">
-            {{ $t(`Liquidaciones.Origen.${s.origen}`) }}
-          </span>
-        </div>
-
-        <p v-if="s.feriadosNoDisponibles" class="rounded bg-warning/10 p-2 text-xs text-warning">
-          {{ $t('Liquidaciones.Warning.FeriadosNoDisponibles') }}
-        </p>
-
-        <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <label class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">{{ $t('Liquidaciones.Dias') }}</span>
-            <DecimalInput v-model="ajusteDe(s.empleadoId).diasTrabajados" :min="0" />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">{{ $t('Liquidaciones.Tarifa') }}</span>
-            <MoneyInput v-model="ajusteDe(s.empleadoId).tarifaAplicada" :min="0" />
-          </label>
-          <div class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">{{ $t('Liquidaciones.Recargos') }}</span>
-            <span class="py-2 text-sm"><MoneyText :value="s.desglose.recargos" /></span>
-          </div>
-          <div class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">
-              {{ $t('Liquidaciones.TotalBruto') }}
-            </span>
-            <span class="py-2 text-sm"><MoneyText :value="dtoDe(s).totalBruto" /></span>
-          </div>
-        </div>
-
-        <div v-if="(s.adelantos?.length ?? 0) > 0" class="space-y-1">
-          <span class="text-xs font-medium">{{ $t('Liquidaciones.Adelantos') }}</span>
-          <label
-            v-for="adelanto in s.adelantos"
-            :key="adelanto.movimientoId"
-            class="flex items-center gap-2 text-xs"
-            :class="{ 'text-muted-foreground line-through': adelanto.yaDescontado }"
-          >
-            <Checkbox
-              :model-value="ajusteDe(s.empleadoId).adelantosIncluidos.has(adelanto.movimientoId)"
-              binary
-              :disabled="adelanto.yaDescontado"
-              @update:model-value="alternarAdelanto(s.empleadoId, adelanto.movimientoId)"
-            />
-            <DateText :value="adelanto.fecha" />
-            <span class="flex-1">{{ adelanto.concepto }}</span>
-            <MoneyText :value="adelanto.monto" />
-            <span v-if="adelanto.yaDescontado">
-              {{ $t('Liquidaciones.YaDescontado') }}
-            </span>
-          </label>
-        </div>
-
-        <label class="flex flex-col gap-1">
-          <span class="text-xs text-muted-foreground">
-            {{ $t('Liquidaciones.Observaciones') }}
-          </span>
-          <Textarea v-model="ajusteDe(s.empleadoId).observaciones" rows="2" auto-resize />
-        </label>
-
-        <div class="flex justify-end gap-2 border-t border-border pt-2 text-sm">
-          <span class="text-muted-foreground">{{ $t('Liquidaciones.TotalNeto') }}</span>
-          <MoneyText
-            :value="(Number(dtoDe(s).totalBruto) - Number(totalAdelantosDe(s))).toFixed(4)"
-          />
-        </div>
-      </div>
+        :sugerencia="s"
+        :ajuste="ajusteDe(s.empleadoId)"
+        :total-bruto="dtoDe(s).totalBruto"
+        :total-neto="(Number(dtoDe(s).totalBruto) - Number(totalAdelantosDe(s))).toFixed(4)"
+        @alternar-adelanto="(movId) => alternarAdelanto(s.empleadoId, movId)"
+      />
     </div>
 
     <!-- Step 3: confirmation -->
