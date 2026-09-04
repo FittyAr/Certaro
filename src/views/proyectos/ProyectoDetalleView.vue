@@ -1,19 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Column from 'primevue/column'
-import DataTable from 'primevue/datatable'
 import Tabs from 'primevue/tabs'
 import TabList from 'primevue/tablist'
 import Tab from 'primevue/tab'
 import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 
-import DateText from '@/components/domain/DateText.vue'
 import ListState from '@/components/domain/ListState.vue'
-import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
-import StatePill from '@/components/domain/StatePill.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
@@ -22,6 +17,9 @@ import { useMovimientosStore, type MovimientoListItem } from '@/stores/useMovimi
 import { useProyectosStore, type ProyectoDetalle } from '@/stores/useProyectosStore'
 import { useTrabajosStore, type TrabajoListItem } from '@/stores/useTrabajosStore'
 import NuevoTrabajoModal from './components/NuevoTrabajoModal.vue'
+import ProyectoGeneralTab from './components/ProyectoGeneralTab.vue'
+import ProyectoTrabajosTab from './components/ProyectoTrabajosTab.vue'
+import ProyectoCajaTab from './components/ProyectoCajaTab.vue'
 
 /**
  * Project Detail Hub: Integrated workspace for a single site / project.
@@ -229,208 +227,33 @@ onMounted(cargarTodo)
           <TabPanels class="bg-transparent px-0 py-4">
             <!-- TAB 1: General Info -->
             <TabPanel value="general">
-              <div class="space-y-4">
-                <div class="grid gap-4 rounded-lg border border-border bg-surface-card p-5 text-sm md:grid-cols-2">
-                  <div>
-                    <span class="text-xs text-muted-foreground">{{ $t('Proyectos.Numero') }}</span>
-                    <p class="font-semibold text-foreground">#{{ proyecto.numero }}</p>
-                  </div>
-                  <div>
-                    <span class="text-xs text-muted-foreground">{{ $t('Proyectos.Estado') }}</span>
-                    <p class="mt-0.5"><StatePill entity="Proyecto" :value="proyecto.estado.actual" /></p>
-                  </div>
-                  <div>
-                    <span class="text-xs text-muted-foreground">{{ $t('Clientes.Nombre') }}</span>
-                    <p class="font-medium text-foreground">{{ proyecto.clienteNombre }}</p>
-                  </div>
-                  <div>
-                    <span class="text-xs text-muted-foreground">{{ $t('Proyectos.Localidad') }}</span>
-                    <p>{{ proyecto.localidad ?? '—' }}</p>
-                  </div>
-                  <div class="md:col-span-2">
-                    <span class="text-xs text-muted-foreground">{{ $t('Clientes.Direccion') }}</span>
-                    <p>{{ proyecto.direccion ?? '—' }}</p>
-                  </div>
-                </div>
-
-                <!-- Resumen rápido de métricas -->
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div class="rounded-lg border border-border bg-card p-4 shadow-xs">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {{ $t('Menu.Trabajos') }}
-                    </span>
-                    <div class="mt-1 text-2xl font-bold">{{ trabajosItems.length }}</div>
-                  </div>
-                  <div class="rounded-lg border border-border bg-card p-4 shadow-xs">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {{ $t('Movimientos.Ingresos') }}
-                    </span>
-                    <div class="mt-1 text-2xl font-bold">
-                      <MoneyText :value="totalIngresos" colored />
-                    </div>
-                  </div>
-                  <div class="rounded-lg border border-border bg-card p-4 shadow-xs">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {{ $t('Movimientos.Balance') }}
-                    </span>
-                    <div class="mt-1 text-2xl font-bold">
-                      <MoneyText :value="balanceNeto" colored show-sign />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <ProyectoGeneralTab
+                :proyecto="proyecto"
+                :trabajos-count="trabajosItems.length"
+                :total-ingresos="totalIngresos"
+                :balance-neto="balanceNeto"
+              />
             </TabPanel>
 
             <!-- TAB 2: Works / Jobs -->
             <TabPanel value="trabajos">
-              <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Trabajos y Cómputo de la Obra
-                  </span>
-                  <Button size="sm" @click="showNuevoTrabajoModal = true">
-                    <AppIcon name="plus" :size="14" />
-                    {{ $t('General.New') }} {{ $t('Entity.Trabajo') }}
-                  </Button>
-                </div>
-
-                <div v-if="trabajosItems.length === 0" class="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-                  {{ $t('Trabajos.Empty') }}
-                </div>
-
-                <DataTable
-                  v-else
-                  :value="trabajosItems"
-                  data-key="id"
-                  size="small"
-                  class="text-sm"
-                >
-                  <Column field="descripcion" :header="$t('Trabajos.Descripcion')">
-                    <template #body="{ data }">
-                      <span class="font-medium text-foreground">{{ data.descripcion }}</span>
-                    </template>
-                  </Column>
-                  <Column field="estado" :header="$t('Trabajos.Estado')">
-                    <template #body="{ data }">
-                      <StatePill entity="Trabajo" :value="data.estado" />
-                    </template>
-                  </Column>
-                  <Column field="presupuesto" :header="$t('Trabajos.Presupuesto')">
-                    <template #body="{ data }">
-                      <MoneyText :value="data.presupuesto" />
-                    </template>
-                  </Column>
-                  <Column :header="$t('General.Actions')" class="w-40 text-right">
-                    <template #body="{ data }">
-                      <div class="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          :title="$t('Ordenes.Title')"
-                          @click="verOrdenesDeTrabajo(data.id)"
-                        >
-                          <AppIcon name="file-text" :size="14" />
-                          <span class="ml-1 text-xs">{{ $t('Ordenes.Title') }}</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          :title="$t('General.View')"
-                          @click="router.push({ name: 'trabajo-detalle', params: { trabajoId: data.id } })"
-                        >
-                          <AppIcon name="eye" :size="14" />
-                        </Button>
-                      </div>
-                    </template>
-                  </Column>
-                </DataTable>
-              </div>
+              <ProyectoTrabajosTab
+                :items="trabajosItems"
+                @nuevo="showNuevoTrabajoModal = true"
+                @ver-ordenes="verOrdenesDeTrabajo"
+                @ver-detalle="router.push({ name: 'trabajo-detalle', params: { trabajoId: $event } })"
+              />
             </TabPanel>
 
             <!-- TAB 3: Cash & Profitability -->
             <TabPanel value="caja">
-              <div class="space-y-4">
-                <!-- Financial KPI Cards -->
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div class="rounded-lg border border-border bg-card p-4 shadow-xs">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {{ $t('Movimientos.Ingresos') }}
-                    </span>
-                    <div class="mt-1 text-xl font-bold">
-                      <MoneyText :value="totalIngresos" colored />
-                    </div>
-                  </div>
-                  <div class="rounded-lg border border-border bg-card p-4 shadow-xs">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {{ $t('Movimientos.Gastos') }}
-                    </span>
-                    <div class="mt-1 text-xl font-bold">
-                      <MoneyText :value="`-${totalGastos}`" colored />
-                    </div>
-                  </div>
-                  <div class="rounded-lg border border-border bg-card p-4 shadow-xs">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {{ $t('Movimientos.Balance') }}
-                    </span>
-                    <div class="mt-1 text-xl font-bold">
-                      <MoneyText :value="balanceNeto" colored show-sign />
-                    </div>
-                  </div>
-                </div>
-
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Movimientos Imputados
-                  </span>
-                  <Button size="sm" @click="irARegistrarMovimiento()">
-                    <AppIcon name="plus" :size="14" />
-                    {{ $t('Movimientos.RegistrarGasto') }}
-                  </Button>
-                </div>
-
-                <div v-if="movimientosItems.length === 0" class="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-                  {{ $t('Movimientos.Empty') }}
-                </div>
-
-                <DataTable
-                  v-else
-                  :value="movimientosItems"
-                  data-key="id"
-                  size="small"
-                  class="text-sm"
-                  paginator
-                  :rows="20"
-                >
-                  <Column field="fecha" :header="$t('Movimientos.Fecha')">
-                    <template #body="{ data }">
-                      <DateText :value="data.fecha" />
-                    </template>
-                  </Column>
-                  <Column field="concepto" :header="$t('Movimientos.Concepto')" />
-                  <Column field="tipoMovimientoNombre" :header="$t('Movimientos.Tipo')">
-                    <template #body="{ data }">
-                      <span
-                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-                        :class="
-                          data.esIngreso
-                            ? 'bg-success/10 text-success'
-                            : 'bg-destructive/10 text-destructive'
-                        "
-                      >
-                        {{ data.tipoMovimientoNombre }}
-                      </span>
-                    </template>
-                  </Column>
-                  <Column field="total" :header="$t('Movimientos.Total')">
-                    <template #body="{ data }">
-                      <MoneyText
-                        :value="data.esIngreso ? data.total : `-${data.total}`"
-                        colored
-                      />
-                    </template>
-                  </Column>
-                </DataTable>
-              </div>
+              <ProyectoCajaTab
+                :items="movimientosItems"
+                :total-ingresos="totalIngresos"
+                :total-gastos="totalGastos"
+                :balance-neto="balanceNeto"
+                @registrar-movimiento="irARegistrarMovimiento()"
+              />
             </TabPanel>
           </TabPanels>
         </Tabs>
