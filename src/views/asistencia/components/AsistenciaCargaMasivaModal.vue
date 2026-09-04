@@ -100,16 +100,16 @@ async function guardarRango(): Promise<void> {
   guardando.value = true
   try {
     if (todaLaCuadrilla.value) {
-      for (const emp of props.empleadosOpciones) {
-        await store.cargarRango({
+      await store.cargarRangoCuadrilla(
+        props.empleadosOpciones.map((emp) => ({
           empleadoId: emp.id,
           desde: rango.value.desde,
           hasta: rango.value.hasta,
           tipoJornada: rango.value.tipoJornada,
           soloDiasHabiles: rango.value.soloDiasHabiles,
           trabajoId: rango.value.trabajoId,
-        })
-      }
+        })),
+      )
     } else {
       await store.cargarRango({
         empleadoId: rango.value.empleadoId,

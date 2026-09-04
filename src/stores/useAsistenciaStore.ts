@@ -79,6 +79,13 @@ export const useAsistenciaStore = defineStore('asistencia', () => {
     }
   }
 
+  async function cargarRangoCuadrilla(dtos: AsistenciaRangoInput[]): Promise<void> {
+    await Promise.all(dtos.map((dto) => upsertRangoAsistencia(dto)))
+    if (grilla.value) {
+      await fetchGrilla({ desde: grilla.value.desde, hasta: grilla.value.hasta })
+    }
+  }
+
   async function limpiar(empleadoId: Uuid, fecha: CivilDate): Promise<void> {
     await deleteAsistencia(empleadoId, fecha)
     const fila = grilla.value?.filas.find((f) => f.empleadoId === empleadoId)
@@ -88,5 +95,5 @@ export const useAsistenciaStore = defineStore('asistencia', () => {
     }
   }
 
-  return { grilla, fetchGrilla, ciclar, marcar, cargarRango, limpiar }
+  return { grilla, fetchGrilla, ciclar, marcar, cargarRango, cargarRangoCuadrilla, limpiar }
 })
