@@ -18,7 +18,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
 | **Fase 8** | Integración Financiera, Consistencia de Cálculos y Ergonomía UX | 8 | 8 | 🟢 Completada |
 | **Fase 9** | Correcciones Críticas de Lógica Numérica, Imputación Financiera y Flujo de Obra | 6 | 6 | 🟢 Completada |
 | **Fase 10** | Integración Bimonetaria, Imputación de Mano de Obra y Ergonomía de Flujo | 7 | 7 | 🟢 Completada |
-| **Fase 11** | Auditoría Integral de Flujo Operativo, Cálculos Financieros y Ergonomía UX/UI | 7 | 0 | 🟡 En Progreso |
+| **Fase 11** | Auditoría Integral de Flujo Operativo, Cálculos Financieros y Ergonomía UX/UI | 7 | 5 | 🟡 En Progreso |
 
 ---
 
@@ -350,7 +350,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Detalle:** Preseleccionar automáticamente el tipo de movimiento `Gasto` al navegar desde el botón "+ Registrar Gasto" de la ficha de obra.
   - **Criterio de aceptación:** El drawer abre con el tipo "Gasto" seleccionado por defecto al venir desde la caja de proyecto.
 
-- [ ] **11.5. Recálculo Dinámico de Recargos y Alerta de Neto Negativo en Liquidaciones**
+- [x] **11.5. Recálculo Dinámico de Recargos y Alerta de Neto Negativo en Liquidaciones**
   - **Archivos:** `src/views/liquidaciones/components/LiquidacionItemSugerido.vue`, `src/locales/es.json`, `src/locales/en.json`.
   - **Detalle:** Refrescar el monto de recargos según la tarifa editada en tiempo real. Mostrar advertencia destacada cuando `totalNeto < 0`.
   - **Criterio de aceptación:** La columna de recargos refleja la tarifa modificada y el sistema alerta visualmente si los adelantos superan el sueldo.

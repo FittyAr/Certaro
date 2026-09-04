@@ -590,7 +590,8 @@
     "TotalDelLote": "Total del lote",
     "TotalNeto": "Neto",
     "Warning": {
-      "FeriadosNoDisponibles": "El período no tiene feriados cargados. Si el calendario no se sincronizó, el recargo por feriado no se está aplicando."
+      "FeriadosNoDisponibles": "El período no tiene feriados cargados. Si el calendario no se sincronizó, el recargo por feriado no se está aplicando.",
+      "AdelantosSuperanBruto": "Atención: Los adelantos seleccionados superan el sueldo bruto generado (el neto a pagar resulta negativo). Desmarca algún adelanto para compensar."
     },
     "YaDescontado": "ya descontado",
     "RegistrarEnCaja": "Registrar egreso de sueldos en el Libro de Caja",

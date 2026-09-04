@@ -590,7 +590,8 @@
     "TotalDelLote": "Batch total",
     "TotalNeto": "Net",
     "Warning": {
-      "FeriadosNoDisponibles": "The period has no holidays loaded. If the calendar failed to sync, the holiday surcharge is not being applied."
+      "FeriadosNoDisponibles": "The period has no holidays loaded. If the calendar failed to sync, the holiday surcharge is not being applied.",
+      "AdelantosSuperanBruto": "Warning: The selected advances exceed the gross earnings (net payout is negative). Uncheck some advances to compensate."
     },
     "YaDescontado": "already discounted",
     "RegistrarEnCaja": "Record payroll expense in Cash Ledger",

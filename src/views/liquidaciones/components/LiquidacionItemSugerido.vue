@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Checkbox from 'primevue/checkbox'
 import Textarea from 'primevue/textarea'
+import { computed } from 'vue'
 
 import DateText from '@/components/domain/DateText.vue'
 import DecimalInput from '@/components/domain/DecimalInput.vue'
@@ -15,7 +16,7 @@ export interface AjusteLiquidacion {
   adelantosIncluidos: Set<string>
 }
 
-defineProps<{
+const props = defineProps<{
   sugerencia: LiquidacionSugerencia
   ajuste: AjusteLiquidacion
   totalBruto: string
@@ -25,6 +26,22 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'alternarAdelanto', movimientoId: string): void
 }>()
+
+const recargosActuales = computed(() => {
+  const d = props.sugerencia.desglose
+  if (!d) return '0.0000'
+  const tarifa = Number(props.ajuste.tarifaAplicada)
+  const multSab = Math.max(0, Number(d.multiplicadorSabado) - 1)
+  const multDom = Math.max(0, Number(d.multiplicadorDomingo) - 1)
+  const multFer = Math.max(0, Number(d.multiplicadorFeriado) - 1)
+  const sab = Number(d.diasSabado) * multSab * tarifa
+  const dom = Number(d.diasDomingo) * multDom * tarifa
+  const fer = Number(d.diasFeriado) * multFer * tarifa
+  const sum = sab + dom + fer
+  return (sum > 0 ? sum : Number(d.recargos ?? 0)).toFixed(4)
+})
+
+const esNetoNegativo = computed(() => Number(props.totalNeto) < 0)
 </script>
 
 <template>
@@ -51,7 +68,7 @@ const emit = defineEmits<{
       </label>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-muted-foreground">{{ $t('Liquidaciones.Recargos') }}</span>
-        <span class="py-2 text-sm"><MoneyText :value="sugerencia.desglose.recargos" /></span>
+        <span class="py-2 text-sm"><MoneyText :value="recargosActuales" /></span>
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-xs text-muted-foreground">
@@ -59,6 +76,10 @@ const emit = defineEmits<{
         </span>
         <span class="py-2 text-sm"><MoneyText :value="totalBruto" /></span>
       </div>
+    </div>
+
+    <div v-if="esNetoNegativo" class="rounded border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive flex items-center gap-2">
+      <span>⚠️ {{ $t('Liquidaciones.Warning.AdelantosSuperanBruto') }}</span>
     </div>
 
     <div v-if="(sugerencia.adelantos?.length ?? 0) > 0" class="space-y-1">
@@ -91,9 +112,9 @@ const emit = defineEmits<{
       <Textarea v-model="ajuste.observaciones" rows="2" auto-resize />
     </label>
 
-    <div class="flex justify-end gap-2 border-t border-border pt-2 text-sm">
+    <div class="flex justify-end items-baseline gap-2 border-t border-border pt-2 text-sm">
       <span class="text-muted-foreground">{{ $t('Liquidaciones.TotalNeto') }}</span>
-      <MoneyText :value="totalNeto" />
+      <MoneyText :value="totalNeto" :class="{ 'text-destructive font-bold': esNetoNegativo }" />
     </div>
   </div>
 </template>
