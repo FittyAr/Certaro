@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
-import MultiSelect from 'primevue/multiselect'
-import Select from 'primevue/select'
 import { computed, ref, watch } from 'vue'
 import LiquidacionItemSugerido, { type AjusteLiquidacion } from './LiquidacionItemSugerido.vue'
+import WizardStepSeleccion from './WizardStepSeleccion.vue'
+import WizardStepConfirmacion from './WizardStepConfirmacion.vue'
 
-import DateInput from '@/components/domain/DateInput.vue'
-import MoneyText from '@/components/domain/MoneyText.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
 import { useCatalogStore, type LookupItem } from '@/stores/useCatalogStore'
@@ -302,31 +299,12 @@ const totalNetoDelLote = computed(() =>
     @update:visible="(val) => emit('update:visible', val)"
   >
     <!-- Step 1: employees and period -->
-    <div v-if="paso === 1" class="flex flex-col gap-4">
-      <label class="flex flex-col gap-1">
-        <span class="text-sm">{{ $t('Liquidaciones.Empleados') }}</span>
-        <MultiSelect
-          v-model="seleccion"
-          :options="empleados.opciones"
-          option-label="label"
-          option-value="id"
-          :placeholder="$t('Liquidaciones.ElegirEmpleados')"
-          filter
-          display="chip"
-        />
-      </label>
-      <div class="grid grid-cols-2 gap-3">
-        <label class="flex flex-col gap-1">
-          <span class="text-sm">{{ $t('General.From') }}</span>
-          <DateInput v-model="periodo.desde" />
-        </label>
-        <label class="flex flex-col gap-1">
-          <span class="text-sm">{{ $t('General.To') }}</span>
-          <DateInput v-model="periodo.hasta" />
-        </label>
-      </div>
-      <p class="text-xs text-muted-foreground">{{ $t('Liquidaciones.PasoUnoAyuda') }}</p>
-    </div>
+    <WizardStepSeleccion
+      v-if="paso === 1"
+      v-model:seleccion="seleccion"
+      v-model:periodo="periodo"
+      :empleados-opciones="empleados.opciones"
+    />
 
     <!-- Step 2: the suggestion, editable -->
     <div v-else-if="paso === 2" class="flex flex-col gap-4">
@@ -342,85 +320,23 @@ const totalNetoDelLote = computed(() =>
     </div>
 
     <!-- Step 3: confirmation -->
-    <div v-else class="space-y-3">
-      <p class="text-sm">
-        {{ $t('Liquidaciones.ConfirmarTexto', { cantidad: store.sugerencias?.length ?? 0 }) }}
-      </p>
-      <ul class="divide-y divide-border text-sm">
-        <li
-          v-for="s in store.sugerencias"
-          :key="s.empleadoId"
-          class="flex items-center justify-between py-2"
-        >
-          <span>{{ s.empleadoNombre }}</span>
-          <MoneyText
-            :value="(Number(dtoDe(s).totalBruto) - Number(totalAdelantosDe(s))).toFixed(4)"
-          />
-        </li>
-      </ul>
-      <div class="flex justify-end gap-2 border-t border-border pt-2 font-medium">
-        <span>{{ $t('Liquidaciones.TotalDelLote') }}</span>
-        <MoneyText :value="totalNetoDelLote" />
-      </div>
-
-      <!-- Cash ledger outflow options -->
-      <div class="mt-4 rounded-lg border border-border bg-card/60 p-3 space-y-3">
-        <label class="flex items-center gap-2 cursor-pointer font-medium text-sm">
-          <Checkbox v-model="registrarEnCaja" binary />
-          <span>{{ $t('Liquidaciones.RegistrarEnCaja') }}</span>
-        </label>
-
-        <div v-if="registrarEnCaja" class="grid grid-cols-1 gap-3 sm:grid-cols-2 pt-1">
-          <label class="flex flex-col gap-1 text-xs">
-            <span class="text-muted-foreground">{{ $t('Liquidaciones.MedioPago') }}</span>
-            <Select
-              v-model="medioPago"
-              :options="mediosPagoOpciones"
-              option-label="label"
-              option-value="value"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-xs">
-            <span class="text-muted-foreground">{{ $t('Liquidaciones.Categoria') }}</span>
-            <Select
-              v-model="categoriaGastoId"
-              :options="categoriasOpciones"
-              option-label="label"
-              option-value="id"
-              filter
-              show-clear
-              placeholder="Seleccionar categoría"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-xs">
-            <span class="text-muted-foreground">{{ $t('Liquidaciones.ImputarProyecto') }}</span>
-            <Select
-              v-model="pagoProyectoId"
-              :options="opcionesProyecto"
-              option-label="label"
-              option-value="id"
-              filter
-              show-clear
-              :placeholder="$t('General.None')"
-              @change="onProyectoChange()"
-            />
-          </label>
-          <label class="flex flex-col gap-1 text-xs">
-            <span class="text-muted-foreground">{{ $t('Liquidaciones.ImputarTrabajo') }}</span>
-            <Select
-              v-model="pagoTrabajoId"
-              :options="opcionesTrabajo"
-              option-label="label"
-              option-value="id"
-              filter
-              show-clear
-              :placeholder="$t('General.None')"
-              :disabled="!pagoProyectoId && opcionesTrabajo.length === 0"
-            />
-          </label>
-        </div>
-      </div>
-    </div>
+    <WizardStepConfirmacion
+      v-else
+      :sugerencias="store.sugerencias"
+      :dto-de="dtoDe"
+      :total-adelantos-de="totalAdelantosDe"
+      :total-neto-del-lote="totalNetoDelLote"
+      v-model:registrar-en-caja="registrarEnCaja"
+      v-model:medio-pago="medioPago"
+      v-model:categoria-gasto-id="categoriaGastoId"
+      v-model:pago-proyecto-id="pagoProyectoId"
+      v-model:pago-trabajo-id="pagoTrabajoId"
+      :categorias-opciones="categoriasOpciones"
+      :opciones-proyecto="opcionesProyecto"
+      :opciones-trabajo="opcionesTrabajo"
+      :medios-pago-opciones="mediosPagoOpciones"
+      @proyecto-change="onProyectoChange()"
+    />
 
     <template #footer>
       <Button v-if="paso === 1" variant="outline" @click="emit('update:visible', false)">
