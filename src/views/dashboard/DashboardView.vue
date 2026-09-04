@@ -3,7 +3,6 @@ import Chart from 'primevue/chart'
 import SelectButton from 'primevue/selectbutton'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 
 import DateText from '@/components/domain/DateText.vue'
 import KpiCard from '@/components/domain/KpiCard.vue'
@@ -19,6 +18,9 @@ import { useMoney } from '@/composables/useMoney'
 import { useShortcuts } from '@/composables/useShortcuts'
 import { useDashboardStore, PERIODOS, type PeriodoDashboard } from '@/stores/useDashboardStore'
 import { useUiStore } from '@/stores/useUiStore'
+import DashboardAlertas from './components/DashboardAlertas.vue'
+import DashboardCotizaciones from './components/DashboardCotizaciones.vue'
+import DashboardOnboardingBanner from './components/DashboardOnboardingBanner.vue'
 
 /**
  * The dashboard of `docs/09-modulos-funcionales.md` §3.1. Every figure on this screen is computed
@@ -30,7 +32,6 @@ import { useUiStore } from '@/stores/useUiStore'
  */
 
 const { t } = useI18n()
-const router = useRouter()
 const store = useDashboardStore()
 const ui = useUiStore()
 const { notify } = useApiError()
@@ -143,16 +144,6 @@ const tamanoMb = computed(() => {
   return (bytes / (1024 * 1024)).toFixed(1)
 })
 
-const severidadClase: Record<string, string> = {
-  Info: 'border-l-primary',
-  Warning: 'border-l-warning',
-  Error: 'border-l-destructive',
-}
-
-function irA(destino: string): void {
-  void router.push(destino)
-}
-
 useShortcuts({ 'ctrl+r': () => void cargar() })
 
 onMounted(() => {
@@ -202,167 +193,13 @@ onMounted(() => {
     >
       <div v-if="stats" class="space-y-6">
         <!-- Onboarding banner for first-time SME users -->
-        <section
-          v-if="mostrarOnboarding"
-          class="relative flex flex-col gap-4 rounded-xl border border-primary/30 bg-primary/5 p-5 shadow-xs"
-        >
-          <div class="flex items-start justify-between">
-            <div class="space-y-1">
-              <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
-                <AppIcon name="sparkles" :size="16" class="text-primary" />
-                {{ $t('Dashboard.Onboarding.Title') }}
-              </h2>
-              <p class="text-xs text-muted-foreground">
-                {{ $t('Dashboard.Onboarding.Subtitle') }}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              :title="$t('General.Close')"
-              @click="ui.dismissOnboarding()"
-            >
-              <AppIcon name="x" :size="14" />
-            </Button>
-          </div>
-
-          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="flex flex-col justify-between rounded-lg border border-border bg-card p-3">
-              <div class="space-y-1">
-                <div class="flex items-center gap-2 font-medium text-xs">
-                  <span class="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">1</span>
-                  {{ $t('Dashboard.Onboarding.Paso1Titulo') }}
-                </div>
-                <p class="text-[11px] text-muted-foreground">
-                  {{ $t('Dashboard.Onboarding.Paso1Desc') }}
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                class="mt-3 w-full text-xs"
-                @click="router.push({ name: 'configuracion' })"
-              >
-                {{ $t('Dashboard.Onboarding.Paso1Accion') }}
-              </Button>
-            </div>
-
-            <div class="flex flex-col justify-between rounded-lg border border-border bg-card p-3">
-              <div class="space-y-1">
-                <div class="flex items-center gap-2 font-medium text-xs">
-                  <span class="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">2</span>
-                  {{ $t('Dashboard.Onboarding.Paso2Titulo') }}
-                </div>
-                <p class="text-[11px] text-muted-foreground">
-                  {{ $t('Dashboard.Onboarding.Paso2Desc') }}
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                class="mt-3 w-full text-xs"
-                @click="router.push({ name: 'clientes' })"
-              >
-                {{ $t('Dashboard.Onboarding.Paso2Accion') }}
-              </Button>
-            </div>
-
-            <div class="flex flex-col justify-between rounded-lg border border-border bg-card p-3">
-              <div class="space-y-1">
-                <div class="flex items-center gap-2 font-medium text-xs">
-                  <span class="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">3</span>
-                  {{ $t('Dashboard.Onboarding.Paso3Titulo') }}
-                </div>
-                <p class="text-[11px] text-muted-foreground">
-                  {{ $t('Dashboard.Onboarding.Paso3Desc') }}
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                class="mt-3 w-full text-xs"
-                @click="router.push({ name: 'proyectos' })"
-              >
-                {{ $t('Dashboard.Onboarding.Paso3Accion') }}
-              </Button>
-            </div>
-
-            <div class="flex flex-col justify-between rounded-lg border border-border bg-card p-3">
-              <div class="space-y-1">
-                <div class="flex items-center gap-2 font-medium text-xs">
-                  <span class="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">4</span>
-                  {{ $t('Dashboard.Onboarding.Paso4Titulo') }}
-                </div>
-                <p class="text-[11px] text-muted-foreground">
-                  {{ $t('Dashboard.Onboarding.Paso4Desc') }}
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                class="mt-3 w-full text-xs"
-                @click="router.push({ name: 'movimientos' })"
-              >
-                {{ $t('Dashboard.Onboarding.Paso4Accion') }}
-              </Button>
-            </div>
-          </div>
-        </section>
+        <DashboardOnboardingBanner v-if="mostrarOnboarding" />
 
         <!-- Quotes. Absent, not failed, when the service is unreachable. -->
-        <div v-if="store.cotizaciones?.length" class="flex flex-col gap-1.5">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Mercado Cambiario</span>
-            <HelpButton topic-id="dashboard-cotizaciones" title="Ayuda sobre cotizaciones de dólar" />
-          </div>
-          <div class="flex flex-wrap gap-3">
-            <article
-              v-for="cotizacion in store.cotizaciones"
-              :key="cotizacion.casa"
-              class="rounded-md border border-border bg-surface-card px-3 py-2 text-sm"
-            >
-              <p class="text-xs text-muted-foreground">{{ cotizacion.nombre }}</p>
-              <p class="flex items-center gap-3">
-                <span>
-                  {{ $t('Cotizaciones.Compra') }} <MoneyText :value="cotizacion.compra" />
-                </span>
-                <span>
-                  {{ $t('Cotizaciones.Venta') }} <MoneyText :value="cotizacion.venta" />
-                </span>
-              </p>
-              <p v-if="cotizacion.desactualizada" class="text-xs text-muted-foreground">
-                {{ $t('Cotizaciones.Desactualizada') }}
-                <DateText :value="cotizacion.fechaActualizacion" />
-              </p>
-            </article>
-          </div>
-        </div>
+        <DashboardCotizaciones />
 
         <!-- Alerts. Each one navigates to its module with the filter already applied. -->
-        <div v-if="store.alertas?.length" class="flex flex-col gap-1.5">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Alertas Operativas</span>
-            <HelpButton topic-id="dashboard-alertas" title="Ayuda sobre alertas automáticas" />
-          </div>
-          <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-            <button
-              v-for="alerta in store.alertas"
-              :key="alerta.tipo"
-              type="button"
-              class="flex items-center gap-2 rounded-md border border-border border-l-4 bg-surface-card px-3 py-2 text-left text-sm hover:bg-muted"
-              :class="severidadClase[alerta.severidad]"
-              @click="irA(alerta.destino)"
-            >
-              <AppIcon name="triangle-alert" :size="16" />
-              <!-- The amount goes through MoneyText so privacy mode covers it as well. -->
-              <span class="flex-1">
-                {{ $t(alerta.clave, { cantidad: alerta.cantidad }) }}
-                <MoneyText v-if="alerta.monto" :value="alerta.monto" colored />
-              </span>
-              <AppIcon name="chevron-right" :size="16" />
-            </button>
-          </div>
-        </div>
+        <DashboardAlertas />
 
         <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard
