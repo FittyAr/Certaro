@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import Checkbox from 'primevue/checkbox'
 import Column from 'primevue/column'
-import DataTable from 'primevue/datatable'
-import Dialog from 'primevue/dialog'
+import Divider from 'primevue/divider'
 import InputText from 'primevue/inputtext'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
@@ -17,7 +15,6 @@ import DataGrid from '@/components/domain/DataGrid.vue'
 import DateInput from '@/components/domain/DateInput.vue'
 import DateText from '@/components/domain/DateText.vue'
 import FieldError from '@/components/domain/FieldError.vue'
-import Divider from 'primevue/divider'
 import FilterBar from '@/components/domain/FilterBar.vue'
 import MoneyInput from '@/components/domain/MoneyInput.vue'
 import MoneyText from '@/components/domain/MoneyText.vue'
@@ -33,58 +30,21 @@ import { useServerTable } from '@/composables/useServerTable'
 import { useShortcuts } from '@/composables/useShortcuts'
 import type { LookupItem } from '@/stores/useCatalogStore'
 import { useClientesStore } from '@/stores/useClientesStore'
-import { useMovimientosStore } from '@/stores/useMovimientosStore'
-import { useProyectosStore } from '@/stores/useProyectosStore'
-import { useTrabajosStore } from '@/stores/useTrabajosStore'
 import {
-  MEDIOS_PAGO,
   useFacturasStore,
   type EstadoFactura,
-  type FacturaDetalle,
   type FacturaFiltro,
   type FacturaInput,
   type FacturaListItem,
-  type PagoFacturaInput,
 } from '@/stores/useFacturasStore'
-
-/**
- * Invoices and their payments. See `docs/09-modulos-funcionales.md` §3.8.
- *
- * The state is never typed in: it follows the balance. Registering a payment answers with the
- * whole invoice, which is what keeps the totals on screen from drifting from the database.
- */
+import FacturaPagosModal from './components/FacturaPagosModal.vue'
 
 const { t } = useI18n()
 const route = useRoute()
 const { confirmDelete } = useConfirmDelete()
-const { fieldErrors, notify } = useApiError()
+const { notify } = useApiError()
 const store = useFacturasStore()
 const clientes = useClientesStore()
-const movimientosStore = useMovimientosStore()
-const proyectosStore = useProyectosStore()
-const trabajosStore = useTrabajosStore()
-
-const registrarEnCaja = ref(true)
-const pagoProyectoId = ref<string | null>(null)
-const pagoTrabajoId = ref<string | null>(null)
-const opcionesProyectos = ref<LookupItem[]>([])
-const pagoOpcionesTrabajos = ref<LookupItem[]>([])
-
-async function onPagoProyectoChange(): Promise<void> {
-  pagoTrabajoId.value = null
-  if (!pagoProyectoId.value) {
-    pagoOpcionesTrabajos.value = []
-    return
-  }
-  try {
-    pagoOpcionesTrabajos.value = await trabajosStore.lookup(pagoProyectoId.value)
-    if (pagoOpcionesTrabajos.value.length === 1 && pagoOpcionesTrabajos.value[0]) {
-      pagoTrabajoId.value = pagoOpcionesTrabajos.value[0].id
-    }
-  } catch {
-    pagoOpcionesTrabajos.value = []
-  }
-}
 
 const table = useServerTable<FacturaFiltro, FacturaListItem>({
   key: 'facturas',
@@ -99,10 +59,6 @@ const estadoOptions = computed<{ label: string; value: EstadoFactura }[]>(() =>
   (['Borrador', 'Emitida', 'PagadaParcial', 'Pagada', 'Vencida', 'Anulada'] as const).map(
     (value) => ({ label: t(`State.Factura.${value}`), value }),
   ),
-)
-
-const medioPagoOptions = computed(() =>
-  MEDIOS_PAGO.map((value) => ({ label: t(`MedioPago.${value}`), value })),
 )
 
 function hoy(): string {
@@ -158,10 +114,6 @@ const drawer = useCrudDrawer<Model>({
   onSaved: () => table.reload(),
 })
 
-/**
- * The total is `subtotal + iva` and the backend recomputes it anyway; showing the sum here keeps
- * the form honest instead of letting the user type a third, inconsistent number.
- */
 function recalcularTotal(): void {
   const subtotal = Number(drawer.model.value.subtotal)
   const iva = Number(drawer.model.value.iva)
@@ -175,128 +127,15 @@ function aplicarAlicuotaIva(porcentaje: number): void {
 }
 
 // ------------------------------------------------------------------- payments
-
 const pagosVisible = ref(false)
-const factura = ref<FacturaDetalle | null>(null)
-const nuevoPago = ref<PagoFacturaInput>({
-  facturaId: '',
-  fecha: hoy(),
-  monto: '0.0000',
-  medioPago: 'Efectivo',
-})
-const pagoErrores = ref<Record<string, string>>({})
+const selectedFacturaId = ref<string | null>(null)
 
-async function abrirPagos(row: { id: string }): Promise<void> {
-  try {
-    factura.value = await store.fetchOne(row.id)
-    // The default is what is still owed: the usual payment cancels the balance in full.
-    nuevoPago.value = {
-      facturaId: row.id,
-      fecha: hoy(),
-      monto: factura.value.saldo,
-      medioPago: 'Efectivo',
-    }
-    pagoErrores.value = {}
-
-    pagoProyectoId.value = null
-    pagoTrabajoId.value = null
-    pagoOpcionesTrabajos.value = []
-
-    try {
-      opcionesProyectos.value = await proyectosStore.lookup(factura.value.clienteId)
-    } catch {
-      opcionesProyectos.value = []
-    }
-
-    const cachedObra = localStorage.getItem(`certaro:factura-obra:${row.id}`)
-    if (cachedObra) {
-      try {
-        const parsed = JSON.parse(cachedObra)
-        if (parsed.proyectoId) {
-          pagoProyectoId.value = parsed.proyectoId
-          await onPagoProyectoChange()
-        }
-        if (parsed.trabajoId) {
-          pagoTrabajoId.value = parsed.trabajoId
-        }
-      } catch {
-        // ignore
-      }
-    } else if (opcionesProyectos.value.length === 1 && opcionesProyectos.value[0]) {
-      pagoProyectoId.value = opcionesProyectos.value[0].id
-      await onPagoProyectoChange()
-    }
-
-    pagosVisible.value = true
-  } catch (e) {
-    notify(e)
-  }
-}
-
-async function registrarPago(): Promise<void> {
-  pagoErrores.value = {}
-  try {
-    const pagoMonto = nuevoPago.value.monto
-    const pagoMedio = nuevoPago.value.medioPago
-    const pagoFecha = nuevoPago.value.fecha
-    factura.value = await store.crearPago(nuevoPago.value)
-
-function fechaPagoToIso(fechaStr: string): string {
-  if (!fechaStr) return new Date().toISOString()
-  const partes = fechaStr.split('-').map(Number)
-  if (partes.length === 3 && partes[0] && partes[1] && partes[2]) {
-    const now = new Date()
-    return new Date(partes[0], partes[1] - 1, partes[2], now.getHours(), now.getMinutes(), now.getSeconds()).toISOString()
-  }
-  return new Date().toISOString()
-}
-
-    if (registrarEnCaja.value && factura.value) {
-      try {
-        await movimientosStore.create({
-          fecha: fechaPagoToIso(pagoFecha),
-          concepto: `Cobranza Factura ${factura.value.numero} (${pagoMedio})`,
-          monto: pagoMonto,
-          cantidad: '1.0000',
-          tipoMovimientoId: '00000000-0000-0000-0000-000000000001',
-          moneda: 'Ars',
-          cotizacionAplicada: null,
-          tipoConceptoPagoId: null,
-          categoriaId: null,
-          clienteId: factura.value.clienteId,
-          trabajoId: pagoTrabajoId.value || null,
-          empleadoId: null,
-          facturaId: factura.value.id,
-        })
-      } catch (err) {
-        console.warn('No se pudo registrar automáticamente el ingreso en caja:', err)
-      }
-    }
-
-    nuevoPago.value = {
-      facturaId: factura.value.id,
-      fecha: hoy(),
-      monto: factura.value.saldo,
-      medioPago: 'Efectivo',
-    }
-    table.reload()
-  } catch (e) {
-    const error = notify(e)
-    if (error.code === 'VALIDATION') pagoErrores.value = fieldErrors(error)
-  }
-}
-
-async function borrarPago(id: string, rowVersion: string): Promise<void> {
-  try {
-    factura.value = await store.borrarPago(id, rowVersion)
-    table.reload()
-  } catch (e) {
-    notify(e)
-  }
+function abrirPagos(row: { id: string }): void {
+  selectedFacturaId.value = row.id
+  pagosVisible.value = true
 }
 
 // --------------------------------------------------------------------- states
-
 async function cambiarEstado(row: FacturaListItem, destino: EstadoFactura): Promise<void> {
   try {
     await store.transition(row.id, destino, row.rowVersion)
@@ -591,115 +430,11 @@ onMounted(async () => {
       </label>
     </CrudDrawer>
 
-    <Dialog
+    <!-- Modal de pagos separado -->
+    <FacturaPagosModal
       v-model:visible="pagosVisible"
-      modal
-      :header="$t('Facturas.Pagos')"
-      class="w-[42rem]"
-      :dismissable-mask="true"
-    >
-      <div v-if="factura" class="flex flex-col gap-4">
-        <div class="flex flex-wrap items-center gap-6 text-sm">
-          <span class="font-medium">{{ factura.numero }}</span>
-          <span>{{ factura.clienteNombre }}</span>
-          <StatePill entity="Factura" :value="factura.estado.actual" />
-          <span class="flex items-center gap-2">
-            <span class="text-muted-foreground">{{ $t('Facturas.Total') }}</span>
-            <MoneyText :value="factura.total" />
-          </span>
-          <span class="flex items-center gap-2">
-            <span class="text-muted-foreground">{{ $t('Facturas.Saldo') }}</span>
-            <MoneyText :value="factura.saldo" colored />
-          </span>
-        </div>
-
-        <DataTable :value="factura.pagos" size="small" class="text-sm">
-          <Column field="fecha" :header="$t('Facturas.Fecha')">
-            <template #body="{ data }"><DateText :value="data.fecha" /></template>
-          </Column>
-          <Column field="medioPago" :header="$t('Facturas.MedioPago')" />
-          <Column field="monto" :header="$t('Facturas.Monto')">
-            <template #body="{ data }"><MoneyText :value="data.monto" /></template>
-          </Column>
-          <Column>
-            <template #body="{ data }">
-              <Button variant="ghost" size="sm" @click="borrarPago(data.id, data.rowVersion)">
-                <AppIcon name="trash-2" :size="14" />
-              </Button>
-            </template>
-          </Column>
-          <template #empty>
-            <span class="text-muted-foreground">{{ $t('Facturas.SinPagos') }}</span>
-          </template>
-        </DataTable>
-
-        <!-- Disabled rather than hidden: a draft or an annulled invoice shows why it takes none. -->
-        <div
-          v-if="factura.admitePagos"
-          class="grid grid-cols-4 items-end gap-3 border-t border-border pt-3"
-        >
-          <label class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">{{ $t('Facturas.Fecha') }}</span>
-            <DateInput v-model="nuevoPago.fecha" :invalid="Boolean(pagoErrores.fecha)" />
-            <FieldError id="pago-fecha-error" :message="pagoErrores.fecha" />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">{{ $t('Facturas.Monto') }}</span>
-            <MoneyInput v-model="nuevoPago.monto" :min="0" :invalid="Boolean(pagoErrores.monto)" />
-            <FieldError id="pago-monto-error" :message="pagoErrores.monto" />
-          </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">{{ $t('Facturas.MedioPago') }}</span>
-            <Select
-              v-model="nuevoPago.medioPago"
-              :options="medioPagoOptions"
-              option-label="label"
-              option-value="value"
-              editable
-            />
-          </label>
-          <div v-if="registrarEnCaja" class="col-span-4 grid grid-cols-2 gap-3 rounded border border-border/70 bg-muted/20 p-2.5">
-            <label class="flex flex-col gap-1">
-              <span class="text-xs text-muted-foreground">Imputar a Proyecto / Obra</span>
-              <Select
-                v-model="pagoProyectoId"
-                :options="opcionesProyectos"
-                option-label="label"
-                option-value="id"
-                filter
-                show-clear
-                placeholder="General (Sin proyecto)"
-                @change="onPagoProyectoChange()"
-              />
-            </label>
-            <label class="flex flex-col gap-1">
-              <span class="text-xs text-muted-foreground">Trabajo / Frente de Obra</span>
-              <Select
-                v-model="pagoTrabajoId"
-                :options="pagoOpcionesTrabajos"
-                option-label="label"
-                option-value="id"
-                filter
-                show-clear
-                placeholder="General"
-                :disabled="!pagoProyectoId && pagoOpcionesTrabajos.length === 0"
-              />
-            </label>
-          </div>
-
-          <div class="col-span-4 flex items-center justify-between pt-2">
-            <label class="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-              <Checkbox v-model="registrarEnCaja" :binary="true" />
-              <span>{{ $t('Facturas.RegistrarEnCaja') }}</span>
-            </label>
-            <Button @click="registrarPago()">
-              <AppIcon name="plus" :size="16" />
-              {{ $t('Facturas.RegistrarPago') }}
-            </Button>
-          </div>
-        </div>
-        <p v-else class="text-xs text-muted-foreground">{{ $t('Facturas.NoAdmitePagos') }}</p>
-      </div>
-    </Dialog>
+      :factura-id="selectedFacturaId"
+      @pago-modificado="table.reload()"
+    />
   </section>
 </template>
