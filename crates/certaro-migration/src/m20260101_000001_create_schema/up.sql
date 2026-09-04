@@ -1,16 +1,3 @@
-//! The 21 tables of `docs/03-modelo-de-datos.md` §3, in dependency order.
-//!
-//! The DDL is written as literal SQL rather than through the schema builder on purpose: the
-//! document is the authoritative definition, and partial indexes (`WHERE is_deleted = 0`),
-//! expression indexes (`IFNULL(...)`) and `WITHOUT ROWID` have no faithful representation in the
-//! builder. Keeping the text identical makes a discrepancy visible in a diff.
-
-use sea_orm_migration::prelude::*;
-
-#[derive(DeriveMigrationName)]
-pub struct Migration;
-
-const SCHEMA: &str = r#"
 CREATE TABLE tipos_movimiento (
     id           TEXT    NOT NULL PRIMARY KEY,
     nombre       TEXT    NOT NULL,
@@ -456,43 +443,3 @@ CREATE TABLE feriados (
     updated_at TEXT     NULL
 ) WITHOUT ROWID;
 CREATE INDEX ix_feriados_origen ON feriados (origen);
-"#;
-
-/// Reverse creation order so a foreign key never points at a table that is already gone.
-const DROP: &str = r#"
-DROP TABLE IF EXISTS feriados;
-DROP TABLE IF EXISTS liquidacion_adelantos;
-DROP TABLE IF EXISTS certificado_items;
-DROP TABLE IF EXISTS certificados;
-DROP TABLE IF EXISTS app_metadata;
-DROP TABLE IF EXISTS adjuntos;
-DROP TABLE IF EXISTS movimientos;
-DROP TABLE IF EXISTS liquidaciones;
-DROP TABLE IF EXISTS asistencias_empleado;
-DROP TABLE IF EXISTS empleados;
-DROP TABLE IF EXISTS pagos_factura;
-DROP TABLE IF EXISTS facturas;
-DROP TABLE IF EXISTS orden_trabajo_items;
-DROP TABLE IF EXISTS ordenes_trabajo;
-DROP TABLE IF EXISTS trabajos;
-DROP TABLE IF EXISTS proyectos;
-DROP TABLE IF EXISTS obras;
-DROP TABLE IF EXISTS cliente_contactos;
-DROP TABLE IF EXISTS clientes;
-DROP TABLE IF EXISTS categorias;
-DROP TABLE IF EXISTS tipos_concepto_pago;
-DROP TABLE IF EXISTS tipos_movimiento;
-"#;
-
-#[async_trait::async_trait]
-impl MigrationTrait for Migration {
-    async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        manager.get_connection().execute_unprepared(SCHEMA).await?;
-        Ok(())
-    }
-
-    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        manager.get_connection().execute_unprepared(DROP).await?;
-        Ok(())
-    }
-}
