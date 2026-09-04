@@ -36,7 +36,7 @@ const ADELANTO_ID = '00000000-0000-0000-0000-000000000003'
 
 const opcionesTrabajo = ref<LookupItem[]>([])
 const selectedProyectoId = ref<string | null>(null)
-const opcionesProyecto = ref<LookupItem[]>([])
+const listaProyectos = ref<LookupItem[]>([])
 
 async function onClienteChange(): Promise<void> {
   const cId = drawer.model.value.clienteId
@@ -44,9 +44,9 @@ async function onClienteChange(): Promise<void> {
   drawer.model.value.trabajoId = null
   opcionesTrabajo.value = []
   if (cId) {
-    opcionesProyecto.value = await proyectos.lookup(cId)
+    listaProyectos.value = await proyectos.lookup(cId)
   } else {
-    opcionesProyecto.value = await proyectos.lookup(undefined, undefined, 200)
+    listaProyectos.value = await proyectos.lookup(undefined, undefined, 200)
   }
 }
 
@@ -154,7 +154,7 @@ watch(
   () => props.opcionesProyecto,
   (val) => {
     if (!drawer.model.value.clienteId) {
-      opcionesProyecto.value = val
+      listaProyectos.value = val
     }
   },
   { immediate: true },
@@ -176,16 +176,16 @@ async function openCreate(preset?: {
       drawer.model.value.clienteId = preset.clienteId
     }
   } else {
-    opcionesProyecto.value = [...props.opcionesProyecto]
+    listaProyectos.value = [...props.opcionesProyecto]
   }
 }
 
 async function openEdit(id: string): Promise<void> {
   drawer.openEdit(id)
   if (drawer.model.value.clienteId) {
-    opcionesProyecto.value = await proyectos.lookup(drawer.model.value.clienteId)
+    listaProyectos.value = await proyectos.lookup(drawer.model.value.clienteId)
   } else {
-    opcionesProyecto.value = [...props.opcionesProyecto]
+    listaProyectos.value = [...props.opcionesProyecto]
   }
 }
 
@@ -294,7 +294,7 @@ defineExpose({
       v-model:selected-proyecto-id="selectedProyectoId"
       v-model:trabajo-id="drawer.model.value.trabajoId"
       :opciones-cliente="opcionesCliente"
-      :opciones-proyecto="opcionesProyecto"
+      :opciones-proyecto="listaProyectos"
       :opciones-trabajo="opcionesTrabajo"
       @cliente-change="onClienteChange"
       @proyecto-change="onProyectoChange"

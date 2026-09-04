@@ -18,7 +18,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
 | **Fase 8** | Integración Financiera, Consistencia de Cálculos y Ergonomía UX | 8 | 8 | 🟢 Completada |
 | **Fase 9** | Correcciones Críticas de Lógica Numérica, Imputación Financiera y Flujo de Obra | 6 | 6 | 🟢 Completada |
 | **Fase 10** | Integración Bimonetaria, Imputación de Mano de Obra y Ergonomía de Flujo | 7 | 7 | 🟢 Completada |
-| **Fase 11** | Auditoría Integral de Flujo Operativo, Cálculos Financieros y Ergonomía UX/UI | 7 | 6 | 🟡 En Progreso |
+| **Fase 11** | Auditoría Integral de Flujo Operativo, Cálculos Financieros y Ergonomía UX/UI | 7 | 7 | 🟢 Completada |
 
 ---
 
@@ -360,7 +360,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Detalle:** Añadir opción para aplicar la carga de jornadas a todos los empleados activos de la empresa o del proyecto en un único clic.
   - **Criterio de aceptación:** Se pueden asentar jornadas para toda la cuadrilla en lote.
 
-- [ ] **11.7. Higiene de Código y Saneamiento de Glifos**
+- [x] **11.7. Higiene de Código y Saneamiento de Glifos**
   - **Archivos:** `src/views/reportes/ReportesView.vue`, `src/views/comercial/CuentaCorrienteView.vue`.
   - **Detalle:** Reemplazar glifo corrupto `\uFFFD` en comentarios de `ReportesView.vue` y limpiar declaraciones anidadas en `CuentaCorrienteView.vue`.
   - **Criterio de aceptación:** 0 errores de linter, typecheck y architecture specs aprobadas.

@@ -13,7 +13,7 @@ import type { MovimientoFiltro } from '@/stores/useMovimientosStore'
 import { useReportesStore } from '@/stores/useReportesStore'
 
 /**
- * The report centre. See `docs/09-modulos-funcionales.md` �3.12.
+ * The report centre. See `docs/09-modulos-funcionales.md` §3.12.
  *
  * Each card asks only for what its report needs and then opens the save dialog. Nothing is written
  * anywhere the user did not choose.
