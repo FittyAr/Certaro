@@ -420,7 +420,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Detalle:** Modificar `suma_movimientos_expr` para que aplique la fórmula de monto consolidado multiplicando por `cotizacion_aplicada` cuando la moneda es USD.
   - **Criterio de aceptación:** Compras y cobros en USD impactan en la rentabilidad de la obra convertidos a pesos según su cotización real.
 
-- [ ] **13.3. Inclusión de Adelantos Preexistentes No Descontados en Liquidación**
+- [x] **13.3. Inclusión de Adelantos Preexistentes No Descontados en Liquidación**
   - **Archivos:** `crates/certaro-infrastructure/src/persistence/repositories/liquidacion/mod.rs`.
   - **Detalle:** En `candidatos_adelantos`, ampliar el query para que busque todos los adelantos con fecha anterior o igual a la fecha fin del período que aún no hayan sido descontados en una liquidación previa.
   - **Criterio de aceptación:** Adelantos dados a empleados antes del primer día de la quincena se sugieren para ser descontados en la liquidación.

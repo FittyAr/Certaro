@@ -9,10 +9,10 @@ use certaro_application::{AppError, AppResult, PageRequest, PagedResult};
 use certaro_domain::constants::tipos_movimiento;
 use certaro_domain::entities::{Liquidacion, LiquidacionAdelanto};
 use certaro_domain::{Money, RowVersion};
-use sea_orm::sea_query::{Alias, Expr};
+use sea_orm::sea_query::{Alias, Expr, ExprTrait};
 use sea_orm::{
-    ColumnTrait, DatabaseTransaction, EntityTrait, Order, PaginatorTrait, QueryFilter, QueryOrder,
-    QuerySelect,
+    ColumnTrait, Condition, DatabaseTransaction, EntityTrait, Order, PaginatorTrait, QueryFilter,
+    QueryOrder, QuerySelect,
 };
 use uuid::Uuid;
 
@@ -170,8 +170,12 @@ impl LiquidacionRepository for SeaOrmLiquidacionRepository {
             // Filtered by the seeded identifier, never by the name: renaming the row must not stop
             // the payroll from finding advances.
             .filter(movimiento::Column::TipoMovimientoId.eq(tipos_movimiento::ADELANTO.to_string()))
-            .filter(movimiento::Column::Fecha.gte(desde(desde_fecha)))
             .filter(movimiento::Column::Fecha.lte(hasta(hasta_fecha)))
+            .filter(
+                Condition::any()
+                    .add(movimiento::Column::Fecha.gte(desde(desde_fecha)))
+                    .add(liquidacion_del_adelanto_expr().is_null()),
+            )
             .order_by_asc(movimiento::Column::Fecha)
             .into_model::<RowCandidato>()
             .all(self.conn())
