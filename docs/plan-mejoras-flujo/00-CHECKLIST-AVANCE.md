@@ -16,6 +16,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
 | **Fase 6** | Consolidación de Flujos, Hub de Obras y Ergonomía de Usuario | 5 | 5 | 🟢 Completada |
 | **Fase 7** | Correcciones Críticas de Flujo, Cálculos Numéricos y Ergonomía | 7 | 7 | 🟢 Completada |
 | **Fase 8** | Integración Financiera, Consistencia de Cálculos y Ergonomía UX | 8 | 8 | 🟢 Completada |
+| **Fase 9** | Correcciones Críticas de Lógica Numérica, Imputación Financiera y Flujo de Obra | 6 | 0 | 🟡 En progreso |
 
 ---
 
@@ -249,4 +250,39 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Archivos:** `src/views/trabajos/TrabajoDetalleView.vue`, `src/views/proyectos/ProyectoCajaView.vue`.
   - **Detalle:** Integrar la planilla de órdenes de trabajo en `TrabajoDetalleView.vue` y paginación en `ProyectoCajaView.vue`.
   - **Criterio de aceptación:** El detalle del trabajo es plenamente funcional y la caja de proyecto maneja paginación sin sesgar cálculos.
+
+---
+
+## Fase 9: Correcciones Críticas de Lógica Numérica, Imputación Financiera y Flujo de Obra
+
+- [ ] **9.1. Corrección de Signo y Claridad en Ajuste UOCRA de Certificados**
+  - **Archivos:** `crates/certaro-domain/src/entities/orden_trabajo.rs`, `crates/certaro-application/src/use_cases/certificados.rs`, `src/views/ordenes/OrdenDetalleView.vue`.
+  - **Detalle:** En el dominio y caso de uso, sumar el `ajuste_uocra` cuando sea positivo en lugar de restarlo (`total_neto = total_certificado + ajuste_uocra - otros_descuentos`). En la UI, etiquetar como *"Adicional / Ajuste UOCRA (+)"* y reflejar la suma en el modal de emisión.
+  - **Criterio de aceptación:** Al certificar con 10% UOCRA sobre $100.000, el neto resulta en $110.000 (no $90.000).
+
+- [ ] **9.2. Selector y Filtro de Moneda en Libro de Movimientos**
+  - **Archivos:** `src/views/movimientos/MovimientosView.vue`.
+  - **Detalle:** Añadir selector de moneda en `FilterBar` (Todas, Pesos ARS, Dólares USD) y vincularlo a `table.filter.value.moneda`.
+  - **Criterio de aceptación:** Los totales del banner de resumen representan exactamente la divisa seleccionada sin mezclar ARS y USD linealmente.
+
+- [ ] **9.3. Prevención de Movimientos Huérfanos al Imputar Proyecto**
+  - **Archivos:** `src/views/movimientos/MovimientosView.vue`.
+  - **Detalle:** Al cambiar de proyecto en el drawer de movimientos, si existen trabajos disponibles, preseleccionar por defecto el primero para evitar que `trabajo_id` quede nulo. Mostrar advertencia amigable si el proyecto no tiene trabajos aún.
+  - **Criterio de aceptación:** Los gastos cargados para un proyecto no se pierden en el limbo y quedan visibles en la Caja de Proyecto.
+
+- [ ] **9.4. Edición Directa de Planilla de Cómputo en `OrdenDetalleView`**
+  - **Archivos:** `src/views/ordenes/OrdenDetalleView.vue`, `src/views/ordenes/components/EditorOrdenModal.vue`.
+  - **Detalle:** Añadir botón *"Editar Planilla / Ítems"* en el `PageHeader` de `OrdenDetalleView.vue` para abrir el editor de la orden sin volver al listado general.
+  - **Criterio de aceptación:** El usuario puede agregar y corregir ítems de la orden directamente desde su pantalla de detalle.
+
+- [ ] **9.5. Corrección del Filtro de Cuadrilla en Asistencia**
+  - **Archivos:** `src/views/asistencia/AsistenciaView.vue`.
+  - **Detalle:** Al filtrar por proyecto, incluir la opción o modo para ver toda la cuadrilla activa y permitir asignar marcas de jornada a cualquier trabajador para esa obra.
+  - **Criterio de aceptación:** El filtro por obra no bloquea la carga de asistencia para operarios que aún no tenían marcas previas.
+
+- [ ] **9.6. Consistencia de Totales en Caja de Proyecto (`ProyectoDetalleView`)**
+  - **Archivos:** `src/views/proyectos/ProyectoDetalleView.vue`.
+  - **Detalle:** Utilizar el objeto `res.resumen` devuelto por el backend en lugar de calcular totales locales sobre la primera página de 100 movimientos.
+  - **Criterio de aceptación:** La pestaña de caja en la ficha del proyecto refleja los totales matemáticos exactos independientemente del volumen de datos.
+
 
