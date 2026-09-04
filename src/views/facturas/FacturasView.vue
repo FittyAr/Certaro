@@ -1,25 +1,16 @@
 <script setup lang="ts">
-import Column from 'primevue/column'
 import Divider from 'primevue/divider'
 import InputText from 'primevue/inputtext'
 import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
-import Textarea from 'primevue/textarea'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
-import CrudDrawer from '@/components/domain/CrudDrawer.vue'
-import DataGrid from '@/components/domain/DataGrid.vue'
 import DateInput from '@/components/domain/DateInput.vue'
-import DateText from '@/components/domain/DateText.vue'
-import FieldError from '@/components/domain/FieldError.vue'
 import FilterBar from '@/components/domain/FilterBar.vue'
-import MoneyInput from '@/components/domain/MoneyInput.vue'
-import MoneyText from '@/components/domain/MoneyText.vue'
 import PageHeader from '@/components/domain/PageHeader.vue'
-import StatePill from '@/components/domain/StatePill.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import HelpButton from '@/components/ui/HelpButton.vue'
 import { Button } from '@/components/ui/button'
@@ -38,6 +29,8 @@ import {
   type FacturaListItem,
 } from '@/stores/useFacturasStore'
 import FacturaPagosModal from './components/FacturaPagosModal.vue'
+import FacturaFormDrawer from './components/FacturaFormDrawer.vue'
+import FacturasTable from './components/FacturasTable.vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -113,18 +106,6 @@ const drawer = useCrudDrawer<Model>({
   update: (id, dto) => store.update(id, dto, dto.rowVersion ?? ''),
   onSaved: () => table.reload(),
 })
-
-function recalcularTotal(): void {
-  const subtotal = Number(drawer.model.value.subtotal)
-  const iva = Number(drawer.model.value.iva)
-  drawer.model.value.total = (subtotal + iva).toFixed(4)
-}
-
-function aplicarAlicuotaIva(porcentaje: number): void {
-  const subtotal = Number(drawer.model.value.subtotal)
-  drawer.model.value.iva = ((subtotal * porcentaje) / 100).toFixed(4)
-  recalcularTotal()
-}
 
 // ------------------------------------------------------------------- payments
 const pagosVisible = ref(false)
@@ -256,179 +237,18 @@ onMounted(async () => {
 
     <Divider />
 
-    <DataGrid
+    <FacturasTable
       :table="table"
-      empty-key="Facturas.Empty"
-      class="flex-1"
-      @row-edit="(row: any) => drawer.openEdit(row.id)"
-    >
-      <Column field="fecha" :header="$t('Facturas.Fecha')" sortable>
-        <template #body="{ data }"><DateText :value="data.fecha" /></template>
-      </Column>
-      <Column field="numero" :header="$t('Facturas.Numero')" sortable />
-      <Column field="clienteNombre" :header="$t('Facturas.Cliente')" sortable />
-      <Column field="estado" :header="$t('Facturas.Estado')" sortable>
-        <template #body="{ data }"><StatePill entity="Factura" :value="data.estado" /></template>
-      </Column>
-      <Column field="total" :header="$t('Facturas.Total')" sortable>
-        <template #body="{ data }"><MoneyText :value="data.total" /></template>
-      </Column>
-      <Column field="pagado" :header="$t('Facturas.Pagado')" sortable>
-        <template #body="{ data }"><MoneyText :value="data.pagado" /></template>
-      </Column>
-      <Column field="saldo" :header="$t('Facturas.Saldo')" sortable>
-        <template #body="{ data }"><MoneyText :value="data.saldo" colored /></template>
-      </Column>
-      <Column field="diasMora" :header="$t('Facturas.Mora')">
-        <template #body="{ data }">
-          <span v-if="data.diasMora > 0" class="tabular-nums text-destructive">
-            {{ $t('Facturas.DiasMora', { count: data.diasMora }) }}
-          </span>
-          <span v-else>—</span>
-        </template>
-      </Column>
+      @row-edit="(id) => drawer.openEdit(id)"
+      @cambiar-estado="cambiarEstado"
+      @abrir-pagos="abrirPagos"
+      @delete="onDelete"
+    />
 
-      <template #actions="{ data }">
-        <div class="flex gap-1">
-          <Button
-            v-if="data.estado === 'Borrador'"
-            variant="ghost"
-            size="sm"
-            :title="$t('Actions.Factura.Emitida')"
-            @click="cambiarEstado(data, 'Emitida')"
-          >
-            <AppIcon name="send" :size="14" />
-          </Button>
-          <Button variant="ghost" size="sm" :title="$t('Facturas.Pagos')" @click="abrirPagos(data)">
-            <AppIcon name="wallet" :size="14" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            :aria-label="$t('General.Edit')"
-            @click="drawer.openEdit(data.id)"
-          >
-            <AppIcon name="pencil" :size="14" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            :aria-label="$t('General.Delete')"
-            @click="onDelete(data)"
-          >
-            <AppIcon name="trash-2" :size="14" />
-          </Button>
-        </div>
-      </template>
-    </DataGrid>
-
-    <CrudDrawer :drawer="drawer" title-key="Entity.Factura">
-      <div class="grid grid-cols-2 gap-3">
-        <label class="flex flex-col gap-1">
-          <span class="text-sm">{{ $t('Facturas.Numero') }}</span>
-          <InputText
-            v-model="drawer.model.value.numero"
-            :invalid="Boolean(drawer.fieldErrors.value.numero)"
-            aria-describedby="fac-numero-error"
-          />
-          <FieldError id="fac-numero-error" :message="drawer.fieldErrors.value.numero" />
-        </label>
-        <label class="flex flex-col gap-1">
-          <span class="text-sm">{{ $t('Facturas.Fecha') }}</span>
-          <DateInput
-            v-model="drawer.model.value.fecha"
-            :invalid="Boolean(drawer.fieldErrors.value.fecha)"
-          />
-          <FieldError id="fac-fecha-error" :message="drawer.fieldErrors.value.fecha" />
-        </label>
-      </div>
-
-      <label class="flex flex-col gap-1">
-        <span class="text-sm">{{ $t('Facturas.Cliente') }}</span>
-        <Select
-          v-model="drawer.model.value.clienteId"
-          :options="opcionesCliente"
-          option-label="label"
-          option-value="id"
-          filter
-          :invalid="Boolean(drawer.fieldErrors.value.clienteId)"
-        />
-        <FieldError id="fac-cliente-error" :message="drawer.fieldErrors.value.clienteId" />
-      </label>
-
-      <label class="flex flex-col gap-1">
-        <span class="text-sm">{{ $t('Facturas.Vencimiento') }}</span>
-        <DateInput
-          v-model="drawer.model.value.fechaVencimiento"
-          :invalid="Boolean(drawer.fieldErrors.value.fechaVencimiento)"
-        />
-        <FieldError id="fac-venc-error" :message="drawer.fieldErrors.value.fechaVencimiento" />
-      </label>
-
-      <div class="grid grid-cols-3 gap-3">
-        <label class="flex flex-col gap-1">
-          <span class="text-sm">{{ $t('Facturas.Subtotal') }}</span>
-          <MoneyInput
-            v-model="drawer.model.value.subtotal"
-            :min="0"
-            :invalid="Boolean(drawer.fieldErrors.value.subtotal)"
-            @update:model-value="recalcularTotal()"
-          />
-          <FieldError id="fac-subtotal-error" :message="drawer.fieldErrors.value.subtotal" />
-        </label>
-        <label class="flex flex-col gap-1">
-          <div class="flex items-center justify-between">
-            <span class="text-sm">{{ $t('Facturas.Iva') }}</span>
-            <div class="flex gap-1 text-[11px]">
-              <button
-                type="button"
-                class="rounded border border-border px-1 py-0.2 hover:bg-muted font-medium transition-colors"
-                @click="aplicarAlicuotaIva(0)"
-              >
-                0%
-              </button>
-              <button
-                type="button"
-                class="rounded border border-border px-1 py-0.2 hover:bg-muted font-medium transition-colors"
-                @click="aplicarAlicuotaIva(10.5)"
-              >
-                10.5%
-              </button>
-              <button
-                type="button"
-                class="rounded border border-border px-1 py-0.2 hover:bg-muted font-medium transition-colors"
-                @click="aplicarAlicuotaIva(21)"
-              >
-                21%
-              </button>
-              <button
-                type="button"
-                class="rounded border border-border px-1 py-0.2 hover:bg-muted font-medium transition-colors"
-                @click="aplicarAlicuotaIva(27)"
-              >
-                27%
-              </button>
-            </div>
-          </div>
-          <MoneyInput
-            v-model="drawer.model.value.iva"
-            :min="0"
-            :invalid="Boolean(drawer.fieldErrors.value.iva)"
-            @update:model-value="recalcularTotal()"
-          />
-          <FieldError id="fac-iva-error" :message="drawer.fieldErrors.value.iva" />
-        </label>
-        <label class="flex flex-col gap-1">
-          <span class="text-sm">{{ $t('Facturas.Total') }}</span>
-          <MoneyInput v-model="drawer.model.value.total" disabled />
-        </label>
-      </div>
-
-      <label class="flex flex-col gap-1">
-        <span class="text-sm">{{ $t('Facturas.Observaciones') }}</span>
-        <Textarea v-model="drawer.model.value.observaciones" rows="3" auto-resize />
-      </label>
-    </CrudDrawer>
+    <FacturaFormDrawer
+      :drawer="drawer"
+      :opciones-cliente="opcionesCliente"
+    />
 
     <!-- Modal de pagos separado -->
     <FacturaPagosModal
