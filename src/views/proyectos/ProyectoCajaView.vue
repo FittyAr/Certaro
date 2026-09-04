@@ -89,6 +89,7 @@ function irARegistrarMovimiento(): void {
     query: {
       proyectoId: proyectoId.value,
       clienteId: proyecto.value?.clienteId ?? undefined,
+      tipoMovimientoId: '00000000-0000-0000-0000-000000000002',
     },
   })
 }

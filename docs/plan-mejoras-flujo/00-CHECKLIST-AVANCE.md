@@ -345,7 +345,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Detalle:** Incorporar selectores dependientes de Proyecto y Trabajo en `CuentaCorrienteCobroModal.vue` e imputar el ingreso generado en caja a la obra indicada.
   - **Criterio de aceptación:** El cobro desde cuenta corriente puede asignarse a un proyecto y se refleja inmediatamente en su caja y rentabilidad.
 
-- [ ] **11.4. Preselección de "Gasto" desde Caja de Obra**
+- [x] **11.4. Preselección de "Gasto" desde Caja de Obra**
   - **Archivos:** `src/views/movimientos/MovimientosView.vue`, `src/views/movimientos/components/MovimientoDrawer.vue`.
   - **Detalle:** Preseleccionar automáticamente el tipo de movimiento `Gasto` al navegar desde el botón "+ Registrar Gasto" de la ficha de obra.
   - **Criterio de aceptación:** El drawer abre con el tipo "Gasto" seleccionado por defecto al venir desde la caja de proyecto.

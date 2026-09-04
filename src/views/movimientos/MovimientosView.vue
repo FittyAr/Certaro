@@ -87,6 +87,8 @@ function onDelete(row: MovimientoListItem): void {
 
 useShortcuts({ 'ctrl+n': () => drawerRef.value?.openCreate() })
 
+const GASTO_ID = '00000000-0000-0000-0000-000000000002'
+
 onMounted(async () => {
   if (route.query.filtroProyectoId) {
     table.filter.value.proyectoId = String(route.query.filtroProyectoId)
@@ -97,9 +99,17 @@ onMounted(async () => {
   table.start()
   await cargarSelectores()
   if (route.query.proyectoId) {
+    const tipo = route.query.tipoMovimientoId
+      ? String(route.query.tipoMovimientoId)
+      : GASTO_ID
     await drawerRef.value?.openCreate({
       proyectoId: String(route.query.proyectoId),
       clienteId: route.query.clienteId ? String(route.query.clienteId) : undefined,
+      tipoMovimientoId: tipo,
+    })
+  } else if (route.query.tipoMovimientoId) {
+    await drawerRef.value?.openCreate({
+      tipoMovimientoId: String(route.query.tipoMovimientoId),
     })
   }
 })

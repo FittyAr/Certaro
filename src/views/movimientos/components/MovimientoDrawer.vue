@@ -160,8 +160,15 @@ watch(
   { immediate: true },
 )
 
-async function openCreate(preset?: { proyectoId?: string; clienteId?: string }): Promise<void> {
+async function openCreate(preset?: {
+  proyectoId?: string
+  clienteId?: string
+  tipoMovimientoId?: string
+}): Promise<void> {
   drawer.openCreate()
+  if (preset?.tipoMovimientoId) {
+    drawer.model.value.tipoMovimientoId = preset.tipoMovimientoId
+  }
   if (preset?.proyectoId) {
     selectedProyectoId.value = preset.proyectoId
     await onProyectoChange()
