@@ -1,64 +1,15 @@
-//! PDF of a payroll settlement. See `docs/12-reportes-y-exportaciones.md` §3.
-//!
-//! This is the document the client asked for by name (RC-02): every advance listed with its own
-//! date, so the employee can check the number instead of trusting it. The legacy version showed a
-//! single gross figure with no breakdown and no dates.
-//!
-//! **Deviations from doc 12 §3**, both because the frozen settlement does not store the data the
-//! document assumes:
-//!
-//! - §3.2 asks for one premium row per day type with its count of days. A settlement freezes the
-//!   multipliers but not how many Saturdays, Sundays or holidays the period had (doc 05 §2.20), so
-//!   the premiums are one row with their total, derived as gross minus days × rate.
-//! - §3.3 asks for a «type» column with the payment concept of each advance. The frozen advance
-//!   keeps the date, the concept and the amount, not the concept type.
-
 use certaro_application::dtos::liquidaciones::LiquidacionDetalle;
-use certaro_application::dtos::reportes::GeneratedReport;
-use certaro_application::result::AppResult;
 use certaro_domain::Money;
-
-use super::canvas::{Align, Canvas, TextSpec};
-use super::table::{Border, Cell, Row, Table, Width};
-use super::theme::{self, size};
+use super::super::canvas::{Align, Canvas, TextSpec};
+use super::super::table::{Border, Cell, Row, Table, Width};
+use super::super::theme::{self, size};
 use crate::reporting::format::{format_date, format_datetime, format_money, format_number};
-use crate::reporting::{filename, footer_text, ReportContext};
+use crate::reporting::ReportContext;
 
 /// Width of the totals box, per doc 12 §3.4.
 const TOTALES_WIDTH: f32 = 200.0;
 
-pub fn generate(data: &LiquidacionDetalle, ctx: &ReportContext) -> AppResult<GeneratedReport> {
-    let mut canvas = Canvas::new(
-        &ctx.t("Report.Liquidacion.Title"),
-        theme::page::A4_WIDTH,
-        theme::page::A4_HEIGHT,
-        theme::page::MARGIN_LIQUIDACION,
-    )?;
-
-    encabezado(&mut canvas, data, ctx);
-    resumen(&mut canvas, data, ctx);
-    adelantos(&mut canvas, data, ctx);
-    totales(&mut canvas, data, ctx);
-    observaciones(&mut canvas, data, ctx);
-    firmas(&mut canvas, ctx);
-
-    let pie = |actual: usize, total: usize| {
-        Some(
-            TextSpec::new(footer_text(ctx, actual, total), size::FOOTER)
-                .color(theme::MUTED)
-                .align(Align::Center),
-        )
-    };
-    let bytes = canvas.finish(pie)?;
-
-    Ok(GeneratedReport {
-        bytes,
-        registros: data.adelantos.len() as u64,
-        nombre_sugerido: filename::liquidacion(&data.empleado_nombre, data.fecha_fin),
-    })
-}
-
-fn encabezado(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) {
+pub(super) fn encabezado(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) {
     let left = canvas.left();
     let width = canvas.content_width();
     let half = width / 2.0;
@@ -162,7 +113,7 @@ fn encabezado(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContex
     canvas.set_cursor(y.max(ry) + 16.0);
 }
 
-fn seccion(canvas: &mut Canvas, titulo: String, color: theme::Rgb) {
+pub(super) fn seccion(canvas: &mut Canvas, titulo: String, color: theme::Rgb) {
     let left = canvas.left();
     let width = canvas.content_width();
     let y = canvas.cursor();
@@ -177,7 +128,7 @@ fn seccion(canvas: &mut Canvas, titulo: String, color: theme::Rgb) {
     canvas.set_cursor(bajo + 10.0);
 }
 
-fn resumen(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) {
+pub(super) fn resumen(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) {
     seccion(
         canvas,
         ctx.t("Report.Liquidacion.SectionResumen"),
@@ -238,7 +189,7 @@ fn resumen(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) 
 }
 
 /// The multipliers actually applied, so the premium line can be checked against the rules.
-fn multiplicadores(data: &LiquidacionDetalle, ctx: &ReportContext) -> String {
+pub(super) fn multiplicadores(data: &LiquidacionDetalle, ctx: &ReportContext) -> String {
     let mut partes = Vec::new();
     if data.incluir_sabados {
         partes.push(format_number(data.multiplicador_sabado, &ctx.locale, 1));
@@ -253,13 +204,13 @@ fn multiplicadores(data: &LiquidacionDetalle, ctx: &ReportContext) -> String {
 }
 
 /// Days × rate, which is what the gross would be with no premiums.
-fn base_bruto(data: &LiquidacionDetalle) -> Money {
+pub(super) fn base_bruto(data: &LiquidacionDetalle) -> Money {
     data.tarifa_aplicada
         .checked_mul(data.dias_trabajados)
         .unwrap_or(data.total_bruto)
 }
 
-fn adelantos(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) {
+pub(super) fn adelantos(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) {
     seccion(
         canvas,
         ctx.t("Report.Liquidacion.SectionAdelantos"),
@@ -319,7 +270,7 @@ fn adelantos(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext
     table.render(canvas);
 }
 
-fn totales(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) {
+pub(super) fn totales(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) {
     canvas.advance(30.0);
     let x = canvas.left() + canvas.content_width() - TOTALES_WIDTH;
     let padding = 10.0;
@@ -400,7 +351,7 @@ fn totales(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) 
     canvas.set_cursor(top + alto);
 }
 
-fn observaciones(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) {
+pub(super) fn observaciones(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportContext) {
     let Some(texto) = data
         .observaciones
         .as_deref()
@@ -427,7 +378,7 @@ fn observaciones(canvas: &mut Canvas, data: &LiquidacionDetalle, ctx: &ReportCon
     canvas.advance(Canvas::line_height(size::BODY));
 }
 
-fn firmas(canvas: &mut Canvas, ctx: &ReportContext) {
+pub(super) fn firmas(canvas: &mut Canvas, ctx: &ReportContext) {
     if !ctx.report.mostrar_firmas {
         return;
     }
@@ -460,86 +411,3 @@ fn firmas(canvas: &mut Canvas, ctx: &ReportContext) {
     canvas.advance(Canvas::line_height(size::FOOTER) + 6.0);
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::reporting::tests_support::{contexto, liquidacion, pdf_text};
-
-    #[test]
-    fn pdf_liquidacion_lista_cada_adelanto_con_su_fecha() {
-        let data = liquidacion(5, "300000", "0");
-        let generado = generate(&data, &contexto()).unwrap();
-        let texto = pdf_text(&generado.bytes);
-        assert_eq!(generado.registros, 5);
-        for adelanto in &data.adelantos {
-            let fecha = format_date(adelanto.fecha, &contexto().locale);
-            assert!(texto.contains(&fecha), "falta la fecha {fecha}: {texto}");
-            assert!(
-                texto.contains(&adelanto.concepto),
-                "falta el concepto {}: {texto}",
-                adelanto.concepto
-            );
-        }
-    }
-
-    #[test]
-    fn pdf_liquidacion_sin_adelantos() {
-        let texto = pdf_text(
-            &generate(&liquidacion(0, "300000", "0"), &contexto())
-                .unwrap()
-                .bytes,
-        );
-        assert!(texto.contains("No se registraron adelantos"), "{texto}");
-    }
-
-    #[test]
-    fn pdf_liquidacion_total_neto_coincide_con_el_dominio() {
-        let data = liquidacion(2, "300000", "0");
-        let texto = pdf_text(&generate(&data, &contexto()).unwrap().bytes);
-        let neto = format_money(data.total_neto, &contexto().locale);
-        assert!(
-            texto.contains(&neto),
-            "el neto {neto} no está en el PDF: {texto}"
-        );
-    }
-
-    #[test]
-    fn pdf_liquidacion_neto_negativo_se_genera_y_muestra_el_signo() {
-        // The employee drew more than they earned: the total is negative and must read as such.
-        let data = liquidacion(1, "10000", "50000");
-        assert!(data.total_neto.is_negative());
-        let texto = pdf_text(&generate(&data, &contexto()).unwrap().bytes);
-        assert!(texto.contains('-'), "{texto}");
-    }
-
-    #[test]
-    fn pdf_liquidacion_desglosa_los_recargos_cuando_hay() {
-        // Gross above days × rate means premiums were applied.
-        let mut data = liquidacion(0, "300000", "0");
-        data.total_bruto = Money::parse("360000").unwrap();
-        data.total_neto = data.total_bruto;
-        let texto = pdf_text(&generate(&data, &contexto()).unwrap().bytes);
-        assert!(texto.contains("Recargos"), "{texto}");
-    }
-
-    #[test]
-    fn pdf_liquidacion_usa_el_lema_de_configuracion_y_no_un_literal() {
-        let texto = pdf_text(
-            &generate(&liquidacion(0, "1000", "0"), &contexto())
-                .unwrap()
-                .bytes,
-        );
-        assert!(texto.contains("Energía controlada"), "{texto}");
-        assert!(
-            !texto.contains("Cuentas Claras"),
-            "quedó el literal legacy: {texto}"
-        );
-    }
-
-    #[test]
-    fn el_nombre_sugerido_lleva_empleado_y_fecha() {
-        let generado = generate(&liquidacion(0, "1000", "0"), &contexto()).unwrap();
-        assert!(generado.nombre_sugerido.starts_with("Liquidacion_"));
-        assert!(generado.nombre_sugerido.ends_with(".pdf"));
-    }
-}
