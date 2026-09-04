@@ -65,6 +65,8 @@ pub struct CertificadoBorrador {
     pub cliente_nombre: String,
     pub ajuste_uocra_porcentaje: Decimal4,
     pub otros_descuentos: Money,
+    #[serde(default)]
+    pub otros_descuentos_total: Money,
     pub items: Vec<CertificadoBorradorItem>,
 }
 

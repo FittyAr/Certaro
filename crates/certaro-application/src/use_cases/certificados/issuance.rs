@@ -65,6 +65,7 @@ impl CertificadosService {
                 cliente_nombre: row.cliente_nombre.clone(),
                 ajuste_uocra_porcentaje: row.orden.ajuste_uocra_porcentaje,
                 otros_descuentos: otros_descuentos_restante,
+                otros_descuentos_total: row.orden.otros_descuentos,
                 items,
             })
         }

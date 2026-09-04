@@ -57,6 +57,7 @@ export interface CertificadoBorrador {
   clienteNombre: string
   ajusteUocraPorcentaje: Decimal4
   otrosDescuentos: Money
+  otrosDescuentosTotal?: Money
   items: CertificadoBorradorItem[]
 }
 

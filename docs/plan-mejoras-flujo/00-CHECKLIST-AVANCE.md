@@ -330,7 +330,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
 
 ## Fase 11: Auditoría Integral de Flujo Operativo, Cálculos Financieros y Ergonomía UX/UI
 
-- [ ] **11.1. Corrección y Unificación del Cálculo de Descuentos en Certificados**
+- [x] **11.1. Corrección y Unificación del Cálculo de Descuentos en Certificados**
   - **Archivos:** `src/views/ordenes/components/OrdenEmisionCertificadoModal.vue`, `src/views/ordenes/OrdenDetalleView.vue`.
   - **Detalle:** Unificar la fórmula proporcional de descuentos en `OrdenEmisionCertificadoModal.vue` con la lógica del backend (`issuance.rs`), garantizando que la previsualización coincida centavo a centavo con el certificado emitido. Agregar enlaces rápidos en la lista de certificados de la orden.
   - **Criterio de aceptación:** El modal calcula exactamente el mismo importe neto que emitirá el backend.

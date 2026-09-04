@@ -88,8 +88,9 @@ const otrosDescuentosAEmitir = computed(() => {
   const sub = Number(totalCertificadoAEmitir.value)
   const totalOrden = draft.items.reduce((acc, i) => acc + Number(i.base), 0)
   const restante = Number(draft.otrosDescuentos)
-  if (totalOrden <= 0 || restante <= 0) return '0.0000'
-  const prop = (sub / totalOrden) * restante
+  const totalDescuentoOriginal = Number(draft.otrosDescuentosTotal ?? draft.otrosDescuentos)
+  if (totalOrden <= 0 || restante <= 0 || totalDescuentoOriginal <= 0) return '0.0000'
+  const prop = (sub / totalOrden) * totalDescuentoOriginal
   return Math.min(prop, restante).toFixed(4)
 })
 

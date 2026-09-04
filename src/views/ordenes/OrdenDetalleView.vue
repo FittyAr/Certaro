@@ -210,7 +210,14 @@ onMounted(cargar)
           >
             <Column field="numero" :header="$t('Certificados.Numero')">
               <template #body="{ data }">
-                <span class="font-semibold text-foreground">#{{ data.numero }}</span>
+                <button
+                  type="button"
+                  class="font-semibold text-primary hover:underline cursor-pointer"
+                  title="Ver detalle y facturación del certificado"
+                  @click="router.push({ name: 'certificado-detalle', params: { certificadoId: data.id } })"
+                >
+                  #{{ data.numero }}
+                </button>
               </template>
             </Column>
             <Column field="fecha" :header="$t('Certificados.Fecha')">
