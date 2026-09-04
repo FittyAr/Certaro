@@ -45,6 +45,7 @@
     "Empty": "No hay empleados activos para el período",
     "Jornadas": "Jornadas",
     "SinRegistro": "Sin registro",
+    "SoloAsignados": "Solo asignados a la obra",
     "SoloDiasHabiles": "Saltear sábados, domingos y feriados",
     "Subtitle": "Un click recorre los tipos de jornada y vuelve al vacío",
     "TipoJornada": "Tipo de jornada"

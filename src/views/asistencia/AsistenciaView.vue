@@ -95,6 +95,7 @@ async function ciclar(empleadoId: string, fecha: string): Promise<void> {
 }
 
 const filtroProyectoId = ref<string | null>(null)
+const soloAsignados = ref(false)
 const opcionesProyecto = ref<LookupItem[]>([])
 const opcionesTrabajo = ref<LookupItem[]>([])
 const trabajosDelProyecto = ref<Set<string>>(new Set())
@@ -115,7 +116,7 @@ watch(filtroProyectoId, async (newVal) => {
 const grilla = computed(() => {
   const g = store.grilla
   if (!g) return null
-  if (!filtroProyectoId.value) return g
+  if (!filtroProyectoId.value || !soloAsignados.value) return g
   const jobIds = trabajosDelProyecto.value
   const filteredFilas = g.filas.filter((fila) =>
     fila.celdas.some((c) => c.trabajoId && jobIds.has(c.trabajoId)),
@@ -252,6 +253,14 @@ onMounted(() => {
           show-clear
           :placeholder="$t('General.All')"
         />
+      </label>
+
+      <label
+        v-if="filtroProyectoId"
+        class="flex items-center gap-2 pb-2 text-xs text-muted-foreground cursor-pointer select-none"
+      >
+        <ToggleSwitch v-model="soloAsignados" />
+        <span>{{ $t('Asistencia.SoloAsignados') }}</span>
       </label>
 
       <div class="ml-auto flex flex-wrap items-center gap-3 text-xs">

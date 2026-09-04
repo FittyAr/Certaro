@@ -45,6 +45,7 @@
     "Empty": "No active employees for the period",
     "Jornadas": "Days",
     "SinRegistro": "No record",
+    "SoloAsignados": "Only assigned to project",
     "SoloDiasHabiles": "Skip Saturdays, Sundays and holidays",
     "Subtitle": "One click cycles the day types and back to empty",
     "TipoJornada": "Day type"
