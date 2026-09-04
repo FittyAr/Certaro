@@ -51,6 +51,7 @@ const showNuevoTrabajoModal = ref(false)
 // Cash ledger tab state
 const movimientosItems = ref<MovimientoListItem[]>([])
 const loadingMovimientos = ref(false)
+const resumenMovimientos = ref<{ totalIngresos: string; totalGastos: string; balance: string } | null>(null)
 
 async function cargarGeneral(): Promise<void> {
   loading.value = true
@@ -92,6 +93,13 @@ async function cargarMovimientos(): Promise<void> {
       sortDir: 'Desc',
     })
     movimientosItems.value = res.items
+    if (res.resumen) {
+      resumenMovimientos.value = {
+        totalIngresos: res.resumen.totalIngresos,
+        totalGastos: res.resumen.totalGastos,
+        balance: res.resumen.balance,
+      }
+    }
   } catch (e) {
     notify(e)
   } finally {
@@ -108,21 +116,27 @@ async function cargarTodo(): Promise<void> {
 }
 
 const totalIngresos = computed(() =>
-  movimientosItems.value
-    .filter((m) => m.esIngreso)
-    .reduce((acc, m) => acc + Number(m.total), 0)
-    .toFixed(4),
+  resumenMovimientos.value
+    ? resumenMovimientos.value.totalIngresos
+    : movimientosItems.value
+        .filter((m) => m.esIngreso)
+        .reduce((acc, m) => acc + Number(m.total), 0)
+        .toFixed(4),
 )
 
 const totalGastos = computed(() =>
-  movimientosItems.value
-    .filter((m) => !m.esIngreso)
-    .reduce((acc, m) => acc + Number(m.total), 0)
-    .toFixed(4),
+  resumenMovimientos.value
+    ? resumenMovimientos.value.totalGastos
+    : movimientosItems.value
+        .filter((m) => !m.esIngreso)
+        .reduce((acc, m) => acc + Number(m.total), 0)
+        .toFixed(4),
 )
 
 const balanceNeto = computed(() =>
-  (Number(totalIngresos.value) - Number(totalGastos.value)).toFixed(4),
+  resumenMovimientos.value
+    ? resumenMovimientos.value.balance
+    : (Number(totalIngresos.value) - Number(totalGastos.value)).toFixed(4),
 )
 
 function irARegistrarMovimiento(): void {

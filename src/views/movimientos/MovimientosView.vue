@@ -111,7 +111,7 @@ async function onProyectoChange(): Promise<void> {
   }
   try {
     opcionesTrabajo.value = await trabajos.lookup(selectedProyectoId.value)
-    if (opcionesTrabajo.value.length === 1 && opcionesTrabajo.value[0]) {
+    if (opcionesTrabajo.value.length > 0 && opcionesTrabajo.value[0]) {
       drawer.model.value.trabajoId = opcionesTrabajo.value[0].id
     }
     const p = await proyectos.fetchOne(selectedProyectoId.value)
@@ -177,14 +177,40 @@ const drawer = useCrudDrawer<MovimientoInput & { rowVersion?: string }>({
       rowVersion: d.rowVersion,
     }
   },
-  create: (dto) => store.create(dto),
-  update: (id, dto) => store.update(id, dto, dto.rowVersion ?? ''),
+  create: (dto) => {
+    if (
+      selectedProyectoId.value &&
+      !dto.trabajoId &&
+      opcionesTrabajo.value.length > 0 &&
+      opcionesTrabajo.value[0]
+    ) {
+      dto.trabajoId = opcionesTrabajo.value[0].id
+    }
+    return store.create(dto)
+  },
+  update: (id, dto) => {
+    if (
+      selectedProyectoId.value &&
+      !dto.trabajoId &&
+      opcionesTrabajo.value.length > 0 &&
+      opcionesTrabajo.value[0]
+    ) {
+      dto.trabajoId = opcionesTrabajo.value[0].id
+    }
+    return store.update(id, dto, dto.rowVersion ?? '')
+  },
   onSaved: () => table.reload(),
 })
 
 const esAdelanto = computed(() => drawer.model.value.tipoMovimientoId === ADELANTO_ID)
 
 const monedaOptions = computed<{ label: string; value: Moneda }[]>(() => [
+  { label: t('Movimientos.Moneda.Ars'), value: 'Ars' },
+  { label: t('Movimientos.Moneda.Usd'), value: 'Usd' },
+])
+
+const monedaFilterOptions = computed<{ label: string; value: Moneda | undefined }[]>(() => [
+  { label: t('General.All'), value: undefined },
   { label: t('Movimientos.Moneda.Ars'), value: 'Ars' },
   { label: t('Movimientos.Moneda.Usd'), value: 'Usd' },
 ])
@@ -201,6 +227,7 @@ const filtrosActivos = computed(() =>
     table.filter.value.categoriaId ||
     table.filter.value.clienteId ||
     table.filter.value.proyectoId ||
+    table.filter.value.moneda ||
     table.filter.value.fechaDesde ||
     table.filter.value.fechaHasta,
   ),
@@ -326,6 +353,17 @@ onMounted(async () => {
         />
       </label>
       <label class="flex flex-col gap-1">
+        <span class="text-xs text-muted-foreground">{{ $t('Movimientos.Moneda.Label') }}</span>
+        <Select
+          v-model="table.filter.value.moneda"
+          :options="monedaFilterOptions"
+          option-label="label"
+          option-value="value"
+          show-clear
+          :placeholder="$t('General.All')"
+        />
+      </label>
+      <label class="flex flex-col gap-1">
         <span class="text-xs text-muted-foreground">{{ $t('Movimientos.Desde') }}</span>
         <DateInput v-model="table.filter.value.fechaDesde" />
       </label>
@@ -386,7 +424,15 @@ onMounted(async () => {
       <Column field="total" :header="$t('Movimientos.Total')" sortable>
         <template #body="{ data }">
           <!-- Coloured by the sign of the type, which is the only place the sign lives. -->
-          <MoneyText :value="data.esIngreso ? data.total : `-${data.total}`" colored />
+          <div class="flex items-center gap-1.5">
+            <MoneyText :value="data.esIngreso ? data.total : `-${data.total}`" colored />
+            <span
+              v-if="data.moneda === 'Usd'"
+              class="rounded border border-amber-500/30 bg-amber-500/10 px-1 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400"
+            >
+              USD
+            </span>
+          </div>
         </template>
       </Column>
 
@@ -581,6 +627,12 @@ onMounted(async () => {
             />
           </label>
         </div>
+        <p
+          v-if="selectedProyectoId && opcionesTrabajo.length === 0"
+          class="rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs text-amber-700 dark:text-amber-400"
+        >
+          {{ $t('Movimientos.ProyectoSinTrabajosAviso') || 'Este proyecto no tiene trabajos creados aún. Recuerda crear al menos un trabajo en el proyecto para que los gastos se imputen a la caja y rentabilidad de la obra.' }}
+        </p>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
