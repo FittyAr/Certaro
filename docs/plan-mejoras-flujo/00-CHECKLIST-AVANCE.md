@@ -21,6 +21,7 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
 | **Fase 11** | Auditoría Integral de Flujo Operativo, Cálculos Financieros y Ergonomía UX/UI | 7 | 7 | 🟢 Completada |
 | **Fase 12** | Correcciones Críticas de Cobranzas en Caja, Ajuste UOCRA y Ergonomía | 7 | 7 | 🟢 Completada |
 | **Fase 13** | Correcciones de Aritmética de Cotización, Rentabilidad Bimonetaria y Flujo Operativo | 7 | 7 | 🟢 Completada |
+| **Fase 14** | Anticipos de Clientes, Trazabilidad en Base de Datos, Ergonomía de Órdenes y Coherencia Financiera | 8 | 8 | 🟢 Completada |
 
 ---
 
@@ -444,4 +445,49 @@ Este documento sirve como **tablero de control y seguimiento** del plan integral
   - **Archivos:** Tests de workspace backend y specs de frontend.
   - **Detalle:** Ejecutar tests unitarios e integrales verificando cero regresiones (`cargo test -p certaro-domain`, `cargo test -p certaro-application`, `cargo test -p certaro-infrastructure`, `pnpm test`, `pnpm typecheck`).
   - **Criterio de aceptación:** 100% de las pruebas aprobadas.
+
+---
+
+## Fase 14: Anticipos de Clientes, Trazabilidad en Base de Datos, Ergonomía de Órdenes y Coherencia Financiera
+
+- [x] **14.1. Creación de Órdenes Globales y Alta Directa en Detalle de Trabajo**
+  - **Archivos:** `src/views/ordenes/OrdenesView.vue`, `src/views/ordenes/components/OrdenFormModal.vue`, `src/views/trabajos/TrabajoDetalleView.vue`.
+  - **Detalle:** Habilitar botón `+ Nuevo` globalmente en `/ordenes`. Permitir seleccionar Proyecto y Trabajo si no se navega desde un trabajo fijo. En `TrabajoDetalleView.vue`, abrir directamente `OrdenFormModal` precargando el `trabajoId`.
+  - **Criterio de aceptación:** Creación de cotizaciones con un solo clic desde la vista global y desde la ficha del trabajo sin pantallas intermedias.
+
+- [x] **14.2. Imputación de Anticipos Preexistentes en Cobranzas de Facturas**
+  - **Archivos:** `src/views/facturas/components/FacturaPagosModal.vue`.
+  - **Detalle:** Ofrecer la opción de aplicar anticipos/ingresos existentes de caja (`factura_id IS NULL`) al saldar una factura, asignando `facturaId` al movimiento existente en vez de crear uno duplicado.
+  - **Criterio de aceptación:** Saldar una factura con una seña previa no incrementa el saldo de caja y mantiene la trazabilidad del pago.
+
+- [x] **14.3. Visualización de Anticipos y Crédito Disponible en Cuenta Corriente**
+  - **Archivos:** `src/views/comercial/CuentaCorrienteView.vue`.
+  - **Detalle:** Cargar ingresos de caja del cliente sin factura imputada y mostrar bloque de "Anticipos y Saldo a Favor", computando el Saldo Neto Real adeudado.
+  - **Criterio de aceptación:** La cuenta corriente refleja el crédito a favor de un cliente que entregó una seña antes de la facturación.
+
+- [x] **14.4. Persistencia Confiable de Trazabilidad en Base de Datos**
+  - **Archivos:** `src/views/certificados/CertificadoDetalleView.vue`, `src/views/facturas/FacturasView.vue`.
+  - **Detalle:** Codificar en `observaciones` de la factura las etiquetas `[cert:${certificadoId}]` y `[proy:${proyectoId}]`. En `verificarFacturado(id)`, validar contra la base de datos para no depender únicamente de `localStorage`.
+  - **Criterio de aceptación:** La marca de certificado facturado y su obra persisten aun al borrar el caché del navegador o abrir la base en otra PC.
+
+- [x] **14.5. Anulación Coordinada de Asientos de Sueldo en Liquidaciones**
+  - **Archivos:** `src/views/liquidaciones/LiquidacionDetalleView.vue`.
+  - **Detalle:** Al anular una liquidación, buscar si existen movimientos en caja asociados al pago de haberes del período y consultar al usuario si desea anular también el egreso en caja.
+  - **Criterio de aceptación:** Anular una liquidación permite limpiar el movimiento de egreso en caja evitando gastos huérfanos.
+
+- [x] **14.6. Claridad Bimonetaria en Tabla y Resúmenes de Movimientos**
+  - **Archivos:** `src/views/movimientos/components/MovimientosTable.vue`, `src/views/movimientos/MovimientosView.vue`.
+  - **Detalle:** En la tabla de movimientos, exhibir el badge `USD` en monto unitario y total. En la barra de resumen inferior, si el filtro activo es USD, rotular los totales con `(USD)` explícito.
+  - **Criterio de aceptación:** Los usuarios distinguen inequívocamente los totales en dólares respecto a los pesos en la caja.
+
+- [x] **14.7. Validación y Advertencia en Proyectos sin Trabajos**
+  - **Archivos:** `src/views/movimientos/components/MovimientoDrawer.vue`.
+  - **Detalle:** Mostrar aviso de advertencia si se selecciona un proyecto que aún no tiene trabajos creados, evitando que el movimiento quede sin imputar a la obra.
+  - **Criterio de aceptación:** El usuario es alertado de que para imputar a la obra se requiere al menos un trabajo.
+
+- [x] **14.8. Verificación y Pruebas Unitarias**
+  - **Archivos:** Tests de workspace backend y frontend.
+  - **Detalle:** Ejecutar `cargo test --workspace` y `pnpm test` verificando 100% de tests aprobados.
+  - **Criterio de aceptación:** Cero errores de compilación, cero regresiones y 100% de tests pasando.
+
 
