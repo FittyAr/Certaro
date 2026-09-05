@@ -60,26 +60,60 @@ const loading = ref(false)
 const firstLoad = ref(true)
 const error = ref<ApiError | null>(null)
 
+const anticiposCliente = ref<import('@/stores/useMovimientosStore').MovimientoListItem[]>([])
+const modoCobro = ref<'nuevo' | 'anticipo'>('nuevo')
+const anticipoSeleccionadoId = ref<string | null>(null)
+
+const totalAnticipos = computed(() => {
+  return anticiposCliente.value.reduce((acc, a) => acc + Number(a.total), 0).toFixed(4)
+})
+
+const saldoNetoReal = computed(() => {
+  if (!cuenta.value) return '0.0000'
+  const saldoFacturado = Number(cuenta.value.saldo)
+  const anticipos = Number(totalAnticipos.value)
+  return (saldoFacturado - anticipos).toFixed(4)
+})
+
 async function cargar(): Promise<void> {
   if (!clienteId.value) return
   loading.value = true
   error.value = null
   try {
-    const [statement, aging] = await Promise.all([
+    const [statement, aging, movsRes] = await Promise.all([
       store.fetchCuentaCorriente({
         clienteId: clienteId.value,
         incluirPagadas: incluirPagadas.value,
       }),
       store.fetchAntiguedad({ clienteId: clienteId.value }),
+      movimientosStore.fetchPaged({
+        filtro: { clienteId: clienteId.value },
+        page: 1,
+        pageSize: 0,
+      }),
     ])
     cuenta.value = statement
     antiguedad.value = aging
+    anticiposCliente.value = movsRes.items.filter((m) => m.esIngreso && !m.facturaId)
   } catch (e) {
     error.value = notify(e)
   } finally {
     loading.value = false
     firstLoad.value = false
   }
+}
+
+function onAnticipoChange(): void {
+  if (!anticipoSeleccionadoId.value) return
+  const anticipo = anticiposCliente.value.find((a) => a.id === anticipoSeleccionadoId.value)
+  if (!anticipo || !factura.value) return
+
+  nuevoPago.value.fecha = anticipo.fecha.slice(0, 10)
+  const montoAnticipo = Number(anticipo.total)
+  const saldoFactura = Number(factura.value.saldo)
+  const montoAImputar = Math.min(montoAnticipo, saldoFactura).toFixed(4)
+  nuevoPago.value.monto = montoAImputar
+  nuevoPago.value.medioPago = 'Transferencia'
 }
 
 watch(incluirPagadas, () => void cargar())
@@ -212,6 +246,8 @@ async function abrirCobro(f: CuentaCorrienteFactura): Promise<void> {
     }
 
     pagosVisible.value = true
+    modoCobro.value = 'nuevo'
+    anticipoSeleccionadoId.value = null
   } catch (e) {
     notify(e)
   }
@@ -249,7 +285,34 @@ async function registrarPago(): Promise<void> {
     const pagoFecha = nuevoPago.value.fecha
     factura.value = await facturasStore.crearPago(nuevoPago.value)
 
-    if (registrarEnCaja.value && factura.value) {
+    if (modoCobro.value === 'anticipo' && anticipoSeleccionadoId.value) {
+      try {
+        const anticipoItem = anticiposCliente.value.find((a) => a.id === anticipoSeleccionadoId.value)
+        if (anticipoItem && factura.value) {
+          await movimientosStore.update(
+            anticipoItem.id,
+            {
+              fecha: anticipoItem.fecha,
+              concepto: `${anticipoItem.concepto} (Imputado a Factura ${factura.value.numero})`,
+              monto: anticipoItem.monto,
+              cantidad: anticipoItem.cantidad,
+              tipoMovimientoId: anticipoItem.tipoMovimientoId,
+              moneda: anticipoItem.moneda,
+              cotizacionAplicada: anticipoItem.cotizacionAplicada,
+              tipoConceptoPagoId: anticipoItem.tipoConceptoPagoId,
+              categoriaId: anticipoItem.categoriaId,
+              clienteId: anticipoItem.clienteId,
+              trabajoId: anticipoItem.trabajoId,
+              empleadoId: anticipoItem.empleadoId,
+              facturaId: factura.value.id,
+            },
+            anticipoItem.rowVersion,
+          )
+        }
+      } catch (err) {
+        console.warn('No se pudo vincular el anticipo con la factura:', err)
+      }
+    } else if (registrarEnCaja.value && factura.value) {
       try {
         const catId = await resolveCategoriaCobranza()
         if (catId) {
@@ -324,7 +387,7 @@ onMounted(cargar)
       @retry="cargar()"
     >
       <div v-if="cuenta" class="space-y-4">
-        <dl class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <dl class="grid grid-cols-1 gap-3 sm:grid-cols-4">
           <div class="rounded-lg border border-border bg-surface-card p-4">
             <dt class="text-sm text-muted-foreground">
               {{ $t('Comercial.CuentaCorriente.TotalFacturado') }}
@@ -341,9 +404,23 @@ onMounted(cargar)
           </div>
           <div class="rounded-lg border border-border bg-surface-card p-4">
             <dt class="text-sm text-muted-foreground">
-              {{ $t('Comercial.CuentaCorriente.Saldo') }}
+              {{ $t('Comercial.CuentaCorriente.Saldo') }} (Facturado)
             </dt>
             <dd class="text-xl font-semibold"><MoneyText :value="cuenta.saldo" colored /></dd>
+          </div>
+          <div class="rounded-lg border border-border bg-surface-card p-4">
+            <dt class="text-sm text-muted-foreground flex items-center justify-between">
+              <span>Anticipos sin Imputar</span>
+              <span v-if="anticiposCliente.length > 0" class="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">
+                {{ anticiposCliente.length }}
+              </span>
+            </dt>
+            <dd class="text-xl font-semibold text-money-positive">
+              <MoneyText :value="totalAnticipos" />
+            </dd>
+            <p v-if="anticiposCliente.length > 0" class="mt-1 text-xs text-muted-foreground">
+              Saldo real neto: <span class="font-medium text-foreground">${{ saldoNetoReal }}</span>
+            </p>
           </div>
         </dl>
 
@@ -379,6 +456,9 @@ onMounted(cargar)
       v-model:registrar-en-caja="registrarEnCaja"
       v-model:pago-proyecto-id="pagoProyectoId"
       v-model:pago-trabajo-id="pagoTrabajoId"
+      v-model:modo-cobro="modoCobro"
+      v-model:anticipo-seleccionado-id="anticipoSeleccionadoId"
+      :anticipos-disponibles="anticiposCliente"
       :factura="factura"
       :nuevo-pago="nuevoPago"
       :pago-errores="pagoErrores"
@@ -386,6 +466,7 @@ onMounted(cargar)
       :guardando-pago="guardandoPago"
       :opciones-proyectos="opcionesProyectos"
       :pago-opciones-trabajos="pagoOpcionesTrabajos"
+      @anticipo-change="onAnticipoChange"
       @proyecto-change="onPagoProyectoChange"
       @registrar="registrarPago"
     />

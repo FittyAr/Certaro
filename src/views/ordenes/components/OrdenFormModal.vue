@@ -242,7 +242,7 @@ async function guardar(): Promise<void> {
       >
         <label class="flex flex-col gap-1">
           <span class="text-sm font-medium">
-            {{ $t('Proyectos.Title') || 'Proyecto / Obra' }} <span class="text-destructive">*</span>
+            {{ $t('Movimientos.Proyecto') }} <span class="text-destructive">*</span>
           </span>
           <Select
             v-model="proyectoIdSeleccionado"
@@ -250,13 +250,13 @@ async function guardar(): Promise<void> {
             option-label="label"
             option-value="id"
             filter
-            :placeholder="$t('General.Select') || 'Seleccionar Proyecto'"
+            :placeholder="$t('General.Select')"
             @update:model-value="onProyectoChange()"
           />
         </label>
         <label class="flex flex-col gap-1">
           <span class="text-sm font-medium">
-            {{ $t('Trabajos.Title') || 'Trabajo' }} <span class="text-destructive">*</span>
+            {{ $t('Movimientos.Trabajo') }} <span class="text-destructive">*</span>
           </span>
           <Select
             v-model="trabajoIdSeleccionado"

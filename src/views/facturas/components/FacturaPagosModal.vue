@@ -19,7 +19,7 @@ import { useApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
 import { useCatalogStore, type LookupItem } from '@/stores/useCatalogStore'
 import { useCategoriasStore } from '@/stores/useCategoriasStore'
-import { useMovimientosStore } from '@/stores/useMovimientosStore'
+import { useMovimientosStore, type MovimientoListItem } from '@/stores/useMovimientosStore'
 import { useProyectosStore } from '@/stores/useProyectosStore'
 import { useTrabajosStore } from '@/stores/useTrabajosStore'
 import {
@@ -56,6 +56,10 @@ const pagoTrabajoId = ref<string | null>(null)
 const opcionesProyectos = ref<LookupItem[]>([])
 const pagoOpcionesTrabajos = ref<LookupItem[]>([])
 const pagoErrores = ref<Record<string, string>>({})
+
+const modoCobro = ref<'nuevo' | 'anticipo'>('nuevo')
+const anticiposDisponibles = ref<MovimientoListItem[]>([])
+const anticipoSeleccionadoId = ref<string | null>(null)
 
 function hoy(): string {
   return new Date().toISOString().slice(0, 10)
@@ -132,11 +136,46 @@ watch(
         pagoProyectoId.value = opcionesProyectos.value[0].id
         await onPagoProyectoChange()
       }
+
+      await cargarAnticipos(factura.value.clienteId)
     } catch (e) {
       notify(e)
     }
   }
 )
+
+async function cargarAnticipos(clienteId: string): Promise<void> {
+  anticiposDisponibles.value = []
+  anticipoSeleccionadoId.value = null
+  modoCobro.value = 'nuevo'
+  try {
+    const res = await movimientosStore.fetchPaged({
+      filtro: {
+        clienteId,
+      },
+      page: 1,
+      pageSize: 0,
+    })
+    // Unapplied advances: income movements for this client that are not tied to any invoice yet
+    anticiposDisponibles.value = res.items.filter((m) => m.esIngreso && !m.facturaId)
+  } catch (e) {
+    console.warn('No se pudieron cargar los anticipos del cliente:', e)
+  }
+}
+
+function onAnticipoChange(): void {
+  if (!anticipoSeleccionadoId.value) return
+  const anticipo = anticiposDisponibles.value.find((a) => a.id === anticipoSeleccionadoId.value)
+  if (!anticipo || !factura.value) return
+
+  // Auto-set the date from the advance and cap the amount to min(anticipo.total, factura.saldo)
+  nuevoPago.value.fecha = anticipo.fecha.slice(0, 10)
+  const montoAnticipo = Number(anticipo.total)
+  const saldoFactura = Number(factura.value.saldo)
+  const montoAImputar = Math.min(montoAnticipo, saldoFactura).toFixed(4)
+  nuevoPago.value.monto = montoAImputar
+  nuevoPago.value.medioPago = 'Transferencia'
+}
 
 function fechaPagoToIso(fechaStr: string): string {
   if (!fechaStr) return new Date().toISOString()
@@ -179,7 +218,35 @@ async function registrarPago(): Promise<void> {
     const pagoFecha = nuevoPago.value.fecha
     factura.value = await store.crearPago(nuevoPago.value)
 
-    if (registrarEnCaja.value && factura.value) {
+    if (modoCobro.value === 'anticipo' && anticipoSeleccionadoId.value) {
+      // Link the existing advance to this invoice so it cannot be reused, WITHOUT duplicating cash movement
+      try {
+        const anticipoItem = anticiposDisponibles.value.find((a) => a.id === anticipoSeleccionadoId.value)
+        if (anticipoItem && factura.value) {
+          await movimientosStore.update(
+            anticipoItem.id,
+            {
+              fecha: anticipoItem.fecha,
+              concepto: `${anticipoItem.concepto} (Imputado a Factura ${factura.value.numero})`,
+              monto: anticipoItem.monto,
+              cantidad: anticipoItem.cantidad,
+              tipoMovimientoId: anticipoItem.tipoMovimientoId,
+              moneda: anticipoItem.moneda,
+              cotizacionAplicada: anticipoItem.cotizacionAplicada,
+              tipoConceptoPagoId: anticipoItem.tipoConceptoPagoId,
+              categoriaId: anticipoItem.categoriaId,
+              clienteId: anticipoItem.clienteId,
+              trabajoId: anticipoItem.trabajoId,
+              empleadoId: anticipoItem.empleadoId,
+              facturaId: factura.value.id,
+            },
+            anticipoItem.rowVersion,
+          )
+        }
+      } catch (err) {
+        console.warn('No se pudo vincular el anticipo con la factura:', err)
+      }
+    } else if (registrarEnCaja.value && factura.value) {
       try {
         const catId = await resolveCategoriaCobranza()
         if (catId) {
@@ -209,6 +276,10 @@ async function registrarPago(): Promise<void> {
       } catch (err) {
         notify(err)
       }
+    }
+
+    if (factura.value) {
+      await cargarAnticipos(factura.value.clienteId)
     }
 
     nuevoPago.value = {
@@ -282,66 +353,124 @@ function borrarPago(pago: { id: string; rowVersion: string; fecha: string; medio
 
       <div
         v-if="factura.admitePagos"
-        class="grid grid-cols-4 items-end gap-3 border-t border-border pt-3"
+        class="border-t border-border pt-3 flex flex-col gap-3"
       >
-        <label class="flex flex-col gap-1">
-          <span class="text-xs text-muted-foreground">{{ $t('Facturas.Fecha') }}</span>
-          <DateInput v-model="nuevoPago.fecha" :invalid="Boolean(pagoErrores.fecha)" />
-          <FieldError id="pago-fecha-error" :message="pagoErrores.fecha" />
-        </label>
-        <label class="flex flex-col gap-1">
-          <span class="text-xs text-muted-foreground">{{ $t('Facturas.Monto') }}</span>
-          <MoneyInput v-model="nuevoPago.monto" :min="0" :invalid="Boolean(pagoErrores.monto)" />
-          <FieldError id="pago-monto-error" :message="pagoErrores.monto" />
-        </label>
-        <label class="flex flex-col gap-1">
-          <span class="text-xs text-muted-foreground">{{ $t('Facturas.MedioPago') }}</span>
-          <Select
-            v-model="nuevoPago.medioPago"
-            :options="medioPagoOptions"
-            option-label="label"
-            option-value="value"
-            editable
-          />
-        </label>
-        <div v-if="registrarEnCaja" class="col-span-4 grid grid-cols-2 gap-3 rounded border border-border/70 bg-muted/20 p-2.5">
-          <label class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">Imputar a Proyecto / Obra</span>
-            <Select
-              v-model="pagoProyectoId"
-              :options="opcionesProyectos"
-              option-label="label"
-              option-value="id"
-              filter
-              show-clear
-              placeholder="General (Sin proyecto)"
-              @change="onPagoProyectoChange()"
+        <!-- Mode switcher if advances exist -->
+        <div v-if="anticiposDisponibles.length > 0" class="flex items-center gap-4 rounded border border-info/30 bg-info/10 p-2.5 text-xs">
+          <span class="font-medium text-info-foreground">Modo de registro:</span>
+          <label class="flex items-center gap-1.5 cursor-pointer select-none">
+            <input
+              type="radio"
+              value="nuevo"
+              v-model="modoCobro"
+              class="text-primary focus:ring-0"
             />
+            <span>Nuevo cobro / pago directo</span>
           </label>
-          <label class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">Trabajo / Frente de Obra</span>
-            <Select
-              v-model="pagoTrabajoId"
-              :options="pagoOpcionesTrabajos"
-              option-label="label"
-              option-value="id"
-              filter
-              show-clear
-              placeholder="General"
-              :disabled="!pagoProyectoId && pagoOpcionesTrabajos.length === 0"
+          <label class="flex items-center gap-1.5 cursor-pointer select-none">
+            <input
+              type="radio"
+              value="anticipo"
+              v-model="modoCobro"
+              class="text-primary focus:ring-0"
             />
+            <span class="font-semibold text-primary">
+              Imputar anticipo / seña previa ({{ anticiposDisponibles.length }} disponible{{ anticiposDisponibles.length > 1 ? 's' : '' }})
+            </span>
           </label>
         </div>
 
-        <div class="col-span-4 flex items-center justify-between pt-2">
-          <label class="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-            <Checkbox v-model="registrarEnCaja" :binary="true" />
-            <span>{{ $t('Facturas.RegistrarEnCaja') }}</span>
+        <!-- Advance selector -->
+        <div v-if="modoCobro === 'anticipo'" class="rounded border border-border/80 bg-surface-raised p-3 flex flex-col gap-2">
+          <label class="flex flex-col gap-1">
+            <span class="text-xs font-medium text-foreground">Seleccionar anticipo a imputar:</span>
+            <Select
+              v-model="anticipoSeleccionadoId"
+              :options="anticiposDisponibles"
+              option-label="concepto"
+              option-value="id"
+              placeholder="Elija un anticipo existente..."
+              @change="onAnticipoChange"
+            >
+              <template #option="{ option }">
+                <div class="flex justify-between items-center w-full gap-4 text-xs">
+                  <span>{{ option.fecha.slice(0, 10) }} · {{ option.concepto }}</span>
+                  <span class="font-semibold text-money-positive">${{ option.total }}</span>
+                </div>
+              </template>
+            </Select>
           </label>
-          <Button @click="registrarPago()">
-            <AppIcon name="plus" :size="16" />
-            {{ $t('Facturas.RegistrarPago') }}
-          </Button>
+          <p class="text-[11px] text-muted-foreground">
+            Al imputar un anticipo, se asocia el movimiento de caja existente a esta factura sin duplicar el ingreso en el libro diario.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-4 items-end gap-3">
+          <label class="flex flex-col gap-1">
+            <span class="text-xs text-muted-foreground">{{ $t('Facturas.Fecha') }}</span>
+            <DateInput v-model="nuevoPago.fecha" :invalid="Boolean(pagoErrores.fecha)" />
+            <FieldError id="pago-fecha-error" :message="pagoErrores.fecha" />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs text-muted-foreground">{{ $t('Facturas.Monto') }}</span>
+            <MoneyInput v-model="nuevoPago.monto" :min="0" :invalid="Boolean(pagoErrores.monto)" />
+            <FieldError id="pago-monto-error" :message="pagoErrores.monto" />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-xs text-muted-foreground">{{ $t('Facturas.MedioPago') }}</span>
+            <Select
+              v-model="nuevoPago.medioPago"
+              :options="medioPagoOptions"
+              option-label="label"
+              option-value="value"
+              editable
+            />
+          </label>
+          <div v-if="modoCobro === 'nuevo' && registrarEnCaja" class="col-span-4 grid grid-cols-2 gap-3 rounded border border-border/70 bg-muted/20 p-2.5">
+            <label class="flex flex-col gap-1">
+              <span class="text-xs text-muted-foreground">Imputar a Proyecto / Obra</span>
+              <Select
+                v-model="pagoProyectoId"
+                :options="opcionesProyectos"
+                option-label="label"
+                option-value="id"
+                filter
+                show-clear
+                placeholder="General (Sin proyecto)"
+                @change="onPagoProyectoChange()"
+              />
+            </label>
+            <label class="flex flex-col gap-1">
+              <span class="text-xs text-muted-foreground">Trabajo / Frente de Obra</span>
+              <Select
+                v-model="pagoTrabajoId"
+                :options="pagoOpcionesTrabajos"
+                option-label="label"
+                option-value="id"
+                filter
+                show-clear
+                placeholder="General"
+                :disabled="!pagoProyectoId && pagoOpcionesTrabajos.length === 0"
+              />
+            </label>
+          </div>
+
+          <div class="col-span-4 flex items-center justify-between pt-2">
+            <label v-if="modoCobro === 'nuevo'" class="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+              <Checkbox v-model="registrarEnCaja" :binary="true" />
+              <span>{{ $t('Facturas.RegistrarEnCaja') }}</span>
+            </label>
+            <span v-else class="text-xs text-muted-foreground italic">
+              El movimiento ya existe en caja (se vinculará a la factura).
+            </span>
+            <Button
+              :disabled="modoCobro === 'anticipo' && !anticipoSeleccionadoId"
+              @click="registrarPago()"
+            >
+              <AppIcon name="plus" :size="16" />
+              {{ modoCobro === 'anticipo' ? 'Imputar Anticipo' : $t('Facturas.RegistrarPago') }}
+            </Button>
+          </div>
         </div>
       </div>
       <p v-else class="text-xs text-muted-foreground">{{ $t('Facturas.NoAdmitePagos') }}</p>
