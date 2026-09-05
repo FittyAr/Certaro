@@ -132,6 +132,12 @@ watch(
         } catch {
           // ignore
         }
+      } else if (factura.value.observaciones && /\[proy:([a-f0-9-]+)\]/i.test(factura.value.observaciones)) {
+        const match = factura.value.observaciones.match(/\[proy:([a-f0-9-]+)\]/i)
+        if (match && match[1]) {
+          pagoProyectoId.value = match[1]
+          await onPagoProyectoChange()
+        }
       } else if (opcionesProyectos.value.length === 1 && opcionesProyectos.value[0]) {
         pagoProyectoId.value = opcionesProyectos.value[0].id
         await onPagoProyectoChange()

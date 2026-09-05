@@ -20,6 +20,7 @@ import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
 import { useCertificadosStore, type CertificadoDetalle } from '@/stores/useCertificadosStore'
 import { useConfigStore } from '@/stores/useConfigStore'
+import { useFacturasStore } from '@/stores/useFacturasStore'
 import { useReportesStore } from '@/stores/useReportesStore'
 
 /**
@@ -110,11 +111,24 @@ function verOrden(): void {
   })
 }
 
+const facturasStore = useFacturasStore()
 const facturado = ref(false)
 
-function verificarFacturado(id: string): void {
+async function verificarFacturado(id: string): Promise<void> {
   try {
-    facturado.value = Boolean(localStorage.getItem(`certaro:cert-facturado:${id}`))
+    if (localStorage.getItem(`certaro:cert-facturado:${id}`)) {
+      facturado.value = true
+      return
+    }
+    // Fallback & DB Source of Truth: query invoices for the structured certificate tag
+    const res = await facturasStore.fetchPaged({
+      filtro: {
+        texto: `[cert:${id}]`,
+      },
+      page: 1,
+      pageSize: 5,
+    })
+    facturado.value = res.totalCount > 0
   } catch {
     facturado.value = false
   }
@@ -128,6 +142,10 @@ function emitirFacturaCertificado(): void {
   const ivaNum = (subtotalNum * ivaSugeridoPct) / 100
   const totalNum = subtotalNum + ivaNum
 
+  const tagCert = `[cert:${certificado.value.id}]`
+  const tagProy = `[proy:${certificado.value.proyectoId}]`
+  const obsTexto = `Certificado N.º ${certificado.value.numero} · ${certificado.value.ordenTitulo} ${tagCert} ${tagProy}`
+
   void router.push({
     path: '/facturas',
     query: {
@@ -138,7 +156,7 @@ function emitirFacturaCertificado(): void {
       subtotal: subtotalNum.toFixed(4),
       iva: ivaNum.toFixed(4),
       total: totalNum.toFixed(4),
-      observaciones: `Certificado N.º ${certificado.value.numero} · ${certificado.value.ordenTitulo}`,
+      observaciones: obsTexto,
     },
   })
 }
