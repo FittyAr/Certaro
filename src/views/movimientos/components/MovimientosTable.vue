@@ -82,7 +82,17 @@ function movimientoContextMenu(row: MovimientoListItem) {
       </template>
     </Column>
     <Column field="monto" :header="$t('Movimientos.Monto')" sortable>
-      <template #body="{ data }"><MoneyText :value="data.monto" /></template>
+      <template #body="{ data }">
+        <div class="flex items-center gap-1.5">
+          <MoneyText :value="data.monto" />
+          <span
+            v-if="data.moneda === 'Usd'"
+            class="rounded border border-warning/30 bg-warning/10 px-1 py-0.5 text-[10px] font-bold text-warning"
+          >
+            USD
+          </span>
+        </div>
+      </template>
     </Column>
     <Column field="cantidad" :header="$t('Movimientos.Cantidad')">
       <template #body="{ data }">

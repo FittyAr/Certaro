@@ -154,8 +154,14 @@ onMounted(async () => {
       v-if="resumen"
       class="flex flex-wrap items-center gap-6 rounded-md border border-border bg-surface-raised px-4 py-3 text-sm"
     >
-      <span class="text-muted-foreground">
-        {{ $t('Movimientos.ResumenCantidad', { count: resumen.cantidad }) }}
+      <span class="text-muted-foreground flex items-center gap-1.5">
+        <span>{{ $t('Movimientos.ResumenCantidad', { count: resumen.cantidad }) }}</span>
+        <span
+          v-if="table.filter.value.moneda === 'Usd'"
+          class="rounded border border-warning/30 bg-warning/10 px-1 py-0.5 text-[10px] font-bold text-warning"
+        >
+          USD
+        </span>
       </span>
       <span class="flex items-center gap-2">
         <span class="text-muted-foreground">{{ $t('Movimientos.Ingresos') }}</span>
