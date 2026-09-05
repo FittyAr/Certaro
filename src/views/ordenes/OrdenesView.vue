@@ -73,7 +73,6 @@ watch(trabajoId, async (newVal) => {
 })
 
 function abrirNuevo(): void {
-  if (!trabajoId.value) return
   ordenIdEdicion.value = null
   editorOpen.value = true
 }
@@ -119,7 +118,7 @@ onMounted(async () => {
           <AppIcon name="arrow-left" :size="16" />
           {{ $t('General.Back') }}
         </Button>
-        <Button v-if="trabajoId" @click="abrirNuevo()">
+        <Button @click="abrirNuevo()">
           <AppIcon name="plus" :size="16" />
           {{ $t('General.New') }}
         </Button>

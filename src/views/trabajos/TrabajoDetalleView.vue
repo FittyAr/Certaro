@@ -19,6 +19,7 @@ import {
   type OrdenTrabajoListItem,
 } from '@/stores/useOrdenesTrabajoStore'
 import { useTrabajosStore, type TrabajoDetalle } from '@/stores/useTrabajosStore'
+import OrdenFormModal from '@/views/ordenes/components/OrdenFormModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,6 +33,7 @@ const ordenes = ref<OrdenTrabajoListItem[]>([])
 const loading = ref(false)
 const firstLoad = ref(true)
 const error = ref<ApiError | null>(null)
+const nuevaOrdenModal = ref(false)
 
 async function cargar(): Promise<void> {
   loading.value = true
@@ -56,7 +58,7 @@ function abrirOrden(ordenId: string): void {
 }
 
 function irACrearOrden(): void {
-  void router.push({ name: 'trabajo-ordenes', params: { trabajoId: trabajoId.value } })
+  nuevaOrdenModal.value = true
 }
 
 onMounted(cargar)
@@ -164,5 +166,11 @@ onMounted(cargar)
         </div>
       </div>
     </ListState>
+    <OrdenFormModal
+      v-model:visible="nuevaOrdenModal"
+      :trabajo-id="trabajoId"
+      :orden-id="null"
+      @saved="cargar()"
+    />
   </section>
 </template>

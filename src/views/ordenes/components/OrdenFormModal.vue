@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
 import DateInput from '@/components/domain/DateInput.vue'
@@ -11,6 +12,9 @@ import MoneyText from '@/components/domain/MoneyText.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
 import { Button } from '@/components/ui/button'
 import { useApiError } from '@/composables/useApiError'
+import type { LookupItem } from '@/stores/useCatalogStore'
+import { useProyectosStore } from '@/stores/useProyectosStore'
+import { useTrabajosStore } from '@/stores/useTrabajosStore'
 import {
   useOrdenesTrabajoStore,
   type OrdenTrabajoItemInput,
@@ -27,11 +31,16 @@ interface Editor {
   items: OrdenTrabajoItemInput[]
 }
 
-const props = defineProps<{
-  visible: boolean
-  trabajoId: string
-  ordenId: string | null
-}>()
+const props = withDefaults(
+  defineProps<{
+    visible: boolean
+    trabajoId?: string
+    ordenId: string | null
+  }>(),
+  {
+    trabajoId: '',
+  },
+)
 
 const emit = defineEmits<{
   (e: 'update:visible', value: boolean): void
@@ -40,6 +49,14 @@ const emit = defineEmits<{
 
 const { notify, fieldErrors } = useApiError()
 const store = useOrdenesTrabajoStore()
+const proyectosStore = useProyectosStore()
+const trabajosStore = useTrabajosStore()
+
+const opcionesProyecto = ref<LookupItem[]>([])
+const opcionesTrabajo = ref<LookupItem[]>([])
+const proyectoIdSeleccionado = ref<string | null>(null)
+const trabajoIdSeleccionado = ref<string>('')
+const trabajoOriginalId = ref<string | null>(null)
 
 const saving = ref(false)
 const errores = ref<Record<string, string>>({})
@@ -101,8 +118,25 @@ async function cargarParaEdicion(id: string): Promise<void> {
       })),
     }
     certificados.value = new Set(d.items.filter((i) => i.certificado).map((i) => i.id))
+    trabajoOriginalId.value = d.trabajoId
   } catch (e) {
     notify(e)
+  }
+}
+
+async function onProyectoChange(): Promise<void> {
+  trabajoIdSeleccionado.value = ''
+  if (!proyectoIdSeleccionado.value) {
+    opcionesTrabajo.value = []
+    return
+  }
+  try {
+    opcionesTrabajo.value = await trabajosStore.lookup(proyectoIdSeleccionado.value)
+    if (opcionesTrabajo.value.length === 1 && opcionesTrabajo.value[0]) {
+      trabajoIdSeleccionado.value = opcionesTrabajo.value[0].id
+    }
+  } catch {
+    opcionesTrabajo.value = []
   }
 }
 
@@ -111,6 +145,16 @@ watch(
   async (abierto) => {
     if (!abierto) return
     errores.value = {}
+    proyectoIdSeleccionado.value = null
+    trabajoIdSeleccionado.value = props.trabajoId || ''
+    trabajoOriginalId.value = null
+    if (!props.trabajoId && !props.ordenId) {
+      try {
+        opcionesProyecto.value = await proyectosStore.lookup(undefined, undefined, 200)
+      } catch {
+        opcionesProyecto.value = []
+      }
+    }
     if (props.ordenId) {
       await cargarParaEdicion(props.ordenId)
     } else {
@@ -148,11 +192,16 @@ const totalPresupuestado = computed(() =>
 
 async function guardar(): Promise<void> {
   if (saving.value) return
-  saving.value = true
   errores.value = {}
+  const targetTrabajoId = props.trabajoId || trabajoOriginalId.value || trabajoIdSeleccionado.value
+  if (!targetTrabajoId) {
+    errores.value = { trabajoId: 'Debe seleccionar un proyecto y un trabajo para la orden' }
+    return
+  }
+  saving.value = true
   try {
     const dto = {
-      trabajoId: props.trabajoId,
+      trabajoId: targetTrabajoId,
       titulo: editor.value.titulo,
       fecha: editor.value.fecha,
       observaciones: editor.value.observaciones,
@@ -186,6 +235,43 @@ async function guardar(): Promise<void> {
     @update:visible="emit('update:visible', $event)"
   >
     <div class="space-y-4">
+      <!-- Selector de Proyecto y Trabajo cuando se crea desde la vista global -->
+      <div
+        v-if="!props.trabajoId && !editor.id"
+        class="grid grid-cols-1 gap-3 rounded-md border border-border/80 bg-muted/20 p-3 md:grid-cols-2"
+      >
+        <label class="flex flex-col gap-1">
+          <span class="text-sm font-medium">
+            {{ $t('Proyectos.Title') || 'Proyecto / Obra' }} <span class="text-destructive">*</span>
+          </span>
+          <Select
+            v-model="proyectoIdSeleccionado"
+            :options="opcionesProyecto"
+            option-label="label"
+            option-value="id"
+            filter
+            :placeholder="$t('General.Select') || 'Seleccionar Proyecto'"
+            @update:model-value="onProyectoChange()"
+          />
+        </label>
+        <label class="flex flex-col gap-1">
+          <span class="text-sm font-medium">
+            {{ $t('Trabajos.Title') || 'Trabajo' }} <span class="text-destructive">*</span>
+          </span>
+          <Select
+            v-model="trabajoIdSeleccionado"
+            :options="opcionesTrabajo"
+            option-label="label"
+            option-value="id"
+            filter
+            :disabled="!proyectoIdSeleccionado"
+            :placeholder="!proyectoIdSeleccionado ? 'Primero seleccione un proyecto' : ($t('General.Select') || 'Seleccionar Trabajo')"
+            :invalid="Boolean(errores.trabajoId)"
+          />
+          <FieldError id="orden-trabajo-error" :message="errores.trabajoId" />
+        </label>
+      </div>
+
       <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
         <label class="flex flex-col gap-1 md:col-span-2">
           <span class="text-sm">{{ $t('Ordenes.Titulo') }}</span>
