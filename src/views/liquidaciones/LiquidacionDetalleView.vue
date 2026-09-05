@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import Textarea from 'primevue/textarea'
+import { useConfirm } from 'primevue/useconfirm'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
 import DateText from '@/components/domain/DateText.vue'
@@ -14,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { useApiError, type ApiError } from '@/composables/useApiError'
 import { useConfirmDelete } from '@/composables/useConfirmDelete'
 import { useLiquidacionesStore, type LiquidacionDetalle } from '@/stores/useLiquidacionesStore'
+import { useMovimientosStore } from '@/stores/useMovimientosStore'
 import { useReportesStore } from '@/stores/useReportesStore'
 
 /**
@@ -26,9 +29,12 @@ import { useReportesStore } from '@/stores/useReportesStore'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
+const confirm = useConfirm()
 const { notify } = useApiError()
 const { confirmDelete } = useConfirmDelete()
 const store = useLiquidacionesStore()
+const movimientosStore = useMovimientosStore()
 const reportes = useReportesStore()
 
 const liquidacionId = computed(() => String(route.params.liquidacionId ?? ''))
@@ -84,9 +90,57 @@ async function guardarObservaciones(): Promise<void> {
   }
 }
 
-function anular(): void {
+async function anular(): Promise<void> {
   const actual = liquidacion.value
   if (!actual) return
+
+  // Check if there is a matching wage expense in movements for this employee around this settlement
+  let egresoAsociado: import('@/stores/useMovimientosStore').MovimientoListItem | null = null
+  try {
+    const res = await movimientosStore.fetchPaged({
+      filtro: {
+        empleadoId: actual.empleadoId,
+      },
+      page: 1,
+      pageSize: 50,
+    })
+    // Look for wage payment movement with matching neto
+    const netoStr = Number(actual.totalNeto).toFixed(4)
+    egresoAsociado =
+      res.items.find(
+        (m) =>
+          !m.esIngreso &&
+          (m.concepto.toLowerCase().includes('sueldo') || m.concepto.toLowerCase().includes('liquidaci')) &&
+          (m.monto === netoStr || m.total === netoStr),
+      ) ?? null
+  } catch (err) {
+    console.warn('No se pudo verificar egreso en caja:', err)
+  }
+
+  if (egresoAsociado) {
+    confirm.require({
+      header: t('Liquidaciones.AnularConEgresoTitulo'),
+      message: t('Liquidaciones.AnularConEgresoMensaje', {
+        monto: `$${egresoAsociado.total}`,
+      }),
+      acceptLabel: t('General.Delete'),
+      rejectLabel: t('General.Cancel'),
+      acceptProps: { severity: 'danger' },
+      accept: async () => {
+        try {
+          await store.remove(actual.id, actual.audit.rowVersion)
+          if (egresoAsociado) {
+            await movimientosStore.remove(egresoAsociado.id, egresoAsociado.rowVersion)
+          }
+          router.push({ name: 'liquidaciones' })
+        } catch (e) {
+          notify(e)
+        }
+      },
+    })
+    return
+  }
+
   confirmDelete({
     entityKey: 'Entity.Liquidacion',
     label: actual.empleadoNombre,

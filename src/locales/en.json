@@ -604,7 +604,9 @@
     "ImputarTrabajo": "Project job",
     "ImputacionIndividual": "Attribute to project / job (optional)",
     "ImputarLoteGeneral": "General batch attribution",
-    "MovimientosMultiples": "Individual cash movements will be recorded to attribute labor expenses to each worker's assigned project."
+    "MovimientosMultiples": "Individual cash movements will be recorded to attribute labor expenses to each worker's assigned project.",
+    "AnularConEgresoTitulo": "Cancel settlement and cash expense",
+    "AnularConEgresoMensaje": "A cash expense was detected for this employee's payroll payout ({monto}). Would you like to cancel the settlement and remove the cash expense as well?"
   },
   "MedioPago": {
     "Cheque": "Cheque",

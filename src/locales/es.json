@@ -604,7 +604,9 @@
     "ImputarTrabajo": "Trabajo de la obra",
     "ImputacionIndividual": "Imputar a obra / trabajo (opcional)",
     "ImputarLoteGeneral": "Imputación general del lote",
-    "MovimientosMultiples": "Se registrarán egresos individuales en caja para imputar la mano de obra según la obra configurada para cada operario."
+    "MovimientosMultiples": "Se registrarán egresos individuales en caja para imputar la mano de obra según la obra configurada para cada operario.",
+    "AnularConEgresoTitulo": "Anular liquidación y egreso en caja",
+    "AnularConEgresoMensaje": "Se detectó un egreso registrado en caja por pago de sueldo de este empleado ({monto}). ¿Deseas anular la liquidación y eliminar también el egreso en caja?"
   },
   "MedioPago": {
     "Cheque": "Cheque",
